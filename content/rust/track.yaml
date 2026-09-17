@@ -1,0 +1,10 @@
+title: Rust
+order: 2
+description: Ownership, borrowing, enums and traits, one compiler error at a time. Built with cargo on the real toolchain.
+sections:
+  - id: learn
+    title: Learn
+    description: Guided lessons. Read the explanation, then make the hidden tests pass.
+  - id: practice
+    title: Practice
+    description: Exercises from the Exercism Rust track (MIT). Same editor, same tests, less hand-holding.

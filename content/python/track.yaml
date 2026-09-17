@@ -1,0 +1,10 @@
+title: Python
+order: 1
+description: From your first print() to classes and generators. Everything runs on real CPython in your own terminal.
+sections:
+  - id: learn
+    title: Learn
+    description: Guided lessons. Read the explanation, then make the hidden tests pass.
+  - id: practice
+    title: Practice
+    description: Exercises from the Exercism Python track (MIT). Same editor, same tests, less hand-holding.
