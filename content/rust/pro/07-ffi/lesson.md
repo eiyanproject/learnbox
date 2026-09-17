@@ -1,5 +1,5 @@
 ---
-title: FFI: calling C and being called
+title: "FFI: calling C and being called"
 summary: extern "C", raw C strings, repr(C) structs, and wrapping an unsafe C API in a safe Rust one.
 order: 7
 files: [src/lib.rs]
