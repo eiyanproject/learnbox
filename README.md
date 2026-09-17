@@ -18,6 +18,30 @@ Styling follows the *Recipe Catalog Terminal* Claude Design canvas: cyan as the
 one accent, magenta for passed work, amber for shortfalls, Chakra Petch and IBM
 Plex Mono. Dark and light themes.
 
+## Curriculum
+
+### Python
+
+**Beginner** (12) — Hello, Python; Variables and numbers; Functions; Strings; Making decisions; Loops; Lists and tuples; Dictionaries and sets; Comprehensions; Errors and exceptions; Files and data; Classes
+
+**Intermediate** (10) — Functions in depth; Scope and closures; Decorators; Iterators and generators; The collections toolbox; Dataclasses and enums; Context managers; Modules and packages; Regular expressions; Recursion and algorithms
+
+**Advanced** (10) — Inheritance, properties and ABCs; The data model; Descriptors and __slots__; Type hints and protocols; Functional tools; Generators in depth; Threads and futures; asyncio; Exceptions in depth; Performance
+
+**Pro** (10) — Metaprogramming; Command-line tools; Testing strategy; Multiprocessing; An async network server; Memory and weak references; Build a mini ORM; Structured logging and context; A plugin architecture; Capstone: a persistent key-value store
+
+
+### Rust
+
+**Beginner** (12) — Hello, cargo; Variables and types; Control flow; Ownership; Borrowing and slices; Structs and methods; Enums and match; Option and Result; Vec, String and HashMap; Traits; Iterators and closures; Generics and lifetimes
+
+**Intermediate** (10) — Modules and visibility; Designing errors; Traits in depth; Implementing iterators; Smart pointers; Patterns in depth; Strings and text; Closures in depth; Collections in depth; Lifetimes in depth
+
+**Advanced** (10) — Threads; Channels; Shared state; Generics and typestate; Declarative macros; Conversions; Trees, graphs and Weak; I/O and files; A tokenizer and parser; Trait objects and dynamic dispatch
+
+**Pro** (10) — Unsafe Rust; Futures by hand; A tiny executor; Atomics and lock-free code; Memory layout and allocation; Zero-copy parsing; FFI: calling C and being called; Designing a library API; Advanced traits; Capstone: a concurrent TCP server
+
+
 ## How it works
 
 ```
