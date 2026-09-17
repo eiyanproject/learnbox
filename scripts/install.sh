@@ -67,6 +67,19 @@ install -d -o "$LEARNER" -g "$LEARNER" -m 0755 "$LHOME/learn" "$LHOME/scratch" "
 install -d -o root -g root -m 0750 "$DATA_DIR"
 chown -R root:root "$ROOT"
 
+say "Cleaning up earlier versions"
+# The first deploy (deploy/provision.sh) added a .bashrc block that cd'd into
+# ~/learn, which would pull every lesson terminal out of its workspace, and a
+# `learnbox` system user the service no longer uses.
+if grep -qF "# learnbox: python venv" "$LHOME/.bashrc"; then
+  sed -i '/^# learnbox: python venv$/,/^cd "\$HOME\/learn" 2>\/dev\/null || true$/d' "$LHOME/.bashrc"
+  echo "  removed old .bashrc block"
+fi
+if id learnbox >/dev/null 2>&1 && ! pgrep -u learnbox >/dev/null 2>&1; then
+  userdel learnbox && echo "  removed unused learnbox user"
+fi
+chown root:root "$DATA_DIR"
+
 say "Python environment for $LEARNER"
 if [ ! -x "$LHOME/.venv/bin/python" ]; then
   as_learner python3 -m venv "$LHOME/.venv"
