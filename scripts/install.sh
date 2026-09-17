@@ -180,12 +180,36 @@ LEARNBOX_ADDR=:8080
 # Example: LEARNBOX_ALLOWED_HOSTS=learnbox,learnbox.lan,learnbox.tail1234.ts.net
 LEARNBOX_ALLOWED_HOSTS=
 
+# Public hostnames served through Cloudflare Access. Requests for these must
+# carry a valid Access token, so a shell is never exposed if the edge policy is
+# removed. Set all three or none; see docs/REMOTE-ACCESS.md.
+# LEARNBOX_ACCESS_HOSTS=learnbox.eiyanproject.com
+# LEARNBOX_ACCESS_TEAM_DOMAIN=<team>.cloudflareaccess.com
+# LEARNBOX_ACCESS_AUD=<application audience tag>
+LEARNBOX_ACCESS_HOSTS=
+LEARNBOX_ACCESS_TEAM_DOMAIN=
+LEARNBOX_ACCESS_AUD=
+
 # Limits for everything the learner runs (terminals and checks, combined).
 LEARNBOX_MEMORY_MAX=1200M
 LEARNBOX_SWAP_MAX=512M
 LEARNBOX_PIDS_MAX=512
 LEARNBOX_CHECK_TIMEOUT=120s
 EOF
+fi
+
+# Existing installs keep their settings; add newly introduced keys they lack.
+if ! grep -q "^LEARNBOX_ACCESS_HOSTS=" /etc/learnbox.env; then
+  cat >> /etc/learnbox.env <<'ENVEOF'
+
+# Public hostnames served through Cloudflare Access. Requests for these must
+# carry a valid Access token, so a shell is never exposed if the edge policy is
+# removed. Set all three or none; see docs/REMOTE-ACCESS.md.
+LEARNBOX_ACCESS_HOSTS=
+LEARNBOX_ACCESS_TEAM_DOMAIN=
+LEARNBOX_ACCESS_AUD=
+ENVEOF
+  echo "  added Cloudflare Access settings to /etc/learnbox.env"
 fi
 
 cat > /etc/systemd/system/learnbox.service <<EOF

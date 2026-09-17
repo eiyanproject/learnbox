@@ -20,6 +20,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
+	"github.com/eiyanproject/learnbox/internal/access"
 	"github.com/eiyanproject/learnbox/internal/content"
 	"github.com/eiyanproject/learnbox/internal/progress"
 	"github.com/eiyanproject/learnbox/internal/runner"
@@ -40,12 +41,19 @@ type Deps struct {
 	Terms        *term.Manager
 	WebDir       string   // built frontend; empty disables static serving
 	AllowedHosts []string // besides IP literals and localhost
+
+	// AccessHosts are public hostnames served through Cloudflare Access.
+	// Requests for them must carry a valid Access token, verified by Access.
+	// A nil Access with AccessHosts set refuses those hosts (fail closed).
+	AccessHosts []string
+	Access      *access.Verifier
 }
 
 type Server struct {
 	Deps
-	mux   *http.ServeMux
-	hosts map[string]bool
+	mux         *http.ServeMux
+	hosts       map[string]bool
+	accessHosts map[string]bool
 
 	reqs   *prometheus.CounterVec
 	dur    *prometheus.HistogramVec
@@ -59,10 +67,16 @@ type Server struct {
 }
 
 func New(d Deps) *Server {
-	s := &Server{Deps: d, mux: http.NewServeMux(), hosts: map[string]bool{"localhost": true}}
+	s := &Server{Deps: d, mux: http.NewServeMux(), hosts: map[string]bool{"localhost": true}, accessHosts: map[string]bool{}}
 	for _, h := range d.AllowedHosts {
 		if h = strings.ToLower(strings.TrimSpace(h)); h != "" {
 			s.hosts[h] = true
+		}
+	}
+	for _, h := range d.AccessHosts {
+		if h = strings.ToLower(strings.TrimSpace(h)); h != "" {
+			s.hosts[h] = true
+			s.accessHosts[h] = true
 		}
 	}
 	if hn, err := os.Hostname(); err == nil {
@@ -122,6 +136,8 @@ func (s *Server) Handler() http.Handler {
 			// would otherwise be same-origin with the shell.
 			s.errs.WithLabelValues("host_rejected").Inc()
 			writeErr(rec, http.StatusMisdirectedRequest, "unknown host; add it to LEARNBOX_ALLOWED_HOSTS")
+		case !s.accessGranted(rec, r):
+			// accessGranted wrote the response.
 		case r.Method != http.MethodGet && r.Method != http.MethodHead && r.Header.Get("X-Learnbox") != "1":
 			// A custom header cannot be sent cross-site without a CORS
 			// preflight, which we never approve. Blocks drive-by POSTs.
@@ -152,12 +168,38 @@ func (s *Server) Handler() http.Handler {
 	})
 }
 
-func (s *Server) hostAllowed(hostport string) bool {
+// accessGranted enforces Cloudflare Access on public hostnames. Other hosts
+// (LAN IPs, Tailscale names) pass straight through.
+func (s *Server) accessGranted(w http.ResponseWriter, r *http.Request) bool {
+	if !s.accessHosts[hostOnly(r.Host)] {
+		return true
+	}
+	if s.Access == nil {
+		s.errs.WithLabelValues("access_unconfigured").Inc()
+		writeErr(w, http.StatusServiceUnavailable, "this hostname requires Cloudflare Access verification, which is not configured")
+		return false
+	}
+	email, err := s.Access.Verify(r.Context(), access.TokenFrom(r))
+	if err != nil {
+		s.errs.WithLabelValues("access_denied").Inc()
+		s.Log.Warn("access denied", "host", hostOnly(r.Host), "path", r.URL.Path, "err", err.Error())
+		writeErr(w, http.StatusForbidden, "access denied")
+		return false
+	}
+	r.Header.Set("X-Learnbox-User", email)
+	return true
+}
+
+func hostOnly(hostport string) string {
 	host := hostport
 	if h, _, err := net.SplitHostPort(hostport); err == nil {
 		host = h
 	}
-	host = strings.ToLower(strings.Trim(host, "[]"))
+	return strings.ToLower(strings.Trim(host, "[]"))
+}
+
+func (s *Server) hostAllowed(hostport string) bool {
+	host := hostOnly(hostport)
 	if net.ParseIP(host) != nil {
 		return true
 	}

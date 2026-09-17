@@ -20,6 +20,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/eiyanproject/learnbox/internal/access"
 	"github.com/eiyanproject/learnbox/internal/content"
 	"github.com/eiyanproject/learnbox/internal/exercism"
 	"github.com/eiyanproject/learnbox/internal/httpapi"
@@ -46,6 +47,9 @@ type cfg struct {
 	Limits       sandbox.Limits
 	CheckTimeout time.Duration
 	AllowedHosts []string
+	AccessHosts  []string
+	AccessTeam   string
+	AccessAUD    string
 }
 
 func env(name, def string) string {
@@ -76,6 +80,9 @@ func config() cfg {
 		},
 		CheckTimeout: timeout,
 		AllowedHosts: strings.Split(env("LEARNBOX_ALLOWED_HOSTS", ""), ","),
+		AccessHosts:  strings.Split(env("LEARNBOX_ACCESS_HOSTS", ""), ","),
+		AccessTeam:   env("LEARNBOX_ACCESS_TEAM_DOMAIN", ""),
+		AccessAUD:    env("LEARNBOX_ACCESS_AUD", ""),
 	}
 }
 
@@ -151,10 +158,21 @@ func serve(log *slog.Logger, c cfg) error {
 	defer stop()
 	go terms.Janitor(ctx)
 
+	var verifier *access.Verifier
+	accessHosts := strings.Join(c.AccessHosts, "")
+	switch {
+	case c.AccessTeam != "" && c.AccessAUD != "":
+		verifier = access.NewVerifier(c.AccessTeam, c.AccessAUD)
+		log.Info("cloudflare access enforced", "hosts", c.AccessHosts, "team", verifier.TeamDomain)
+	case accessHosts != "":
+		log.Warn("LEARNBOX_ACCESS_HOSTS set without LEARNBOX_ACCESS_TEAM_DOMAIN and LEARNBOX_ACCESS_AUD: those hosts will be refused", "hosts", c.AccessHosts)
+	}
+
 	api := httpapi.New(httpapi.Deps{
 		Version: version, Commit: commit, Log: log, Lib: lib,
 		Sandbox: sb, Workspace: ws, Runner: runner.New(sb, ws, c.CheckTimeout),
 		Progress: prog, Terms: terms, WebDir: c.WebDir, AllowedHosts: c.AllowedHosts,
+		AccessHosts: c.AccessHosts, Access: verifier,
 	})
 	srv := &http.Server{Addr: c.Addr, Handler: api.Handler(), ReadHeaderTimeout: 10 * time.Second}
 

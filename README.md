@@ -53,8 +53,10 @@ from mistakes and from other websites, not from the user.
   WebSocket checks `Origin` (cross-site requests from other tabs).
 - Lesson Markdown is rendered with raw HTML disabled.
 
-**Do not expose it to the internet.** It hands out a shell with no login. Use
-LAN or Tailscale.
+**Do not expose it to the internet without Cloudflare Access.** It hands out a
+shell with no login of its own. LAN or Tailscale by default;
+[docs/REMOTE-ACCESS.md](docs/REMOTE-ACCESS.md) covers the protected public
+hostname, where learnbox verifies the Access token itself.
 
 ## Deploy
 
@@ -115,6 +117,14 @@ refreshes the Exercism import and restarts the service. It never touches
 | `LEARNBOX_SWAP_MAX` | `512M` | cgroup `memory.swap.max` |
 | `LEARNBOX_PIDS_MAX` | `512` | cgroup `pids.max` |
 | `LEARNBOX_CHECK_TIMEOUT` | `120s` | per check; the first Rust build of a lesson is the slow one |
+| `LEARNBOX_ACCESS_HOSTS` | | public hostnames that must present a Cloudflare Access token |
+| `LEARNBOX_ACCESS_TEAM_DOMAIN` | | `<team>.cloudflareaccess.com` |
+| `LEARNBOX_ACCESS_AUD` | | the Access application's audience tag |
+
+A hostname in `LEARNBOX_ACCESS_HOSTS` is refused (503) until the team domain and
+audience are set, so a half-finished setup cannot expose a shell. See
+[docs/REMOTE-ACCESS.md](docs/REMOTE-ACCESS.md) for the full path through
+Cloudflare Access, the tunnel and Caddy.
 
 ### Layout inside the CT
 
