@@ -1,16 +1,20 @@
 #!/usr/bin/env bash
-# Creates the learnbox LXC on a Proxmox node and provisions it.
+# Creates the learnbox LXC on a Proxmox node, clones this repo into it and
+# runs the install.
 #
-# RUN THIS ON THE PROXMOX HOST. provision.sh must sit next to this script.
+# RUN THIS ON THE PROXMOX HOST (not inside a container). Standalone - it does
+# not need the rest of the repo next to it:
 #
-#   ./create-ct.sh --ctid 116 --ip 192.168.0.116/24          # plan only
-#   ./create-ct.sh --ctid 116 --ip 192.168.0.116/24 --yes    # apply
+#   curl -fsSLO https://raw.githubusercontent.com/eiyanproject/learnbox/main/scripts/create-lxc.sh
+#   bash create-lxc.sh --ctid 116 --ip 192.168.0.116/24          # plan only
+#   bash create-lxc.sh --ctid 116 --ip 192.168.0.116/24 --yes    # apply
 #
 # Nothing is created until you pass --yes. Without it you get the plan only.
 set -euo pipefail
 
 CTID=""; HOSTNAME_="learnbox"; IP=""; GW="192.168.0.1"
 STORAGE="local-lvm"; DISK="15"; MEMORY="2048"; SWAP="1024"; CORES="2"; BRIDGE="vmbr0"
+REPO="https://github.com/eiyanproject/learnbox.git"; BRANCH="main"; DIR="/opt/learnbox"
 CONFIRM="no"
 
 die() { echo "error: $*" >&2; exit 1; }
@@ -27,18 +31,17 @@ while [[ $# -gt 0 ]]; do
     --swap)     SWAP="$2"; shift 2 ;;
     --cores)    CORES="$2"; shift 2 ;;
     --bridge)   BRIDGE="$2"; shift 2 ;;
+    --repo)     REPO="$2"; shift 2 ;;
+    --branch)   BRANCH="$2"; shift 2 ;;
     --yes)      CONFIRM="yes"; shift ;;
-    -h|--help)  sed -n '2,9p' "$0"; exit 0 ;;
+    -h|--help)  sed -n '2,13p' "$0"; exit 0 ;;
     *) die "unknown argument: $1" ;;
   esac
 done
 
 command -v pct >/dev/null || die "pct not found - run this on the Proxmox host"
-[[ -n "$CTID" ]] || die "--ctid is required"
+[[ -n "$CTID" ]] || die "--ctid is required (pvesh get /cluster/nextid suggests one)"
 [[ -n "$IP"   ]] || die "--ip is required (CIDR, e.g. 192.168.0.116/24)"
-
-here="$(cd "$(dirname "$0")" && pwd)"
-[[ -f "$here/provision.sh" ]] || die "provision.sh not found next to $0"
 
 # VMIDs are unique across the whole CLUSTER. `pct status` only knows this
 # node's guests, so check the cluster first.
@@ -63,6 +66,7 @@ cat <<PLAN
   network       ${IP} via ${GW} on ${BRIDGE}
   features      nesting=1  (systemd in unprivileged Debian 13; cgroup delegation for the shell)
   template      ${TEMPLATE}
+  repo          ${REPO} (${BRANCH}) -> ${DIR}
 
 PLAN
 
@@ -85,17 +89,31 @@ pct start "$CTID"
 
 echo "==> waiting for network"
 for _ in $(seq 1 30); do
-  pct exec "$CTID" -- getent hosts deb.debian.org &>/dev/null && break
+  pct exec "$CTID" -- getent hosts github.com &>/dev/null && break
   sleep 2
 done
 
-echo "==> provisioning"
-pct push "$CTID" "$here/provision.sh" /root/provision.sh --perms 0755
-pct exec "$CTID" -- /root/provision.sh
+echo "==> cloning repo"
+pct exec "$CTID" -- bash -lc "
+  set -e
+  export DEBIAN_FRONTEND=noninteractive
+  apt-get update -qq
+  apt-get install -y -qq ca-certificates git >/dev/null
+  rm -rf '${DIR}'
+  git clone --branch '${BRANCH}' '${REPO}' '${DIR}'
+"
+
+echo "==> installing"
+pct exec "$CTID" -- bash "${DIR}/scripts/install.sh"
 
 cat <<DONE
 
   Done. learnbox is at ${IP%%/*}
+
+  Update later, from this host:
+    bash update-lxc.sh --ctid ${CTID} --snapshot --yes
+  or inside the container:
+    ${DIR}/scripts/update.sh
 
   To join monitoring, from homelab-monitoring/scripts on this host:
     ./setup-guest-logging.sh --collector <this node's mon IP> --yes --only ${CTID}
