@@ -108,7 +108,10 @@ pct exec "$CTID" -- bash "${DIR}/scripts/install.sh"
 
 cat <<DONE
 
-  Done. learnbox is at ${IP%%/*}
+  Done. learnbox is at http://${IP%%/*}:8080
+
+  To open it by name as well as by IP, add the name to LEARNBOX_ALLOWED_HOSTS
+  in /etc/learnbox.env inside the CT, then: systemctl restart learnbox
 
   Update later, from this host:
     bash update-lxc.sh --ctid ${CTID} --snapshot --yes
@@ -117,5 +120,6 @@ cat <<DONE
 
   To join monitoring, from homelab-monitoring/scripts on this host:
     ./setup-guest-logging.sh --collector <this node's mon IP> --yes --only ${CTID}
+  and add ${IP%%/*}:8080 to targets/services.json in the mon LXC.
 
 DONE
