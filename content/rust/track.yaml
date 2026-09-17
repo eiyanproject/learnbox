@@ -1,10 +1,19 @@
 title: Rust
 order: 2
-description: Ownership, borrowing, enums and traits, one compiler error at a time. Built with cargo on the real toolchain.
+description: From cargo run to threads, macros, unsafe and a hand-written async executor. Built with cargo on the real toolchain.
 sections:
   - id: learn
-    title: Learn
-    description: Guided lessons. Read the explanation, then make the hidden tests pass.
+    title: Beginner
+    description: Ownership, borrowing, structs, enums, collections, traits and lifetimes.
+  - id: intermediate
+    title: Intermediate
+    description: Modules, error design, trait tools, iterators, smart pointers and deeper patterns.
+  - id: advanced
+    title: Advanced
+    description: Threads, channels, shared state, macros, conversions and I/O.
+  - id: pro
+    title: Pro
+    description: Unsafe, futures and executors, atomics, API design, FFI and a concurrent capstone.
   - id: practice
     title: Practice
     description: Exercises from the Exercism Rust track (MIT). Same editor, same tests, less hand-holding.

@@ -1,10 +1,19 @@
 title: Python
 order: 1
-description: From your first print() to classes and generators. Everything runs on real CPython in your own terminal.
+description: From your first print() to metaclasses, asyncio and a capstone project. Everything runs on real CPython in your own terminal.
 sections:
   - id: learn
-    title: Learn
-    description: Guided lessons. Read the explanation, then make the hidden tests pass.
+    title: Beginner
+    description: Syntax, types, control flow, collections, files and classes.
+  - id: intermediate
+    title: Intermediate
+    description: Idiomatic Python. Closures, decorators, generators, dataclasses, context managers and the standard library.
+  - id: advanced
+    title: Advanced
+    description: The data model, descriptors, typing, concurrency, asyncio and performance.
+  - id: pro
+    title: Pro
+    description: Metaprogramming, testing strategy, process pools, async servers, and building real tools.
   - id: practice
     title: Practice
     description: Exercises from the Exercism Python track (MIT). Same editor, same tests, less hand-holding.

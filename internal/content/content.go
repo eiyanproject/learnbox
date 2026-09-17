@@ -71,7 +71,9 @@ type Library struct {
 
 func (lib *Library) Lesson(id string) *Lesson { return lib.lessons[id] }
 
-// Neighbours returns the lessons before and after id within its section.
+// Neighbours returns the lessons before and after id. They run on across
+// sections in track order, so the last Beginner lesson leads into
+// Intermediate.
 func (lib *Library) Neighbours(id string) (prev, next *Lesson) {
 	l := lib.lessons[id]
 	if l == nil {
@@ -81,18 +83,17 @@ func (lib *Library) Neighbours(id string) (prev, next *Lesson) {
 		if t.Lang != l.Lang {
 			continue
 		}
+		var all []*Lesson
 		for _, s := range t.Sections {
-			if s.ID != l.Section {
-				continue
-			}
-			for i, x := range s.Lessons {
-				if x == l {
-					if i > 0 {
-						prev = s.Lessons[i-1]
-					}
-					if i+1 < len(s.Lessons) {
-						next = s.Lessons[i+1]
-					}
+			all = append(all, s.Lessons...)
+		}
+		for i, x := range all {
+			if x == l {
+				if i > 0 {
+					prev = all[i-1]
+				}
+				if i+1 < len(all) {
+					next = all[i+1]
 				}
 			}
 		}
