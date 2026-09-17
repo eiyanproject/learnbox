@@ -1,0 +1,80 @@
+/* learnbox — "learning terminal".
+ *
+ * Tokens come from the Recipe Catalog Terminal design (Claude Design canvas in
+ * recipe-catalog/design). Same rules, re-mapped to this app:
+ *
+ *   cyan     the one dominant accent: focus, active nav, primary actions
+ *   magenta  reserved for "passed": completed lessons, green-light checks
+ *   amber    only ever a shortfall: failing tests, hints, difficulty meters
+ *
+ * Beveled clip-path corners appear on exactly three things (logo mark, active
+ * rail item, KPI tiles) so the UI reads machined rather than uniformly rounded.
+ * Chakra Petch for UI, IBM Plex Mono for every figure and all code.
+ *
+ * Light is a daylight-terminal palette, not an inverted dark one: the accents
+ * are re-darkened so they hold contrast on a pale ground.
+ */
+
+:root,
+:root[data-theme="dark"] {
+  --bg: #080c12;
+  --surf: #0f151e;
+  --surf2: #141c27;
+  --line: #1f2b3a;
+  --fg: #dce6f0;
+  --mut: #74879c;
+  --dim: #48586b;
+  --cy: #35e0d0;
+  --mg: #ff5fa2;
+  --am: #ffb454;
+  --cyw: rgba(53, 224, 208, 0.13);
+  --cyl: rgba(53, 224, 208, 0.32);
+  --mgw: rgba(255, 95, 162, 0.13);
+  --mgl: rgba(255, 95, 162, 0.34);
+  --amw: rgba(255, 180, 84, 0.12);
+  --aml: rgba(255, 180, 84, 0.34);
+  --grid: rgba(53, 224, 208, 0.045);
+  --sel: rgba(53, 224, 208, 0.22);
+
+  /* syntax */
+  --syn-kw: #ff5fa2;
+  --syn-str: #ffb454;
+  --syn-num: #b7a3ff;
+  --syn-fn: #35e0d0;
+  --syn-type: #7af0e5;
+  --syn-com: #56687c;
+  --syn-op: #9fb3c8;
+  --syn-var: #dce6f0;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #e9edf1;
+  --surf: #ffffff;
+  --surf2: #f2f5f8;
+  --line: #d3dbe3;
+  --fg: #0c141e;
+  --mut: #57677a;
+  --dim: #8496a8;
+  --cy: #00807a;
+  --mg: #c42a72;
+  --am: #a96a00;
+  --cyw: rgba(0, 128, 122, 0.09);
+  --cyl: rgba(0, 128, 122, 0.28);
+  --mgw: rgba(196, 42, 114, 0.08);
+  --mgl: rgba(196, 42, 114, 0.3);
+  --amw: rgba(169, 106, 0, 0.08);
+  --aml: rgba(169, 106, 0, 0.3);
+  --grid: rgba(0, 128, 122, 0.04);
+  --sel: rgba(0, 128, 122, 0.18);
+
+  --syn-kw: #c42a72;
+  --syn-str: #946000;
+  --syn-num: #5b3fc4;
+  --syn-fn: #00716c;
+  --syn-type: #0a5f8a;
+  --syn-com: #7b8a9a;
+  --syn-op: #3d4d5f;
+  --syn-var: #0c141e;
+  color-scheme: light;
+}
