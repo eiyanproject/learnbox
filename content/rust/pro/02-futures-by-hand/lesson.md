@@ -5,7 +5,7 @@ order: 2
 files: [src/lib.rs]
 run: cargo test
 hints:
-  - "`Ready<T>` holds `Option<T>` and returns `Poll::Ready(self.0.take().unwrap())`. `Pin<&mut Self>` is awkward until you notice `self.get_mut()` works for `Unpin` types, which all of these are."
+  - "`Ready<T>` holds `Option<T>`; implement `Future` for `T: Unpin` and returns `Poll::Ready(self.0.take().unwrap())`. `Pin<&mut Self>` is awkward until you notice `self.get_mut()` works for `Unpin` types, which all of these are."
   - "`Delay::poll`: if `Instant::now() >= self.deadline` return `Ready(())`; otherwise, on the first poll, spawn a thread that sleeps until the deadline and then calls `waker.wake()`, and return `Pending`."
   - "`block_on`: build a `Waker` that unparks the current thread, `pin!` the future, then `loop { match fut.as_mut().poll(&mut cx) { Ready(v) => return v, Pending => thread::park() } }`."
   - "The waker needs a `RawWakerVTable` with clone/wake/wake_by_ref/drop functions over an `Arc<Thread>`, or build it from `std::task::Wake` with `Arc<ThreadWaker>`, which is much shorter."

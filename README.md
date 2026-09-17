@@ -5,9 +5,14 @@ explanation on the left and a real workspace on the right: a code editor over a
 real `bash` terminal, hidden tests behind a **Check** button, and hints when you
 are stuck. Everything runs in one small LXC on your own network.
 
-- **Learn**: 12 guided Python lessons and 12 guided Rust lessons, written for this project
+- **Four levels per language**, 42 guided lessons each, written for this project:
+  Beginner (12), Intermediate (10), Advanced (10) and Pro (10)
 - **Practice**: ~130 Python and ~90 Rust exercises imported from [Exercism](https://exercism.org) (MIT)
 - **Terminal**: a free scratch shell with `python`, `cargo` and `git`
+
+Python runs from `print()` to metaclasses, asyncio, a mini ORM and a capstone
+key-value store. Rust runs from `cargo run` to unsafe, a hand-written async
+executor, FFI and a concurrent TCP server.
 
 Styling follows the *Recipe Catalog Terminal* Claude Design canvas: cyan as the
 one accent, magenta for passed work, amber for shortfalls, Chakra Petch and IBM
@@ -144,7 +149,9 @@ the monitoring repo's `targets/services.json`, and ship logs with
 
 ## Writing lessons
 
-A lesson is a directory under `content/<lang>/<section>/<slug>/`:
+Sections are `learn` (shown as Beginner), `intermediate`, `advanced`, `pro` and
+`practice` (generated from Exercism). A lesson is a directory under
+`content/<lang>/<section>/<slug>/`:
 
 ```
 lesson.md    front matter + Markdown explanation

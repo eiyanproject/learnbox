@@ -26,7 +26,8 @@ struct Task {
 
 impl Wake for Task {
     fn wake(self: Arc<Self>) {
-        let _ = self.queue.send(self);
+        let queue = self.queue.clone();
+        let _ = queue.send(self);
     }
 
     fn wake_by_ref(self: &Arc<Self>) {

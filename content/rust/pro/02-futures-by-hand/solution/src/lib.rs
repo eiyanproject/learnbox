@@ -11,7 +11,8 @@ pub fn ready<T>(value: T) -> Ready<T> {
     Ready(Some(value))
 }
 
-impl<T> Future for Ready<T> {
+// T: Unpin so `self.get_mut()` is allowed; every practical output type is.
+impl<T: Unpin> Future for Ready<T> {
     type Output = T;
 
     fn poll(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<T> {
