@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/eiyanproject/learnbox/internal/access"
@@ -55,5 +56,19 @@ func TestUnknownHostIsRefused(t *testing.T) {
 	h := server(t, nil, nil)
 	if code := status(t, h, "evil.example.com"); code != http.StatusMisdirectedRequest {
 		t.Errorf("unknown host: got %d, want 421", code)
+	}
+}
+
+func TestUnknownHostMessageNamesTheHostAndBothSettings(t *testing.T) {
+	h := server(t, nil, nil)
+	r := httptest.NewRequest(http.MethodGet, "/healthz", nil)
+	r.Host = "learnbox.example.com"
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, r)
+	body := w.Body.String()
+	for _, want := range []string{"learnbox.example.com", "LEARNBOX_ALLOWED_HOSTS", "LEARNBOX_ACCESS_HOSTS"} {
+		if !strings.Contains(body, want) {
+			t.Errorf("421 body %q does not mention %q", body, want)
+		}
 	}
 }

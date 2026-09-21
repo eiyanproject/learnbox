@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net"
 	"net/http"
@@ -135,7 +136,10 @@ func (s *Server) Handler() http.Handler {
 			// DNS rebinding: a page on evil.example resolving to this box
 			// would otherwise be same-origin with the shell.
 			s.errs.WithLabelValues("host_rejected").Inc()
-			writeErr(rec, http.StatusMisdirectedRequest, "unknown host; add it to LEARNBOX_ALLOWED_HOSTS")
+			host := truncate(hostOnly(r.Host), 100)
+			s.Log.Warn("host rejected", "host", host)
+			writeErr(rec, http.StatusMisdirectedRequest, fmt.Sprintf(
+				"unknown host %q; add LAN/Tailscale names to LEARNBOX_ALLOWED_HOSTS, or public names served through Cloudflare Access to LEARNBOX_ACCESS_HOSTS (with LEARNBOX_ACCESS_TEAM_DOMAIN and LEARNBOX_ACCESS_AUD)", host))
 		case !s.accessGranted(rec, r):
 			// accessGranted wrote the response.
 		case r.Method != http.MethodGet && r.Method != http.MethodHead && r.Header.Get("X-Learnbox") != "1":
@@ -188,6 +192,13 @@ func (s *Server) accessGranted(w http.ResponseWriter, r *http.Request) bool {
 	}
 	r.Header.Set("X-Learnbox-User", email)
 	return true
+}
+
+func truncate(s string, n int) string {
+	if len(s) > n {
+		return s[:n]
+	}
+	return s
 }
 
 func hostOnly(hostport string) string {

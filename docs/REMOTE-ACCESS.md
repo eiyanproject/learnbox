@@ -132,6 +132,23 @@ Hostnames in `LEARNBOX_ACCESS_HOSTS` do not need to be repeated in
 
 - LAN access still works: `http://<learnbox-ip>:8080`.
 
+## Troubleshooting
+
+- **`unknown host "learnbox.eiyanproject.com"` (421) on the public URL**:
+  `/etc/learnbox.env` does not list the hostname in `LEARNBOX_ACCESS_HOSTS`.
+  Do **not** put it in `LEARNBOX_ALLOWED_HOSTS` instead: that accepts the name
+  without checking the Access token and would expose the shell to anyone who can
+  reach the tunnel. Finish step 3 (all three `LEARNBOX_ACCESS_*` values), then
+  `systemctl restart learnbox`.
+- **`Cloudflare` answers 200/421 instead of a 302 to the login page** in step 4:
+  the Access application does not cover the hostname yet (step 1). Fix that
+  before anything else; learnbox's own token check is the second layer, not the
+  first.
+- **503 "requires Cloudflare Access verification"**: the hostname is set but the
+  team domain or audience tag is missing.
+- **403 "access denied"**: the token is missing, expired, or for a different
+  audience; `journalctl -u learnbox` logs the reason.
+
 ## Notes
 
 - **Session expiry**: the browser keeps a `CF_Authorization` cookie for the
