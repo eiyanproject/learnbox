@@ -45,7 +45,10 @@ command -v caddy >/dev/null || die "caddy not on PATH - is this the right host?"
 # is harder to diagnose from the browser than from here.
 echo "==> checking learnbox at ${LEARNBOX_IP}:8080"
 health=$(curl -fsS -m 8 "http://${LEARNBOX_IP}:8080/healthz" 2>/dev/null) ||
-  die "no answer from ${LEARNBOX_IP}:8080 - is the CT running, and is this host on the same tailnet?"
+  die "no answer from ${LEARNBOX_IP}:8080 - is the CT running, and can this host route to it?
+       A LAN address reached over a tailnet subnet route needs the route still
+       advertised, approved in the admin console, and 'tailscale up --accept-routes'
+       on this host: Linux ignores advertised routes otherwise."
 echo "    $health"
 
 # --------------------------------------------------------------- cloudflared
