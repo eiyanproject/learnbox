@@ -8,6 +8,15 @@
 #   bash update-lxc.sh --ctid 116                     # plan only
 #   bash update-lxc.sh --ctid 116 --snapshot --yes    # rollback point, then update
 #
+# To serve a public hostname through Cloudflare Access, pass all three values;
+# they are written into /etc/learnbox.env on the container and never stored on
+# the host. See docs/REMOTE-ACCESS.md for where to find them.
+#
+#   bash update-lxc.sh --ctid 116 --yes \
+#     --access-host learnbox.eiyanproject.com \
+#     --access-team yourteam.cloudflareaccess.com \
+#     --access-aud  <64-hex audience tag>
+#
 # Works for every earlier deploy:
 #   - a git checkout at /opt/learnbox (create-lxc.sh): pull, rebuild, restart
 #   - no checkout (the first deploy/create-ct.sh): clone the repo, full install
@@ -17,6 +26,7 @@ set -euo pipefail
 
 CTID=""; DIR="/opt/learnbox"; SNAPSHOT="no"; CONFIRM="no"
 REPO="https://github.com/eiyanproject/learnbox.git"; BRANCH="main"
+ACCESS_HOST=""; ACCESS_TEAM=""; ACCESS_AUD=""
 
 die() { echo "error: $*" >&2; exit 1; }
 
@@ -27,14 +37,23 @@ while [[ $# -gt 0 ]]; do
     --repo)     REPO="$2"; shift 2 ;;
     --branch)   BRANCH="$2"; shift 2 ;;
     --snapshot) SNAPSHOT="yes"; shift ;;
+    --access-host) ACCESS_HOST="$2"; shift 2 ;;
+    --access-team) ACCESS_TEAM="$2"; shift 2 ;;
+    --access-aud)  ACCESS_AUD="$2";  shift 2 ;;
     --yes)      CONFIRM="yes"; shift ;;
-    -h|--help)  sed -n '2,15p' "$0"; exit 0 ;;
+    -h|--help)  sed -n '2,20p' "$0"; exit 0 ;;
     *) die "unknown argument: $1" ;;
   esac
 done
 
 command -v pct >/dev/null || die "pct not found - run this on the Proxmox host"
 [[ -n "$CTID" ]] || die "--ctid is required"
+
+# All three Access values or none: two of three makes the hostname fail closed.
+if [[ -n "$ACCESS_HOST$ACCESS_TEAM$ACCESS_AUD" ]]; then
+  [[ -n "$ACCESS_HOST" && -n "$ACCESS_TEAM" && -n "$ACCESS_AUD" ]] ||
+    die "--access-host, --access-team and --access-aud go together (see docs/REMOTE-ACCESS.md)"
+fi
 pct status "$CTID" &>/dev/null || die "CTID $CTID does not exist on this node (run on the node that hosts it)"
 [[ "$(pct status "$CTID")" == "status: running" ]] || die "CTID $CTID is not running"
 
@@ -69,6 +88,7 @@ cat <<PLAN
   mode          $MODE
   version       $VERSION_LINE
   snapshot      $( [[ "$SNAPSHOT" == "yes" ]] && echo "$SNAPNAME" || echo "none (pass --snapshot for a rollback point)" )
+  access        $( [[ -n "$ACCESS_HOST" ]] && echo "$ACCESS_HOST via $ACCESS_TEAM (aud ${ACCESS_AUD:0:6}...)" || echo "left as configured on the container" )
 $( [[ "$MODE" == "migrate" ]] && echo "  note          first full install: several minutes (Rust toolchain, build tools, Exercism)" )
 $NESTING_WARN
 
@@ -84,6 +104,15 @@ if [[ "$SNAPSHOT" == "yes" ]]; then
   pct snapshot "$CTID" "$SNAPNAME" --description "before learnbox update ($VERSION_LINE)"
 fi
 
+# install.sh picks these up and writes them into /etc/learnbox.env. They are
+# passed per-exec, never written to a file on the host.
+ACCESS_ENV=(env)
+if [[ -n "$ACCESS_HOST" ]]; then
+  ACCESS_ENV+=("LEARNBOX_ACCESS_HOSTS=$ACCESS_HOST"
+               "LEARNBOX_ACCESS_TEAM_DOMAIN=$ACCESS_TEAM"
+               "LEARNBOX_ACCESS_AUD=$ACCESS_AUD")
+fi
+
 if [[ "$MODE" == "migrate" ]]; then
   echo "==> cloning $REPO into $DIR"
   in_ct "
@@ -97,10 +126,10 @@ if [[ "$MODE" == "migrate" ]]; then
     git clone -q --branch '$BRANCH' '$REPO' '$DIR'
   "
   echo "==> installing"
-  pct exec "$CTID" -- bash "$DIR/scripts/install.sh"
+  pct exec "$CTID" -- "${ACCESS_ENV[@]}" bash "$DIR/scripts/install.sh"
 else
   echo "==> updating"
-  pct exec "$CTID" -- bash "$DIR/scripts/update.sh"
+  pct exec "$CTID" -- "${ACCESS_ENV[@]}" bash "$DIR/scripts/update.sh"
 fi
 
 echo

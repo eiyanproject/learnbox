@@ -88,7 +88,21 @@ The OCI box reaches the LXC over the Tailscale subnet route that already serves
 
 ## 3. learnbox LXC: accept the hostname and enforce the token
 
-Edit `/etc/learnbox.env`:
+From the Proxmox host, `update-lxc.sh` does this for you — it updates the
+container and writes the three values into `/etc/learnbox.env`:
+
+```bash
+bash update-lxc.sh --ctid 116 --snapshot --yes \
+  --access-host learnbox.eiyanproject.com \
+  --access-team <team>.cloudflareaccess.com \
+  --access-aud  <the AUD tag from step 1.3>
+```
+
+All three go together; passing one or two is refused, because a half-configured
+hostname fails closed. The values are passed to the container for that one
+command and are never written to a file on the host.
+
+Or edit `/etc/learnbox.env` on the container by hand:
 
 ```bash
 LEARNBOX_ACCESS_HOSTS=learnbox.eiyanproject.com

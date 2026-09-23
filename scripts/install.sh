@@ -212,6 +212,44 @@ ENVEOF
   echo "  added Cloudflare Access settings to /etc/learnbox.env"
 fi
 
+# The env file holds the Access audience tag; keep it off other accounts.
+chown root:root /etc/learnbox.env
+chmod 600 /etc/learnbox.env
+
+# Values handed in through the environment (update-lxc.sh --access-*) are
+# written into the env file, so a deploy can configure Access without anyone
+# hand-editing a file on the container. Unset variables change nothing.
+if [ -n "${LEARNBOX_ACCESS_HOSTS:-}${LEARNBOX_ACCESS_TEAM_DOMAIN:-}${LEARNBOX_ACCESS_AUD:-}" ]; then
+  [ -n "${LEARNBOX_ACCESS_HOSTS:-}" ] && [ -n "${LEARNBOX_ACCESS_TEAM_DOMAIN:-}" ] &&
+    [ -n "${LEARNBOX_ACCESS_AUD:-}" ] ||
+    die "set all three of LEARNBOX_ACCESS_HOSTS, LEARNBOX_ACCESS_TEAM_DOMAIN and LEARNBOX_ACCESS_AUD, or none: two of three fails closed and the hostname stops working"
+
+  # Accept a pasted "https://team.cloudflareaccess.com/" as well as the bare name.
+  team=${LEARNBOX_ACCESS_TEAM_DOMAIN#https://}
+  team=${team%/}
+  case "$team" in
+    *.cloudflareaccess.com) ;;
+    *) die "LEARNBOX_ACCESS_TEAM_DOMAIN should be the full team domain, e.g. yourteam.cloudflareaccess.com (got '$team')" ;;
+  esac
+  case "$LEARNBOX_ACCESS_AUD" in
+    *[!0-9a-f]* | "") echo "  warning: audience tag is not the usual 64 hex characters - check you copied the AUD tag, not the app id" ;;
+  esac
+
+  set_env_key() {
+    awk -v k="$1" -v v="$2" '
+      $0 ~ "^" k "=" && !done { print k "=" v; done = 1; next }
+      { print }
+      END { if (!done) print k "=" v }
+    ' /etc/learnbox.env > /etc/learnbox.env.new
+    cat /etc/learnbox.env.new > /etc/learnbox.env   # keep the original mode
+    rm -f /etc/learnbox.env.new
+  }
+  set_env_key LEARNBOX_ACCESS_HOSTS "$LEARNBOX_ACCESS_HOSTS"
+  set_env_key LEARNBOX_ACCESS_TEAM_DOMAIN "$team"
+  set_env_key LEARNBOX_ACCESS_AUD "$LEARNBOX_ACCESS_AUD"
+  echo "  Cloudflare Access enforced for: $LEARNBOX_ACCESS_HOSTS (team $team)"
+fi
+
 cat > /etc/systemd/system/learnbox.service <<EOF
 [Unit]
 Description=learnbox learning platform
