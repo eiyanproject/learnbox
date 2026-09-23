@@ -167,8 +167,26 @@ Cloudflare Access, the tunnel and Caddy.
 ### Monitoring
 
 The service follows the homelab monitoring service contract: `GET /healthz`,
-`GET /readyz`, `GET /metrics` on port 8080, JSON logs to stdout. Register it in
-the monitoring repo's `targets/services.json`, and ship logs with
+`GET /readyz`, `GET /metrics` on port 8080, JSON logs to stdout.
+
+Exposing the metrics is not the same as collecting them. Register the target in
+the **mon LXC** (`192.168.0.200`), not in this repo — vmagent reloads the file
+within 60 s, no restart:
+
+```bash
+# in the mon LXC, appending to /srv/monitoring/targets/services.json
+{ "targets": ["192.168.0.116:8080"],
+  "labels": { "job": "service", "service": "learnbox", "kind": "lxc" } }
+```
+
+Confirm it landed:
+
+```bash
+curl -s 'http://192.168.0.200:8428/api/v1/query?query=learnbox_build_info' | grep -o '"commit":"[^"]*"'
+```
+
+The host allowlist does not block this: requests to a bare IP are always
+accepted, so scraping works without listing the mon LXC anywhere. Ship logs with
 `setup-guest-logging.sh --only <ctid>`.
 
 ## Writing lessons

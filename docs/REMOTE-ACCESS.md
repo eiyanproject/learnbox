@@ -88,8 +88,22 @@ The OCI box reaches the LXC over the Tailscale subnet route that already serves
 
 ## 3. learnbox LXC: accept the hostname and enforce the token
 
-From the Proxmox host, `update-lxc.sh` does this for you — it updates the
-container and writes the three values into `/etc/learnbox.env`:
+On the OCI host, `scripts/setup-oci.sh` does steps 2 and 3 for you — the Caddy
+site block and the cloudflared ingress rule, each as a marked block with a
+backup, a validate and a rollback:
+
+```bash
+sudo ./setup-oci.sh --learnbox-ip <tailscale-or-lan-ip>        # plan
+sudo ./setup-oci.sh --learnbox-ip <tailscale-or-lan-ip> --yes  # apply
+```
+
+It refuses to publish a hostname whose origin is not answering, detects a
+token-managed tunnel and prints the dashboard steps instead of editing a file
+that would be ignored, and prints the `cloudflared tunnel route dns` command.
+It deliberately does not create the Access application: that is the gate.
+
+From the Proxmox host, `update-lxc.sh` then arms learnbox's own token check — it
+updates the container and writes the three values into `/etc/learnbox.env`:
 
 ```bash
 bash update-lxc.sh --ctid 116 --snapshot --yes \
