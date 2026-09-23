@@ -14,6 +14,12 @@ sections:
   - id: pro
     title: Pro
     description: Metaprogramming, testing strategy, process pools, async servers, and building real tools.
+  - id: exam-basic
+    title: Exam - Certification
+    description: Practice for the Python 3 Engineer Certification Basic Exam, weighted the way the real paper is. Six papers covering all forty questions' worth of syllabus.
+  - id: exam-review
+    title: Exam - Review
+    description: Cumulative exams over the Beginner section. Topics arrive mixed and unlabelled, the way they do when you actually need them.
   - id: practice
     title: Practice
     description: Exercises from the Exercism Python track (MIT). Same editor, same tests, less hand-holding.

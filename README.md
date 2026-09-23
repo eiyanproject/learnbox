@@ -30,6 +30,10 @@ Plex Mono. Dark and light themes.
 
 **Pro** (10) — Metaprogramming; Command-line tools; Testing strategy; Multiprocessing; An async network server; Memory and weak references; Build a mini ORM; Structured logging and context; A plugin architecture; Capstone: a persistent key-value store
 
+**Exam - Certification** (6) — Six papers for the Python 3 Engineer Certification Basic Exam, weighted the way the real paper is: numbers, strings and lists; control flow and functions (the heaviest section); data structures; errors and exceptions; a standard library tour; modules, classes and I/O
+
+**Exam - Review** (4) — Cumulative exams over the Beginner section, topics arriving mixed and unlabelled: values, text and decisions; collections and comprehensions; functions and failure; a class that saves itself
+
 
 ### Rust
 
