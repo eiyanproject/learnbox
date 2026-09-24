@@ -86,6 +86,15 @@ if [ ! -x "$LHOME/.venv/bin/python" ]; then
 fi
 as_learner "$LHOME/.venv/bin/pip" install -q --upgrade pip pytest
 
+# netlab (the CCNA simulator) is shipped on PYTHONPATH rather than pip-installed:
+# the repo is root-owned, so an editable install into a learner-owned venv would
+# need write access to both. A wrapper puts the console on PATH.
+cat > /usr/local/bin/netlab <<NETLAB
+#!/bin/sh
+exec env PYTHONPATH="$ROOT/lib" "\$HOME/.venv/bin/python" -m netlab "\$@"
+NETLAB
+chmod 0755 /usr/local/bin/netlab
+
 MARK="# learnbox: environment"
 if ! grep -qF "$MARK" "$LHOME/.bashrc"; then
   cat >> "$LHOME/.bashrc" <<'EOF'
@@ -291,6 +300,7 @@ EnvironmentFile=-/etc/learnbox.env
 Environment=LEARNBOX_CONTENT=$ROOT/content
 Environment=LEARNBOX_WEB=$ROOT/web/dist
 Environment=LEARNBOX_DATA=$DATA_DIR
+Environment=LEARNBOX_PYLIB=$ROOT/lib
 WorkingDirectory=$DATA_DIR
 # The service manages its own cgroup subtree: an app leaf for itself and a
 # learner leaf with memory/pid/cpu limits for shells and checks.

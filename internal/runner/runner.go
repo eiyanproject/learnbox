@@ -88,7 +88,10 @@ func (r *Runner) check(ctx context.Context, l *content.Lesson, srcRel string) (*
 	checkDir := r.sb.Home + "/" + checkRel
 
 	switch l.Lang {
-	case "python":
+	// CCNA lessons are graded by pytest as well: the learner edits IOS config
+	// files, and the tests apply them to the simulator and assert the network
+	// actually forwards. Same runner, different thing being written.
+	case "python", "ccna":
 		if err := r.ws.CopyIn(l.TestsDir(), checkRel); err != nil {
 			return nil, fmt.Errorf("copy tests: %w", err)
 		}

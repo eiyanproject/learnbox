@@ -1,0 +1,7 @@
+title: CCNA
+order: 3
+description: Networking for the CCNA 200-301 exam, configured with real IOS commands on a simulated network. Every lesson is graded by whether packets actually get through.
+sections:
+  - id: fundamentals
+    title: Network Fundamentals
+    description: Interfaces and addresses, routing between subnets, subnetting, static and default routes, and reading a broken network.

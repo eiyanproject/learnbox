@@ -32,6 +32,7 @@ type Sandbox struct {
 	GID       int
 	Home      string
 	Path      string // PATH for learner processes
+	PyPath    string // PYTHONPATH for learner processes (the netlab package)
 	cgDir     string // learner cgroup directory, "" when unavailable
 	cpuCapped bool   // cpu.max is in force on the learner leaf
 	cgFD      int    // open fd on cgDir for clone3 placement, -1 when unavailable
@@ -112,6 +113,11 @@ func (s *Sandbox) Env(extra ...string) []string {
 		"CARGO_HOME=" + filepath.Join(s.Home, ".cargo"),
 		"RUSTUP_HOME=" + filepath.Join(s.Home, ".rustup"),
 		"PYTHONDONTWRITEBYTECODE=1",
+	}
+	if s.PyPath != "" {
+		// Shipped libraries the lessons import, netlab above all. Lessons,
+		// checks and the free terminal all resolve it the same way.
+		env = append(env, "PYTHONPATH="+s.PyPath)
 	}
 	return append(env, extra...)
 }

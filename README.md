@@ -35,6 +35,25 @@ Plex Mono. Dark and light themes.
 **Exam - Review** (4) — Cumulative exams over the Beginner section, topics arriving mixed and unlabelled: values, text and decisions; collections and comprehensions; functions and failure; a class that saves itself
 
 
+### CCNA
+
+Networking for the CCNA 200-301 exam, configured with real IOS commands against
+a simulator in `lib/netlab`. Lessons hand you `.ios` config files and are graded
+on whether packets actually get through - including the return path, so a route
+configured in one direction only fails the way it does on real kit.
+
+**Network Fundamentals** (4) - Interfaces and addresses; Routing between two subnets; Subnetting without a calculator; Static routes and the return path
+
+The remaining exam domains (network access, IP connectivity, IP services,
+security fundamentals, automation) are being added section by section.
+
+Explore a topology interactively from any terminal:
+
+```bash
+netlab topologies
+netlab console two-routers R1
+```
+
 ### Rust
 
 **Beginner** (12) — Hello, cargo; Variables and types; Control flow; Ownership; Borrowing and slices; Structs and methods; Enums and match; Option and Result; Vec, String and HashMap; Traits; Iterators and closures; Generics and lifetimes

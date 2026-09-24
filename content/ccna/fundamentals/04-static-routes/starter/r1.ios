@@ -1,0 +1,2 @@
+! R1 - address g0/0 (LAN) and g0/1 (link to R2), then add the route
+! that tells R1 how to reach 192.168.3.0/24.

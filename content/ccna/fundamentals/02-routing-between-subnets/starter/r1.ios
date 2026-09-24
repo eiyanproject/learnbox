@@ -1,0 +1,2 @@
+! R1 - give both interfaces an address and bring them up, so that
+! PC1 (192.168.1.10) and PC2 (192.168.2.10) can reach each other.

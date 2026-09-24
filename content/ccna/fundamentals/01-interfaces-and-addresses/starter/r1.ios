@@ -1,0 +1,5 @@
+! R1 - configure GigabitEthernet0/0 so PC1 can reach 192.168.1.1
+!
+! Lines starting with ! are comments, as in a real IOS config.
+! You do not need "enable" or "configure terminal" here: this file is applied
+! in global configuration mode, the way a saved config is.

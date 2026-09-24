@@ -45,6 +45,7 @@ type cfg struct {
 	WebDir       string
 	DataDir      string
 	User         string
+	PyLib        string
 	Limits       sandbox.Limits
 	CheckTimeout time.Duration
 	MaxSessions  int
@@ -100,6 +101,7 @@ func config() cfg {
 		WebDir:       env("LEARNBOX_WEB", "/opt/learnbox/web/dist"),
 		DataDir:      data,
 		User:         env("LEARNBOX_USER", "learner"),
+		PyLib:        env("LEARNBOX_PYLIB", "/opt/learnbox/lib"),
 		Limits: sandbox.Limits{
 			MemoryMax: env("LEARNBOX_MEMORY_MAX", "1200M"),
 			SwapMax:   env("LEARNBOX_SWAP_MAX", "512M"),
@@ -175,6 +177,7 @@ func serve(log *slog.Logger, c cfg) error {
 	if err != nil {
 		return err
 	}
+	sb.PyPath = c.PyLib
 	ws, err := workspace.New(sb)
 	if err != nil {
 		return err
@@ -268,6 +271,7 @@ func verify(log *slog.Logger, c cfg, args []string) error {
 	if err != nil {
 		return err
 	}
+	sb.PyPath = c.PyLib
 	ws, err := workspace.New(sb)
 	if err != nil {
 		return err
