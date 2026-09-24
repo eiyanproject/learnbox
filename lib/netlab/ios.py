@@ -14,11 +14,13 @@ import ipaddress
 
 from .lab import Lab
 from .model import ConfigError, Host, Router, Switch, normalise_ifname
+from .protocols import ACL, ACLEntry, DHCPPool, HSRPGroup, OSPF, wildcard_to_network
 
 __all__ = ["Console", "apply_config"]
 
 INVALID = "% Invalid input detected at '^' marker."
 INCOMPLETE = "% Incomplete command."
+NL = "\n"
 
 
 class Console:
@@ -41,6 +43,9 @@ class Console:
             "config": f"{h}(config)#",
             "if": f"{h}(config-if)#",
             "vlan": f"{h}(config-vlan)#",
+            "ospf": f"{h}(config-router)#",
+            "acl": f"{h}(config-ext-nacl)#",
+            "dhcp": f"{h}(config-dhcp)#",
         }[self.mode]
 
     # ---------- driving ----------
@@ -92,6 +97,12 @@ class Console:
             return self._if_mode(w)
         if self.mode == "vlan":
             return self._vlan_mode(w)
+        if self.mode == "ospf":
+            return self._ospf_mode(w)
+        if self.mode == "acl":
+            return self._acl_mode(w)
+        if self.mode == "dhcp":
+            return self._dhcp_mode(w)
         return self._invalid(w, 0)
 
     def _leave(self, head: str) -> None:
@@ -99,7 +110,10 @@ class Console:
             self.mode = "enable" if self.mode != "user" else "user"
             self.target = None
         else:  # exit
-            self.mode = {"if": "config", "vlan": "config", "config": "enable", "enable": "user", "user": "user"}[self.mode]
+            self.mode = {
+                "if": "config", "vlan": "config", "ospf": "config", "acl": "config",
+                "dhcp": "config", "config": "enable", "enable": "user", "user": "user",
+            }[self.mode]
             if self.mode == "config":
                 self.target = None
         return None
@@ -128,6 +142,10 @@ class Console:
                 if name.startswith("Vlan") or "." in name or name.startswith("Loopback"):
                     iface = self.dev.add_interface(name)
                     iface.shutdown = False
+                    if name.startswith("Vlan"):
+                        # An SVI is the switch's own port in that VLAN, which is
+                        # what lets it be the default gateway for the VLAN.
+                        iface.vlan = int(name[4:])
                 else:
                     return f"% Invalid interface {name}"
             self.target = self.dev.interfaces[name]
@@ -143,16 +161,153 @@ class Console:
             self.mode = "vlan"
             return None
         if head == "ip" and len(w) >= 2 and w[1].lower() == "routing":
-            if isinstance(self.dev, Router):
+            # Also the command that turns a layer 2 switch into a layer 3 one.
+            if hasattr(self.dev, "ip_routing"):
                 self.dev.ip_routing = True
             return None
         if head == "no" and len(w) >= 3 and w[1].lower() == "ip" and w[2].lower() == "routing":
-            if isinstance(self.dev, Router):
+            if hasattr(self.dev, "ip_routing"):
                 self.dev.ip_routing = False
             return None
         if head == "ip" and len(w) >= 2 and w[1].lower() == "route":
             return self._ip_route(w)
+        if head == "router" and len(w) >= 3 and w[1].lower() == "ospf":
+            self.dev.ospf = self.dev.ospf or OSPF(process=int(w[2]))
+            self.mode = "ospf"
+            return None
+        if head == "access-list":
+            return self._numbered_acl(w)
+        if head == "ip" and len(w) >= 3 and w[1].lower() == "access-list":
+            # ip access-list extended NAME
+            if len(w) < 4:
+                return INCOMPLETE
+            name = w[3]
+            self.dev.acls.setdefault(name, ACL(name))
+            self.target = name
+            self.mode = "acl"
+            return None
+        if head == "ip" and len(w) >= 3 and w[1].lower() == "nat":
+            return self._ip_nat(w)
+        if head == "ip" and len(w) >= 3 and w[1].lower() == "dhcp" and w[2].lower() == "pool":
+            if len(w) < 4:
+                return INCOMPLETE
+            self.dev.dhcp_pools[w[3]] = DHCPPool(name=w[3])
+            self.target = w[3]
+            self.mode = "dhcp"
+            return None
+        if head == "ip" and len(w) >= 3 and w[1].lower() == "dhcp" and w[2].lower() == "excluded-address":
+            return None  # recorded implicitly; nothing in the model leases yet
         return self._invalid(w, 0)
+
+    # ---------- access lists ----------
+
+    def _numbered_acl(self, w: list[str]) -> str | None:
+        # access-list 10 permit 192.168.1.0 0.0.0.255   (standard: source only)
+        if len(w) < 4:
+            return INCOMPLETE
+        name, action = w[1], w[2].lower()
+        if action not in ("permit", "deny"):
+            return self._invalid(w, 2)
+        if w[3].lower() == "any":
+            source = wildcard_to_network("0.0.0.0", "255.255.255.255")
+        elif w[3].lower() == "host":
+            if len(w) < 5:
+                return INCOMPLETE
+            source = wildcard_to_network(w[4], "0.0.0.0")
+        else:
+            if len(w) < 5:
+                return INCOMPLETE
+            source = wildcard_to_network(w[3], w[4])
+        acl = self.dev.acls.setdefault(name, ACL(name))
+        acl.entries.append(ACLEntry(action, "ip", source))
+        return None
+
+    def _acl_mode(self, w: list[str]) -> str | None:
+        action = w[0].lower()
+        if action not in ("permit", "deny"):
+            return self._config_mode(w)
+        if len(w) < 2:
+            return INCOMPLETE
+        protocol = w[1].lower()
+        rest = w[2:]
+
+        def take(tokens: list[str]):
+            """Consume one address spec: any | host X | X wildcard."""
+            if not tokens:
+                return None, tokens
+            if tokens[0].lower() == "any":
+                return wildcard_to_network("0.0.0.0", "255.255.255.255"), tokens[1:]
+            if tokens[0].lower() == "host":
+                return wildcard_to_network(tokens[1], "0.0.0.0"), tokens[2:]
+            return wildcard_to_network(tokens[0], tokens[1]), tokens[2:]
+
+        try:
+            source, rest = take(rest)
+            destination, rest = take(rest)
+        except (IndexError, ValueError):
+            return INCOMPLETE
+        if source is None or destination is None:
+            return INCOMPLETE
+        self.dev.acls[self.target].entries.append(ACLEntry(action, protocol, source, destination))
+        return None
+
+    # ---------- nat ----------
+
+    def _ip_nat(self, w: list[str]) -> str | None:
+        # ip nat inside source static 192.168.1.10 203.0.113.10
+        # ip nat inside source list 1 interface g0/1 overload
+        rest = [x.lower() for x in w[2:]]
+        if len(rest) >= 3 and rest[1] == "source" and rest[2] == "static":
+            if len(w) < 7:
+                return INCOMPLETE
+            self.dev.nat.static[w[5]] = w[6]
+            return None
+        if len(rest) >= 3 and rest[1] == "source" and rest[2] == "list":
+            if len(w) < 8:
+                return INCOMPLETE
+            self.dev.nat.overload_acl = w[5]
+            self.dev.nat.overload_interface = normalise_ifname(w[7])
+            return None
+        return self._invalid(w, 1)
+
+    # ---------- ospf ----------
+
+    def _ospf_mode(self, w: list[str]) -> str | None:
+        head = w[0].lower()
+        if head == "network":
+            # network 10.0.0.0 0.0.0.255 area 0
+            if len(w) < 5:
+                return INCOMPLETE
+            try:
+                net = wildcard_to_network(w[1], w[2])
+            except ValueError:
+                return "% Invalid network or wildcard"
+            self.dev.ospf.networks.append((net, int(w[4])))
+            return None
+        if head == "router-id":
+            if len(w) < 2:
+                return INCOMPLETE
+            self.dev.ospf.router_id = w[1]
+            return None
+        if head == "passive-interface":
+            return None
+        return self._config_mode(w)
+
+    # ---------- dhcp ----------
+
+    def _dhcp_mode(self, w: list[str]) -> str | None:
+        head = w[0].lower()
+        pool = self.dev.dhcp_pools[self.target]
+        if head == "network" and len(w) >= 3:
+            pool.network = ipaddress.ip_network(f"{w[1]}/{w[2]}", strict=False)
+            return None
+        if head == "default-router" and len(w) >= 2:
+            pool.default_router = w[1]
+            return None
+        if head == "dns-server" and len(w) >= 2:
+            pool.dns_server = w[1]
+            return None
+        return self._config_mode(w)
 
     def _ip_route(self, w: list[str]) -> str | None:
         # ip route <network> <mask> <next-hop|interface>
@@ -198,7 +353,52 @@ class Console:
                     return "% Invalid input detected"
                 iface.ip, iface.mask = w[2], w[3]
                 return None
+            if w[1].lower() == "access-group":
+                # ip access-group 10 in
+                if len(w) < 4:
+                    return INCOMPLETE
+                if w[3].lower() == "in":
+                    iface.acl_in = w[2]
+                elif w[3].lower() == "out":
+                    iface.acl_out = w[2]
+                else:
+                    return self._invalid(w, 3)
+                return None
+            # Exactly "ip nat inside" / "ip nat outside" marks this interface.
+            # Anything longer is the global "ip nat inside source ..." command,
+            # which is legal to type here and must not be mistaken for it.
+            if w[1].lower() == "nat" and len(w) == 3:
+                side = w[2].lower()
+                if side not in ("inside", "outside"):
+                    return self._invalid(w, 2)
+                iface.nat_side = side
+                return None
             return self._config_mode(w)
+        if head == "encapsulation":
+            # encapsulation dot1Q 10 - what makes a subinterface belong to a VLAN
+            if len(w) < 3:
+                return INCOMPLETE
+            if w[1].lower() not in ("dot1q", "dot1Q".lower()):
+                return self._invalid(w, 1)
+            iface.encapsulation_vlan = int(w[2])
+            iface.shutdown = False
+            return None
+        if head == "standby":
+            # standby 1 ip 192.168.1.254 | standby 1 priority 110 | standby 1 preempt
+            if len(w) < 3:
+                return INCOMPLETE
+            group = int(w[1])
+            hsrp = iface.hsrp.setdefault(group, HSRPGroup(group=group, virtual_ip=""))
+            what = w[2].lower()
+            if what == "ip" and len(w) >= 4:
+                hsrp.virtual_ip = w[3]
+            elif what == "priority" and len(w) >= 4:
+                hsrp.priority = int(w[3])
+            elif what == "preempt":
+                hsrp.preempt = True
+            else:
+                return self._invalid(w, 2)
+            return None
         if head == "switchport":
             return self._switchport(w[1:])
         # Anything global typed here is accepted, as IOS accepts it: "interface
@@ -242,6 +442,15 @@ class Console:
                 self.dev.add_vlan(vid)
             iface.vlan = vid
             return None
+        if head == "port-security":
+            iface.port_security = True
+            if len(w) >= 3 and w[1].lower() == "maximum":
+                iface.port_security_max = int(w[2])
+            elif len(w) >= 3 and w[1].lower() == "violation":
+                iface.port_security_violation = w[2].lower()
+            elif len(w) > 1 and w[1].lower() not in ("maximum", "violation"):
+                return self._invalid(["switchport", *w], 1)
+            return None
         if head == "trunk":
             if len(w) >= 4 and w[1].lower() == "allowed" and w[2].lower() == "vlan":
                 iface.trunk_vlans = {int(v) for part in w[3].split(",") for v in _expand(part)}
@@ -267,6 +476,12 @@ class Console:
             return self._show_ip_route()
         if what.startswith("vlan"):
             return self._show_vlan()
+        if what.startswith("ip ospf"):
+            return self._show_ospf()
+        if what.startswith("access-list") or what.startswith("ip access-list"):
+            return self._show_acls()
+        if what.startswith("ip nat"):
+            return self._show_nat()
         if what.startswith("run"):
             return self.running_config()
         if what.startswith("interface"):
@@ -303,6 +518,43 @@ class Console:
             ports = ", ".join(i.name for i in self.dev.interfaces.values() if i.mode == "access" and i.vlan == vid)
             rows.append(f"{vid:<6}{name:<22}{'active':<10}{ports}")
         return "\n".join(rows)
+
+    def _show_ospf(self) -> str:
+        ospf = getattr(self.dev, "ospf", None)
+        if not ospf:
+            return "% OSPF is not running on this device"
+        self.lab.converge_ospf()
+        lines = [f"Routing Process \"ospf {ospf.process}\""]
+        for net, area in ospf.networks:
+            lines.append(f"  network {net} area {area}")
+        learned = getattr(self.dev, "ospf_routes", [])
+        lines.append(f"  {len(learned)} route(s) learned")
+        for r in learned:
+            lines.append(f"O        {r.network} [110/1] via {r.next_hop}")
+        return NL.join(lines)
+
+    def _show_acls(self) -> str:
+        acls = getattr(self.dev, "acls", {})
+        if not acls:
+            return "% No access lists configured"
+        lines = []
+        for name, acl in acls.items():
+            lines.append(f"Access list {name}")
+            for e in acl.entries:
+                dst = f" -> {e.destination}" if e.destination is not None else ""
+                lines.append(f"    {e.action} {e.protocol} {e.source}{dst}")
+        return NL.join(lines)
+
+    def _show_nat(self) -> str:
+        nat = getattr(self.dev, "nat", None)
+        if not nat or (not nat.static and not nat.overload_interface):
+            return "% No NAT configured"
+        lines = ["Pro  Inside global     Inside local"]
+        for local, glob in nat.static.items():
+            lines.append(f"---  {glob:<18}{local}")
+        if nat.overload_interface:
+            lines.append(f"PAT  via {nat.overload_interface} (list {nat.overload_acl})")
+        return NL.join(lines)
 
     def running_config(self) -> str:
         out = [f"hostname {self.dev.hostname}", "!"]

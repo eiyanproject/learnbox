@@ -25,6 +25,8 @@ from __future__ import annotations
 import ipaddress
 from dataclasses import dataclass, field
 
+from .protocols import ACL, DHCPPool, HSRPGroup, NAT, OSPF
+
 __all__ = [
     "Interface",
     "Device",
@@ -63,11 +65,46 @@ class Interface:
     trunk_vlans: set[int] | None = None
     description: str = ""
     link: "Interface | None" = None
+    # Subinterface: "GigabitEthernet0/0.10" carrying VLAN 10 tagged.
+    encapsulation_vlan: int | None = None
+    # ACLs applied here, by direction.
+    acl_in: str | None = None
+    acl_out: str | None = None
+    # NAT boundary: which side of the translation this interface is on.
+    nat_side: str | None = None  # "inside" | "outside"
+    # Port security (switch access ports).
+    port_security: bool = False
+    port_security_max: int = 1
+    port_security_violation: str = "shutdown"
+    # First-hop redundancy groups on this interface.
+    hsrp: dict = field(default_factory=dict)
+
+    @property
+    def parent(self) -> "Interface | None":
+        """For "g0/0.10", the physical "g0/0" that carries it."""
+        if "." not in self.name:
+            return None
+        return self.device.interfaces.get(self.name.split(".", 1)[0])
+
+    @property
+    def virtual(self) -> bool:
+        """An SVI or loopback: no cable of its own, and none expected."""
+        return self.name.startswith(("Vlan", "Loopback"))
 
     @property
     def up(self) -> bool:
-        """Up means configured up at both ends and actually cabled."""
-        return not self.shutdown and self.link is not None and not self.link.shutdown
+        """Up means configured up at both ends and actually cabled.
+
+        A subinterface has no cable of its own: it is up when its parent is.
+        A virtual interface has none at all and is up when it is not shut."""
+        if self.shutdown:
+            return False
+        parent = self.parent
+        if parent is not None:
+            return parent.up
+        if self.virtual:
+            return True
+        return self.link is not None and not self.link.shutdown
 
     @property
     def network(self) -> ipaddress.IPv4Network | None:
@@ -153,6 +190,11 @@ def normalise_ifname(name: str) -> str:
 class Router(Device):
     static_routes: list[Route] = field(default_factory=list)
     ip_routing: bool = True
+    ospf: OSPF | None = None
+    ospf_routes: list[Route] = field(default_factory=list)
+    nat: NAT = field(default_factory=NAT)
+    acls: dict[str, ACL] = field(default_factory=dict)
+    dhcp_pools: dict[str, DHCPPool] = field(default_factory=dict)
 
     def routing_table(self) -> list[Route]:
         """Connected routes plus statics, longest prefix first - as `show ip route`."""
@@ -161,6 +203,10 @@ class Router(Device):
             if iface.ip and iface.up and iface.network:
                 table.append(Route(iface.network, None, iface.name, "C"))
         table.extend(self.static_routes)
+        # Learned routes lose to static ones for the same prefix: a static
+        # route's administrative distance of 1 beats OSPF's 110.
+        static_nets = {r.network for r in self.static_routes}
+        table.extend(r for r in self.ospf_routes if r.network not in static_nets)
         return sorted(table, key=lambda r: r.prefix_len, reverse=True)
 
     def lookup(self, dst: str) -> Route | None:
@@ -174,6 +220,18 @@ class Router(Device):
 @dataclass(eq=False)
 class Switch(Device):
     vlans: dict[int, str] = field(default_factory=lambda: {1: "default"})
+    # A layer 3 switch: "ip routing" plus SVIs turns it into a router that also
+    # switches, which is how inter-VLAN routing is actually done in practice.
+    ip_routing: bool = False
+    static_routes: list[Route] = field(default_factory=list)
+    ospf: OSPF | None = None
+    ospf_routes: list[Route] = field(default_factory=list)
+    nat: NAT = field(default_factory=NAT)
+    acls: dict[str, ACL] = field(default_factory=dict)
+    dhcp_pools: dict[str, DHCPPool] = field(default_factory=dict)
+
+    routing_table = Router.routing_table
+    lookup = Router.lookup
 
     def add_vlan(self, vid: int, name: str = "") -> None:
         if not 1 <= vid <= 4094:
