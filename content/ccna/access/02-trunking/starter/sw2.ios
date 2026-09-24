@@ -1,0 +1,2 @@
+! SW2 - access ports for PC3 (VLAN 10) and PC4 (VLAN 20),
+! and a trunk on Gi0/1 towards SW1.

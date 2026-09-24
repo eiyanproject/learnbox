@@ -161,3 +161,24 @@ _BUILDERS.update(
         "l3-switch": _l3_switch,
     }
 )
+
+
+def _redundant() -> Lab:
+    """Two routers offering one gateway address to a LAN: HSRP."""
+    lab = Lab()
+    lab.switch("SW1", "FastEthernet0/1", "FastEthernet0/2", "FastEthernet0/3")
+    lab.router("R1", "GigabitEthernet0/0", "GigabitEthernet0/1")
+    lab.router("R2", "GigabitEthernet0/0", "GigabitEthernet0/1")
+    lab.router("CORE", "GigabitEthernet0/1", "GigabitEthernet0/2", "GigabitEthernet0/3")
+    lab.host("PC1", "192.168.1.10", "255.255.255.0", "192.168.1.254")
+    lab.host("SRV", "10.10.10.10", "255.255.255.0", "10.10.10.1")
+    lab.link("PC1:Ethernet0", "SW1:FastEthernet0/1")
+    lab.link("SW1:FastEthernet0/2", "R1:GigabitEthernet0/0")
+    lab.link("SW1:FastEthernet0/3", "R2:GigabitEthernet0/0")
+    lab.link("R1:GigabitEthernet0/1", "CORE:GigabitEthernet0/1")
+    lab.link("R2:GigabitEthernet0/1", "CORE:GigabitEthernet0/2")
+    lab.link("CORE:GigabitEthernet0/3", "SRV:Ethernet0")
+    return lab
+
+
+_BUILDERS["redundant"] = _redundant

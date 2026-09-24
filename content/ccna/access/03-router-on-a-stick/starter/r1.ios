@@ -1,0 +1,2 @@
+! R1 - bring up Gi0/0, then add a subinterface per VLAN with the
+! matching dot1Q encapsulation and gateway address.

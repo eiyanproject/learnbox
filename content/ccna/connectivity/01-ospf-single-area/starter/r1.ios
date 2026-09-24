@@ -1,0 +1,2 @@
+! R1 - address both interfaces, then advertise the LAN and the link
+! into OSPF area 0. No static routes this time.

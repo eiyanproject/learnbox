@@ -3,5 +3,20 @@ order: 3
 description: Networking for the CCNA 200-301 exam, configured with real IOS commands on a simulated network. Every lesson is graded by whether packets actually get through.
 sections:
   - id: fundamentals
-    title: Network Fundamentals
-    description: Interfaces and addresses, routing between subnets, subnetting, static and default routes, and reading a broken network.
+    title: 1. Network Fundamentals
+    description: Interfaces and addresses, routing between subnets, subnetting, static routes and the return path.
+  - id: access
+    title: 2. Network Access
+    description: VLANs, trunking, router on a stick, and layer 3 switching with SVIs.
+  - id: connectivity
+    title: 3. IP Connectivity
+    description: OSPF in one area, how a router chooses between routes, and first hop redundancy with HSRP.
+  - id: services
+    title: 4. IP Services
+    description: NAT and PAT, DHCP pools, NTP and syslog.
+  - id: security
+    title: 5. Security Fundamentals
+    description: Standard and extended access lists, port security, and hardening the access layer.
+  - id: automation
+    title: 6. Automation and Programmability
+    description: JSON, REST verbs, and controller-based networking.

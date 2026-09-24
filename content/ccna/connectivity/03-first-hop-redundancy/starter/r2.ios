@@ -1,0 +1,2 @@
+! R2 - the standby: same group and virtual address, default priority,
+! its own uplink and route via CORE (172.16.0.6).

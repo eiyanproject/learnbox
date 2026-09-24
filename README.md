@@ -42,10 +42,17 @@ a simulator in `lib/netlab`. Lessons hand you `.ios` config files and are graded
 on whether packets actually get through - including the return path, so a route
 configured in one direction only fails the way it does on real kit.
 
-**Network Fundamentals** (4) - Interfaces and addresses; Routing between two subnets; Subnetting without a calculator; Static routes and the return path
+**1. Network Fundamentals** (4) - Interfaces and addresses; Routing between two subnets; Subnetting without a calculator; Static routes and the return path
 
-The remaining exam domains (network access, IP connectivity, IP services,
-security fundamentals, automation) are being added section by section.
+**2. Network Access** (4) - VLANs and access ports; Trunks between switches; Router on a stick; Layer 3 switching with SVIs
+
+**3. IP Connectivity** (3) - OSPF in one area; How a router chooses; First hop redundancy with HSRP
+
+**4. IP Services** (2) - NAT and the address you actually leave with; DHCP, NTP and logging
+
+**5. Security Fundamentals** (3) - Standard access lists; Extended access lists; Port security and hardening the access layer
+
+**6. Automation and Programmability** (1) - JSON, REST and talking to a controller
 
 Explore a topology interactively from any terminal:
 

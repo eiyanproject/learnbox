@@ -1,0 +1,2 @@
+! SW1 - enable port security on Fa0/1 and Fa0/2.
+! Remember that the port has to be an access port first.

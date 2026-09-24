@@ -1,0 +1,2 @@
+! SW1 - a layer 3 switch: VLANs, access ports, an SVI per VLAN,
+! and the one global command that lets it route between them.

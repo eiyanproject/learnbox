@@ -1,0 +1,3 @@
+! R1 - the intended active router: address g0/0 and g0/1, join HSRP
+! group 1 for 192.168.1.254 with a priority that wins, and add a
+! route to the server subnet via CORE (172.16.0.2).

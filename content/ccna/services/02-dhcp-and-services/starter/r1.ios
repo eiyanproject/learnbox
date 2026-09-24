@@ -1,0 +1,2 @@
+! R1 - address the LAN interface, then add a DHCP pool for it.
+! Remember to exclude the addresses that are already in use.

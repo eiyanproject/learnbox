@@ -248,10 +248,37 @@ class Lab:
 
     def _reachable_l2(self, src: Interface, dst_ip: str) -> Interface | None:
         """Find the interface holding dst_ip in src's broadcast domain."""
-        for cand in self.segment(src):
+        segment = self.segment(src)
+        for cand in segment:
             if cand.ip == dst_ip and cand.up:
                 return cand
-        return None
+        # A virtual address is answered by whichever member currently owns it.
+        return self._hsrp_owner(dst_ip, segment)
+
+    def _hsrp_owner(self, vip: str, among: set[Interface] | None = None) -> Interface | None:
+        """
+        Which interface answers for an HSRP virtual address.
+
+        The highest priority wins; a tie goes to the highest interface address,
+        as it does on real kit. Only interfaces that are up can be active, which
+        is the entire point of the protocol: the standby takes over the same
+        address when the active one fails, and the hosts never notice because
+        their default gateway never changed.
+        """
+        candidates = []
+        pool = among if among is not None else {
+            i for d in self.devices.values() for i in d.interfaces.values()
+        }
+        for iface in pool:
+            if not iface.up:
+                continue
+            for group in iface.hsrp.values():
+                if group.virtual_ip == vip:
+                    candidates.append((group.priority, iface.ip or "", iface))
+        if not candidates:
+            return None
+        candidates.sort(key=lambda t: (t[0], t[1]), reverse=True)
+        return candidates[0][2]
 
     # ---------- layer 3 ----------
 
@@ -288,7 +315,8 @@ class Lab:
             for iface in dev.interfaces.values():
                 if iface.ip == ip:
                     return dev
-        return None
+        active = self._hsrp_owner(ip)
+        return active.device if active else None
 
     def _walk(self, src: Device, dst_ip: str, limit: int = 16, src_ip: str | None = None) -> tuple[list[str], str, str]:
         """Follow the path from src towards dst_ip. Returns (path, failure reason)."""
@@ -299,7 +327,10 @@ class Lab:
             src_ip = addrs[0].ip if addrs else ""
         for _ in range(limit):
             for iface in current.interfaces.values():
-                if iface.ip == dst_ip and iface.up:
+                if iface.up and (
+                    iface.ip == dst_ip
+                    or any(g.virtual_ip == dst_ip for g in iface.hsrp.values())
+                ):
                     return path, "", src_ip or ""
             step = self._egress(current, dst_ip)
             if step is None:

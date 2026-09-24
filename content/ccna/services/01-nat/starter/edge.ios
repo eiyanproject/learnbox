@@ -1,0 +1,2 @@
+! EDGE - address both interfaces, mark the NAT boundary, add a
+! default route, and overload the outside address for the LAN.

@@ -1,0 +1,11 @@
+interface FastEthernet0/1
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation restrict
+!
+interface FastEthernet0/2
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation restrict
