@@ -4,4 +4,7 @@ description: "C++ as it is written now: RAII, the standard library, references a
 sections:
   - id: environment
     title: Environment
-    description: "The toolchain, the build, and what happens between source and a running program."
+    description: "The toolchain, the build, and what C++ adds to C."
+  - id: learn
+    title: Beginner
+    description: "Containers and the range-for, classes and RAII, copies against moves, templates and lambdas, and smart pointers."

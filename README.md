@@ -87,6 +87,27 @@ no Maven, no Gradle.
 
 **Applied** (4) - Modelling a domain with types; Building a small service; Tests that let you change things; Capstone: a command line tool
 
+### C
+
+**Environment** (1) - The compiler, the linker and the binary
+
+**Beginner** (6) - Types, sizes and integer behaviour; Pointers; Strings are arrays with a rule; Structs and how they are laid out; malloc, free and who owns what; Files, streams and checking every call
+
+### C++
+
+**Environment** (1) - What C++ adds, and what it keeps
+
+**Beginner** (5) - vector, string and the range-for; Classes, constructors and RAII; Copies, moves and references; Templates, lambdas and the algorithms; Smart pointers and ownership
+
+### C#
+
+**Environment** (1) - The SDK, a project and the CLR
+
+**Beginner** (3) - Classes, properties and records; Lists, dictionaries and the collection interfaces; LINQ
+
+C and C++ are graded by `lib/ctest/ctest.h`, a single-header framework; C# by
+`lib/csharp/LearnboxTest.cs`. Neither needs a package manager at check time.
+
 ### Programming mindset
 
 How to think while programming, practised in Python because the subject is not
