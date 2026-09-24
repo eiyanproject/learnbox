@@ -54,6 +54,14 @@ configured in one direction only fails the way it does on real kit.
 
 **6. Automation and Programmability** (1) - JSON, REST and talking to a controller
 
+**Labs on real Linux** (3) - A real interface; Two hosts, one cable; A bridge is a switch
+
+The labs leave the simulator behind and use the actual kernel: veth pairs,
+network namespaces and bridges, with real ARP and real ICMP. They run inside
+`unshare -Urn`, so they need no privileges and cannot touch the container's own
+networking. Check what your kernel allows with `netlab ns`; the lessons skip
+rather than fail where something is unavailable.
+
 Explore a topology interactively from any terminal:
 
 ```bash

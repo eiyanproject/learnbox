@@ -50,7 +50,8 @@ apt-get update -q
 apt-get install -y -q --no-install-recommends \
   ca-certificates curl git less nano vim-tiny procps locales tmux \
   build-essential pkg-config \
-  python3 python3-venv python3-dev
+  python3 python3-venv python3-dev \
+  iproute2 iputils-ping util-linux
 
 say "Locale"
 sed -i 's/^# *en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen

@@ -20,3 +20,6 @@ sections:
   - id: automation
     title: 6. Automation and Programmability
     description: JSON, REST verbs, and controller-based networking.
+  - id: labs
+    title: Labs on real Linux
+    description: The same concepts on the actual kernel - veth pairs, namespaces and bridges inside an unprivileged sandbox. Real interfaces, real ARP, real ICMP.

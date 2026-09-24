@@ -3,6 +3,7 @@
     python -m netlab console two-routers R1
     python -m netlab topologies
     python -m netlab check two-routers PC1 PC2
+    python -m netlab ns                    what real network namespaces allow here
 
 The console is the point: a learner should be able to type the same commands
 they would type on real kit and watch the prompt change between modes. Config
@@ -52,6 +53,22 @@ def main(argv: list[str]) -> int:
             print("usage: python -m netlab console <topology> <device>", file=sys.stderr)
             return 2
         return _console(rest[0], rest[1])
+
+    if cmd == "ns":
+        from . import ns as nsmod
+
+        caps = nsmod.capabilities()
+        width = max(len(k) for k in caps)
+        for name, ok in caps.items():
+            print(f"  {name:<{width}}  {'yes' if ok else 'no'}")
+        if not caps["netns"]:
+            print()
+            print("Unprivileged network namespaces are not available here.")
+            print("On Proxmox the container needs nesting=1.")
+            return 1
+        print()
+        print("Try a lab shell:  unshare -Urn bash")
+        return 0
 
     if cmd == "check":
         if len(rest) != 3:

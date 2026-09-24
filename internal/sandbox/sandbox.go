@@ -52,6 +52,11 @@ func New(username string, limits Limits, log *slog.Logger) (*Sandbox, error) {
 			filepath.Join(u.HomeDir, ".venv/bin"),
 			filepath.Join(u.HomeDir, ".cargo/bin"),
 			"/usr/local/bin", "/usr/bin", "/bin",
+			// The CCNA labs use ip, bridge and nsenter, which live in sbin.
+			// They are unprivileged tools for an unprivileged user: inside the
+			// learner's own user namespace they work, and outside it they fail
+			// the way they would for any non-root account.
+			"/usr/sbin", "/sbin",
 		}, ":"),
 	}
 	if limits == (Limits{}) {

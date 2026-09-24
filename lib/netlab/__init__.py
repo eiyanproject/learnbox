@@ -17,6 +17,7 @@ and interactively, from the terminal:
 from .ios import Console, apply_config
 from .lesson import build, report
 from .lab import Lab, PingResult, TraceHop
+from . import ns
 from .model import ConfigError, Device, Host, Interface, Router, Switch
 from .topologies import names as topology_names, topology
 
@@ -36,4 +37,5 @@ __all__ = [
     "Host",
     "Interface",
     "ConfigError",
+    "ns",
 ]
