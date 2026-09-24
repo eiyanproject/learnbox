@@ -1,0 +1,19 @@
+title: Java
+order: 4
+description: Java from the command line to the Oracle certifications. Silver covers Programmer I, Gold covers Programmer II, and each has a practice exam weighted the way the real paper is.
+sections:
+  - id: environment
+    title: Environment
+    description: The JDK, javac and java, the classpath, packages, and what actually happens between source and running code.
+  - id: silver
+    title: Silver
+    description: Oracle Certified Professional, Java SE Programmer I - types, control flow, arrays, methods, encapsulation, inheritance, exceptions and the core APIs.
+  - id: silver-exam
+    title: Silver - Practice exam
+    description: Cumulative papers over the Silver objectives, weighted like the real exam and with the traps it actually uses.
+  - id: gold
+    title: Gold
+    description: Programmer II - generics, collections, streams, concurrency, I/O, modules and the functional interfaces.
+  - id: gold-exam
+    title: Gold - Practice exam
+    description: Cumulative papers over the Gold objectives.

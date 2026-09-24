@@ -16,6 +16,7 @@ import (
 	"path"
 	"path/filepath"
 	"slices"
+	"strings"
 	"syscall"
 	"time"
 
@@ -269,4 +270,23 @@ func (m *Manager) FreeBytes() (int64, error) {
 		return 0, err
 	}
 	return int64(st.Bavail) * int64(st.Bsize), nil
+}
+
+// ListRel returns the names of files directly inside rel whose name ends with
+// suffix. Used by the Java checker, which has to hand javac an explicit file
+// list: the runner starts processes directly rather than through a shell, so
+// there is nothing to expand a "*.java" glob.
+func (m *Manager) ListRel(rel, suffix string) ([]string, error) {
+	entries, err := fs.ReadDir(m.home.FS(), rel)
+	if err != nil {
+		return nil, err
+	}
+	var names []string
+	for _, e := range entries {
+		if !e.IsDir() && strings.HasSuffix(e.Name(), suffix) {
+			names = append(names, e.Name())
+		}
+	}
+	slices.Sort(names)
+	return names, nil
 }

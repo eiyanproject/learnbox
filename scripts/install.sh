@@ -4,6 +4,7 @@
 #
 #   /opt/learnbox/scripts/install.sh
 #   /opt/learnbox/scripts/install.sh --no-rust       # skip the Rust toolchain
+#   /opt/learnbox/scripts/install.sh --no-java       # skip the JDK and JUnit
 #   /opt/learnbox/scripts/install.sh --no-exercism   # skip the practice import
 #
 # Idempotent: safe to re-run. update.sh re-runs it after every pull, so
@@ -15,12 +16,14 @@ cd "$(dirname "$0")/.."
 ROOT="$PWD"
 
 WITH_RUST=1
+WITH_JAVA=1
 WITH_EXERCISM=1
 for a in "$@"; do
   case "$a" in
     --no-rust) WITH_RUST=0 ;;
+    --no-java) WITH_JAVA=0 ;;
     --no-exercism) WITH_EXERCISM=0 ;;
-    -h|--help) sed -n '2,10p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,11p' "$0"; exit 0 ;;
     *) echo "unknown option: $a" >&2; exit 2 ;;
   esac
 done
@@ -36,6 +39,10 @@ GO_VERSION=1.26.8
 GO_SHA256=d0f743b33e8d8945e6b1f432edd15785c70507121d6e2a723b21285eddf8b57b
 NODE_VERSION=v24.21.0
 NODE_SHA256=6e1db87ef58b8819e5d5402eff1536491b18edd8eb7bee5ef7897876e88dc5ff
+# The JUnit console launcher is a single jar, which is why the Java lessons
+# need no Maven or Gradle: javac plus this is the whole toolchain.
+JUNIT_VERSION=1.11.4
+JUNIT_SHA256=b016ef6b1c3454d6d7c2c88ce081dabf289699686af6622d6e4e2e1b54b4a2fc
 
 as_learner() { runuser -u "$LEARNER" -- env HOME="/home/$LEARNER" USER="$LEARNER" LOGNAME="$LEARNER" "$@"; }
 say() { printf '\n\033[36m==>\033[0m %s\n' "$*"; }
@@ -115,6 +122,21 @@ if [ "$WITH_RUST" -eq 1 ]; then
     rm -f /tmp/rustup-init.sh
   fi
   as_learner "$LHOME/.cargo/bin/rustc" --version
+fi
+
+if [ "$WITH_JAVA" -eq 1 ]; then
+  say "Java toolchain"
+  apt-get install -y -q --no-install-recommends default-jdk-headless
+  java -version 2>&1 | head -1
+  install -d "$TOOLS/java"
+  JUNIT_JAR="$TOOLS/java/junit-platform-console-standalone.jar"
+  if [ ! -f "$JUNIT_JAR" ] || ! echo "$JUNIT_SHA256  $JUNIT_JAR" | sha256sum -c --quiet - 2>/dev/null; then
+    curl -fsSL "https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/$JUNIT_VERSION/junit-platform-console-standalone-$JUNIT_VERSION.jar"       -o "$JUNIT_JAR.new"
+    echo "$JUNIT_SHA256  $JUNIT_JAR.new" | sha256sum -c --quiet - || die "checksum mismatch for the JUnit jar"
+    mv "$JUNIT_JAR.new" "$JUNIT_JAR"
+  fi
+  chmod 0644 "$JUNIT_JAR"
+  echo "  junit-platform-console-standalone $JUNIT_VERSION"
 fi
 
 # ---------------------------------------------------------------- build tools
@@ -302,6 +324,7 @@ Environment=LEARNBOX_CONTENT=$ROOT/content
 Environment=LEARNBOX_WEB=$ROOT/web/dist
 Environment=LEARNBOX_DATA=$DATA_DIR
 Environment=LEARNBOX_PYLIB=$ROOT/lib
+Environment=LEARNBOX_JUNIT_JAR=$TOOLS/java/junit-platform-console-standalone.jar
 WorkingDirectory=$DATA_DIR
 # The service manages its own cgroup subtree: an app leaf for itself and a
 # learner leaf with memory/pid/cpu limits for shells and checks.

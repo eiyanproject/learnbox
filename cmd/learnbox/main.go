@@ -46,6 +46,7 @@ type cfg struct {
 	DataDir      string
 	User         string
 	PyLib        string
+	JUnitJar     string
 	Limits       sandbox.Limits
 	CheckTimeout time.Duration
 	MaxSessions  int
@@ -102,6 +103,7 @@ func config() cfg {
 		DataDir:      data,
 		User:         env("LEARNBOX_USER", "learner"),
 		PyLib:        env("LEARNBOX_PYLIB", "/opt/learnbox/lib"),
+		JUnitJar:     env("LEARNBOX_JUNIT_JAR", ""),
 		Limits: sandbox.Limits{
 			MemoryMax: env("LEARNBOX_MEMORY_MAX", "1200M"),
 			SwapMax:   env("LEARNBOX_SWAP_MAX", "512M"),
@@ -168,6 +170,13 @@ func main() {
 	}
 }
 
+// newRunner builds the check runner with the optional Java toolchain attached.
+func newRunner(sb *sandbox.Sandbox, ws *workspace.Manager, c cfg) *runner.Runner {
+	r := runner.New(sb, ws, c.CheckTimeout)
+	r.JUnitJar = c.JUnitJar
+	return r
+}
+
 func serve(log *slog.Logger, c cfg) error {
 	lib, err := content.Load(c.ContentRoots...)
 	if err != nil {
@@ -206,7 +215,7 @@ func serve(log *slog.Logger, c cfg) error {
 
 	api := httpapi.New(httpapi.Deps{
 		Version: version, Commit: commit, Log: log, Lib: lib,
-		Sandbox: sb, Workspace: ws, Runner: runner.New(sb, ws, c.CheckTimeout),
+		Sandbox: sb, Workspace: ws, Runner: newRunner(sb, ws, c),
 		Progress: prog, Terms: terms, WebDir: c.WebDir, AllowedHosts: c.AllowedHosts,
 		MinFreeDisk: c.MinFreeDisk,
 		AccessHosts: c.AccessHosts, Access: verifier,
@@ -276,7 +285,7 @@ func verify(log *slog.Logger, c cfg, args []string) error {
 	if err != nil {
 		return err
 	}
-	run := runner.New(sb, ws, c.CheckTimeout)
+	run := newRunner(sb, ws, c)
 
 	var failed, checked, skipped int
 	for _, t := range lib.Tracks {

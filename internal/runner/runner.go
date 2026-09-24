@@ -42,7 +42,11 @@ type Runner struct {
 	sb      *sandbox.Sandbox
 	ws      *workspace.Manager
 	Timeout time.Duration
-	mu      sync.Mutex // one check at a time: compiles are the RAM spike
+	// JUnitJar is the console launcher used to compile and run Java lessons.
+	// Empty means the JDK was not installed, and Java lessons say so rather
+	// than failing with a confusing compiler error.
+	JUnitJar string
+	mu       sync.Mutex // one check at a time: compiles are the RAM spike
 }
 
 func New(sb *sandbox.Sandbox, ws *workspace.Manager, timeout time.Duration) *Runner {
@@ -101,6 +105,13 @@ func (r *Runner) check(ctx context.Context, l *content.Lesson, srcRel string) (*
 			return nil, fmt.Errorf("copy tests: %w", err)
 		}
 		return r.rust(ctx, checkDir)
+	case "java":
+		// Tests sit beside the sources: javac compiles the directory as a
+		// whole, so a test and the class it exercises must see each other.
+		if err := r.ws.CopyIn(l.TestsDir(), checkRel); err != nil {
+			return nil, fmt.Errorf("copy tests: %w", err)
+		}
+		return r.java(ctx, checkRel, checkDir)
 	default:
 		return nil, fmt.Errorf("no checker for language %q", l.Lang)
 	}
@@ -233,6 +244,58 @@ func pythonMessage(i *junitIssue) string {
 		return strings.Join(keep, "\n")
 	}
 	return i.Message
+}
+
+// ---------- java ----------
+
+// java compiles every source in the directory and runs the JUnit console
+// launcher over the result. There is no Maven or Gradle: one jar is the whole
+// test framework, which keeps the container small and the feedback fast.
+func (r *Runner) java(ctx context.Context, checkRel, dir string) (*Result, error) {
+	if r.JUnitJar == "" {
+		return &Result{
+			Status: "error",
+			Output: "Java lessons need the JDK, which this install skipped (--no-java).",
+		}, nil
+	}
+	// Compilation failure is a result the learner should see as output, not an
+	// internal error: a type error is the most common thing a Java check finds.
+	sources, err := r.ws.ListRel(checkRel, ".java")
+	if err != nil {
+		return nil, fmt.Errorf("list sources: %w", err)
+	}
+	if len(sources) == 0 {
+		return &Result{Status: "error", Output: "no .java files to compile"}, nil
+	}
+	args := append([]string{"-nowarn", "-encoding", "UTF-8", "-cp", r.JUnitJar + ":.", "-d", "."}, sources...)
+	out, code, timedOut, dur, err := r.exec(ctx, dir, nil, "javac", args...)
+	if err != nil {
+		return nil, err
+	}
+	if timedOut {
+		return &Result{Status: "timeout", Output: out, DurationMS: dur.Milliseconds()}, nil
+	}
+	if code != 0 {
+		return &Result{Status: "failed", Output: out, DurationMS: dur.Milliseconds()}, nil
+	}
+
+	const report = "TEST-junit-jupiter.xml"
+	runOut, runCode, timedOut, runDur, err := r.exec(ctx, dir, nil,
+		"java", "-jar", r.JUnitJar, "execute", "--class-path", ".", "--scan-class-path",
+		"--reports-dir=.", "--details=summary", "--disable-ansi-colors", "--disable-banner")
+	if err != nil {
+		return nil, err
+	}
+	res := &Result{Output: runOut, DurationMS: (dur + runDur).Milliseconds()}
+	if timedOut {
+		res.Status = "timeout"
+		return res, nil
+	}
+	if raw, err := r.ws.ReadFileRel(path.Join(checkRel, report)); err == nil {
+		res.Tests = parseJUnit(raw)
+	}
+	finish(res, runCode)
+	return res, nil
 }
 
 // ---------- rust ----------
