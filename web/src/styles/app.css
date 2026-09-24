@@ -57,6 +57,9 @@ select {
 .shell {
   display: flex;
   height: 100vh;
+  /* dvh tracks the URL bar as it hides and shows; without it the bottom of
+     the page sits under the browser chrome on both iOS and Android. */
+  height: 100dvh;
   overflow: hidden;
 }
 
@@ -1333,19 +1336,212 @@ details.raw summary::-webkit-details-marker {
   border-color: var(--aml);
 }
 
-@media (max-width: 900px) {
-  .split {
+/* The stacked-pane layout that used to live here is replaced by the tabbed
+   one further down: scrolling through 60vh of lesson to reach the editor is
+   worse than switching panes, and its min-heights fought the flex chain. */
+
+/* ---------- phones ----------
+   The three panes do not fit side by side on a phone, so below 860px one
+   shows at a time and .viewbar picks which. Above it, .viewbar is hidden and
+   the two drag gutters work as before. */
+
+.viewbar {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .viewbar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    flex: none;
+    border-top: 1px solid var(--line);
+    background: var(--surf2);
+    /* Clear the home indicator on a notched phone. */
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .vbtn {
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    /* 48px is the smallest reliably tappable target. */
+    min-height: 48px;
+    padding: 6px 4px;
+    border: 0;
+    background: none;
+    color: var(--dim);
+    font: inherit;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
   }
-  .split > .gutter {
+
+  .vbtn.on {
+    color: var(--cy);
+    box-shadow: inset 0 2px 0 var(--cy);
+    background: var(--cyw);
+  }
+
+  /* One pane at a time. The panes are display:flex/grid when shown, so each
+     rule restores the value that pane actually uses rather than "block". */
+  .split {
+    display: block;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .split > .gutter,
+  .work > .gutter {
     display: none;
   }
-  .split > .pane {
-    min-height: 60vh;
-  }
+
+  .split > .pane,
   .split > .work {
-    min-height: 90vh;
+    display: none;
+    height: 100%;
+  }
+
+  .split[data-mview="lesson"] > .pane {
+    display: flex;
+  }
+
+  .split[data-mview="code"] > .work,
+  .split[data-mview="term"] > .work {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .split[data-mview="code"] > .work > .pane:last-child,
+  .split[data-mview="term"] > .work > .pane:first-child {
+    display: none;
+  }
+
+  /* The lesson body is the one place that should still scroll normally. */
+  .pane-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Header controls wrap instead of overflowing a 360px screen. */
+  .lesson-head {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tabs {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab,
+  .btn {
+    min-height: 40px;
+  }
+}
+
+/* ---------- terminal key bar ----------
+   Shown wherever there is no physical keyboard, which is a pointer question
+   rather than a width one: a tablet in landscape is wide and still has no
+   Esc key. */
+
+.keybar {
+  display: none;
+  gap: 6px;
+  flex: none;
+  padding: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-top: 1px solid var(--line);
+  background: var(--surf2);
+}
+
+.keybar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (pointer: coarse), (max-width: 860px) {
+  .keybar {
+    display: flex;
+  }
+}
+
+.keycap {
+  flex: none;
+  min-width: 44px;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  background: var(--surf);
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 13px;
+  cursor: pointer;
+  /* Stop the long-press magnifier and double-tap zoom on iOS. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+
+.keycap:active {
+  background: var(--cyw);
+  border-color: var(--cy);
+  color: var(--cy);
+}
+
+@media (max-width: 860px) {
+  /* Every pixel of a 360px-wide screen is wanted by the panes. */
+  .content.fill {
+    padding: 8px 8px 0;
+    gap: 8px;
+  }
+
+  .lesson-head h1 {
+    font-size: 17px;
+  }
+
+  .lesson-head .crumbs {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 860px) {
+  /* The header ran off the right edge: 22px of side padding and an 18px gap
+     do not fit next to a search box on a 375px screen. */
+  .top {
+    gap: 8px;
+    padding: 0 10px;
+    height: 56px;
+  }
+
+  /* The search pill is the flexible one; the theme toggle keeps its size. */
+  .top .pill {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .top .pill .kbd {
+    display: none;
+  }
+
+  .tog {
+    flex: none;
+  }
+
+  /* A file tab was being squeezed to "ba" by the Run and Check buttons.
+     Let the tab keep its name and scroll the strip instead. */
+  .tabs .tab {
+    flex: none;
+    white-space: nowrap;
+  }
+
+  .tabs .tools {
+    flex: none;
   }
 }

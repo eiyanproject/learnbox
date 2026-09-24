@@ -96,6 +96,9 @@ export class CodeEditor {
         ]),
         indentUnit.of("    "),
         EditorState.tabSize.of(4),
+        // Wrap on narrow screens: a phone cannot show 80 columns, and
+        // horizontal scrolling inside a vertically scrolling pane is a fight.
+        ...(window.matchMedia("(max-width: 860px)").matches ? [EditorView.lineWrapping] : []),
         chrome,
         syntaxHighlighting(highlight),
         this.lang.of(languageFor(name)),

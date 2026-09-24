@@ -12,6 +12,8 @@ export const icons = {
   check: svg(`<path d="M4 12.5l5 5L20 6.5"/>`, 13, 2.2),
   reset: svg(`<path d="M4 4v6h6"/><path d="M5.5 15a7.5 7.5 0 1 0 1.8-7.8L4 10"/>`, 13, 2),
   bulb: svg(`<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3Z"/>`, 14, 1.8),
+  book: svg(`<path d="M4 4.5h6a2.5 2.5 0 0 1 2.5 2.5v12A2 2 0 0 0 10.5 17H4z"/><path d="M20 4.5h-6A2.5 2.5 0 0 0 11.5 7v12A2 2 0 0 1 13.5 17H20z"/>`),
+  code: svg(`<path d="M8.5 8.5 4 12l4.5 3.5"/><path d="M15.5 8.5 20 12l-4.5 3.5"/><path d="M13.5 5l-3 14"/>`),
   left: svg(`<path d="M15 5l-7 7 7 7"/>`, 14, 2),
   right: svg(`<path d="M9 5l7 7-7 7"/>`, 14, 2),
 };

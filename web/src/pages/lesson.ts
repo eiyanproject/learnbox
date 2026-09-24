@@ -1,11 +1,17 @@
 import { api, ApiError, type CheckResponse, type Lesson } from "../api";
 import { CodeEditor } from "../components/editor";
+import { keyBar } from "../components/keybar";
 import { TermView } from "../components/terminal";
 import { clear, h, html, icon, toast } from "../dom";
 import { icons } from "../icons";
 import { navigate, type Page } from "../router";
 import type { Shell } from "../shell";
 import { store, stored } from "../theme";
+
+type MView = "lesson" | "code" | "term";
+
+/** True when the layout is showing one pane at a time (see app.css). */
+const narrow = () => window.matchMedia("(max-width: 860px)").matches;
 
 interface FileState {
   mtime: number;
@@ -41,6 +47,9 @@ export async function lessonPage(shell: Shell, id: string): Promise<Page> {
 }
 
 class LessonView {
+  private split!: HTMLElement;
+  private keys!: HTMLElement;
+  private viewBtns!: Record<MView, HTMLElement>;
   private editor!: CodeEditor;
   private term: TermView;
   private files = new Map<string, FileState>();
@@ -170,12 +179,15 @@ class LessonView {
       { class: "pane" },
       h("div", { class: "tabs" }, this.termTab, this.resultsTab, h("div", { class: "tools" }, h("span", { class: "lbl" }, l.run ? `run: ${l.run}` : ""))),
       this.term.el,
+      (this.keys = keyBar(this.term)),
       this.resultsBox,
     );
 
     const work = h("div", { class: "work", style: `--top:${stored("split.top", 58)}%` }, editorPane, this.gutter("h"), bottomPane);
     const split = h("div", { class: "split", style: `--left:${stored("split.left", 42)}%` }, left, this.gutter("v"), work);
-    root.append(head, split);
+    this.split = split;
+    split.dataset.mview = stored("mview", "lesson") as string;
+    root.append(head, split, this.viewBar());
 
     this.editor = new CodeEditor(editorHost, {
       onChange: () => this.markDirty(),
@@ -447,8 +459,47 @@ class LessonView {
     this.termTab.classList.toggle("on", t);
     this.resultsTab.classList.toggle("on", !t);
     this.term.el.hidden = !t;
+    this.keys.hidden = !t;
     this.resultsBox.hidden = t;
     if (t) requestAnimationFrame(() => this.term.resize());
+    // On a phone Run and Check are pressed in the Code pane but their output
+    // lands in this one, so the press would look like it did nothing. Follow
+    // the output across.
+    if (narrow()) this.showView("term");
+  }
+
+  /**
+   * On a phone the three panes do not fit side by side, so one shows at a
+   * time and this bar picks which. It is inert on wide screens (CSS hides it)
+   * and the split keeps its two gutters there.
+   */
+  private viewBar(): HTMLElement {
+    const mk = (key: MView, label: string, glyph: HTMLElement | string) =>
+      h("button", { class: "vbtn", type: "button", onclick: () => this.showView(key) }, glyph, h("span", null, label));
+    this.viewBtns = {
+      lesson: mk("lesson", "Lesson", icon(icons.book)),
+      code: mk("code", "Code", icon(icons.code)),
+      term: mk("term", "Terminal", icon(icons.terminal)),
+    };
+    const bar = h("nav", { class: "viewbar", "aria-label": "Panel" }, this.viewBtns.lesson, this.viewBtns.code, this.viewBtns.term);
+    this.markView(this.split.dataset.mview as MView);
+    return bar;
+  }
+
+  private showView(key: MView) {
+    this.split.dataset.mview = key;
+    store("mview", key);
+    this.markView(key);
+    // xterm measured itself while display:none and would render one column
+    // wide; the same applies to CodeMirror's scroller.
+    if (key === "term") {
+      this.term.resize();
+      this.term.focus();
+    }
+  }
+
+  private markView(key: MView) {
+    for (const [k, el] of Object.entries(this.viewBtns)) el.classList.toggle("on", k === key);
   }
 
   /** Drag handle between panes; sizes are remembered as percentages. */

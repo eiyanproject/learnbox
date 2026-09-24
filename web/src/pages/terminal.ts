@@ -1,3 +1,4 @@
+import { keyBar } from "../components/keybar";
 import { TermView } from "../components/terminal";
 import { clear, h } from "../dom";
 import type { Page } from "../router";
@@ -21,7 +22,7 @@ export function terminalPage(shell: Shell): Page {
         h("h1", null, "Scratch shell"),
       ),
     ),
-    h("div", { class: "pane term-page" }, term.el),
+    h("div", { class: "pane term-page" }, term.el, keyBar(term)),
   );
   void term.mount().then(() => term.focus());
   return { dispose: () => term.dispose() };
