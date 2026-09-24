@@ -69,6 +69,17 @@ netlab topologies
 netlab console two-routers R1
 ```
 
+### Java
+
+Java from the command line to the Oracle certifications, compiled and run for
+real with `javac` and the JUnit console launcher - no Maven, no Gradle.
+
+**Environment** (2) - javac, java and the classpath; Packages, imports and structure
+
+**Silver** (8) - Primitives, casting and operator traps; Strings, immutability and StringBuilder; Control flow and switch; Arrays, multidimensional arrays and varargs; Methods, overloading and objects; Inheritance, overriding and interfaces; Exceptions, finally and try-with-resources; Wrappers, autoboxing and dates
+
+The Silver practice exam, the Gold section and its exam follow.
+
 ### Rust
 
 **Beginner** (12) — Hello, cargo; Variables and types; Control flow; Ownership; Borrowing and slices; Structs and methods; Enums and match; Option and Result; Vec, String and HashMap; Traits; Iterators and closures; Generics and lifetimes
