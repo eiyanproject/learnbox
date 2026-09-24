@@ -1,0 +1,13 @@
+title: Programming mindset
+order: 5
+description: How to think while programming - decomposing a problem, debugging by evidence, naming, reading code, and judging when a thing is good enough. Language-agnostic ideas, practised in Python.
+sections:
+  - id: thinking
+    title: Thinking about problems
+    description: Decomposition, working from examples, and the difference between what was asked and what is needed.
+  - id: debugging
+    title: Debugging and evidence
+    description: Reading errors, bisecting, forming hypotheses, and the assumptions that hide bugs.
+  - id: craft
+    title: Craft
+    description: Naming, small functions, dead code, comments that earn their place, and knowing when to stop.

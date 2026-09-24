@@ -71,14 +71,32 @@ netlab console two-routers R1
 
 ### Java
 
-Java from the command line to the Oracle certifications, compiled and run for
-real with `javac` and the JUnit console launcher - no Maven, no Gradle.
+Java from the command line to the Oracle certifications and back to building
+things, compiled and run for real with `javac` and the JUnit console launcher -
+no Maven, no Gradle.
 
 **Environment** (2) - javac, java and the classpath; Packages, imports and structure
 
 **Silver** (8) - Primitives, casting and operator traps; Strings, immutability and StringBuilder; Control flow and switch; Arrays, multidimensional arrays and varargs; Methods, overloading and objects; Inheritance, overriding and interfaces; Exceptions, finally and try-with-resources; Wrappers, autoboxing and dates
 
-The Silver practice exam, the Gold section and its exam follow.
+**Silver - Practice exam** (4) - Types and flow; Strings, arrays and equality; Objects, inheritance and dispatch; Exceptions and the core APIs
+
+**Gold** (8) - Generics and wildcards; The collections framework; Lambdas and functional interfaces; Streams; Optional; Threads, executors and safe sharing; Files, paths and NIO.2; Modules, annotations and reflection
+
+**Gold - Practice exam** (3) - Generics and collections; Streams, lambdas and Optional; Concurrency, I/O and metadata
+
+**Applied** (4) - Modelling a domain with types; Building a small service; Tests that let you change things; Capstone: a command line tool
+
+### Programming mindset
+
+How to think while programming, practised in Python because the subject is not
+the language.
+
+**Thinking about problems** (2) - Decomposing a problem; From examples to rules
+
+**Debugging and evidence** (2) - Reading the error; Hypotheses and bisection
+
+**Craft** (2) - Naming and small functions; Knowing when to stop
 
 ### Rust
 
