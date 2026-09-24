@@ -42,6 +42,7 @@ type Deps struct {
 	Terms        *term.Manager
 	WebDir       string   // built frontend; empty disables static serving
 	AllowedHosts []string // besides IP literals and localhost
+	MinFreeDisk  int64    // refuse new shells and checks below this much free space
 
 	// AccessHosts are public hostnames served through Cloudflare Access.
 	// Requests for them must carry a valid Access token, verified by Access.
@@ -93,7 +94,25 @@ func New(d Deps) *Server {
 	s.errs = prometheus.NewCounterVec(prometheus.CounterOpts{Name: "learnbox_errors_total", Help: "Errors by kind."}, []string{"kind"})
 	s.checks = prometheus.NewCounterVec(prometheus.CounterOpts{Name: "learnbox_checks_total", Help: "Exercise checks by result."}, []string{"lang", "status"})
 	sessions := prometheus.NewGaugeFunc(prometheus.GaugeOpts{Name: "learnbox_terminal_sessions", Help: "Live terminal sessions."}, func() float64 { return float64(d.Terms.Count()) })
-	s.reg.MustRegister(buildInfo, s.reqs, s.dur, s.errs, s.checks, sessions)
+	// Both of these are things you want an alert on rather than a discovery:
+	// an uncapped learner cgroup looks fine until something spins, and a
+	// workspace fills up slowly and then breaks every write at once.
+	cpuCapped := prometheus.NewGaugeFunc(prometheus.GaugeOpts{Name: "learnbox_cpu_capped", Help: "1 when the learner cgroup has cpu.max in force."},
+		func() float64 {
+			if d.Sandbox.CPUCapped() {
+				return 1
+			}
+			return 0
+		})
+	diskFree := prometheus.NewGaugeFunc(prometheus.GaugeOpts{Name: "learnbox_workspace_free_bytes", Help: "Free space on the learner filesystem."},
+		func() float64 {
+			free, err := d.Workspace.FreeBytes()
+			if err != nil {
+				return -1
+			}
+			return float64(free)
+		})
+	s.reg.MustRegister(buildInfo, s.reqs, s.dur, s.errs, s.checks, sessions, cpuCapped, diskFree)
 
 	s.routes()
 	return s
@@ -234,11 +253,33 @@ func (s *Server) readyz(w http.ResponseWriter, r *http.Request) {
 	if s.tool("python") == "" {
 		problems = append(problems, "python not available to learner")
 	}
+	if err := s.diskHeadroom(); err != nil {
+		problems = append(problems, err.Error())
+	}
 	if len(problems) > 0 {
 		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"status": "unavailable", "problems": problems})
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ready"})
+}
+
+// diskHeadroom reports an error when the learner filesystem is nearly full.
+// Checks and shells both write there, and a full disk turns every write into a
+// failure at once - including the progress file - so it is worth refusing a new
+// one with a message that says what is wrong.
+func (s *Server) diskHeadroom() error {
+	if s.MinFreeDisk <= 0 {
+		return nil
+	}
+	free, err := s.Workspace.FreeBytes()
+	if err != nil {
+		return nil // statfs failing is not a reason to refuse work
+	}
+	if free < s.MinFreeDisk {
+		return fmt.Errorf("only %d MB free in the workspace (need %d MB); remove something under /home/learner",
+			free>>20, s.MinFreeDisk>>20)
+	}
+	return nil
 }
 
 // ---------- status ----------
@@ -468,6 +509,11 @@ func (s *Server) mtimes(w http.ResponseWriter, r *http.Request) {
 func (s *Server) check(w http.ResponseWriter, r *http.Request) {
 	l := s.lessonFrom(w, r)
 	if l == nil {
+		return
+	}
+	if err := s.diskHeadroom(); err != nil {
+		s.errs.WithLabelValues("disk_full").Inc()
+		writeErr(w, http.StatusInsufficientStorage, err.Error())
 		return
 	}
 	res, err := s.Runner.Check(r.Context(), l)

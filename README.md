@@ -149,10 +149,25 @@ refreshes the Exercism import and restarts the service. It never touches
 | `LEARNBOX_MEMORY_MAX` | `1200M` | cgroup `memory.max` for all learner processes |
 | `LEARNBOX_SWAP_MAX` | `512M` | cgroup `memory.swap.max` |
 | `LEARNBOX_PIDS_MAX` | `512` | cgroup `pids.max` |
+| `LEARNBOX_CPU_MAX` | `150%` | cgroup `cpu.max`, as a percentage of one core |
+| `LEARNBOX_MAX_SESSIONS` | `8` | terminals; the oldest detached one is evicted past this |
+| `LEARNBOX_IDLE_TIMEOUT` | `4h` | detached sessions are killed after this |
+| `LEARNBOX_MIN_FREE_MB` | `512` | refuse new shells and checks below this much free space |
 | `LEARNBOX_CHECK_TIMEOUT` | `120s` | per check; the first Rust build of a lesson is the slow one |
 | `LEARNBOX_ACCESS_HOSTS` | | public hostnames that must present a Cloudflare Access token |
 | `LEARNBOX_ACCESS_TEAM_DOMAIN` | | `<team>.cloudflareaccess.com` |
 | `LEARNBOX_ACCESS_AUD` | | the Access application's audience tag |
+
+Two of these are worth understanding rather than just setting:
+
+- **`LEARNBOX_SWAP_MAX` is what makes the memory cap real.** With swap left
+  uncapped a process over `memory.max` is swapped rather than killed, so it
+  survives and the box crawls. Measured: a 256 MB allocation against a 64 MB
+  cap succeeds with swap uncapped, and is killed with `memory.swap.max=0`.
+- **`LEARNBOX_CPU_MAX` needs the `cpu` controller delegated to the container.**
+  Where it is not, learnbox logs `cpu controller not delegated; learner CPU is
+  uncapped` at start and `learnbox_cpu_capped` reads 0. The unit's
+  `CPUQuota=180%` is the backstop; alert on the metric rather than assuming.
 
 A hostname in `LEARNBOX_ACCESS_HOSTS` is refused (503) until the team domain and
 audience are set, so a half-finished setup cannot expose a shell. See

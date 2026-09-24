@@ -16,6 +16,7 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -46,10 +47,29 @@ type cfg struct {
 	User         string
 	Limits       sandbox.Limits
 	CheckTimeout time.Duration
+	MaxSessions  int
+	IdleTimeout  time.Duration
+	MinFreeDisk  int64
 	AllowedHosts []string
 	AccessHosts  []string
 	AccessTeam   string
 	AccessAUD    string
+}
+
+// intEnv and durEnv fall back to the default on anything unparseable. Unlike
+// the CPU cap these only tune behaviour, so a typo should not stop the service.
+func intEnv(name string, def int) int {
+	if n, err := strconv.Atoi(env(name, "")); err == nil && n > 0 {
+		return n
+	}
+	return def
+}
+
+func durEnv(name string, def time.Duration) time.Duration {
+	if d, err := time.ParseDuration(env(name, "")); err == nil && d > 0 {
+		return d
+	}
+	return def
 }
 
 func env(name, def string) string {
@@ -66,6 +86,13 @@ func config() cfg {
 	if err != nil {
 		timeout = 120 * time.Second
 	}
+	// A bad value here would silently leave the learner uncapped, so refuse to
+	// start instead: the whole point of the setting is that it is in force.
+	cpuMax, err := sandbox.ParseCPUMax(env("LEARNBOX_CPU_MAX", "150%"))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "LEARNBOX_CPU_MAX:", err)
+		os.Exit(2)
+	}
 	return cfg{
 		Addr:         env("LEARNBOX_ADDR", ":8080"),
 		ContentRoots: append(strings.Split(env("LEARNBOX_CONTENT", "/opt/learnbox/content"), ","), imported),
@@ -77,7 +104,11 @@ func config() cfg {
 			MemoryMax: env("LEARNBOX_MEMORY_MAX", "1200M"),
 			SwapMax:   env("LEARNBOX_SWAP_MAX", "512M"),
 			PidsMax:   env("LEARNBOX_PIDS_MAX", "512"),
+			CPUMax:    cpuMax,
 		},
+		MaxSessions:  intEnv("LEARNBOX_MAX_SESSIONS", 8),
+		IdleTimeout:  durEnv("LEARNBOX_IDLE_TIMEOUT", 4*time.Hour),
+		MinFreeDisk:  int64(intEnv("LEARNBOX_MIN_FREE_MB", 512)) << 20,
 		CheckTimeout: timeout,
 		AllowedHosts: strings.Split(env("LEARNBOX_ALLOWED_HOSTS", ""), ","),
 		AccessHosts:  strings.Split(env("LEARNBOX_ACCESS_HOSTS", ""), ","),
@@ -153,6 +184,8 @@ func serve(log *slog.Logger, c cfg) error {
 		return fmt.Errorf("open progress: %w", err)
 	}
 	terms := term.NewManager(sb, log)
+	terms.MaxSessions = c.MaxSessions
+	terms.IdleTimeout = c.IdleTimeout
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -172,6 +205,7 @@ func serve(log *slog.Logger, c cfg) error {
 		Version: version, Commit: commit, Log: log, Lib: lib,
 		Sandbox: sb, Workspace: ws, Runner: runner.New(sb, ws, c.CheckTimeout),
 		Progress: prog, Terms: terms, WebDir: c.WebDir, AllowedHosts: c.AllowedHosts,
+		MinFreeDisk: c.MinFreeDisk,
 		AccessHosts: c.AccessHosts, Access: verifier,
 	})
 	srv := &http.Server{Addr: c.Addr, Handler: api.Handler(), ReadHeaderTimeout: 10 * time.Second}
@@ -182,7 +216,8 @@ func serve(log *slog.Logger, c cfg) error {
 			n += len(s.Lessons)
 		}
 	}
-	log.Info("listening", "addr", c.Addr, "version", version, "tracks", len(lib.Tracks), "lessons", n, "limits", sb.LimitsActive())
+	log.Info("listening", "addr", c.Addr, "version", version, "tracks", len(lib.Tracks), "lessons", n, "limits", sb.LimitsActive(), "cpu_capped", sb.CPUCapped(),
+		"max_sessions", c.MaxSessions, "idle_timeout", c.IdleTimeout.String())
 
 	errc := make(chan error, 1)
 	go func() { errc <- srv.ListenAndServe() }()

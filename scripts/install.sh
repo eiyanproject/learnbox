@@ -191,10 +191,22 @@ LEARNBOX_ACCESS_TEAM_DOMAIN=
 LEARNBOX_ACCESS_AUD=
 
 # Limits for everything the learner runs (terminals and checks, combined).
+# CPU_MAX is a percentage of one core: 150% is 1.5 of the CT's 2 vCPUs, which
+# leaves the service responsive while a check compiles.
 LEARNBOX_MEMORY_MAX=1200M
 LEARNBOX_SWAP_MAX=512M
 LEARNBOX_PIDS_MAX=512
+LEARNBOX_CPU_MAX=150%
 LEARNBOX_CHECK_TIMEOUT=120s
+
+# Terminal sessions. Detached sessions are killed after IDLE_TIMEOUT; the
+# oldest detached one is evicted when MAX_SESSIONS is reached.
+LEARNBOX_MAX_SESSIONS=8
+LEARNBOX_IDLE_TIMEOUT=4h
+
+# Refuse new shells and checks below this much free space, so a full workspace
+# fails with a message instead of breaking every write at once.
+LEARNBOX_MIN_FREE_MB=512
 EOF
 fi
 
@@ -210,6 +222,22 @@ LEARNBOX_ACCESS_TEAM_DOMAIN=
 LEARNBOX_ACCESS_AUD=
 ENVEOF
   echo "  added Cloudflare Access settings to /etc/learnbox.env"
+fi
+
+# Same for the resource caps: an install that predates them would otherwise
+# keep running with no CPU limit and no disk floor.
+if ! grep -q "^LEARNBOX_CPU_MAX=" /etc/learnbox.env; then
+  cat >> /etc/learnbox.env <<'ENVEOF'
+
+# CPU cap for everything the learner runs, as a percentage of one core.
+LEARNBOX_CPU_MAX=150%
+# Terminal sessions: oldest detached one is evicted at MAX_SESSIONS.
+LEARNBOX_MAX_SESSIONS=8
+LEARNBOX_IDLE_TIMEOUT=4h
+# Refuse new shells and checks below this much free space.
+LEARNBOX_MIN_FREE_MB=512
+ENVEOF
+  echo "  added CPU, session and disk limits to /etc/learnbox.env"
 fi
 
 # The env file holds the Access audience tag; keep it off other accounts.
@@ -265,11 +293,24 @@ Environment=LEARNBOX_WEB=$ROOT/web/dist
 Environment=LEARNBOX_DATA=$DATA_DIR
 WorkingDirectory=$DATA_DIR
 # The service manages its own cgroup subtree: an app leaf for itself and a
-# learner leaf with memory/pid limits for shells and checks.
+# learner leaf with memory/pid/cpu limits for shells and checks.
 Delegate=yes
 KillMode=control-group
 Restart=on-failure
 RestartSec=2
+# A learner process hitting its own memory.max is a normal event - the default
+# OOMPolicy would stop learnbox itself when that happens.
+OOMPolicy=continue
+# Backstop under the per-learner cgroup caps, in case the learner leaf could
+# not be created. Leaves headroom on a 2 vCPU CT so the UI still answers.
+CPUAccounting=yes
+MemoryAccounting=yes
+TasksAccounting=yes
+CPUQuota=180%
+TasksMax=1024
+# Do not hot-loop on a config error: five failures in five minutes is enough.
+StartLimitIntervalSec=300
+StartLimitBurst=5
 
 [Install]
 WantedBy=multi-user.target

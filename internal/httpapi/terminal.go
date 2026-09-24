@@ -24,6 +24,13 @@ func (s *Server) terminal(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "bad session id")
 		return
 	}
+	// Refuse before the upgrade: an error here is a readable HTTP response,
+	// whereas a socket that opens and immediately dies tells the learner nothing.
+	if err := s.diskHeadroom(); err != nil {
+		s.errs.WithLabelValues("disk_full").Inc()
+		writeErr(w, http.StatusInsufficientStorage, err.Error())
+		return
+	}
 	cwd := s.Sandbox.Home
 	if lessonID, ok := strings.CutPrefix(id, "lesson/"); ok {
 		l := s.Lib.Lesson(lessonID)

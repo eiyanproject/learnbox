@@ -16,6 +16,7 @@ import (
 	"path"
 	"path/filepath"
 	"slices"
+	"syscall"
 	"time"
 
 	"github.com/eiyanproject/learnbox/internal/content"
@@ -256,4 +257,16 @@ func (m *Manager) chown(rel string) error {
 		return nil
 	}
 	return m.home.Lchown(rel, m.sb.UID, m.sb.GID)
+}
+
+// FreeBytes reports the space left on the filesystem holding the learner's
+// home. A workspace that fills the disk does not fail loudly: writes start
+// failing everywhere at once, including the progress file, so the service
+// checks this before starting anything new rather than after.
+func (m *Manager) FreeBytes() (int64, error) {
+	var st syscall.Statfs_t
+	if err := syscall.Statfs(m.sb.Home, &st); err != nil {
+		return 0, err
+	}
+	return int64(st.Bavail) * int64(st.Bsize), nil
 }
