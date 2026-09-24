@@ -1,7 +1,10 @@
 title: "C"
 order: 6
-description: "C from the compiler up: pointers, memory, structs and the standard library, with every lesson compiled by gcc."
+description: "C from the compiler up: pointers, memory, structs and the standard library, with every lesson compiled by gcc and checked by real tests."
 sections:
   - id: environment
     title: Environment
     description: "The toolchain, the build, and what happens between source and a running program."
+  - id: learn
+    title: Beginner
+    description: "Types and integer behaviour, pointers, strings, structs, dynamic memory, and files."
