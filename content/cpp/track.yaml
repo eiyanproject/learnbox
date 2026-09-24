@@ -1,0 +1,7 @@
+title: "C++"
+order: 7
+description: "C++ as it is written now: RAII, the standard library, references and templates rather than manual memory."
+sections:
+  - id: environment
+    title: Environment
+    description: "The toolchain, the build, and what happens between source and a running program."

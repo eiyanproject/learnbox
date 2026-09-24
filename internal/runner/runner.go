@@ -46,7 +46,12 @@ type Runner struct {
 	// Empty means the JDK was not installed, and Java lessons say so rather
 	// than failing with a confusing compiler error.
 	JUnitJar string
-	mu       sync.Mutex // one check at a time: compiles are the RAM spike
+	// CTestDir holds ctest.h, the single-header framework the C and C++
+	// lessons compile against. CSharpLib holds LearnboxTest.cs and the
+	// project file the C# checker copies in.
+	CTestDir  string
+	CSharpLib string
+	mu        sync.Mutex // one check at a time: compiles are the RAM spike
 }
 
 func New(sb *sandbox.Sandbox, ws *workspace.Manager, timeout time.Duration) *Runner {
@@ -114,6 +119,21 @@ func (r *Runner) check(ctx context.Context, l *content.Lesson, srcRel string) (*
 			return nil, fmt.Errorf("copy tests: %w", err)
 		}
 		return r.java(ctx, checkRel, checkDir)
+	case "c":
+		if err := r.ws.CopyIn(l.TestsDir(), checkRel); err != nil {
+			return nil, fmt.Errorf("copy tests: %w", err)
+		}
+		return r.cfamily(ctx, checkRel, checkDir, "c")
+	case "cpp":
+		if err := r.ws.CopyIn(l.TestsDir(), checkRel); err != nil {
+			return nil, fmt.Errorf("copy tests: %w", err)
+		}
+		return r.cfamily(ctx, checkRel, checkDir, "cpp")
+	case "csharp":
+		if err := r.ws.CopyIn(l.TestsDir(), checkRel); err != nil {
+			return nil, fmt.Errorf("copy tests: %w", err)
+		}
+		return r.csharp(ctx, checkRel, checkDir)
 	default:
 		return nil, fmt.Errorf("no checker for language %q", l.Lang)
 	}
@@ -294,6 +314,116 @@ func (r *Runner) java(ctx context.Context, checkRel, dir string) (*Result, error
 		return res, nil
 	}
 	if raw, err := r.ws.ReadFileRel(path.Join(checkRel, report)); err == nil {
+		res.Tests = parseJUnit(raw)
+	}
+	finish(res, runCode)
+	return res, nil
+}
+
+// ---------- c and c++ ----------
+
+// cfamily compiles every source in the directory together with the learner's
+// code and runs the result. ctest.h is copied in rather than included from a
+// shared path so the compile line stays something a learner could type.
+func (r *Runner) cfamily(ctx context.Context, checkRel, dir, lang string) (*Result, error) {
+	if r.CTestDir == "" {
+		return &Result{Status: "error", Output: "the C test header is not installed"}, nil
+	}
+	if err := r.ws.CopyIn(r.CTestDir, checkRel); err != nil {
+		return nil, fmt.Errorf("copy ctest.h: %w", err)
+	}
+
+	compiler, std, ext := "gcc", "-std=c17", ".c"
+	if lang == "cpp" {
+		compiler, std, ext = "g++", "-std=c++20", ".cpp"
+	}
+	sources, err := r.ws.ListRel(checkRel, ext)
+	if err != nil {
+		return nil, fmt.Errorf("list sources: %w", err)
+	}
+	if len(sources) == 0 {
+		return &Result{Status: "error", Output: "no " + ext + " files to compile"}, nil
+	}
+
+	// -g keeps the build honest about line numbers; the assertion messages
+	// carry __FILE__ and __LINE__, which is most of the diagnostic value.
+	args := append([]string{std, "-Wall", "-Wextra", "-g", "-I.", "-o", "runner"}, sources...)
+	args = append(args, "-lm")
+	out, code, timedOut, dur, err := r.exec(ctx, dir, nil, compiler, args...)
+	if err != nil {
+		return nil, err
+	}
+	if timedOut {
+		return &Result{Status: "timeout", Output: out, DurationMS: dur.Milliseconds()}, nil
+	}
+	if code != 0 {
+		// A compiler error is the result, not an internal failure: it is what
+		// the learner has to read.
+		return &Result{Status: "failed", Output: out, DurationMS: dur.Milliseconds()}, nil
+	}
+
+	runOut, runCode, timedOut, runDur, err := r.exec(ctx, dir, nil, "./runner")
+	if err != nil {
+		return nil, err
+	}
+	res := &Result{Output: runOut, DurationMS: (dur + runDur).Milliseconds()}
+	if timedOut {
+		res.Status = "timeout"
+		return res, nil
+	}
+	if raw, err := r.ws.ReadFileRel(path.Join(checkRel, "TEST-ctest.xml")); err == nil {
+		res.Tests = parseJUnit(raw)
+	}
+	finish(res, runCode)
+	return res, nil
+}
+
+// ---------- c# ----------
+
+func (r *Runner) csharp(ctx context.Context, checkRel, dir string) (*Result, error) {
+	if r.CSharpLib == "" {
+		return &Result{
+			Status: "error",
+			Output: "C# lessons need the .NET SDK, which this install skipped (--no-dotnet).",
+		}, nil
+	}
+	if err := r.ws.CopyIn(r.CSharpLib, checkRel); err != nil {
+		return nil, fmt.Errorf("copy the C# test framework: %w", err)
+	}
+
+	// The SDK writes to a home directory and a package folder; point both at
+	// the learner's cache so nothing tries to use root's.
+	env := []string{
+		"DOTNET_CLI_TELEMETRY_OPTOUT=1",
+		"DOTNET_NOLOGO=1",
+		"DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1",
+		"DOTNET_CLI_HOME=" + r.sb.Home + "/.cache/dotnet",
+		"NUGET_PACKAGES=" + r.sb.Home + "/.cache/nuget",
+	}
+	out, code, timedOut, dur, err := r.exec(ctx, dir, env,
+		"dotnet", "build", "-c", "Release", "--nologo", "-v", "q",
+		"/p:UseSharedCompilation=false")
+	if err != nil {
+		return nil, err
+	}
+	if timedOut {
+		return &Result{Status: "timeout", Output: out, DurationMS: dur.Milliseconds()}, nil
+	}
+	if code != 0 {
+		return &Result{Status: "failed", Output: out, DurationMS: dur.Milliseconds()}, nil
+	}
+
+	runOut, runCode, timedOut, runDur, err := r.exec(ctx, dir, env,
+		"dotnet", "bin/Release/net8.0/lesson.dll")
+	if err != nil {
+		return nil, err
+	}
+	res := &Result{Output: runOut, DurationMS: (dur + runDur).Milliseconds()}
+	if timedOut {
+		res.Status = "timeout"
+		return res, nil
+	}
+	if raw, err := r.ws.ReadFileRel(path.Join(checkRel, "TEST-learnbox.xml")); err == nil {
 		res.Tests = parseJUnit(raw)
 	}
 	finish(res, runCode)

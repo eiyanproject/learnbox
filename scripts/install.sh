@@ -5,6 +5,7 @@
 #   /opt/learnbox/scripts/install.sh
 #   /opt/learnbox/scripts/install.sh --no-rust       # skip the Rust toolchain
 #   /opt/learnbox/scripts/install.sh --no-java       # skip the JDK and JUnit
+#   /opt/learnbox/scripts/install.sh --no-dotnet     # skip the .NET SDK (569MB)
 #   /opt/learnbox/scripts/install.sh --no-exercism   # skip the practice import
 #
 # Idempotent: safe to re-run. update.sh re-runs it after every pull, so
@@ -17,13 +18,15 @@ ROOT="$PWD"
 
 WITH_RUST=1
 WITH_JAVA=1
+WITH_DOTNET=1
 WITH_EXERCISM=1
 for a in "$@"; do
   case "$a" in
     --no-rust) WITH_RUST=0 ;;
     --no-java) WITH_JAVA=0 ;;
+    --no-dotnet) WITH_DOTNET=0 ;;
     --no-exercism) WITH_EXERCISM=0 ;;
-    -h|--help) sed -n '2,11p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
     *) echo "unknown option: $a" >&2; exit 2 ;;
   esac
 done
@@ -43,6 +46,10 @@ NODE_SHA256=6e1db87ef58b8819e5d5402eff1536491b18edd8eb7bee5ef7897876e88dc5ff
 # need no Maven or Gradle: javac plus this is the whole toolchain.
 JUNIT_VERSION=1.11.4
 JUNIT_SHA256=b016ef6b1c3454d6d7c2c88ce081dabf289699686af6622d6e4e2e1b54b4a2fc
+# The .NET SDK ships as a tarball, like Go and Node, so it is pinned the same
+# way rather than pulled from a third-party apt repository.
+DOTNET_VERSION=8.0.404
+DOTNET_SHA256=5bf340ba6acb314c703c2492a3a6e1530d7cdbfd3b5bf86788ee8b4afefd3573
 
 as_learner() { runuser -u "$LEARNER" -- env HOME="/home/$LEARNER" USER="$LEARNER" LOGNAME="$LEARNER" "$@"; }
 say() { printf '\n\033[36m==>\033[0m %s\n' "$*"; }
@@ -137,6 +144,49 @@ if [ "$WITH_JAVA" -eq 1 ]; then
   fi
   chmod 0644 "$JUNIT_JAR"
   echo "  junit-platform-console-standalone $JUNIT_VERSION"
+fi
+
+say "C and C++ toolchain"
+# build-essential is already installed above; gcc and g++ are the whole of it.
+gcc --version | head -1
+g++ --version | head -1
+
+if [ "$WITH_DOTNET" -eq 1 ]; then
+  say ".NET SDK $DOTNET_VERSION"
+  # libicu is a hard runtime requirement; without it dotnet exits immediately
+  # with a globalization error that says nothing useful.
+  apt-get install -y -q --no-install-recommends libicu-dev
+  install -d "$TOOLS/dotnet"
+  if [ "$("$TOOLS/dotnet/dotnet" --version 2>/dev/null)" != "$DOTNET_VERSION" ]; then
+    curl -fsSL "https://builds.dotnet.microsoft.com/dotnet/Sdk/$DOTNET_VERSION/dotnet-sdk-$DOTNET_VERSION-linux-x64.tar.gz"       -o /tmp/dotnet.tgz
+    echo "$DOTNET_SHA256  /tmp/dotnet.tgz" | sha256sum -c --quiet - || die "checksum mismatch for the .NET SDK"
+    rm -rf "$TOOLS/dotnet"
+    mkdir -p "$TOOLS/dotnet"
+    tar -C "$TOOLS/dotnet" -xzf /tmp/dotnet.tgz
+    rm /tmp/dotnet.tgz
+  fi
+  # A wrapper puts dotnet on the learner's PATH with DOTNET_ROOT set, and
+  # points its home and package cache at the learner's own cache directory.
+  cat > /usr/local/bin/dotnet <<DOTNETSH
+#!/bin/sh
+export DOTNET_ROOT="$TOOLS/dotnet"
+export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1 DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+export DOTNET_CLI_HOME="\${DOTNET_CLI_HOME:-\$HOME/.cache/dotnet}"
+export NUGET_PACKAGES="\${NUGET_PACKAGES:-\$HOME/.cache/nuget}"
+exec "$TOOLS/dotnet/dotnet" "\$@"
+DOTNETSH
+  chmod 0755 /usr/local/bin/dotnet
+  install -d -o "$LEARNER" -g "$LEARNER" -m 0755 "$LHOME/.cache/dotnet" "$LHOME/.cache/nuget"
+  as_learner dotnet --version
+  # First use of the SDK generates its runtime assets and warms the MSBuild
+  # caches, which costs about twenty seconds. Pay it here, once, rather than
+  # on the learner's first Check.
+  WARM=$(mktemp -d)
+  cp "$ROOT/lib/csharp/lesson.csproj" "$WARM/"
+  cp "$ROOT/lib/csharp/LearnboxTest.cs" "$WARM/"
+  chown -R "$LEARNER:$LEARNER" "$WARM"
+  as_learner sh -c "cd '$WARM' && dotnet build -c Release --nologo -v q /p:UseSharedCompilation=false" >/dev/null 2>&1     && echo "  build cache warmed" || echo "  warmup build failed (checks will still work, the first one will be slow)"
+  rm -rf "$WARM"
 fi
 
 # ---------------------------------------------------------------- build tools
@@ -325,6 +375,8 @@ Environment=LEARNBOX_WEB=$ROOT/web/dist
 Environment=LEARNBOX_DATA=$DATA_DIR
 Environment=LEARNBOX_PYLIB=$ROOT/lib
 Environment=LEARNBOX_JUNIT_JAR=$TOOLS/java/junit-platform-console-standalone.jar
+Environment=LEARNBOX_CTEST_DIR=$ROOT/lib/ctest
+Environment=LEARNBOX_CSHARP_LIB=$ROOT/lib/csharp
 WorkingDirectory=$DATA_DIR
 # The service manages its own cgroup subtree: an app leaf for itself and a
 # learner leaf with memory/pid/cpu limits for shells and checks.

@@ -1,0 +1,7 @@
+title: "C"
+order: 6
+description: "C from the compiler up: pointers, memory, structs and the standard library, with every lesson compiled by gcc."
+sections:
+  - id: environment
+    title: Environment
+    description: "The toolchain, the build, and what happens between source and a running program."

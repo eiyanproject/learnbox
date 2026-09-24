@@ -1,0 +1,21 @@
+<!-- The project the C# checker copies in beside the lesson.
+     No PackageReference anywhere: the test framework is LearnboxTest.cs, so a
+     check needs no NuGet restore and no network. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>lesson</AssemblyName>
+    <RootNamespace>Lesson</RootNamespace>
+    <StartupObject>Learnbox.TestRunner</StartupObject>
+    <!-- The learner writes a library plus tests; a stray Main in their file
+         would otherwise clash with the runner's. -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <RestorePackages>false</RestorePackages>
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+    <WarningLevel>3</WarningLevel>
+    <NoWarn>CS8600;CS8602;CS8603;CS8618;CS8625</NoWarn>
+  </PropertyGroup>
+</Project>
