@@ -196,6 +196,7 @@ func serve(log *slog.Logger, c cfg) error {
 		return err
 	}
 	sb.PyPath = c.PyLib
+	sb.OctPath = c.OctaveDir
 	ws, err := workspace.New(sb)
 	if err != nil {
 		return err
@@ -290,6 +291,7 @@ func verify(log *slog.Logger, c cfg, args []string) error {
 		return err
 	}
 	sb.PyPath = c.PyLib
+	sb.OctPath = c.OctaveDir
 	ws, err := workspace.New(sb)
 	if err != nil {
 		return err

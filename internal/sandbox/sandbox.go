@@ -33,6 +33,7 @@ type Sandbox struct {
 	Home      string
 	Path      string // PATH for learner processes
 	PyPath    string // PYTHONPATH for learner processes (the netlab package)
+	OctPath   string // OCTAVE_PATH for learner processes (the MATLAB shims)
 	cgDir     string // learner cgroup directory, "" when unavailable
 	cpuCapped bool   // cpu.max is in force on the learner leaf
 	cgFD      int    // open fd on cgDir for clone3 placement, -1 when unavailable
@@ -130,6 +131,13 @@ func (s *Sandbox) Env(extra ...string) []string {
 		// Shipped libraries the lessons import, netlab above all. Lessons,
 		// checks and the free terminal all resolve it the same way.
 		env = append(env, "PYTHONPATH="+s.PyPath)
+	}
+	if s.OctPath != "" {
+		// Without this an octave started from the free terminal has no string,
+		// table or datetime, so the types the lessons teach would exist only
+		// inside a Check. The graded run passes --path as well, so a check
+		// stays hermetic even if this is unset.
+		env = append(env, "OCTAVE_PATH="+s.OctPath)
 	}
 	return append(env, extra...)
 }
