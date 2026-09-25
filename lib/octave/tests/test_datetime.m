@@ -1,0 +1,41 @@
+d  = datetime(2026, 1, 2);
+dt = datetime(2026, 1, 2, 3, 4, 5);
+iso = datetime("2026-01-02");
+arr = datetime({"2026-01-03", "2026-01-01", "2026-01-02"});
+
+lbx_run({
+  "class_is_datetime",          @() lbx_type("datetime", d)
+  "year_month_day",             @() lbx_eq([2026 1 2], [year(d) month(d) day(d)])
+  "hour_minute_second",         @() lbx_eq([3 4 5], [hour(dt) minute(dt) round(second(dt))])
+  "midnight_when_unspecified",  @() lbx_eq([0 0 0], [hour(d) minute(d) round(second(d))])
+  "parses_iso_date",            @() lbx_true(iso == d)
+  "parses_iso_datetime",        @() lbx_eq(3, hour(datetime("2026-01-02 03:04:05")))
+  "rejects_nonsense_text",      @() lbx_error("datetime:unparsed", @() datetime("not a date"))
+  "array_from_cellstr",         @() lbx_eq(3, length(arr))
+  "difference_is_a_duration",   @() lbx_type("duration", datetime(2026,1,3) - d)
+  "difference_in_days",         @() lbx_near(1, days(datetime(2026,1,3) - d))
+  "difference_in_hours",        @() lbx_near(24, hours(datetime(2026,1,3) - d))
+  "adding_a_duration",          @() lbx_eq(9, day(d + days(7)))
+  "adding_the_other_way",       @() lbx_eq(9, day(days(7) + d))
+  "subtracting_a_duration",     @() lbx_eq(1, day(d - days(1)))
+  "adding_hours_crosses_a_day", @() lbx_eq(3, day(d + hours(25)))
+  "adding_a_number_is_refused", @() lbx_error("datetime:badOperand", @() d + 7)
+  "comparison_lt",              @() lbx_true(d < datetime(2026,1,3))
+  "comparison_gt",              @() lbx_true(datetime(2026,1,3) > d)
+  "equality",                   @() lbx_true(d == datetime(2026,1,2))
+  "inequality",                 @() lbx_true(d ~= datetime(2026,1,3))
+  "comparison_against_text",    @() lbx_true(d == "2026-01-02")
+  "isbetween",                  @() lbx_true(isbetween(d, datetime(2026,1,1), datetime(2026,1,3)))
+  "isbetween_is_inclusive",     @() lbx_true(isbetween(d, d, d))
+  "sort_orders_by_time",        @() lbx_eq([1 2 3], day(sort(arr)))
+  "sort_returns_datetimes",     @() lbx_type("datetime", sort(arr))
+  "min_and_max",                @() lbx_eq([1 3], [day(min(arr)) day(max(arr))])
+  "indexing_one_element",       @() lbx_eq(1, day(arr(2)))
+  "indexing_with_end",          @() lbx_eq(2, day(arr(end)))
+  "logical_indexing",           @() lbx_eq(2, length(arr(day(arr) > 1)))
+  "char_renders_a_date",        @() lbx_true(~isempty(strfind(char(d), "2026")))
+  "string_conversion",          @() lbx_type("string", string(d))
+  "today_has_no_time_of_day",   @() lbx_eq(0, hour(datetime("today")))
+  "length_of_an_array",         @() lbx_eq(3, length(arr))
+  "size_of_an_array",           @() lbx_eq([1 3], size(arr))
+});

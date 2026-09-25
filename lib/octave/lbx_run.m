@@ -11,6 +11,10 @@ function lbx_run(cases)
 %     "handles_negatives", @() lbx_eq(-1, add(2, -3))
 %   });
 %
+% If a test file needs helper functions, a script may only call one that is
+% already defined, so the layout is: `1;` on the first line to mark the file as
+% a script, then the helpers, then lbx_run last.
+%
 % A thunk that returns without throwing has passed. Every lbx_* assertion
 % throws with the identifier "lbx:failed", so anything else that comes out is
 % an error in the lesson's code rather than a failed expectation - and the
