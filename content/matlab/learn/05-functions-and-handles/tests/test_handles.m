@@ -1,0 +1,18 @@
+lbx_run({
+  'apply_twice_doubles_twice',    @() lbx_eq(4, apply_twice(@(x) x * 2, 1))
+  'apply_twice_with_a_named_fn',  @() lbx_near(1, apply_twice(@abs, -1))
+  'apply_twice_on_a_vector',      @() lbx_eq([4 8], apply_twice(@(x) x * 2, [1 2]))
+  'apply_twice_is_not_once',      @() lbx_eq(9, apply_twice(@(x) x + 3, 3))
+  'make_adder_adds',              @() lbx_eq(15, adder_result(5, 10))
+  'make_adder_returns_a_handle',  @() lbx_true(is_function_handle(make_adder(1)))
+  'make_adder_with_zero',         @() lbx_eq(7, adder_result(0, 7))
+  'make_adder_with_a_negative',   @() lbx_eq(5, adder_result(-5, 10))
+  'each_adder_is_independent',    @() lbx_eq([11 20], two_adders())
+  'capture_is_by_value',          @() lbx_eq(6, captured_not_current())
+  'adder_works_on_a_vector',      @() lbx_eq([11 12], adder_result(10, [1 2]))
+  'apply_all_maps',               @() lbx_eq([2 4 6], apply_all(@(x) x * 2, [1 2 3]))
+  'apply_all_with_a_named_fn',    @() lbx_eq([1 2], apply_all(@abs, [-1 2]))
+  'apply_all_of_empty',           @() lbx_true(isempty(apply_all(@(x) x, [])))
+  'apply_all_keeps_shape',        @() lbx_eq([2 1], size(apply_all(@(x) x, [1; 2])))
+  'apply_all_takes_an_adder',     @() lbx_eq([11 12], apply_all(make_adder(10), [1 2]))
+});

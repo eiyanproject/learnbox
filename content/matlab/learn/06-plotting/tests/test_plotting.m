@@ -1,0 +1,15 @@
+lbx_run({
+  'sine_data_point_count',     @() lbx_eq(50, numel(sine_x(50)))
+  'sine_data_starts_at_zero',  @() lbx_near(0, sine_x(10)(1))
+  'sine_data_ends_at_2pi',     @() lbx_near(2 * pi, sine_x(10)(end))
+  'sine_starts_at_zero',       @() lbx_near(0, sine_y(10)(1))
+  'sine_returns_to_zero',      @() lbx_near(0, sine_y(10)(end), 1e-12)
+  'sine_peaks_at_one',         @() lbx_near(1, max(sine_y(400)), 1e-4)
+  'sine_troughs_at_minus_one', @() lbx_near(-1, min(sine_y(400)), 1e-4)
+  'x_and_y_are_the_same_size', @() lbx_eq(numel(sine_x(33)), numel(sine_y(33)))
+  'two_points_is_allowed',     @() lbx_eq(2, numel(sine_x(2)))
+  'fewer_than_two_throws',     @() lbx_error('sine_data:tooFew', @() sine_data(1))
+  'save_plot_writes_a_file',   @() lbx_true(plot_bytes() > 1000)
+  'the_file_really_is_a_png',  @() lbx_true(wrote_a_png())
+  'save_plot_closes_its_figure', @() lbx_eq(0, figures_left_open())
+});

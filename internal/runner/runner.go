@@ -316,7 +316,13 @@ func (r *Runner) octave(ctx context.Context, checkRel, dir string) (*Result, err
 	var total time.Duration
 	var outs []string
 	worst := 0
+	report := path.Join(checkRel, "TEST-lbx.xml")
 	for _, t := range tests {
+		// Clear the previous file's report first. A test file that writes none
+		// - because it failed to parse, or because it only holds helpers -
+		// would otherwise have the last one read a second time and counted
+		// twice.
+		_ = r.ws.RemoveAll(report)
 		// --norc: a check must not depend on the learner's ~/.octaverc, or
 		// the same lesson passes for one workspace and fails for another.
 		out, code, timedOut, dur, err := r.exec(ctx, dir, env,
@@ -335,8 +341,7 @@ func (r *Runner) octave(ctx context.Context, checkRel, dir string) (*Result, err
 		if code != 0 {
 			worst = code
 		}
-		// Read the report before the next file overwrites it.
-		if raw, err := r.ws.ReadFileRel(path.Join(checkRel, "TEST-lbx.xml")); err == nil {
+		if raw, err := r.ws.ReadFileRel(report); err == nil {
 			res.Tests = append(res.Tests, parseJUnit(raw)...)
 		}
 	}

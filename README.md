@@ -120,6 +120,24 @@ no Maven, no Gradle.
 C and C++ are graded by `lib/ctest/ctest.h`, a single-header framework; C# by
 `lib/csharp/LearnboxTest.cs`. Neither needs a package manager at check time.
 
+### MATLAB
+
+Aimed at the **MathWorks MATLAB Associate** (MLA-C01).
+
+**Environment** (2) - MATLAB, and the engine under these lessons; Scripts, functions and the workspace
+
+**Beginner** (6) - Arrays and indexing; Matrices, and the dot that changes everything; Logical indexing; Control flow; Function handles; Plotting
+
+The engine is **GNU Octave**: MATLAB is licensed per seat and has no headless
+install. Octave runs the same core language, and `lib/octave` supplies the four
+types it lacks - `string`, `table`, `datetime` and `categorical` - plus the
+`lbx_*` grading harness, which emits the same JUnit XML as the other tracks.
+`lib/octave/tests/run-all.sh` is that library's own regression suite.
+
+One difference cannot be hidden: Octave has no string *literal*, so `"hi"` is a
+char array there and lessons write `string('hi')` explicitly. Each shim's header
+states where else it diverges. `install.sh --no-octave` skips the lot (620MB).
+
 ### Programming mindset
 
 How to think while programming, practised in Python because the subject is not
@@ -232,7 +250,8 @@ refreshes the Exercism import and restarts the service. It never touches
 | `scripts/install.sh` | inside the CT | packages, learner user, Python venv, rustup, build, Exercism import, systemd unit |
 | `scripts/update.sh` | inside the CT | `git pull --ff-only`, then `install.sh` |
 
-`install.sh --no-rust` and `--no-exercism` skip those parts.
+`install.sh --no-rust`, `--no-java`, `--no-dotnet`, `--no-octave` and
+`--no-exercism` skip those parts.
 
 ### Configuration
 

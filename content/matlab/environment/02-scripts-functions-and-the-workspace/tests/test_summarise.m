@@ -1,0 +1,15 @@
+lbx_run({
+  'minimum',                  @() lbx_eq(1, first_of([3 1 4]))
+  'all_three_outputs',        @() lbx_eq([1 4 3], all_three([3 1 4 4]))
+  'mean_is_not_the_median',   @() lbx_near(3, third_of([1 2 6]))
+  'works_on_one_element',     @() lbx_eq([5 5 5], all_three(5))
+  'works_on_a_column',        @() lbx_eq([1 3 2], all_three([1; 2; 3]))
+  'handles_negatives',        @() lbx_eq(-4, first_of([-4 2]))
+  'one_output_is_enough',     @() lbx_eq(1, first_of([3 1 4]))
+  'empty_throws',             @() lbx_error('summarise:empty', @() summarise([]))
+  'scale_defaults_to_two',    @() lbx_eq([2 4 6], scale([1 2 3]))
+  'scale_with_a_factor',      @() lbx_eq([10 20], scale([1 2], 10))
+  'scale_by_zero',            @() lbx_eq([0 0], scale([1 2], 0))
+  'scale_a_matrix',           @() lbx_eq([2 4; 6 8], scale([1 2; 3 4]))
+  'scale_leaves_input_alone', @() lbx_eq([1 2], unchanged_after_scale())
+});

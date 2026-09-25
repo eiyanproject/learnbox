@@ -1,0 +1,15 @@
+lbx_run({
+  'scalar_is_one_by_one',     @() lbx_str_eq('double 1x1', describe(5))
+  'row_vector',               @() lbx_str_eq('double 1x3', describe([1 2 3]))
+  'column_vector',            @() lbx_str_eq('double 3x1', describe([1; 2; 3]))
+  'matrix',                   @() lbx_str_eq('double 2x3', describe(zeros(2, 3)))
+  'char_counts_characters',   @() lbx_str_eq('char 1x2', describe('hi'))
+  'logical_has_its_own_class',@() lbx_str_eq('logical 1x1', describe(true))
+  'cell_is_a_container',      @() lbx_str_eq('cell 1x2', describe({1, 'a'}))
+  'a_string_is_not_a_char',   @() lbx_str_eq('string 1x1', describe(string('hi')))
+  'empty_is_zero_by_zero',    @() lbx_str_eq('double 0x0', describe([]))
+  'is_text_accepts_char',     @() lbx_true(is_text('hi'))
+  'is_text_accepts_string',   @() lbx_true(is_text(string('hi')))
+  'is_text_rejects_numbers',  @() lbx_false(is_text(5))
+  'is_text_rejects_a_cell',   @() lbx_false(is_text({'hi'}))
+});

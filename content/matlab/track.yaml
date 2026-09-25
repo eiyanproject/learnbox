@@ -1,0 +1,10 @@
+title: "MATLAB"
+order: 9
+description: "MATLAB for the MathWorks Associate exam: arrays first, tables and datetimes for real data, and the vectorised way of writing things."
+sections:
+  - id: environment
+    title: Environment
+    description: "What MATLAB is, the engine these lessons run on, and how a script differs from a function."
+  - id: learn
+    title: Beginner
+    description: "Arrays and indexing, matrix against element-wise operators, logical indexing, control flow, functions and handles, and plotting."

@@ -1,0 +1,18 @@
+lbx_run({
+  'row_sums_adds_across',        @() lbx_eq([3; 7], row_sums([1 2; 3 4]))
+  'row_sums_returns_a_column',   @() lbx_eq([2 1], size(row_sums([1 2; 3 4])))
+  'row_sums_of_one_row',         @() lbx_eq(6, row_sums([1 2 3]))
+  'row_sums_of_a_column',        @() lbx_eq([1; 2], row_sums([1; 2]))
+  'scale_rows_scales_rows',      @() lbx_eq([10 20; 300 400], scale_rows([1 2; 3 4], [10; 100]))
+  'scale_rows_takes_a_row_vec',  @() lbx_eq([10 20; 300 400], scale_rows([1 2; 3 4], [10 100]))
+  'scale_rows_by_one',           @() lbx_eq([1 2; 3 4], scale_rows([1 2; 3 4], [1; 1]))
+  'scale_rows_checks_the_count', @() lbx_error('scale_rows:sizeMismatch', @() scale_rows([1 2; 3 4], [1 2 3]))
+  'symmetric_is_true',           @() lbx_true(is_symmetric([1 2; 2 1]))
+  'asymmetric_is_false',         @() lbx_false(is_symmetric([1 2; 3 1]))
+  'non_square_is_false',         @() lbx_false(is_symmetric([1 2 3; 4 5 6]))
+  'identity_is_symmetric',       @() lbx_true(is_symmetric(eye(3)))
+  'element_wise_product',        @() lbx_eq([1 4; 9 16], ew_of([1 2; 3 4], [1 2; 3 4]))
+  'matrix_product_differs',      @() lbx_eq([7 10; 15 22], mp_of([1 2; 3 4], [1 2; 3 4]))
+  'the_two_really_differ',       @() lbx_false(isequal(ew_of([1 2; 3 4], [1 2; 3 4]), mp_of([1 2; 3 4], [1 2; 3 4])))
+  'identity_leaves_it_alone',    @() lbx_eq([1 2; 3 4], mp_of([1 2; 3 4], eye(2)))
+});
