@@ -8,3 +8,9 @@ sections:
   - id: learn
     title: Beginner
     description: "Types and integer behaviour, pointers, strings, structs, dynamic memory, and files."
+  - id: intermediate
+    title: Intermediate
+    description: "Function pointers and dispatch tables, the preprocessor, linked lists and the pointer-to-pointer idiom, and bit manipulation."
+  - id: advanced
+    title: Advanced
+    description: "A generic container over void*, a hash table, arena allocation, and a tokenizer capstone."
