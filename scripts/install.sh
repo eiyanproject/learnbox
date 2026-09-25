@@ -6,6 +6,7 @@
 #   /opt/learnbox/scripts/install.sh --no-rust       # skip the Rust toolchain
 #   /opt/learnbox/scripts/install.sh --no-java       # skip the JDK and JUnit
 #   /opt/learnbox/scripts/install.sh --no-dotnet     # skip the .NET SDK (569MB)
+#   /opt/learnbox/scripts/install.sh --no-octave     # skip Octave, the MATLAB engine (620MB)
 #   /opt/learnbox/scripts/install.sh --no-exercism   # skip the practice import
 #
 # Idempotent: safe to re-run. update.sh re-runs it after every pull, so
@@ -19,14 +20,16 @@ ROOT="$PWD"
 WITH_RUST=1
 WITH_JAVA=1
 WITH_DOTNET=1
+WITH_OCTAVE=1
 WITH_EXERCISM=1
 for a in "$@"; do
   case "$a" in
     --no-rust) WITH_RUST=0 ;;
     --no-java) WITH_JAVA=0 ;;
     --no-dotnet) WITH_DOTNET=0 ;;
+    --no-octave) WITH_OCTAVE=0 ;;
     --no-exercism) WITH_EXERCISM=0 ;;
-    -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,13p' "$0"; exit 0 ;;
     *) echo "unknown option: $a" >&2; exit 2 ;;
   esac
 done
@@ -195,6 +198,25 @@ DOTNETSH
   chown -R "$LEARNER:$LEARNER" "$WARM"
   as_learner sh -c "cd '$WARM' && /usr/local/bin/dotnet build -c Release --nologo -v q /p:UseSharedCompilation=false" >/dev/null 2>&1     && echo "  build cache warmed" || echo "  warmup build failed (checks will still work, the first one will be slow)"
   rm -rf "$WARM"
+fi
+
+if [ "$WITH_OCTAVE" -eq 1 ]; then
+  say "Octave (the MATLAB lessons' engine)"
+  # MATLAB itself cannot go in here: it is licensed per seat and has no
+  # headless install. Octave runs the same core language, and lib/octave
+  # supplies the types it lacks - string, table, datetime, categorical.
+  #
+  # gnuplot-nox, the fonts and ghostscript are what make `print -dpng` work
+  # with no display. Without the fonts Octave fails inside the text renderer;
+  # without ghostscript it fails on the PNG itself. Neither says so clearly.
+  apt-get install -y -q --no-install-recommends     octave gnuplot-nox fonts-freefont-otf ghostscript
+  octave-cli --version | head -1
+  # Reference BLAS is single-threaded, which is what Debian installs here. If
+  # openblas ever arrives, Debian's alternatives switch libblas.so.3 to it and
+  # its pool sizes itself from the NODE's core count - nproc reports the host
+  # figure inside a cgroup - so it would oversubscribe this container's CPU
+  # quota. Pinning costs nothing today and removes that trap.
+  as_learner octave --no-gui --quiet --norc     --path "$ROOT/lib/octave" --eval "lbx_show(1);" >/dev/null     && echo "  shim library loads"     || echo "  WARNING: lib/octave did not load"
 fi
 
 # ---------------------------------------------------------------- build tools
@@ -368,6 +390,14 @@ if [ -n "${LEARNBOX_ACCESS_HOSTS:-}${LEARNBOX_ACCESS_TEAM_DOMAIN:-}${LEARNBOX_AC
   echo "  Cloudflare Access enforced for: $LEARNBOX_ACCESS_HOSTS (team $team)"
 fi
 
+# Left empty by --no-octave, so the MATLAB lessons report that Octave was
+# skipped rather than failing later with "octave: not found".
+OCTAVE_ENV_LINE=""
+if [ "$WITH_OCTAVE" -eq 1 ]; then
+  OCTAVE_ENV_LINE="Environment=LEARNBOX_OCTAVE_LIB=$ROOT/lib/octave
+"
+fi
+
 cat > /etc/systemd/system/learnbox.service <<EOF
 [Unit]
 Description=learnbox learning platform
@@ -385,7 +415,7 @@ Environment=LEARNBOX_PYLIB=$ROOT/lib
 Environment=LEARNBOX_JUNIT_JAR=$TOOLS/java/junit-platform-console-standalone.jar
 Environment=LEARNBOX_CTEST_DIR=$ROOT/lib/ctest
 Environment=LEARNBOX_CSHARP_LIB=$ROOT/lib/csharp
-WorkingDirectory=$DATA_DIR
+${OCTAVE_ENV_LINE}WorkingDirectory=$DATA_DIR
 # The service manages its own cgroup subtree: an app leaf for itself and a
 # learner leaf with memory/pid/cpu limits for shells and checks.
 Delegate=yes

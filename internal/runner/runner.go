@@ -51,6 +51,10 @@ type Runner struct {
 	// project file the C# checker copies in.
 	CTestDir  string
 	CSharpLib string
+	// OctaveDir holds lbx_run and the shim classes the MATLAB lessons run
+	// against. Empty means Octave was not installed, and MATLAB lessons say so
+	// rather than failing with "octave: not found".
+	OctaveDir string
 	mu        sync.Mutex // one check at a time: compiles are the RAM spike
 }
 
@@ -134,6 +138,14 @@ func (r *Runner) check(ctx context.Context, l *content.Lesson, srcRel string) (*
 			return nil, fmt.Errorf("copy tests: %w", err)
 		}
 		return r.csharp(ctx, checkRel, checkDir)
+	case "matlab":
+		// The engine is Octave: MATLAB is licensed per seat with no headless
+		// install. The core language is the same, and lib/octave supplies the
+		// types Octave lacks - string, table, datetime, categorical.
+		if err := r.ws.CopyIn(l.TestsDir(), checkRel); err != nil {
+			return nil, fmt.Errorf("copy tests: %w", err)
+		}
+		return r.octave(ctx, checkRel, checkDir)
 	default:
 		return nil, fmt.Errorf("no checker for language %q", l.Lang)
 	}
@@ -266,6 +278,72 @@ func pythonMessage(i *junitIssue) string {
 		return strings.Join(keep, "\n")
 	}
 	return i.Message
+}
+
+// ---------- matlab, on octave ----------
+
+// octave runs every test_*.m in the check directory. The lessons' library -
+// the lbx_* harness and the string/table/datetime/categorical shims - stays on
+// Octave's load path rather than being copied in beside the learner's work,
+// because unlike ctest.h it is not something their code has to include.
+func (r *Runner) octave(ctx context.Context, checkRel, dir string) (*Result, error) {
+	if r.OctaveDir == "" {
+		return &Result{
+			Status: "error",
+			Output: "MATLAB lessons need Octave, which this install skipped (--no-octave).",
+		}, nil
+	}
+
+	names, err := r.ws.ListRel(checkRel, ".m")
+	if err != nil {
+		return nil, fmt.Errorf("list tests: %w", err)
+	}
+	var tests []string
+	for _, n := range names {
+		if strings.HasPrefix(n, "test_") {
+			tests = append(tests, n)
+		}
+	}
+	if len(tests) == 0 {
+		return &Result{Status: "error", Output: "no test_*.m files to run"}, nil
+	}
+
+	// The BLAS thread pinning that Octave needs is in sandbox.Env, so it
+	// covers the free terminal too and there is one place to change it.
+	var env []string
+
+	res := &Result{}
+	var total time.Duration
+	var outs []string
+	worst := 0
+	for _, t := range tests {
+		// --norc: a check must not depend on the learner's ~/.octaverc, or
+		// the same lesson passes for one workspace and fails for another.
+		out, code, timedOut, dur, err := r.exec(ctx, dir, env,
+			"octave", "--no-gui", "--quiet", "--norc", "--path", r.OctaveDir, t)
+		if err != nil {
+			return nil, err
+		}
+		total += dur
+		outs = append(outs, out)
+		if timedOut {
+			res.Output = strings.Join(outs, "\n")
+			res.Status = "timeout"
+			res.DurationMS = total.Milliseconds()
+			return res, nil
+		}
+		if code != 0 {
+			worst = code
+		}
+		// Read the report before the next file overwrites it.
+		if raw, err := r.ws.ReadFileRel(path.Join(checkRel, "TEST-lbx.xml")); err == nil {
+			res.Tests = append(res.Tests, parseJUnit(raw)...)
+		}
+	}
+	res.Output = strings.Join(outs, "\n")
+	res.DurationMS = total.Milliseconds()
+	finish(res, worst)
+	return res, nil
 }
 
 // ---------- java ----------

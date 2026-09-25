@@ -118,6 +118,13 @@ func (s *Sandbox) Env(extra ...string) []string {
 		"CARGO_HOME=" + filepath.Join(s.Home, ".cargo"),
 		"RUSTUP_HOME=" + filepath.Join(s.Home, ".rustup"),
 		"PYTHONDONTWRITEBYTECODE=1",
+		// Octave links BLAS, whose thread pool sizes itself from the NODE's core
+		// count, not this container's CPU quota - nproc reports the host figure
+		// inside a cgroup. An oversubscribed pool thrashes against cpu.max rather
+		// than going faster. Debian's reference BLAS is single-threaded today, so
+		// this costs nothing and removes the trap if openblas ever arrives.
+		"OPENBLAS_NUM_THREADS=1",
+		"OMP_NUM_THREADS=1",
 	}
 	if s.PyPath != "" {
 		// Shipped libraries the lessons import, netlab above all. Lessons,

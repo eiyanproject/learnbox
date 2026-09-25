@@ -49,6 +49,7 @@ type cfg struct {
 	JUnitJar     string
 	CTestDir     string
 	CSharpLib    string
+	OctaveDir    string
 	Limits       sandbox.Limits
 	CheckTimeout time.Duration
 	MaxSessions  int
@@ -108,6 +109,7 @@ func config() cfg {
 		JUnitJar:     env("LEARNBOX_JUNIT_JAR", ""),
 		CTestDir:     env("LEARNBOX_CTEST_DIR", "/opt/learnbox/lib/ctest"),
 		CSharpLib:    env("LEARNBOX_CSHARP_LIB", ""),
+		OctaveDir:    env("LEARNBOX_OCTAVE_LIB", ""),
 		Limits: sandbox.Limits{
 			MemoryMax: env("LEARNBOX_MEMORY_MAX", "1200M"),
 			SwapMax:   env("LEARNBOX_SWAP_MAX", "512M"),
@@ -180,6 +182,7 @@ func newRunner(sb *sandbox.Sandbox, ws *workspace.Manager, c cfg) *runner.Runner
 	r.JUnitJar = c.JUnitJar
 	r.CTestDir = c.CTestDir
 	r.CSharpLib = c.CSharpLib
+	r.OctaveDir = c.OctaveDir
 	return r
 }
 
