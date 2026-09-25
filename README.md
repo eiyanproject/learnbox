@@ -128,6 +128,12 @@ Aimed at the **MathWorks MATLAB Associate** (MLA-C01).
 
 **Beginner** (6) - Arrays and indexing; Matrices, and the dot that changes everything; Logical indexing; Control flow; Function handles; Plotting
 
+**Intermediate** (5) - Cell arrays and structs; Tables; datetime and duration; categorical; Importing and cleaning
+
+**Advanced** (4) - Vectorisation; Errors and debugging; Text processing; Capstone: a readings report
+
+**Associate - practice exam** (4) - The language and arrays; Importing and organising; Analysis and visualisation; Programming and debugging
+
 The engine is **GNU Octave**: MATLAB is licensed per seat and has no headless
 install. Octave runs the same core language, and `lib/octave` supplies the four
 types it lacks - `string`, `table`, `datetime` and `categorical` - plus the

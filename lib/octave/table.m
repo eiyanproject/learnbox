@@ -227,8 +227,12 @@ classdef table
         counts(i) = sum(which == i);
       end
 
+      % Hand the group column back as the type it went in as. MATLAB does,
+      % and a categorical that came out as text would break == on the result.
+      groupvals = table.regroup(uniq, keycol);
+
       if nargin < 3 || isempty(method) || strcmpi(method, 'count')
-        out = table(uniq, counts, 'VariableNames', {g, 'GroupCount'});
+        out = table(groupvals, counts, 'VariableNames', {g, 'GroupCount'});
         return;
       end
       if nargin < 4
@@ -255,7 +259,7 @@ classdef table
             error('table:groupsummary', 'unknown method %s', method);
         end
       end
-      out = table(uniq, counts, vals, 'VariableNames', ...
+      out = table(groupvals, counts, vals, 'VariableNames', ...
                   {g, 'GroupCount', sprintf('%s_%s', lower(method), d)});
     end
 
@@ -554,6 +558,22 @@ classdef table
         m = false(n, 1);
       end
       m = reshape(m, n, 1);
+    end
+
+    function out = regroup(labels, original)
+      % labels are the distinct group names as text; put them back into the
+      % type the grouping column had, so the result can be compared and
+      % grouped again the same way the input was.
+      if isa(original, 'categorical')
+        out = categorical(labels, categories(original));
+      elseif isa(original, 'string')
+        out = string(labels);
+      elseif isnumeric(original)
+        out = cellfun(@str2double, labels);
+        out = out(:);
+      else
+        out = labels;
+      end
     end
 
     function labels = grouplabels(col)

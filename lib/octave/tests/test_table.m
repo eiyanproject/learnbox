@@ -78,4 +78,7 @@ lbx_run({
   "empty_table_has_no_rows",     @() lbx_eq(0, height(table()))
   "table_with_a_categorical",    @() lbx_eq(2, height(table(categorical({"a";"b"}), "VariableNames", {"G"})))
   "categorical_column_groups",   @() lbx_eq(2, height(groupsummary(table(categorical({"a";"b";"a"}), [1;2;3], "VariableNames", {"G","V"}), "G")))
+  "grouping_keeps_categorical",  @() lbx_type("categorical", groupsummary(table(categorical({"a";"b"}), [1;2], "VariableNames", {"G","V"}), "G").G)
+  "grouping_keeps_numeric",      @() lbx_true(isnumeric(groupsummary(table([1;2;1], [1;2;3], "VariableNames", {"G","V"}), "G").G))
+  "grouping_keeps_cellstr",      @() lbx_true(iscellstr(groupsummary(table({"a";"b"}, [1;2], "VariableNames", {"G","V"}), "G").G))
 });

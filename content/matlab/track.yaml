@@ -8,3 +8,12 @@ sections:
   - id: learn
     title: Beginner
     description: "Arrays and indexing, matrix against element-wise operators, logical indexing, control flow, functions and handles, and plotting."
+  - id: intermediate
+    title: Intermediate
+    description: "Cell arrays and structs, tables, datetime and duration, categorical, and importing and cleaning real data."
+  - id: advanced
+    title: Advanced
+    description: "Vectorisation, errors and debugging, text processing, and a readings report capstone."
+  - id: exam
+    title: "Associate - practice exam"
+    description: "Four cumulative papers, one per exam domain. Fewer hints than a lesson, on purpose."
