@@ -8,3 +8,9 @@ sections:
   - id: learn
     title: Beginner
     description: "Classes and properties, records, the collections, and LINQ."
+  - id: intermediate
+    title: Intermediate
+    description: "Interfaces and generic constraints, records and pattern matching, nullable reference types and when to throw, and delegates and events."
+  - id: advanced
+    title: Advanced
+    description: "Iterators and deferred execution, async and Task, structs and Span<T>, and a log report capstone."

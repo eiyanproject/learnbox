@@ -93,17 +93,29 @@ no Maven, no Gradle.
 
 **Beginner** (6) - Types, sizes and integer behaviour; Pointers; Strings are arrays with a rule; Structs and how they are laid out; malloc, free and who owns what; Files, streams and checking every call
 
+**Intermediate** (4) - Function pointers and dispatch tables; The preprocessor, and what a macro is not; Linked lists and the pointer-to-pointer idiom; Bits, masks and flags
+
+**Advanced** (4) - A generic vector over void*; A hash table; Arena allocation; Capstone: a tokenizer
+
 ### C++
 
 **Environment** (1) - What C++ adds, and what it keeps
 
 **Beginner** (5) - vector, string and the range-for; Classes, constructors and RAII; Copies, moves and references; Templates, lambdas and the algorithms; Smart pointers and ownership
 
+**Intermediate** (4) - Operator overloading; Runtime polymorphism; Reporting failure - exceptions, optional and expected; Iterators and ranges
+
+**Advanced** (4) - A container with iterators; Concepts and constraints; Work done at compile time; Capstone: an expression evaluator
+
 ### C#
 
 **Environment** (1) - The SDK, a project and the CLR
 
 **Beginner** (3) - Classes, properties and records; Lists, dictionaries and the collection interfaces; LINQ
+
+**Intermediate** (4) - Interfaces and generics; Records and pattern matching; Null, and when to throw; Delegates and events
+
+**Advanced** (4) - Iterators and laziness; async and await; Structs and spans; Capstone: a log report
 
 C and C++ are graded by `lib/ctest/ctest.h`, a single-header framework; C# by
 `lib/csharp/LearnboxTest.cs`. Neither needs a package manager at check time.
