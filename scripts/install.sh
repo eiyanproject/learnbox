@@ -51,7 +51,15 @@ JUNIT_SHA256=b016ef6b1c3454d6d7c2c88ce081dabf289699686af6622d6e4e2e1b54b4a2fc
 DOTNET_VERSION=8.0.404
 DOTNET_SHA256=5bf340ba6acb314c703c2492a3a6e1530d7cdbfd3b5bf86788ee8b4afefd3573
 
-as_learner() { runuser -u "$LEARNER" -- env HOME="/home/$LEARNER" USER="$LEARNER" LOGNAME="$LEARNER" "$@"; }
+# pct exec does not promise a useful PATH, and this script calls tools in
+# /usr/local/bin (the wrappers it installs) and /sbin (runuser). Set one
+# rather than inherit whatever the caller happened to have.
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+export PATH
+
+as_learner() {
+  runuser -u "$LEARNER" -- env HOME="/home/$LEARNER" USER="$LEARNER" LOGNAME="$LEARNER"     PATH="$PATH" "$@"
+}
 say() { printf '\n\033[36m==>\033[0m %s\n' "$*"; }
 die() { printf '\n\033[31mERROR:\033[0m %s\n' "$*" >&2; exit 1; }
 
@@ -177,7 +185,7 @@ exec "$TOOLS/dotnet/dotnet" "\$@"
 DOTNETSH
   chmod 0755 /usr/local/bin/dotnet
   install -d -o "$LEARNER" -g "$LEARNER" -m 0755 "$LHOME/.cache/dotnet" "$LHOME/.cache/nuget"
-  as_learner dotnet --version
+  as_learner /usr/local/bin/dotnet --version
   # First use of the SDK generates its runtime assets and warms the MSBuild
   # caches, which costs about twenty seconds. Pay it here, once, rather than
   # on the learner's first Check.
@@ -185,7 +193,7 @@ DOTNETSH
   cp "$ROOT/lib/csharp/lesson.csproj" "$WARM/"
   cp "$ROOT/lib/csharp/LearnboxTest.cs" "$WARM/"
   chown -R "$LEARNER:$LEARNER" "$WARM"
-  as_learner sh -c "cd '$WARM' && dotnet build -c Release --nologo -v q /p:UseSharedCompilation=false" >/dev/null 2>&1     && echo "  build cache warmed" || echo "  warmup build failed (checks will still work, the first one will be slow)"
+  as_learner sh -c "cd '$WARM' && /usr/local/bin/dotnet build -c Release --nologo -v q /p:UseSharedCompilation=false" >/dev/null 2>&1     && echo "  build cache warmed" || echo "  warmup build failed (checks will still work, the first one will be slow)"
   rm -rf "$WARM"
 fi
 
