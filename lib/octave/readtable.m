@@ -45,7 +45,11 @@ function t = readtable(filename, varargin)
     return;
   end
 
-  rows = cellfun(@(s) strsplit(s, delim), lines, 'UniformOutput', false);
+  % CollapseDelimiters is true by default in Octave, which would turn
+  % "north,2026-01-02,,good" into THREE fields and shift every column after
+  % the gap. An empty field is exactly what this reader has to preserve.
+  rows = cellfun(@(s) strsplit(s, delim, 'CollapseDelimiters', false), ...
+                 lines, 'UniformOutput', false);
   ncol = max(cellfun(@numel, rows));
 
   % A short row is padded rather than rejected: a trailing empty field is the

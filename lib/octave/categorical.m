@@ -37,11 +37,23 @@ classdef categorical
         return;
       end
 
-      % 'Ordinal', true may follow any of the positional forms.
+      % MATLAB allows categorical(v, valueset, 'Ordinal', true) with no
+      % category names in between, so a third argument that is one of the
+      % option names is the start of the options rather than a name list.
+      opts = varargin;
+      names = {};
+      if nargin >= 3
+        if ischar(catnames) && any(strcmpi(catnames, {'Ordinal', 'Protected'}))
+          opts = [{catnames}, varargin];
+        else
+          names = catnames;
+        end
+      end
+
       ord = false;
-      for i = 1:2:numel(varargin)
-        if strcmpi(varargin{i}, 'Ordinal')
-          ord = logical(varargin{i + 1});
+      for i = 1:2:numel(opts)
+        if strcmpi(opts{i}, 'Ordinal')
+          ord = logical(opts{i + 1});
         end
       end
       obj.isord = ord;
@@ -62,8 +74,8 @@ classdef categorical
         end
       end
 
-      if nargin >= 3 && ~isempty(catnames)
-        newnames = categorical.astext(catnames);
+      if ~isempty(names)
+        newnames = categorical.astext(names);
         if numel(newnames) ~= numel(obj.cats)
           error('categorical:nameCount', ...
                 'got %d names for %d categories', numel(newnames), numel(obj.cats));
@@ -80,8 +92,8 @@ classdef categorical
         end
       end
 
-      if nargin >= 3 && ~isempty(catnames)
-        obj.cats = categorical.astext(catnames);
+      if ~isempty(names)
+        obj.cats = categorical.astext(names);
         obj.cats = obj.cats(:)';
       end
     end

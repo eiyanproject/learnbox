@@ -1,0 +1,7 @@
+Station,Day,Reading,Quality
+north,2026-01-01,12.5,good
+north,2026-01-02,,good
+south,2026-01-01,18.0,good
+south,2026-01-02,19.5,poor
+north,2026-01-03,14.5,good
+south,2026-01-03,20.5,good

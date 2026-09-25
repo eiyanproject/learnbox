@@ -35,4 +35,7 @@ lbx_run({
   "wrong_name_count_rejected",   @() lbx_error("categorical:nameCount", @() categorical({"a"}, {"a","b"}, {"x"}))
   "brace_indexing_refused",      @() lbx_error("categorical:braceIndex", @() mk(){1})
   "ismember",                    @() lbx_eq(logical([1 0 1 0 0 1]), ismember(mk(), {"red"}))
+  "ordinal_without_catnames",    @() lbx_true(ord_pair()(1) < ord_pair()(2))
+  "catnames_still_work",         @() lbx_true(iscategory(categorical({"a"}, {"a"}, {"Alpha"}), "Alpha"))
+  "option_form_sets_ordinal",    @() lbx_true(isordinal(ord_pair()))
 });
