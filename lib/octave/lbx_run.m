@@ -66,10 +66,10 @@ function lbx_run(cases)
 
   for i = 1:n
     if ~isempty(failures{i})
-      printf("FAIL %s\n     %s\n", names{i}, failures{i});
+      fprintf("FAIL %s\n     %s\n", names{i}, failures{i});
     end
   end
-  printf("\n%d tests, %d failed\n", n, failed);
+  fprintf("\n%d tests, %d failed\n", n, failed);
 
   exit(failed > 0);
 end
