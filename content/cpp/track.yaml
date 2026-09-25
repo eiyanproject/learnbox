@@ -8,3 +8,9 @@ sections:
   - id: learn
     title: Beginner
     description: "Containers and the range-for, classes and RAII, copies against moves, templates and lambdas, and smart pointers."
+  - id: intermediate
+    title: Intermediate
+    description: "Operator overloading, runtime polymorphism, exceptions against std::optional, and the iterator model behind every algorithm."
+  - id: advanced
+    title: Advanced
+    description: "A container the standard algorithms accept, concepts and constraints, compile-time computation, and an expression evaluator capstone."
