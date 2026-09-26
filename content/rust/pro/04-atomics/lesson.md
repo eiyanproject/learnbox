@@ -22,8 +22,14 @@ HITS.fetch_add(1, Ordering::Relaxed);
 HITS.load(Ordering::Relaxed);
 ```
 
-Atomics can be `static` without `lazy_static`, cost nothing when uncontended,
-and cannot deadlock. They only work on single machine-word values.
+Atomics can be `static` without `lazy_static`, need no syscall and never block,
+and a single operation cannot deadlock. They only work on single machine-word
+values.
+
+They are not free, though. An uncontended `fetch_add` is around **twenty times**
+the cost of an ordinary `+= 1`, because it still has to lock the cache line
+against other cores. That is far cheaper than a `Mutex`, and far more expensive
+than nothing - so an atomic in a tight inner loop is still worth noticing.
 
 ## Memory ordering
 
@@ -42,14 +48,19 @@ The pattern that matters is **release/acquire pairing**:
 
 ```rust
 // thread A
-data.lock().unwrap().push(42);        // ordinary write
-ready.store(true, Ordering::Release); // publish
+payload.store(42, Ordering::Relaxed);  // no ordering of its own
+ready.store(true, Ordering::Release);  // publish everything written above
 
 // thread B
-if ready.load(Ordering::Acquire) {    // if we see the flag...
-    // ...we are guaranteed to see the write that happened before it
+if ready.load(Ordering::Acquire) {     // if we see the flag...
+    payload.load(Ordering::Relaxed)    // ...we are guaranteed to see 42
 }
 ```
+
+Note that `payload` is written and read with `Relaxed`. It does not need an
+ordering of its own: the `Release` store and the `Acquire` load are what create
+the guarantee, and everything thread A wrote *before* its release comes along
+with it. That is the whole trick, and it is what a `Mutex` is built from.
 
 With `Relaxed` on both sides, thread B could see the flag but not the data.
 

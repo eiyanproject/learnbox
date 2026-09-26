@@ -14,17 +14,29 @@ hints:
 ## Size, alignment, padding
 
 Every type has a **size** and an **alignment**; a value's address must be a
-multiple of its alignment, so the compiler inserts **padding** between fields.
-Field order therefore changes the size:
+multiple of its alignment, so **padding** is inserted between fields to keep
+each one aligned. Declaration order can therefore change the size - but only
+when you have taken the ordering into your own hands:
 
 ```rust
-struct Wasteful { a: u8, b: u64, c: u8 }   // 24 bytes: 7 padding after a, 7 at the end
-struct Tight    { b: u64, a: u8, c: u8 }   // 16 bytes
+#[repr(C)] struct Wasteful { a: u8, b: u64, c: u8 }  // 24: 7 padding after a, 7 at the end
+#[repr(C)] struct Tight    { b: u64, a: u8, c: u8 }  // 16: no gaps
 ```
 
-Rust may reorder fields itself (the layout of `struct` is unspecified), so this
-is a hint rather than a rule; `#[repr(C)]` fixes the order for FFI, and then the
-padding is entirely yours to manage.
+The `#[repr(C)]` is doing the work in that example. **Without it, both of those
+are 16 bytes**, because the layout of a plain `struct` is unspecified and the
+compiler already reorders fields to pack them for you. You cannot even rely on
+the order being what you wrote:
+
+```rust
+struct Wasteful { a: u8, b: u64, c: u8 }   // 16 bytes - reordered for you
+```
+
+So the rule is not "always put the big fields first". It is: let the compiler
+lay out your types, and reach for `#[repr(C)]` only when the layout must match
+something outside Rust - an FFI struct, a file format, a wire protocol. At that
+point the order is fixed, the padding becomes yours to manage, and putting the
+largest fields first is how you keep it small.
 
 ```rust
 use std::mem::{align_of, size_of};
