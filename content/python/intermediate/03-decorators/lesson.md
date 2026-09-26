@@ -72,23 +72,45 @@ def count_calls(func):
 
 ## Decorators with arguments
 
-`@retry(times=3)` first **calls** `retry(times=3)`, and whatever that returns
-is the actual decorator. So you need one more level:
+This is the one that catches people out, so build it up rather than reading it
+whole.
+
+Everything above had **two** levels: a decorator that takes a function, and a
+wrapper inside it. But `@repeat(3)` is not a decorator - it is a **call**.
+Python evaluates `repeat(3)` first, and whatever comes back is then used as the
+decorator:
 
 ```python
-def repeat(n):
-    def decorator(func):
+@repeat(3)
+def ping(): print("ping")
+
+# is exactly
+def ping(): print("ping")
+ping = repeat(3)(ping)          # note the two sets of brackets
+```
+
+So `repeat(3)` has to *return a decorator*, which means one more level. Three
+functions, each with one job:
+
+```python
+def repeat(n):                              # 1. takes the ARGUMENTS
+    def decorator(func):                    # 2. takes the FUNCTION
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs):       # 3. takes the CALL's arguments
             for _ in range(n):
                 result = func(*args, **kwargs)
             return result
-        return wrapper
-    return decorator
-
-@repeat(3)
-def ping(): print("ping")
+        return wrapper                      # 2 returns 3
+    return decorator                        # 1 returns 2
 ```
+
+Read the returns from the bottom up: `repeat` returns `decorator`, `decorator`
+returns `wrapper`, and `wrapper` is what `ping` becomes. Each level closes over
+what the level above it was given - `wrapper` can still see `n`, three levels
+up, because it is a closure.
+
+The shape is always the same, and it is worth memorising as a shape:
+arguments, then function, then call.
 
 ## Stacking
 
@@ -109,8 +131,9 @@ write several of these patterns yourself in later lessons.
 In `decorators.py`, using `functools.wraps` in each:
 
 - `count_calls`: the wrapper has a `.calls` attribute counting calls
-- `retry(times)`: call the function up to `times` times until it does not raise;
-  if every attempt raises, re-raise the last exception
+- `retry(times)`: the hard one - a decorator with arguments, so three levels
+  as above. Call the function up to `times` times until it does not raise; if
+  every attempt raises, re-raise the last exception
 - `memoize`: cache results by positional arguments so the function body runs
   once per distinct argument tuple
 - `uppercase_result`: upper-case whatever string the function returns
