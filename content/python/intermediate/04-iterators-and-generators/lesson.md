@@ -65,6 +65,30 @@ def naturals():
         n += 1
 ```
 
+## Generator expressions
+
+A comprehension with **round** brackets is a generator rather than a list. It
+builds nothing up front and produces each value as it is asked for:
+
+```python
+[n * n for n in range(1_000_000)]     # a list: a million values, all in memory
+(n * n for n in range(1_000_000))     # a generator: nothing yet
+```
+
+Functions that consume a sequence once - `sum`, `any`, `all`, `max`, `min`,
+`"".join` - take one directly, and the brackets can be dropped when it is the
+only argument:
+
+```python
+sum(n * n for n in range(1000))
+any(line.startswith("ERROR") for line in log)
+```
+
+`any` and `all` also **stop early**: `any` returns as soon as something is
+true, so on a million-line log that matches on line 3, only three lines are
+ever read. With a list comprehension you would have built the whole million
+first.
+
 Generators compose into **pipelines**, each stage pulling from the one before:
 
 ```python

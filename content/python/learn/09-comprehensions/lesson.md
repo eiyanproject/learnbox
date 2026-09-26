@@ -68,15 +68,19 @@ A comprehension can also sit inside another one to build a grid:
 # [[0, 0, 0], [0, 0, 0]]
 ```
 
-## Generator expressions
-
-With round brackets you get a lazy generator instead of a list. Functions
-like `sum`, `any`, `all`, `max` and `"".join` accept one directly:
+Read that from the outside in. The **outer** comprehension makes the rows - two
+of them, one per `row` - and the **inner** one makes the three values inside
+each row. The outer loop variable is in scope in the inner one, so the values
+can depend on both:
 
 ```python
-sum(n * n for n in range(1000))
-any(ch.isdigit() for ch in password)
+[[row + col for col in range(3)] for row in range(2)]
+# [[0, 1, 2], [1, 2, 3]]
 ```
+
+Row 0 gives `0+0, 0+1, 0+2`; row 1 gives `1+0, 1+1, 1+2`. If you are unsure
+what a nested comprehension will do, write it as two ordinary `for` loops
+first, get it right, and then fold it up.
 
 ## When not to
 
@@ -91,5 +95,7 @@ In `comprehensions.py`, write each as a single `return` of a comprehension:
 - `evens_squared(numbers)`: squares of the even numbers, in order
 - `lengths(words)`: a dict from each word to its length
 - `flatten(grid)`: a list of lists into one list: `[[1, 2], [3]]` gives `[1, 2, 3]`
-- `multiplication_table(n)`: an n by n grid where row `i`, column `j` holds
-  `(i + 1) * (j + 1)`: `multiplication_table(2)` gives `[[1, 2], [2, 4]]`
+- `multiplication_table(n)`: the hardest one here, and a nested comprehension
+  like the `row + col` example above. An n by n grid where row `i`, column `j`
+  holds `(i + 1) * (j + 1)`, counting rows and columns from 0:
+  `multiplication_table(2)` gives `[[1, 2], [2, 4]]`

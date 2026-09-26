@@ -50,6 +50,27 @@ with open("out.txt", "w") as f:
     print("second line", file=f)
 ```
 
+## Using code from elsewhere
+
+The rest of this lesson uses tools that are not built in. Python ships with a
+large collection of them, and you ask for one by name before you use it:
+
+```python
+import csv                        # now csv.reader, csv.writer exist
+from pathlib import Path          # now Path exists, on its own
+```
+
+A **module** is just a file of Python somebody else already wrote. `import csv`
+makes the whole module available as `csv.something`; `from pathlib import Path`
+takes one name out of it and gives you that name directly. Either is fine - the
+second saves typing when you only want one thing.
+
+Put imports at the top of your file. You do not need to install any of the ones
+below: they come with Python.
+
+There is more to this - your own modules, packages, and other people's
+libraries - in the Intermediate section.
+
 ## pathlib
 
 `Path` objects are the modern way to handle file paths:
