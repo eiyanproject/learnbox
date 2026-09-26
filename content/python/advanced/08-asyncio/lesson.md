@@ -72,6 +72,11 @@ async with asyncio.timeout(2):          # 3.11+
     data = await fetch(url)
 ```
 
+`except TimeoutError` above also needs **3.11+**, where `asyncio.TimeoutError`
+became an alias of the built-in. Before that it aliased
+`concurrent.futures.TimeoutError`, and a bare `except TimeoutError:` would not
+catch it - so on 3.10 and earlier you must write `except asyncio.TimeoutError:`.
+
 Timeouts work by **cancelling** the task: a `CancelledError` is raised at its
 current `await`. Clean up in `finally`, and do not swallow `CancelledError`.
 

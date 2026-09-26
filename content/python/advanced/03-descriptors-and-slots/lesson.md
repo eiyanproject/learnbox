@@ -95,6 +95,28 @@ Slotted instances are smaller and attribute access is slightly faster. Use them
 for classes with very many instances. Slots are themselves implemented as
 descriptors on the class.
 
+### Slots and descriptors together
+
+Because a slot *is* a class attribute, a slot cannot share its name with
+anything else defined on the class - including one of your descriptors:
+
+```python
+class Product:
+    __slots__ = ("name",)
+    name = String(40)        # ValueError: 'name' in __slots__ conflicts
+                             # with class variable
+```
+
+That fails when the class is **defined**, before any of your code runs. The fix
+is the one the exercise uses: the descriptor keeps the public name, and the
+slot holds the private storage name it writes to.
+
+```python
+class Product:
+    __slots__ = ("_name",)   # where the value lives
+    name = String(40)        # the descriptor, writing into _name
+```
+
 ## Your turn
 
 In `fields.py`:

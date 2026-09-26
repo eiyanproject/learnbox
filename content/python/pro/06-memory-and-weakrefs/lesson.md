@@ -15,8 +15,13 @@ hints:
 
 Every object has a **reference count**: how many names, containers and
 attributes point at it. When it drops to zero, the object is freed
-immediately. This is why `with` is not needed to close a file in simple
-scripts: the file is closed the moment the last reference disappears.
+immediately - CPython does not wait for a collector to come round.
+
+That immediacy is a property of **CPython**, not of Python. PyPy and others
+free objects whenever they get to it, so a file whose last reference has gone
+may stay open and its writes unflushed. Never let a resource's lifetime rest on
+refcounting: use `with`, and let the reference count be an optimisation you
+benefit from rather than a guarantee you depend on.
 
 ```python
 import sys
@@ -35,8 +40,13 @@ del a, b                 # counts never reach zero
 
 The **cycle collector** (`gc` module) finds such unreachable groups
 periodically. It works, but it is delayed and costs time. Avoid needless
-cycles, especially parent-child links in trees and caches, and objects with
-`__del__` inside cycles.
+cycles, especially parent-child links in trees and caches.
+
+You may meet older advice that a cycle containing an object with `__del__` can
+never be collected at all. That was true until **Python 3.4**: such groups were
+given up on and parked in `gc.garbage`. PEP 442 changed it, and they are
+collected now. Cycles are still worth avoiding for the delay and the cost, but
+`__del__` no longer makes one permanent.
 
 ## Weak references
 
