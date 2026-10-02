@@ -1,0 +1,4 @@
+import base64
+
+# The first 64 bytes of a real 64-bit x86-64 executable - its ELF header.
+SAMPLE_ELF = base64.b64decode("f0VMRgIBAQAAAAAAAAAAAAIAPgABAAAAUBBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAOAAAAEAAAAAAAA==")

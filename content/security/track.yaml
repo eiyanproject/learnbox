@@ -20,3 +20,6 @@ sections:
   - id: forensics
     title: Forensics
     description: "Reading the logs, identifying files by their magic bytes, metadata that leaks, hidden and appended data, carving a file from a blob, and reconstructing an incident timeline."
+  - id: reversing
+    title: Reading binaries
+    description: "What an ELF binary is, the strings and symbols that triage it, reading disassembly, recognising a dangerous call, and the stack layout that explains why an overflow matters."
