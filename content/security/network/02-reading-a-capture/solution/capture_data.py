@@ -1,0 +1,8 @@
+import base64
+
+# A real (tiny) packet capture in the classic pcap format: a client opening a
+# connection to a web server and sending an HTTP request over plain HTTP. One
+# of these packets carries credentials in the clear - which is the point.
+SAMPLE = base64.b64decode(
+    "1MOyoQIABAAAAAAAAAAAAP//AAABAAAA6AMAAAAAAAA2AAAANgAAAKq7zN3u/xEiM0RVZggARQAAKAAAAABABgAAwKgAMl242CLHOABQAAAAAAAAAABQAgQAAAAAAOkDAAAAAAAANgAAADYAAACqu8zd7v8RIjNEVWYIAEUAACgAAAAAQAYAAF242CLAqAAyAFDHOAAAAAAAAAAAUBIEAAAAAADqAwAAAAAAAIkAAACJAAAAqrvM3e7/ESIzRFVmCABFAAB7AAAAAEAGAADAqAAyXbjYIsc4AFAAAAAAAAAAAFAYBAAAAAAAR0VUIC9hY2NvdW50IEhUVFAvMS4xDQpIb3N0OiBleGFtcGxlLmNvbQ0KQXV0aG9yaXphdGlvbjogQmFzaWMgWVdSdGFXNDZjek5qY21WMA0KDQo="
+)
