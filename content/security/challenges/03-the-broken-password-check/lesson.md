@@ -1,0 +1,39 @@
+---
+title: "Challenge: the broken password check"
+summary: A password routine with the two classic mistakes - a fast unsalted hash and a leaky comparison. Rebuild it properly.
+order: 3
+files: [pwcheck.py]
+run: python pwcheck.py
+hints:
+  - "Storage: a per-user random salt and a slow KDF (pbkdf2_hmac with many iterations), never a bare sha256. Keep the salt and iteration count in the record."
+  - "Verification: recompute from the attempt and compare with hmac.compare_digest, never ==."
+---
+
+Here is a password routine with both mistakes from the Foundations password
+lesson at once: it stores `sha256(password)` - fast and unsalted - and checks it
+with `==`, which leaks through its timing. An attacker who steals the store
+cracks every common password instantly, and the comparison hands out a timing
+side channel for free. Rebuild it correctly.
+
+## The brief
+
+Replace the storage and the check:
+
+- **Storage** - `make_record(password)` must use a fresh random **salt** and a
+  **slow** key-derivation function (`hashlib.pbkdf2_hmac`), returning a record
+  that carries the salt and iteration count alongside the derived hash.
+- **Verification** - `check_password(attempt, record)` must recompute from the
+  attempt using the record's salt and iterations, and compare in **constant
+  time** with `hmac.compare_digest`.
+
+Two users with the same password must end up with different records, and a
+correct password must still verify. The two flaws compound: a fast unsalted
+hash lets an attacker who steals the store test billions of guesses a second,
+and the `==` comparison leaks, through its timing, how many leading bytes of a
+token were right - enough to recover it one byte at a time. Closing one and
+leaving the other is not a fix.
+
+## Your turn
+
+In `pwcheck.py`, implement `make_record(password)` and
+`check_password(attempt, record)`.

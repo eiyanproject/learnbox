@@ -26,3 +26,6 @@ sections:
   - id: defence
     title: Defence and detection
     description: "Hardening a config, writing detection rules, triaging the alert flood, file integrity monitoring, least-privilege review, and an incident-response capstone."
+  - id: challenges
+    title: Challenges
+    description: "Unguided, mixed-topic problems that pull the whole track together: a layered secret, a predictable token, a broken password check, an exfil capture, a swapped file, and a full intrusion to work."

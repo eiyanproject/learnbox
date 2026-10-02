@@ -144,6 +144,38 @@ One difference cannot be hidden: Octave has no string *literal*, so `"hi"` is a
 char array there and lessons write `string('hi')` explicitly. Each shim's header
 states where else it diverges. `install.sh --no-octave` skips the lot (620MB).
 
+### Security
+
+A hands-on cybersecurity track, from pure beginner to an advanced level, built
+attack-then-defend: understand how something is attacked, then detect and fix
+it. Every lab runs **inside this container and touches nothing outside it** -
+the one rule the track opens with, since permission, not technique, is what
+separates security work from a crime.
+
+**Environment** (2) - the lab and the rule; reading bytes
+
+**Foundations** (4) - encoding is not encryption; hashing and integrity; how passwords are stored and attacked; file permissions
+
+**Cryptography** (6) - randomness; stream ciphers and nonce reuse; block modes; public-key RSA and Diffie-Hellman by hand; the certificate chain of trust
+
+**Web security** (7) - the HTTP request; SQL injection; XSS; broken access control; path traversal; command injection; a vulnerable app to harden
+
+**Network security** (6) - packets and ports; reading a capture; port scanning; ARP and DNS spoofing; a firewall rule engine
+
+**Forensics** (6) - log analysis; magic bytes; metadata; hidden data; carving; timeline reconstruction
+
+**Reading binaries** (5) - what an ELF is; strings and symbols; reading disassembly; dangerous patterns; the stack and overflows (stops at understanding, not exploitation)
+
+**Defence and detection** (6) - hardening; detection rules; alert triage; file integrity monitoring; least-privilege review; incident response
+
+**Challenges** (6) - unguided, mixed-topic problems pulling the whole track together
+
+The whole track is pure-Python standard library and needs no extra toolchain:
+the real tools (nmap, tcpdump, gdb, exiftool) are described for the free
+terminal, but every graded lab reimplements their core, so a lesson can be
+checked deterministically and nothing reaches outside the box. Each lab targets
+a program that lives on `localhost` here, put there to practise on.
+
 ### Programming mindset
 
 How to think while programming, practised in Python because the subject is not
