@@ -8,3 +8,6 @@ sections:
   - id: foundations
     title: Foundations
     description: "Encoding against encryption, hashing and integrity, how passwords are stored and attacked, and file permissions."
+  - id: crypto
+    title: Cryptography
+    description: "Trustworthy randomness, stream ciphers and nonce reuse, block modes, public-key RSA and Diffie-Hellman built by hand, and the certificate chain of trust."
