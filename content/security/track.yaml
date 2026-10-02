@@ -11,3 +11,6 @@ sections:
   - id: crypto
     title: Cryptography
     description: "Trustworthy randomness, stream ciphers and nonce reuse, block modes, public-key RSA and Diffie-Hellman built by hand, and the certificate chain of trust."
+  - id: web
+    title: Web security
+    description: "The HTTP request, SQL injection, cross-site scripting, broken access control, path traversal and command injection - each attacked against a local target, then fixed, ending in a vulnerable app to harden."
