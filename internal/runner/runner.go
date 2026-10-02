@@ -105,8 +105,10 @@ func (r *Runner) check(ctx context.Context, l *content.Lesson, srcRel string) (*
 	// files, and the tests apply them to the simulator and assert the network
 	// actually forwards. The mindset track is Python too - the subject is how
 	// to think about code, and Python is the least distracting way to write it.
-	// Same runner, different thing being written.
-	case "python", "ccna", "mindset":
+	// Security lessons are graded the same way: the learner writes a script or
+	// a fix, and the test runs it against a target that lives inside the
+	// container and confirms the result. Same runner, different thing written.
+	case "python", "ccna", "mindset", "security":
 		if err := r.ws.CopyIn(l.TestsDir(), checkRel); err != nil {
 			return nil, fmt.Errorf("copy tests: %w", err)
 		}

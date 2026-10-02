@@ -1,0 +1,10 @@
+title: "Security"
+order: 10
+description: "Cybersecurity from the command line up: how attacks work, how to detect and fix them, and a run of unguided challenges. Every lab runs inside this container and touches nothing outside it."
+sections:
+  - id: environment
+    title: Environment
+    description: "The lab, the one rule that governs all of it, and the way a security person reads bytes."
+  - id: foundations
+    title: Foundations
+    description: "Encoding against encryption, hashing and integrity, how passwords are stored and attacked, and file permissions."
