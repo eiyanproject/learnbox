@@ -17,3 +17,6 @@ sections:
   - id: network
     title: Network security
     description: "Packets and ports by their bytes, reading a real capture, port scanning from both sides, and detecting ARP and DNS spoofing - ending in a firewall rule engine."
+  - id: forensics
+    title: Forensics
+    description: "Reading the logs, identifying files by their magic bytes, metadata that leaks, hidden and appended data, carving a file from a blob, and reconstructing an incident timeline."
