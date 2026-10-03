@@ -76,6 +76,32 @@ return std::visit(overloaded{
 template <typename... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 ```
 
+On a smaller variant, where you can see each branch chosen:
+
+```cpp
+#include <iostream>
+#include <string>
+#include <variant>
+
+template <typename... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+
+int main() {
+    auto show = overloaded{
+        [](int n) { return "int " + std::to_string(n); },
+        [](const std::string& s) { return "string " + s; },
+    };
+    std::variant<int, std::string> v = 42;
+    std::cout << std::visit(show, v) << "\n";
+    v = std::string("hi");
+    std::cout << std::visit(show, v) << "\n";
+}
+```
+
+```output
+int 42
+string hi
+```
+
 ## Your turn
 
 In `eval.h`:

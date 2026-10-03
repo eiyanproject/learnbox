@@ -51,7 +51,42 @@ double area() const override;
 a missing `const`, a different parameter type — silently defines a *new*
 function that hides nothing and overrides nothing, and your calls go to the
 base version. This is one of the most annoying bugs in C++ and `override`
-removes it entirely.
+removes it entirely. Here is the bug, with `Typo` missing a `const`:
+
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
+struct Shape {
+    virtual ~Shape() = default;
+    virtual std::string name() const { return "shape"; }
+};
+
+struct Circle : Shape {
+    std::string name() const override { return "circle"; }
+};
+
+struct Typo : Shape {
+    std::string name() { return "typo"; }    // no const: a NEW function
+};
+
+int main() {
+    std::vector<std::unique_ptr<Shape>> shapes;
+    shapes.push_back(std::make_unique<Circle>());
+    shapes.push_back(std::make_unique<Typo>());
+    for (const auto& s : shapes) std::cout << s->name() << "\n";
+}
+```
+
+```output
+circle
+shape
+```
+
+Add `override` to `Typo::name` and it no longer compiles - which is the
+point.
 
 ## The cost
 

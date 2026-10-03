@@ -34,7 +34,36 @@ for (auto item : items) { ... }          // a copy of each element
 ```
 
 The `&` matters. Without it every element is copied — invisible for `int`,
-expensive for `std::string`, and a real bug if you meant to modify.
+expensive for `std::string`, and a real bug if you meant to modify:
+
+```cpp
+#include <iostream>
+#include <stdexcept>
+#include <vector>
+
+int main() {
+    std::vector<int> items = {1, 2, 3};
+    for (auto item : items) { item *= 2; }       // doubles the copies
+    std::cout << items[0] << " " << items[1] << " " << items[2] << "\n";
+    for (auto& item : items) { item *= 2; }      // doubles the elements
+    std::cout << items[0] << " " << items[1] << " " << items[2] << "\n";
+
+    try {
+        items.at(10);
+    } catch (const std::out_of_range&) {
+        std::cout << "at(10) threw out_of_range\n";
+    }
+}
+```
+
+```output
+1 2 3
+2 4 6
+at(10) threw out_of_range
+```
+
+`items[10]` would not have thrown: it reads past the end, which is undefined
+behaviour.
 
 ## auto
 

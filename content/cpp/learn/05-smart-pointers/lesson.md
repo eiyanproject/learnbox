@@ -58,6 +58,34 @@ Reference counted: destroyed when the last owner goes. Use it when ownership is
 genuinely shared and you cannot say who outlives whom — a graph, a cache, a
 callback registry.
 
+```cpp
+#include <iostream>
+#include <memory>
+
+struct Node {
+    int value;
+    explicit Node(int v) : value(v) {}
+};
+
+int main() {
+    auto a = std::make_unique<Node>(42);
+    auto b = std::move(a);
+    std::cout << "a empty: " << (a == nullptr) << ", b: " << b->value << "\n";
+
+    auto s = std::make_shared<Node>(1);
+    auto t = s;
+    std::cout << "owners: " << s.use_count() << "\n";
+    t.reset();
+    std::cout << "owners: " << s.use_count() << "\n";
+}
+```
+
+```output
+a empty: 1, b: 42
+owners: 2
+owners: 1
+```
+
 It costs an atomic increment per copy and a second allocation for the control
 block (unless you use `make_shared`, which combines them). Two `shared_ptr`s
 pointing at each other never reach zero, which is what `std::weak_ptr` exists

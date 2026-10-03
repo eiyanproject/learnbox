@@ -69,6 +69,38 @@ auto it = std::find(v.begin(), v.end(), 2);
 The algorithms in `<algorithm>` work on any range, so the same `sort` serves
 every container.
 
+The string and container claims above, in a program you can compile:
+
+```cpp
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
+
+int main() {
+    std::string a = "hello";
+    a += " world";
+    std::cout << a.size() << " " << (a == "hello world") << "\n";
+
+    const char* p = "hi";
+    char q[] = "hi";
+    std::cout << (p == q) << "\n";      // same text, different addresses
+
+    std::vector<int> v = {3, 1, 2};
+    std::sort(v.begin(), v.end());
+    auto it = std::find(v.begin(), v.end(), 2);
+    std::cout << v[0] << v[1] << v[2] << ", 2 is at index " << (it - v.begin()) << "\n";
+}
+```
+
+```output
+11 1
+0
+123, 2 is at index 1
+```
+
+`std::cout` prints a `bool` as `1` or `0`.
+
 ## Your turn
 
 In `text.h` and `text.cpp`:

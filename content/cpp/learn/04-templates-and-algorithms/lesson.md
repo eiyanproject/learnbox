@@ -58,6 +58,37 @@ std::accumulate(v.begin(), v.end(), 0);   // <numeric>
 std::sort(v.begin(), v.end(), comparator);
 ```
 
+Together, including what capturing by value means:
+
+```cpp
+#include <algorithm>
+#include <iostream>
+#include <numeric>
+#include <vector>
+
+int main() {
+    std::vector<int> v = {4, 7, 1, 8, 6};
+    auto is_even = [](int n) { return n % 2 == 0; };
+    int threshold = 5;
+    auto over = [threshold](int n) { return n > threshold; };   // a copy of 5
+    int count = 0;
+    auto tally = [&count](int n) { count += n; };               // the real count
+
+    std::for_each(v.begin(), v.end(), tally);
+    std::cout << std::count_if(v.begin(), v.end(), is_even) << " "
+              << std::count_if(v.begin(), v.end(), over) << " "
+              << count << " " << std::accumulate(v.begin(), v.end(), 0) << "\n";
+
+    threshold = 0;       // `over` kept its own copy, so nothing changes
+    std::cout << std::count_if(v.begin(), v.end(), over) << "\n";
+}
+```
+
+```output
+3 3 26 26
+3
+```
+
 The argument for using these over a hand-written loop is not speed — it is that
 the name says what the loop does. `std::any_of` cannot accidentally be an
 `all_of`, and it cannot have an off-by-one.

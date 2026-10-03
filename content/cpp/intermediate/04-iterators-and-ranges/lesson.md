@@ -67,7 +67,37 @@ end; `erase` then actually shortens it. Calling `remove` alone leaves the
 vector the same length with stale values at the back, which is a genuinely
 confusing first encounter.
 
-C++20 adds `std::erase(v, value)` as a free function that does both.
+C++20 adds `std::erase(v, value)` as a free function that does both. Here is
+`remove` on its own, then with `erase`:
+
+```cpp
+#include <algorithm>
+#include <iostream>
+#include <ranges>
+#include <vector>
+
+int main() {
+    std::vector<int> v = {1, 2, 1, 3, 1};
+    auto new_end = std::remove(v.begin(), v.end(), 1);
+    std::cout << "size " << v.size() << ", survivors " << (new_end - v.begin()) << "\n";
+    v.erase(new_end, v.end());
+    for (int x : v) std::cout << x << " ";
+    std::cout << "\n";
+
+    std::vector<int> nums = {5, 2, 8, 3};
+    std::ranges::sort(nums);
+    for (int x : nums | std::views::filter([](int n) { return n % 2 == 0; })) {
+        std::cout << x << " ";
+    }
+    std::cout << "\n";
+}
+```
+
+```output
+size 5, survivors 2
+2 3
+2 8
+```
 
 ## Ranges
 

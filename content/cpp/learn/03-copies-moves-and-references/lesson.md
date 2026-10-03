@@ -54,6 +54,45 @@ Buffer(Buffer&& other) noexcept : data_(std::move(other.data_)) {}  // move
 when it reallocates if the move constructor promises not to throw, and will
 copy it otherwise.
 
+Both claims - that a move steals the storage, and that `vector` only moves an
+element whose move constructor is `noexcept` - can be watched directly:
+
+```cpp
+#include <iostream>
+#include <utility>
+#include <vector>
+
+struct Safe {
+    Safe() = default;
+    Safe(const Safe&) { std::cout << "copy\n"; }
+    Safe(Safe&&) noexcept { std::cout << "move\n"; }
+};
+
+struct Risky {
+    Risky() = default;
+    Risky(const Risky&) { std::cout << "copy\n"; }
+    Risky(Risky&&) { std::cout << "move\n"; }      // no noexcept
+};
+
+int main() {
+    std::vector<int> a(1000, 7);
+    const int* storage = a.data();
+    std::vector<int> b = std::move(a);
+    std::cout << "stolen: " << (b.data() == storage) << ", size " << b.size() << "\n";
+
+    std::vector<Safe> s(1);
+    s.reserve(10);       // reallocates: moves its element
+    std::vector<Risky> r(1);
+    r.reserve(10);       // reallocates: copies, to stay safe if a move throws
+}
+```
+
+```output
+stolen: 1, size 1000
+move
+copy
+```
+
 Note `std::move(other.data_)` inside the move constructor. `other` is an rvalue
 reference, but `other.data_` is a named thing and therefore an lvalue; without
 the `std::move` you would silently copy.

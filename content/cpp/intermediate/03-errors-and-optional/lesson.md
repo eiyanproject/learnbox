@@ -47,7 +47,31 @@ value_or(0);
 ```
 
 It says in the type that absence is possible, so the caller cannot ignore it
-the way they ignore a `-1` return.
+the way they ignore a `-1` return:
+
+```cpp
+#include <charconv>
+#include <iostream>
+#include <optional>
+#include <string_view>
+
+std::optional<int> parse_int(std::string_view text) {
+    int value = 0;
+    auto [end, ec] = std::from_chars(text.data(), text.data() + text.size(), value);
+    if (ec != std::errc{} || end != text.data() + text.size()) return std::nullopt;
+    return value;
+}
+
+int main() {
+    if (auto n = parse_int("42")) std::cout << "got " << *n << "\n";
+    std::cout << parse_int("4x2").value_or(0) << "\n";
+}
+```
+
+```output
+got 42
+0
+```
 
 ## std::expected
 

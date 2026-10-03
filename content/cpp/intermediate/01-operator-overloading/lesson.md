@@ -59,6 +59,38 @@ std::strong_ordering operator<=>(const Money&) const = default;
 The spaceship operator generates `<`, `>`, `<=` and `>=` from one definition,
 and `==` generates `!=`. Before C++20 you wrote six; now you write one or two.
 
+All of it in one small class:
+
+```cpp
+#include <compare>
+#include <iostream>
+
+class Money {
+public:
+    explicit Money(long cents) : cents_(cents) {}
+    Money& operator+=(const Money& rhs) { cents_ += rhs.cents_; return *this; }
+    friend Money operator+(Money lhs, const Money& rhs) { lhs += rhs; return lhs; }
+    bool operator==(const Money&) const = default;
+    std::strong_ordering operator<=>(const Money&) const = default;
+    long cents() const { return cents_; }
+
+private:
+    long cents_;
+};
+
+int main() {
+    Money a(150), b(250);
+    Money c = a + b;
+    std::cout << c.cents() << " " << a.cents() << "\n";    // a is untouched
+    std::cout << (a < b) << (a >= b) << (c != Money(400)) << "\n";
+}
+```
+
+```output
+400 150
+100
+```
+
 ## When not to
 
 An overloaded operator should mean what the symbol means. `+` on a collection

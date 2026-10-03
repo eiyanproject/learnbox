@@ -73,6 +73,35 @@ early `return`, and while an exception is unwinding:
 }                          // destructor: active--
 ```
 
+Watch the count go back down while an exception is in flight:
+
+```cpp
+#include <iostream>
+#include <stdexcept>
+
+int active = 0;
+
+struct Tracker {
+    Tracker() { active++; }
+    ~Tracker() { active--; }
+};
+
+int main() {
+    try {
+        Tracker t;
+        std::cout << "inside: " << active << "\n";
+        throw std::runtime_error("boom");
+    } catch (const std::exception& e) {
+        std::cout << "after " << e.what() << ": " << active << "\n";
+    }
+}
+```
+
+```output
+inside: 1
+after boom: 0
+```
+
 That guarantee is what makes `std::vector`, `std::string`, `std::lock_guard`
 and `std::unique_ptr` safe. Each owns a resource, and the destructor releases
 it, so there is no code path that forgets.

@@ -77,6 +77,47 @@ generic `print(const T&)` and a `print(Named auto const&)` coexist, and the
 specific one wins for types that satisfy it — without the tag-dispatch or
 SFINAE that this used to require.
 
+Everything in this lesson, compiled:
+
+```cpp
+#include <concepts>
+#include <iostream>
+#include <string>
+
+template <typename T>
+concept Numeric = std::integral<T> || std::floating_point<T>;
+
+template <typename T>
+concept Named = requires(const T& t) {
+    { t.name() } -> std::convertible_to<std::string>;
+};
+
+struct Dog { std::string name() const { return "Rex"; } };
+
+template <typename T>
+std::string describe(const T& value) {
+    if constexpr (Numeric<T>) {
+        return std::to_string(value);
+    } else {
+        return value.name();      // never compiled for an int
+    }
+}
+
+template <typename T> std::string print(const T&) { return "something"; }
+std::string print(const Named auto& n) { return "named " + n.name(); }
+
+int main() {
+    static_assert(Numeric<double> && !Numeric<std::string>);
+    std::cout << describe(7) << " " << describe(Dog{}) << "\n";
+    std::cout << print(3) << ", " << print(Dog{}) << "\n";
+}
+```
+
+```output
+7 Rex
+something, named Rex
+```
+
 ## Your turn
 
 In `shapes2.h`:

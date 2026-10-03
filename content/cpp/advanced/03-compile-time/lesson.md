@@ -69,6 +69,36 @@ static_assert(factorial(5) == 120);
 static_assert(sizeof(void*) == 8, "64-bit only");
 ```
 
+A whole table, checked before the program exists:
+
+```cpp
+#include <array>
+#include <cstddef>
+#include <iostream>
+
+constexpr int factorial(int n) { return n <= 1 ? 1 : n * factorial(n - 1); }
+
+template <std::size_t N>
+constexpr std::array<int, N> make_squares() {
+    std::array<int, N> out{};
+    for (std::size_t i = 0; i < N; ++i) out[i] = static_cast<int>(i * i);
+    return out;
+}
+
+constexpr auto squares = make_squares<16>();
+static_assert(factorial(5) == 120);
+static_assert(squares[15] == 225);
+
+int main() {
+    int n = 6;      // a run-time value: the same function, run normally
+    std::cout << factorial(n) << " " << squares[4] << "\n";
+}
+```
+
+```output
+720 16
+```
+
 A test that runs at compile time and costs nothing at run time. If the
 expression is not a constant expression, it does not compile — which is why a
 `static_assert` is also the proof that a `constexpr` function really is one.
