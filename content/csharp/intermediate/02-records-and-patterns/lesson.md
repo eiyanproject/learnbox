@@ -68,6 +68,47 @@ cases are not exhaustive.
 | Positional | `Rect(var w, var h)` |
 | `when` guard | `Rect r when r.Width == r.Height` |
 
+Records, `with` and the patterns, run together:
+
+```csharp
+Console.WriteLine(new Item(1, "a") == new Item(1, "a"));     // record: by value
+Console.WriteLine(new Thing(1) == new Thing(1));             // class: by reference
+
+var bag = new Bag(new List<int> { 1 });
+var copy = bag with { };
+copy.Items.Add(2);                         // shallow: the list is shared
+Console.WriteLine(bag.Items.Count);
+
+Shape[] shapes = { new Circle(1), new Rect(2, 3), new Rect(0, 5), new Rect(4, 4) };
+foreach (var s in shapes) Console.WriteLine(Describe(s));
+
+static string Describe(Shape s) => s switch
+{
+    Rect { Width: 0 } => "flat",
+    Rect r when r.Width == r.Height => "square",
+    Rect(var w, var h) => $"{w}x{h}",
+    Circle c => $"circle {c.Radius}",
+    _ => "unknown",
+};
+
+record Item(int Id, string Name);
+class Thing { public int Id; public Thing(int id) => Id = id; }
+record Bag(List<int> Items);
+abstract record Shape;
+record Circle(double Radius) : Shape;
+record Rect(double Width, double Height) : Shape;
+```
+
+```output
+True
+False
+2
+circle 1
+2x3
+flat
+square
+```
+
 **The first match wins**, so order from specific to general. A `_` at the end
 catches the rest — and if a case is unreachable because an earlier one already
 covers it, the compiler says so.

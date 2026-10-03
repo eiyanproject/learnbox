@@ -59,6 +59,30 @@ if (amount > _balance) throw new InvalidOperationException("insufficient funds")
 Use `nameof` rather than a string literal: rename the parameter and the message
 follows.
 
+```csharp
+string? text = null;
+Console.WriteLine(text?.Trim() ?? "(null)");
+
+string? cache = null;
+cache ??= "built";
+cache ??= "built again";          // already set: skipped
+Console.WriteLine(cache);
+
+try { Withdraw(-5); }
+catch (ArgumentOutOfRangeException e) { Console.WriteLine(e.ParamName); }
+
+static void Withdraw(decimal amount)
+{
+    if (amount <= 0) throw new ArgumentOutOfRangeException(nameof(amount));
+}
+```
+
+```output
+(null)
+built
+amount
+```
+
 ## Which exception
 
 | | |

@@ -74,6 +74,34 @@ var label = n switch {                          // switch expression
 public static int Add(int a, int b) => a + b;  // expression-bodied member
 ```
 
+A whole program can be just statements, as in the examples in these lessons -
+the compiler wraps them in a `Main` for you. Here is the `string` exception and
+the switch expression running:
+
+```csharp
+string a = "hello";
+string b = string.Concat("hel", "lo");     // built at run time: a second object
+Console.WriteLine(a == b);                 // == compares the text
+Console.WriteLine(ReferenceEquals(a, b));  // they are not the same object
+
+foreach (var n in new[] { -3, 0, 5 })
+{
+    Console.WriteLine(n switch { < 0 => "negative", 0 => "zero", _ => "positive" });
+}
+Console.WriteLine(new Point(1, 2));
+
+record Point(int X, int Y);
+```
+
+```output
+True
+False
+negative
+zero
+positive
+Point { X = 1, Y = 2 }
+```
+
 ## Your turn
 
 In `Calc.cs`, a `public static class Calc` in `namespace Lesson`:

@@ -73,7 +73,26 @@ var doubled = money with { Amount = money.Amount * 2 };
 
 Two `Money` values with the same fields are `==` equal, where two classes would
 not be. Use a record for data, a class for something with identity and
-behaviour.
+behaviour. Both claims from this lesson, run:
+
+```csharp
+Console.WriteLine(0.1 + 0.2 == 0.3);       // double: binary, slightly off
+Console.WriteLine(0.1m + 0.2m == 0.3m);    // decimal: exact
+
+var money = new Money(2.50m, "EUR");
+var doubled = money with { Amount = money.Amount * 2 };
+Console.WriteLine(doubled);
+Console.WriteLine(money == new Money(2.50m, "EUR"));
+
+record Money(decimal Amount, string Currency);
+```
+
+```output
+False
+True
+Money { Amount = 5.00, Currency = EUR }
+True
+```
 
 ## Your turn
 

@@ -71,6 +71,40 @@ async all the way up; `.Result` is for a program's entry point, if anywhere.
 `Task.WhenAll` gathers every failure into an `AggregateException`, but
 `await`ing it rethrows only the first. Check `task.Exception` for all of them.
 
+The difference between `await` and `.Wait()`, seen from the `catch`:
+
+```csharp
+var results = await Task.WhenAll(new[] { 1, 2, 3 }.Select(DoubleAsync));
+Console.WriteLine(string.Join(",", results));
+
+try { await FailAsync(); }
+catch (InvalidOperationException e) { Console.WriteLine($"await: {e.GetType().Name}"); }
+
+try { FailAsync().Wait(); }
+catch (AggregateException e)
+{
+    Console.WriteLine($"Wait: {e.GetType().Name} around {e.InnerException!.GetType().Name}");
+}
+
+static async Task<int> DoubleAsync(int n)
+{
+    await Task.Delay(1);
+    return n * 2;
+}
+
+static async Task FailAsync()
+{
+    await Task.Delay(1);
+    throw new InvalidOperationException("nope");
+}
+```
+
+```output
+2,4,6
+await: InvalidOperationException
+Wait: AggregateException around InvalidOperationException
+```
+
 ## Cancellation
 
 ```csharp

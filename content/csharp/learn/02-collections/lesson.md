@@ -55,6 +55,31 @@ read and write behave differently, which catches people out.
 counts[word] = counts.GetValueOrDefault(word) + 1;
 ```
 
+And the read-versus-write difference from above, in one run:
+
+```csharp
+var counts = new Dictionary<string, int>();
+foreach (var word in "the cat the end".Split(' '))
+{
+    counts[word] = counts.GetValueOrDefault(word) + 1;
+}
+Console.WriteLine(counts["the"]);
+Console.WriteLine(counts.TryGetValue("dog", out var n) ? n : -1);
+
+try { _ = counts["dog"]; }
+catch (KeyNotFoundException) { Console.WriteLine("reading a missing key throws"); }
+
+counts["dog"] = 1;                // writing a missing key adds it
+Console.WriteLine(counts.Count);
+```
+
+```output
+2
+-1
+reading a missing key throws
+4
+```
+
 ## Iteration order
 
 `Dictionary<K,V>` and `HashSet<T>` make **no guarantee** about order. It looks

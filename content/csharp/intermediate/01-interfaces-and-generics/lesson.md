@@ -47,7 +47,27 @@ with the storage and the type check to match. This is unlike Java, where
 erasure means `List<int>` cannot exist at all and `List<Integer>` boxes every
 element.
 
-`typeof(T)` therefore works, and so does `new T[16]`.
+`typeof(T)` therefore works, and so does `new T[16]`:
+
+```csharp
+Console.WriteLine(NameOf<int>());
+Console.WriteLine(NameOf<string>());
+Console.WriteLine(Make<double>(3).GetType());
+
+Console.WriteLine(int.TryParse("42", out var a) + " " + a);
+Console.WriteLine(int.TryParse("x", out var b) + " " + b);
+
+static string NameOf<T>() => typeof(T).Name;
+static T[] Make<T>(int n) => new T[n];
+```
+
+```output
+Int32
+String
+System.Double[]
+True 42
+False 0
+```
 
 ## Constraints
 

@@ -33,8 +33,32 @@ struct` is the form to prefer: without it, the compiler makes a defensive copy
 every time it sees a method called on a readonly field, which quietly costs
 more than the class would have.
 
-A **mutable** struct is a documented mistake. `list[0].X = 5` modifies a copy
-and silently does nothing.
+A **mutable** struct is a documented mistake. `list[0]` hands back a *copy* of
+the element. The compiler knows that, so `list[0].X = 5` does not compile
+(error CS1612). But calling a method that changes the struct does compile -
+and changes the copy:
+
+```csharp
+var points = new List<MutablePoint> { new MutablePoint { X = 1 } };
+points[0].MoveRight();             // compiles, and moves a temporary copy
+Console.WriteLine(points[0].X);
+
+var a = new MutablePoint { X = 1 };
+var b = a;                         // a full copy
+b.X = 9;
+Console.WriteLine($"{a.X} {b.X}");
+
+struct MutablePoint
+{
+    public int X;
+    public void MoveRight() => X++;
+}
+```
+
+```output
+1
+1 9
+```
 
 ## Span
 

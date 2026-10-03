@@ -65,6 +65,38 @@ both -= first;
 Every target runs in order. For a `Func`, only the **last** return value
 survives — which is why multicast is almost always used with `Action`.
 
+The closure, the loop trap and multicast, run:
+
+```csharp
+var c1 = Counter();
+var c2 = Counter();
+c1(); c1();
+Console.WriteLine($"{c1()} {c2()}");          // independent counters
+
+var fromFor = new List<Func<int>>();
+for (int i = 0; i < 3; i++) fromFor.Add(() => i);          // one shared i
+var fromForeach = new List<Func<int>>();
+foreach (int i in new[] { 0, 1, 2 }) fromForeach.Add(() => i);
+Console.WriteLine(string.Join(",", fromFor.Select(f => f())) + " / " +
+                  string.Join(",", fromForeach.Select(f => f())));
+
+Func<int> one = () => 1, two = () => 2;
+Func<int> both = one + two;
+Console.WriteLine(both());                    // both ran; the last value wins
+
+static Func<int> Counter()
+{
+    int count = 0;
+    return () => ++count;
+}
+```
+
+```output
+3 1
+3,3,3 / 0,1,2
+2
+```
+
 ## Events
 
 ```csharp

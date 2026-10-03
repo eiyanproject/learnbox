@@ -58,6 +58,36 @@ Two consequences:
 type's default. `Single` additionally throws when there is more than one — use
 it when "exactly one" is the invariant you want checked.
 
+Deferred execution and these three, demonstrated:
+
+```csharp
+var ages = new List<int> { 15, 30, 42 };
+var adults = ages.Where(age => age > 18);      // no work yet
+ages.Add(70);                                  // added after the query was built
+Console.WriteLine(string.Join(",", adults));   // ...and it is included
+
+int calls = 0;
+var traced = ages.Select(x => { calls++; return x; });
+traced.ToList();
+traced.ToList();
+Console.WriteLine(calls);                      // 4 items, enumerated twice
+
+var small = new[] { 1, 2 };
+Console.WriteLine(small.FirstOrDefault(x => x > 5));
+try { small.First(x => x > 5); }
+catch (InvalidOperationException) { Console.WriteLine("First threw"); }
+try { new[] { 1, 1 }.Single(x => x == 1); }
+catch (InvalidOperationException) { Console.WriteLine("Single threw"); }
+```
+
+```output
+30,42,70
+8
+0
+First threw
+Single threw
+```
+
 ## Query syntax
 
 ```csharp

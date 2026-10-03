@@ -55,7 +55,48 @@ Perfectly well-behaved, because nothing computes an element nobody asked for.
 primes and then stops.
 
 This is the whole reason LINQ is lazy: operators compose into a pipeline, and
-the pipeline pulls one element at a time from the back.
+the pipeline pulls one element at a time from the back. The `produce` lines
+show exactly when work happens:
+
+```csharp
+var evens = Evens(Noisy());        // nothing runs yet
+Console.WriteLine("built");
+Console.WriteLine(string.Join(",", Naturals().Where(n => n % 3 == 0).Take(3)));
+foreach (var e in evens.Take(1)) Console.WriteLine($"got {e}");
+
+static IEnumerable<int> Noisy()
+{
+    foreach (var n in new[] { 1, 2, 3, 4 })
+    {
+        Console.WriteLine($"produce {n}");
+        yield return n;
+    }
+}
+
+static IEnumerable<int> Evens(IEnumerable<int> values)
+{
+    foreach (int n in values)
+    {
+        if (n % 2 == 0) yield return n;
+    }
+}
+
+static IEnumerable<int> Naturals()
+{
+    int n = 1;
+    while (true) yield return n++;
+}
+```
+
+```output
+built
+3,6,9
+produce 1
+produce 2
+got 2
+```
+
+`3` and `4` are never produced: `Take(1)` stopped asking.
 
 ## The cost
 
