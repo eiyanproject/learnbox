@@ -91,6 +91,51 @@ pub mod shapes;
 pub use shapes::circle::Circle;
 ```
 
+## Run it
+
+```rust
+mod units {
+    pub struct Percent {
+        value: u8,
+    }
+
+    impl Percent {
+        pub fn new(value: u8) -> Option<Self> {
+            (value <= 100).then_some(Self { value })
+        }
+        pub fn value(&self) -> u8 {
+            self.value
+        }
+    }
+
+    pub(crate) fn round2(x: f64) -> f64 {
+        (x * 100.0).round() / 100.0
+    }
+
+    pub mod inner {
+        pub fn helper() -> f64 {
+            super::round2(2.0 / 3.0)       // the parent module's function
+        }
+    }
+}
+
+use units::Percent;
+
+fn main() {
+    println!("{:?}", Percent::new(42).map(|p| p.value()));
+    println!("{}", Percent::new(250).is_none());
+    println!("{} {}", crate::units::round2(3.14159), units::inner::helper());
+}
+```
+
+```output
+Some(42)
+true
+3.14 0.67
+```
+
+`Percent { value: 250 }` written in `main` would not compile: the field is private to `units`.
+
 ## Your turn
 
 The files exist but the module tree is not wired up. Make these work from the

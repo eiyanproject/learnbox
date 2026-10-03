@@ -82,6 +82,61 @@ Reach for it only when ownership really is shared. It trades compile-time
 guarantees for runtime checks, and `Rc` cycles leak (the Advanced track shows
 `Weak` for back-references).
 
+## Run it
+
+```rust
+use std::cell::RefCell;
+use std::rc::Rc;
+
+enum List {
+    Cons(i32, Box<List>),
+    Nil,
+}
+
+fn sum(list: &List) -> i32 {
+    match list {
+        List::Cons(v, rest) => v + sum(rest),
+        List::Nil => 0,
+    }
+}
+
+fn main() {
+    let list = List::Cons(1, Box::new(List::Cons(2, Box::new(List::Nil))));
+    println!("{}", sum(&list));
+
+    let shared = Rc::new(String::from("config"));
+    let a = Rc::clone(&shared);
+    {
+        let _b = Rc::clone(&shared);
+        println!("{}", Rc::strong_count(&shared));
+    }                                   // _b dropped: the count goes down
+    println!("{} {}", Rc::strong_count(&shared), a);
+
+    let log = RefCell::new(Vec::new());
+    log.borrow_mut().push("started");
+    println!("{:?}", log.borrow());
+    let held = log.borrow();
+    println!("{}", log.try_borrow_mut().is_err());   // a shared borrow is alive
+    drop(held);
+    println!("{}", log.try_borrow_mut().is_ok());
+
+    let counter = Rc::new(RefCell::new(0));
+    let other = Rc::clone(&counter);
+    *other.borrow_mut() += 1;
+    println!("{}", counter.borrow());
+}
+```
+
+```output
+3
+3
+2 config
+["started"]
+true
+true
+1
+```
+
 ## Your turn
 
 In `src/lib.rs`:

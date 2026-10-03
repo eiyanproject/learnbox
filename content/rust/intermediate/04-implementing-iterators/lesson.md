@@ -92,6 +92,60 @@ Adapters build nested structs; nothing runs until something calls `next`. A
 long chain compiles down to roughly the same machine code as a hand-written
 loop.
 
+## Run it
+
+```rust
+struct Squares {
+    n: u32,
+}
+
+impl Iterator for Squares {
+    type Item = u32;
+    fn next(&mut self) -> Option<u32> {
+        self.n += 1;
+        Some(self.n * self.n)
+    }
+}
+
+struct PairsIter<I> {
+    inner: I,
+}
+
+impl<I: Iterator> Iterator for PairsIter<I> {
+    type Item = (I::Item, I::Item);
+    fn next(&mut self) -> Option<Self::Item> {
+        let a = self.inner.next()?;
+        let b = self.inner.next()?;
+        Some((a, b))
+    }
+}
+
+trait Pairs: Iterator + Sized {
+    fn pairs(self) -> PairsIter<Self> {
+        PairsIter { inner: self }
+    }
+}
+
+impl<I: Iterator> Pairs for I {}
+
+fn main() {
+    let v: Vec<u32> = Squares { n: 0 }.take(3).collect();
+    println!("{v:?}");
+    println!("{}", Squares { n: 0 }.filter(|x| x % 2 == 1).take(3).sum::<u32>());
+    println!("{:?}", (1..=5).pairs().collect::<Vec<_>>());
+    println!("{:?}", "abcd".chars().pairs().collect::<Vec<_>>());
+}
+```
+
+```output
+[1, 4, 9]
+35
+[(1, 2), (3, 4)]
+[('a', 'b'), ('c', 'd')]
+```
+
+One `next`, and `take`, `filter`, `sum` and `collect` all came free - and `.pairs()` now works on every iterator, `chars()` included.
+
 ## Your turn
 
 In `src/lib.rs`:

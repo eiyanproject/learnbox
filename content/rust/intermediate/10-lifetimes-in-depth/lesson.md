@@ -83,6 +83,53 @@ As a **bound**, `T: 'static` means "`T` contains no non-static borrows", which
 is what `thread::spawn` and `Box<dyn Trait + 'static>` require: owned data like
 `String` satisfies it. It does **not** mean the value lives forever.
 
+## Run it
+
+```rust
+struct Words<'a> {
+    rest: &'a str,
+}
+
+impl<'a> Iterator for Words<'a> {
+    type Item = &'a str;
+    fn next(&mut self) -> Option<&'a str> {
+        let trimmed = self.rest.trim_start();
+        if trimmed.is_empty() {
+            return None;
+        }
+        let end = trimmed.find(' ').unwrap_or(trimmed.len());
+        let (word, rest) = trimmed.split_at(end);
+        self.rest = rest;
+        Some(word)
+    }
+}
+
+fn prefix_of<'a, 'b>(haystack: &'a str, needle: &'b str) -> &'a str {
+    match haystack.find(needle) {
+        Some(i) => &haystack[..i],
+        None => haystack,
+    }
+}
+
+fn main() {
+    let text = String::from("the quick  brown fox");
+    let words: Vec<&str> = Words { rest: &text }.collect();   // the iterator is gone...
+    println!("{words:?}");                                     // ...the words remain
+
+    let before;
+    {
+        let needle = String::from("brown");
+        before = prefix_of(&text, &needle);
+    }   // needle is dropped; before borrows only from text
+    println!("[{before}]");
+}
+```
+
+```output
+["the", "quick", "brown", "fox"]
+[the quick  ]
+```
+
 ## Your turn
 
 In `src/lib.rs`:

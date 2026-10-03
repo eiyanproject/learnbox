@@ -95,6 +95,67 @@ if let Some(user) = find(id)
 `let (a, b) = pair;` and function parameters like `fn dist(&(x, y): &(f64, f64))`
 use patterns too; they must always match.
 
+## Run it
+
+```rust
+fn summary(xs: &[i32]) -> String {
+    match xs {
+        [] => "empty".into(),
+        [x] => format!("just {x}"),
+        [first, second] => format!("{first} and {second}"),
+        [first, .., last] => format!("{first} ... {last}"),
+    }
+}
+
+fn port_kind(port: u16) -> String {
+    match port {
+        p @ 1..=1023 => format!("privileged port {p}"),
+        p @ 1024..=49151 => format!("registered port {p}"),
+        p => format!("dynamic port {p}"),
+    }
+}
+
+fn port_of(addr: &str) -> Option<u16> {
+    let Some((_, port)) = addr.rsplit_once(':') else {
+        return None;
+    };
+    port.parse().ok()
+}
+
+fn main() {
+    let cases: [&[i32]; 4] = [&[], &[1], &[1, 2], &[1, 2, 3, 4]];
+    for xs in cases {
+        println!("{}", summary(xs));
+    }
+    for p in [80, 8080, 60000] {
+        println!("{}", port_kind(p));
+    }
+    println!("{:?} {:?} {:?}", port_of("localhost:8080"), port_of("localhost"), port_of("h:x"));
+
+    let vowels: String = "education".chars().filter(|&c| matches!(c, 'a' | 'e' | 'i' | 'o' | 'u')).collect();
+    println!("{vowels}");
+
+    if let Some(n) = "42".parse::<i32>().ok()
+        && n > 40
+    {
+        println!("big {n}");
+    }
+}
+```
+
+```output
+empty
+just 1
+1 and 2
+1 ... 4
+privileged port 80
+registered port 8080
+dynamic port 60000
+Some(8080) None None
+euaio
+big 42
+```
+
 ## Your turn
 
 In `src/lib.rs`:

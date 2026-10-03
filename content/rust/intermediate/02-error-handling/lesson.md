@@ -95,6 +95,64 @@ A rule of thumb: libraries return precise enums; `main` and top-level glue use
 `Box<dyn Error>` (the popular `thiserror` and `anyhow` crates automate these two
 styles).
 
+## Run it
+
+```rust
+use std::error::Error;
+use std::fmt;
+use std::num::ParseIntError;
+
+#[derive(Debug)]
+enum LoadError {
+    NotFound(String),
+    BadNumber { line: usize, source: ParseIntError },
+}
+
+impl fmt::Display for LoadError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            LoadError::NotFound(path) => write!(f, "file not found: {path}"),
+            LoadError::BadNumber { line, .. } => write!(f, "bad number on line {line}"),
+        }
+    }
+}
+
+impl Error for LoadError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match self {
+            LoadError::BadNumber { source, .. } => Some(source),
+            _ => None,
+        }
+    }
+}
+
+fn parse_line(line: usize, text: &str) -> Result<i32, LoadError> {
+    text.trim().parse().map_err(|source| LoadError::BadNumber { line, source })
+}
+
+fn main() {
+    let e = parse_line(3, "4x").unwrap_err();
+    println!("{e}");
+    let mut cause = e.source();
+    while let Some(c) = cause {
+        println!("caused by: {c}");
+        cause = c.source();
+    }
+    println!("{}", LoadError::NotFound("app.toml".into()));
+    let boxed: Box<dyn Error> = Box::new(e);       // any Error fits the box
+    println!("{boxed}");
+    println!("{:?}", parse_line(1, " 7 ").ok());
+}
+```
+
+```output
+bad number on line 3
+caused by: invalid digit found in string
+file not found: app.toml
+bad number on line 3
+Some(7)
+```
+
 ## Your turn
 
 In `src/lib.rs`, with configuration given as a `HashMap<String, String>`:

@@ -95,6 +95,68 @@ runtime (dynamic dispatch, one function). Traits with associated types or
 generic methods have restrictions as trait objects, which is one reason both
 styles exist.
 
+## Run it
+
+```rust
+use std::fmt::{Debug, Display};
+use std::ops::{Add, Mul};
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct Meters(f64);
+
+impl Add for Meters {
+    type Output = Meters;
+    fn add(self, rhs: Meters) -> Meters {
+        Meters(self.0 + rhs.0)
+    }
+}
+
+impl Mul<f64> for Meters {
+    type Output = Meters;
+    fn mul(self, k: f64) -> Meters {
+        Meters(self.0 * k)
+    }
+}
+
+trait Shape: Debug {
+    fn area(&self) -> f64;
+    fn report(&self) -> String {
+        format!("{self:?} has area {}", self.area())
+    }
+}
+
+#[derive(Debug)]
+struct Square(f64);
+
+impl Shape for Square {
+    fn area(&self) -> f64 {
+        self.0 * self.0
+    }
+}
+
+trait Shout {
+    fn shout(&self) -> String;
+}
+
+impl<T: Display> Shout for T {
+    fn shout(&self) -> String {
+        self.to_string().to_uppercase()
+    }
+}
+
+fn main() {
+    println!("{:?}", Meters(1.5) + Meters(2.0) * 2.0);
+    println!("{}", Square(3.0).report());
+    println!("{} {}", 42.shout(), "hi".shout());
+}
+```
+
+```output
+Meters(5.5)
+Square(3.0) has area 9
+42 HI
+```
+
 ## Your turn
 
 In `src/lib.rs`:

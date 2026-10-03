@@ -90,6 +90,66 @@ while let Some(node) = queue.pop_front() {
 Exploring a graph in order of distance from the start (BFS) finds shortest
 paths in unweighted graphs.
 
+## Run it
+
+```rust
+use std::cmp::Reverse;
+use std::collections::{BTreeMap, BinaryHeap, HashSet, VecDeque};
+
+fn main() {
+    let mut by_date = BTreeMap::new();
+    by_date.insert("2026-09-18", "deploy");
+    by_date.insert("2026-01-02", "kickoff");
+    by_date.insert("2026-07-04", "review");
+    println!("{:?}", by_date.values().collect::<Vec<_>>());
+    println!("{:?}", by_date.range("2026-06-01"..).map(|(_, e)| *e).collect::<Vec<_>>());
+    println!("{:?}", by_date.first_key_value());
+
+    let a: HashSet<i32> = [1, 2, 3].into();
+    let b: HashSet<i32> = [2, 3, 4].into();
+    let mut both: Vec<i32> = a.intersection(&b).copied().collect();
+    let mut either: Vec<i32> = a.symmetric_difference(&b).copied().collect();
+    both.sort();                      // a HashSet has no order: sort to compare
+    either.sort();
+    println!("{both:?} {either:?} {}", a.is_subset(&b));
+
+    let mut heap = BinaryHeap::from([5, 1, 8]);
+    let mut min_heap = BinaryHeap::from([Reverse(5), Reverse(1), Reverse(8)]);
+    println!("{:?} {:?}", heap.pop(), min_heap.pop().map(|Reverse(x)| x));
+
+    let mut tasks = BinaryHeap::from([(2, Reverse("b")), (3, Reverse("z")), (2, Reverse("a"))]);
+    let order: Vec<&str> = std::iter::from_fn(|| tasks.pop().map(|(_, Reverse(n))| n)).collect();
+    println!("{order:?}");
+
+    // breadth-first distances in a small graph: 0 -> 1, 2; 1 -> 3; 2 -> 3
+    let edges: [Vec<usize>; 4] = [vec![1, 2], vec![3], vec![3], vec![]];
+    let mut dist = [usize::MAX; 4];
+    dist[0] = 0;
+    let mut queue = VecDeque::from([0]);
+    while let Some(node) = queue.pop_front() {
+        for &next in &edges[node] {
+            if dist[next] == usize::MAX {
+                dist[next] = dist[node] + 1;
+                queue.push_back(next);
+            }
+        }
+    }
+    println!("{dist:?}");
+}
+```
+
+```output
+["kickoff", "review", "deploy"]
+["review", "deploy"]
+Some(("2026-01-02", "kickoff"))
+[2, 3] [1, 4] false
+Some(8) Some(1)
+["z", "a", "b"]
+[0, 1, 1, 2]
+```
+
+`z` comes first on priority 3; then, on equal priority 2, `Reverse` puts `a` ahead of `b`.
+
 ## Your turn
 
 In `src/lib.rs`:

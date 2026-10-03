@@ -90,6 +90,62 @@ fn escape(s: &str) -> Cow<str> {
 
 `Cow<str>` derefs to `&str`, so callers mostly do not care which one they got.
 
+## Run it
+
+```rust
+use std::borrow::Cow;
+use std::fmt::Write;
+
+fn escape(s: &str) -> Cow<'_, str> {
+    if s.contains('<') {
+        Cow::Owned(s.replace('<', "&lt;"))
+    } else {
+        Cow::Borrowed(s)
+    }
+}
+
+fn main() {
+    let s = "héllo";
+    println!("{} {}", s.len(), s.chars().count());
+    println!("{:?}", s.char_indices().map(|(i, _)| i).collect::<Vec<_>>());
+    println!("{} {}", &s[0..1], s.is_char_boundary(2));
+
+    let upper = "straße".to_uppercase();
+    println!("{upper} {}", upper.len());
+
+    println!("{:?} {:?}", u8::from_str_radix("ff", 16), "a,b,,c".split(',').collect::<Vec<_>>());
+    println!("{:?} {:?}", "key: value".split_once(": "), "GET /x".strip_prefix("GET "));
+
+    let mut out = String::with_capacity(64);
+    out.push_str("total:");
+    write!(out, "{:>8.2}", 3.14159).unwrap();
+    println!("[{out}]");
+
+    for text in ["plain", "a<b"] {
+        let e = escape(text);
+        let kind = match &e {
+            Cow::Borrowed(_) => "borrowed",
+            Cow::Owned(_) => "owned",
+        };
+        println!("{e} {kind}");
+    }
+}
+```
+
+```output
+6 5
+[0, 1, 3, 4, 5]
+h false
+STRASSE 7
+Ok(255) ["a", "b", "", "c"]
+Some(("key", "value")) Some("/x")
+[total:    3.14]
+plain borrowed
+a&lt;b owned
+```
+
+The byte offsets jump from 1 to 3: `é` occupies bytes 1 and 2, which is why byte 2 is not a boundary.
+
 ## Your turn
 
 In `src/lib.rs`:

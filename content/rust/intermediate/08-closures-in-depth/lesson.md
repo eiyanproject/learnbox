@@ -86,6 +86,59 @@ over owned data satisfy.
 A struct holding **one** closure can instead be generic, `struct Retry<F: Fn()> { f: F }`,
 which avoids the box and the dynamic call.
 
+## Run it
+
+```rust
+fn call_n<F: FnMut()>(mut f: F, n: usize) {
+    for _ in 0..n {
+        f();
+    }
+}
+
+fn adder(n: i32) -> impl Fn(i32) -> i32 {
+    move |x| x + n
+}
+
+fn run_once<F: FnOnce() -> Vec<i32>>(f: F) -> Vec<i32> {
+    f()
+}
+
+struct Button {
+    on_click: Vec<Box<dyn Fn() -> String>>,
+}
+
+fn main() {
+    let name = String::from("Ana");
+    let greet = || format!("hi {name}");      // Fn: only reads
+    println!("{} {}", greet(), name);         // name was only borrowed
+
+    let mut count = 0;
+    call_n(|| count += 1, 3);                 // FnMut: changes a capture
+    println!("{count}");
+
+    let data = vec![1, 2, 3];
+    let give_back = move || data;             // FnOnce: moves data out
+    println!("{:?}", run_once(give_back));
+
+    println!("{}", adder(10)(5));
+
+    let label = String::from("ok");
+    let button = Button {
+        on_click: vec![Box::new(|| "clicked".to_string()), Box::new(move || label.clone())],
+    };
+    let results: Vec<String> = button.on_click.iter().map(|f| f()).collect();
+    println!("{results:?}");
+}
+```
+
+```output
+hi Ana Ana
+3
+[1, 2, 3]
+15
+["clicked", "ok"]
+```
+
 ## Your turn
 
 In `src/lib.rs`:
