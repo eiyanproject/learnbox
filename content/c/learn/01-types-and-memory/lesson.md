@@ -67,6 +67,35 @@ And before nearly any arithmetic, anything narrower than `int` is **promoted**
 to `int`. A `char + char` is an `int` expression, which is why `printf("%d",
 c)` works and why overflow in `char` arithmetic is often not where you expect.
 
+## Seeing it
+
+All of the above in one program, and what it prints on x86-64 Linux, where
+these lessons run:
+
+```c
+#include <stdio.h>
+#include <string.h>
+
+int main(void) {
+    printf("char=%zu int=%zu long=%zu\n", sizeof(char), sizeof(int), sizeof(long));
+
+    int big = 300;
+    char c = big;            /* 300 - 256: only the low 8 bits survive */
+    double d = 7 / 2;        /* integer division first */
+    printf("c=%d d=%.1f\n", c, d);
+
+    size_t len = strlen("");
+    printf("len - 1 = %zu\n", len - 1);    /* unsigned: wraps, never -1 */
+    return 0;
+}
+```
+
+```output
+char=1 int=4 long=8
+c=44 d=3.0
+len - 1 = 18446744073709551615
+```
+
 ## Your turn
 
 In `nums.h` and `nums.c`:

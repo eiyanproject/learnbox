@@ -35,7 +35,32 @@ while (fgets(line, sizeof line, f) != NULL) { ... }
 ```
 
 `fgets` takes the buffer size and will not exceed it. It **keeps** the trailing
-newline, which surprises people — strip it if you do not want it. Its ancient
+newline, which surprises people — strip it if you do not want it. The brackets
+show exactly what each call returned:
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    FILE *f = tmpfile();               /* a scratch file, deleted on close */
+    if (f == NULL) return 1;
+    fputs("first\nsecond\n", f);
+    rewind(f);
+
+    char line[256];
+    while (fgets(line, sizeof line, f) != NULL) {
+        printf("[%s]", line);
+    }
+    if (fclose(f) != 0) return 1;
+    return 0;
+}
+```
+
+```output
+[first
+][second
+]
+``` Its ancient
 counterpart `gets` had no size parameter, could not be used safely, and was
 removed from the language in C11.
 

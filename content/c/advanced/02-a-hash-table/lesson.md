@@ -27,7 +27,32 @@ for (const unsigned char *p = (const unsigned char *)key; *p; p++) {
 ```
 
 XOR then multiply, per byte. Use `unsigned` — the multiplication is expected to
-wrap, which is defined for unsigned and undefined for signed.
+wrap, which is defined for unsigned and undefined for signed. FNV-1a publishes
+test values, so you can check an implementation against them:
+
+```c
+#include <stdio.h>
+
+unsigned fnv1a(const char *key) {
+    unsigned hash = 2166136261u;
+    for (const unsigned char *p = (const unsigned char *)key; *p; p++) {
+        hash ^= *p;
+        hash *= 16777619u;
+    }
+    return hash;
+}
+
+int main(void) {
+    printf("%08x %08x %08x\n", fnv1a(""), fnv1a("a"), fnv1a("foobar"));
+    printf("bucket of \"foobar\" in 100: %u\n", fnv1a("foobar") % 100);
+    return 0;
+}
+```
+
+```output
+811c9dc5 e40c292c bf9cf968
+bucket of "foobar" in 100: 20
+```
 
 Do not use this for anything security-related: it is not a cryptographic hash,
 and an attacker who can choose keys can force every one into the same bucket.

@@ -52,8 +52,35 @@ if (bigger == NULL) { free(values); return NULL; }   /* original still valid */
 values = bigger;
 ```
 
-`realloc` may return a **different** address, having copied your data. Any
-other pointer into the old block is now dangling. And on failure it returns
+`realloc` may return a **different** address, having copied your data:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(void) {
+    int *v = calloc(3, sizeof *v);
+    if (v == NULL) return 1;
+    printf("%d %d %d\n", v[0], v[1], v[2]);     /* calloc zeroed them */
+
+    v[0] = 1; v[1] = 2; v[2] = 3;
+    int *bigger = realloc(v, 1000 * sizeof *v);
+    if (bigger == NULL) { free(v); return 1; }
+    v = bigger;
+    printf("%d %d %d\n", v[0], v[1], v[2]);     /* the data came along */
+
+    free(v);
+    free(NULL);                                  /* safe, does nothing */
+    return 0;
+}
+```
+
+```output
+0 0 0
+1 2 3
+```
+
+Any other pointer into the old block is now dangling. And on failure it returns
 NULL while leaving the original allocated — so `p = realloc(p, n)` leaks the
 original whenever it fails.
 

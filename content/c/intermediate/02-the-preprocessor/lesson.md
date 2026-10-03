@@ -49,6 +49,34 @@ or merely an expensive one, which is evaluated twice for no reason. A function
 does not have this problem, because arguments are evaluated once, before the
 call.
 
+Every claim above, expanded and run:
+
+```c
+#include <stdio.h>
+
+#define SQUARE_BAD(x) x * x
+#define SQUARE(x)     ((x) * (x))
+#define MAX(a, b)     ((a) > (b) ? (a) : (b))
+
+int main(void) {
+    printf("%d %d\n", SQUARE_BAD(2 + 3), SQUARE(2 + 3));
+    printf("%d\n", 10 / SQUARE(2));
+
+    int i = 7;
+    int m = MAX(i++, 5);    /* i++ wins the comparison, so it runs again */
+    printf("m=%d i=%d\n", m, i);
+    return 0;
+}
+```
+
+```output
+11 25
+2
+m=8 i=9
+```
+
+`i` went up twice, and `m` is 8 rather than the 7 you might expect.
+
 Prefer a `static inline` function whenever a macro is not required. The
 compiler inlines it, you get type checking, and arguments are evaluated once.
 

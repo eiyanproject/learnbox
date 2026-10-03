@@ -59,6 +59,36 @@ void f(int values[]) {
 The length is lost at the boundary, which is why every C function taking an
 array also takes a count. There is no other way to know.
 
+All three ideas, running:
+
+```c
+#include <stdio.h>
+
+void broken(int x) { x = 99; }
+void works(int *x) { *x = 99; }
+size_t size_inside(int values[]) { return sizeof(values); }   /* gcc warns here */
+
+int main(void) {
+    int a = 1, b = 1;
+    broken(a);
+    works(&b);
+    printf("a=%d b=%d\n", a, b);
+
+    int values[5] = {10, 20, 30, 40, 50};
+    printf("%d %d\n", values[2], *(values + 2));
+    printf("outside=%zu inside=%zu\n", sizeof(values), size_inside(values));
+    return 0;
+}
+```
+
+```output
+a=1 b=99
+30 30
+outside=20 inside=8
+```
+
+Five 4-byte ints outside; one 8-byte pointer inside.
+
 ## NULL, and the discipline around it
 
 `NULL` is a pointer that points at nothing. Dereferencing it is undefined

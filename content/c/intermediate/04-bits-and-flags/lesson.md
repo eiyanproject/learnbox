@@ -40,7 +40,30 @@ if (perms & EXEC) { ... }           /* test */
 ```
 
 `1u << n` rather than a literal: the intent is visible and the compiler
-computes it.
+computes it. Following `perms` through those lines:
+
+```c
+#include <stdio.h>
+
+#define READ  (1u << 0)
+#define WRITE (1u << 1)
+#define EXEC  (1u << 2)
+
+int main(void) {
+    unsigned perms = READ | WRITE;
+    printf("%u", perms);
+    perms |= EXEC;   printf(" %u", perms);
+    perms &= ~WRITE; printf(" %u", perms);
+    perms ^= READ;   printf(" %u\n", perms);
+    printf("%u %d\n", perms & EXEC, (perms & EXEC) != 0);
+    return 0;
+}
+```
+
+```output
+3 7 5 4
+4 1
+```
 
 **Return a boolean, not the bit.** `value & EXEC` is `4`, not `1`. A function
 declared to return 0 or 1 must write `(value & flag) != 0`, or callers
@@ -61,6 +84,22 @@ and overflow is defined.
 
 ```c
 while (n) { n &= n - 1; count++; }
+```
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    unsigned n = 0xF0F0, count = 0, steps = 0;
+    while (n) { n &= n - 1; count++; steps++; }
+    printf("%u bits set, %u passes, popcount says %d\n",
+           count, steps, __builtin_popcount(0xF0F0));
+    return 0;
+}
+```
+
+```output
+8 bits set, 8 passes, popcount says 8
 ```
 
 `n - 1` flips the lowest set bit and everything below it, so the AND clears

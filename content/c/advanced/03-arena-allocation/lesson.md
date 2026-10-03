@@ -52,7 +52,27 @@ size_t aligned = (offset + align - 1) & ~(align - 1);
 A `double` on most platforms must sit at an address divisible by 8;
 misaligned access is undefined behaviour and on some architectures a crash.
 Rounding up to the next multiple of the alignment is the whole job, and the
-bit trick works because alignments are powers of two.
+bit trick works because alignments are powers of two:
+
+```c
+#include <stdio.h>
+
+size_t align_up(size_t offset, size_t align) {
+    return (offset + align - 1) & ~(align - 1);
+}
+
+int main(void) {
+    for (size_t off = 13; off <= 17; off++) {
+        printf("%zu->%zu ", off, align_up(off, 8));
+    }
+    printf("\n");
+    return 0;
+}
+```
+
+```output
+13->16 14->16 15->16 16->16 17->24
+```
 
 `_Alignof(max_align_t)` is the strictest alignment any standard type needs, so
 using it means anything can be stored.

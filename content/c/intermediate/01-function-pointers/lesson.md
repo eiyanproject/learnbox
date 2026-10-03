@@ -64,6 +64,36 @@ int compare_ints(const void *a, const void *b) {
 `x - y` is the common shortcut and it is wrong: it overflows for large
 magnitudes and gives the opposite answer.
 
+Both ideas together:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+int add(int a, int b) { return a + b; }
+
+int compare_ints(const void *a, const void *b) {
+    int x = *(const int *)a, y = *(const int *)b;
+    return (x > y) - (x < y);
+}
+
+int main(void) {
+    int (*op)(int, int) = add;
+    printf("%d %d\n", op(2, 3), (*op)(2, 3));
+
+    int values[] = {42, -7, 19, 0};
+    qsort(values, 4, sizeof *values, compare_ints);
+    for (int i = 0; i < 4; i++) printf("%d ", values[i]);
+    printf("\n");
+    return 0;
+}
+```
+
+```output
+5 5
+-7 0 19 42
+```
+
 ## Dispatch tables
 
 A table of name-to-function replaces a growing `switch`:

@@ -59,7 +59,29 @@ dst[n] = '\0';
 
 `strncpy` exists and is a trap: it does **not** terminate the destination when
 the source is too long. `snprintf(dst, size, "%s", src)` always terminates and
-is the safer habit.
+is the safer habit:
+
+```c
+#include <stdio.h>
+#include <string.h>
+
+int main(void) {
+    char name[] = "ada";
+    printf("sizeof=%zu strlen=%zu\n", sizeof(name), strlen(name));
+
+    char dst[8];
+    snprintf(dst, sizeof dst, "%s", "a rather long string");
+    printf("\"%s\" (%zu bytes + terminator)\n", dst, strlen(dst));
+    return 0;
+}
+```
+
+```output
+sizeof=4 strlen=3
+"a rathe" (7 bytes + terminator)
+```
+
+Cut short, but terminated - and nothing written past `dst`.
 
 ## const char * means do not write
 

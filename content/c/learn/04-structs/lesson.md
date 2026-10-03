@@ -70,7 +70,33 @@ struct Good { int b; char a; char c; };   /* often 8 */
 ```
 
 `sizeof` a struct is therefore **not** the sum of its fields, and ordering
-fields largest-first usually shrinks it. Two consequences that matter: never
+fields largest-first usually shrinks it. Checking both claims - the copy and the
+padding - on this machine:
+
+```c
+#include <stdio.h>
+
+struct Point { int x; int y; };
+struct Bad  { char a; int b; char c; };
+struct Good { int b; char a; char c; };
+
+int main(void) {
+    struct Point p = {3, 4};
+    struct Point q = p;          /* a copy, not a second name */
+    q.x = 99;
+    printf("p.x=%d q.x=%d\n", p.x, q.x);
+    printf("Bad=%zu Good=%zu\n", sizeof(struct Bad), sizeof(struct Good));
+    return 0;
+}
+```
+
+```output
+p.x=3 q.x=99
+Bad=12 Good=8
+```
+
+Six bytes of data in both; `Bad` pads after `a` and after `c` to keep `b` on a
+4-byte boundary. Two consequences that matter: never
 compare structs with `memcmp` (the padding bytes are unspecified), and never
 assume a struct's layout when writing it to a file or a socket.
 
