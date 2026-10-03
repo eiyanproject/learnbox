@@ -23,16 +23,29 @@ for ch in "abc":
     print(ch)
 ```
 
+```output
+apple
+mango
+durian
+a
+b
+c
+```
+
 ## range
 
 `range` produces numbers to loop over. Like slicing, the stop value is not
 included:
 
-```python
-range(5)          # 0, 1, 2, 3, 4
-range(1, 6)       # 1, 2, 3, 4, 5
-range(0, 10, 2)   # 0, 2, 4, 6, 8
-range(5, 0, -1)   # 5, 4, 3, 2, 1
+```pycon
+>>> list(range(5))          # list() shows all the numbers at once
+[0, 1, 2, 3, 4]
+>>> list(range(1, 6))
+[1, 2, 3, 4, 5]
+>>> list(range(0, 10, 2))   # a step of 2
+[0, 2, 4, 6, 8]
+>>> list(range(5, 0, -1))   # counting down
+[5, 4, 3, 2, 1]
 ```
 
 Adding things up is a pattern you will write constantly:
@@ -41,7 +54,11 @@ Adding things up is a pattern you will write constantly:
 total = 0
 for n in range(1, 11):
     total += n
-print(total)   # 55
+print(total)
+```
+
+```output
+55
 ```
 
 ## Building a list
@@ -52,7 +69,11 @@ Start empty and `append` as you go:
 squares = []
 for n in range(5):
     squares.append(n * n)
-# [0, 1, 4, 9, 16]
+print(squares)
+```
+
+```output
+[0, 1, 4, 9, 16]
 ```
 
 ## enumerate
@@ -61,7 +82,12 @@ When you need the position as well as the item:
 
 ```python
 for i, name in enumerate(["Ana", "Budi"], start=1):
-    print(i, name)     # 1 Ana, then 2 Budi
+    print(i, name)
+```
+
+```output
+1 Ana
+2 Budi
 ```
 
 ## while
@@ -73,7 +99,11 @@ know in advance how many times to go round:
 n = 1
 while n < 1000:
     n *= 2
-print(n)   # 1024
+print(n)
+```
+
+```output
+1024
 ```
 
 If the condition never becomes false, the loop never ends. In the terminal,
@@ -91,7 +121,16 @@ for n in range(2, 100):
 for n in range(10):
     if n % 2 == 0:
         continue       # skip to the next item
-    print(n)           # prints only odd numbers
+    print(n)           # so only odd numbers get here
+```
+
+```output
+first multiple of 7: 7
+1
+3
+5
+7
+9
 ```
 
 Inside a function, `return` also ends the loop, because it ends the whole

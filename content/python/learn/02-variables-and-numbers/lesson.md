@@ -40,22 +40,31 @@ There is no type declaration. Python works out the type from the value, and
 
 ## Arithmetic
 
-```python
-7 + 2    # 9
-7 - 2    # 5
-7 * 2    # 14
-7 / 2    # 3.5   ordinary division always gives a float
-7 // 2   # 3     floor division: round down to a whole number
-7 % 2    # 1     remainder
-7 ** 2   # 49    power
+```pycon
+>>> 7 + 2
+9
+>>> 7 - 2
+5
+>>> 7 * 2
+14
+>>> 7 / 2      # ordinary division always gives a float
+3.5
+>>> 7 // 2     # floor division: round down to a whole number
+3
+>>> 7 % 2      # the remainder
+1
+>>> 7 ** 2     # power
+49
 ```
 
 `//` and `%` are a pair. Splitting 130 minutes into hours and minutes:
 
-```python
-minutes = 130
-hours = minutes // 60      # 2
-leftover = minutes % 60    # 10
+```pycon
+>>> minutes = 130
+>>> minutes // 60      # whole hours
+2
+>>> minutes % 60       # minutes left over
+10
 ```
 
 Floats are stored in binary, so some decimals come out slightly off:
@@ -72,19 +81,25 @@ Floats are stored in binary, so some decimals come out slightly off:
 A variable can be pointed at a new value. The right-hand side is worked out
 first, so this adds one:
 
-```python
-count = 5
-count = count + 1
-count += 1          # the same thing, shorter
+```pycon
+>>> count = 5
+>>> count = count + 1
+>>> count += 1          # the same thing, shorter
+>>> count
+7
 ```
 
 ## Converting between types
 
-```python
-int("42")      # 42
-float("2.5")   # 2.5
-str(99)        # "99"
-int(7.9)       # 7   (cuts off, does not round)
+```pycon
+>>> int("42")
+42
+>>> float("2.5")
+2.5
+>>> str(99)        # the quotes show it is text now
+'99'
+>>> int(7.9)       # cuts off, does not round
+7
 ```
 
 ## Try it interactively

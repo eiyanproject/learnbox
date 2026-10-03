@@ -32,40 +32,48 @@ Read it left to right as "`n * n`, for each `n` in `range(10)`".
 
 Add an `if` at the end to keep only some items:
 
-```python
-[n for n in range(20) if n % 3 == 0]      # [0, 3, 6, 9, 12, 15, 18]
-[w.upper() for w in words if len(w) > 3]
+```pycon
+>>> [n for n in range(20) if n % 3 == 0]
+[0, 3, 6, 9, 12, 15, 18]
+>>> words = ["sky", "river", "tree", "ocean"]
+>>> [w.upper() for w in words if len(w) > 3]
+['RIVER', 'TREE', 'OCEAN']
 ```
 
 To choose between two values for every item, the condition goes at the
 front instead, as a conditional expression:
 
-```python
-["even" if n % 2 == 0 else "odd" for n in range(4)]
-# ['even', 'odd', 'even', 'odd']
+```pycon
+>>> ["even" if n % 2 == 0 else "odd" for n in range(4)]
+['even', 'odd', 'even', 'odd']
 ```
 
 ## Dict and set comprehensions
 
-```python
-{name: len(name) for name in ["Ana", "Budi"]}   # {'Ana': 3, 'Budi': 4}
-{word[0] for word in ["ant", "asp", "bee"]}     # {'a', 'b'}
+```pycon
+>>> {name: len(name) for name in ["Ana", "Budi"]}
+{'Ana': 3, 'Budi': 4}
+>>> {word[0] for word in ["ant", "asp", "bee"]} == {"a", "b"}
+True
 ```
+
+(The set is compared rather than shown, because a set's printed order can
+change between runs.)
 
 ## Nested loops
 
 Several `for` clauses run nested, in the order written:
 
-```python
-[(x, y) for x in range(2) for y in range(3)]
-# [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2)]
+```pycon
+>>> [(x, y) for x in range(2) for y in range(3)]
+[(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2)]
 ```
 
 A comprehension can also sit inside another one to build a grid:
 
-```python
-[[0 for col in range(3)] for row in range(2)]
-# [[0, 0, 0], [0, 0, 0]]
+```pycon
+>>> [[0 for col in range(3)] for row in range(2)]
+[[0, 0, 0], [0, 0, 0]]
 ```
 
 Read that from the outside in. The **outer** comprehension makes the rows - two
@@ -73,9 +81,9 @@ of them, one per `row` - and the **inner** one makes the three values inside
 each row. The outer loop variable is in scope in the inner one, so the values
 can depend on both:
 
-```python
-[[row + col for col in range(3)] for row in range(2)]
-# [[0, 1, 2], [1, 2, 3]]
+```pycon
+>>> [[row + col for col in range(3)] for row in range(2)]
+[[0, 1, 2], [1, 2, 3]]
 ```
 
 Row 0 gives `0+0, 0+1, 0+2`; row 1 gives `1+0, 1+1, 1+2`. If you are unsure

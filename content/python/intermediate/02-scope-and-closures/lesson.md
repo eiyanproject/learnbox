@@ -20,14 +20,16 @@ When code uses a name, Python searches four scopes in order:
 3. **G**lobal: the module's top level
 4. **B**uilt-in: `len`, `print`, `range`...
 
-```python
-x = "global"
-
-def outer():
-    x = "enclosing"
-    def inner():
-        return x          # finds the enclosing x
-    return inner()
+```pycon
+>>> x = "global"
+>>> def outer():
+...     x = "enclosing"
+...     def inner():
+...         return x          # finds the enclosing x
+...     return inner()
+...
+>>> outer()
+'enclosing'
 ```
 
 ## Assigning makes a name local
@@ -35,10 +37,15 @@ def outer():
 Assigning to a name anywhere in a function makes it local for the **whole**
 function, which gives this confusing error:
 
-```python
-count = 0
-def bump():
-    count += 1        # UnboundLocalError: count is local, but not yet set
+```pycon
+>>> count = 0
+>>> def bump():
+...     count += 1        # makes count local to bump - but it has no value yet
+...
+>>> bump()
+Traceback (most recent call last):
+  ...
+UnboundLocalError: cannot access local variable 'count'...
 ```
 
 `global count` would fix it, but module-level state changed from inside
@@ -48,19 +55,21 @@ functions is hard to follow. There is almost always a better design.
 
 `nonlocal` lets an inner function reassign a variable in an enclosing function:
 
-```python
-def make_counter():
-    count = 0
-    def increment():
-        nonlocal count
-        count += 1
-        return count
-    return increment
-
-c = make_counter()
-c(), c(), c()        # 1, 2, 3
-d = make_counter()
-d()                  # 1: each call to make_counter has its own count
+```pycon
+>>> def make_counter():
+...     count = 0
+...     def increment():
+...         nonlocal count
+...         count += 1
+...         return count
+...     return increment
+...
+>>> c = make_counter()
+>>> c(), c(), c()
+(1, 2, 3)
+>>> d = make_counter()
+>>> d()                  # each call to make_counter has its own count
+1
 ```
 
 You only need `nonlocal` to **reassign**. Mutating an object the name refers
@@ -74,31 +83,34 @@ closure does, even after `make_counter` has returned.
 
 Closures are a lightweight alternative to a class with one method:
 
-```python
-def make_greeter(greeting):
-    def greet(name):
-        return f"{greeting}, {name}!"
-    return greet
-
-hello = make_greeter("Hello")
-hello("Ana")      # 'Hello, Ana!'
+```pycon
+>>> def make_greeter(greeting):
+...     def greet(name):
+...         return f"{greeting}, {name}!"
+...     return greet
+...
+>>> hello = make_greeter("Hello")
+>>> hello("Ana")
+'Hello, Ana!'
 ```
 
 ## The late-binding trap
 
 A closure captures the **variable**, not its value at the time:
 
-```python
-funcs = [lambda: i for i in range(3)]
-[f() for f in funcs]      # [2, 2, 2], not [0, 1, 2]
+```pycon
+>>> funcs = [lambda: i for i in range(3)]
+>>> [f() for f in funcs]      # not [0, 1, 2]
+[2, 2, 2]
 ```
 
 All three lambdas look up `i` when they are **called**, and by then the loop
 has finished with `i == 2`. Capture the current value with a default argument:
 
-```python
-funcs = [lambda i=i: i for i in range(3)]
-[f() for f in funcs]      # [0, 1, 2]
+```pycon
+>>> funcs = [lambda i=i: i for i in range(3)]
+>>> [f() for f in funcs]
+[0, 1, 2]
 ```
 
 ## Your turn

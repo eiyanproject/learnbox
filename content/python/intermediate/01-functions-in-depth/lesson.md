@@ -16,11 +16,12 @@ can do a lot more, and the standard library uses all of it.
 
 ## *args: any number of positional arguments
 
-```python
-def average(*values):
-    return sum(values) / len(values)
-
-average(1, 2, 3)        # values == (1, 2, 3), a tuple
+```pycon
+>>> def average(*values):
+...     return sum(values) / len(values)
+...
+>>> average(1, 2, 3)        # inside, values == (1, 2, 3), a tuple
+2.0
 ```
 
 ## **kwargs: any number of keyword arguments
@@ -33,6 +34,11 @@ def configure(**options):
 configure(debug=True, level=3)    # options == {'debug': True, 'level': 3}
 ```
 
+```output
+debug = True
+level = 3
+```
+
 The names `args` and `kwargs` are only convention; the `*` and `**` do the work.
 
 ## Keyword-only parameters
@@ -40,12 +46,16 @@ The names `args` and `kwargs` are only convention; the `*` and `**` do the work.
 Parameters after `*args`, or after a bare `*`, can **only** be passed by name.
 Use this for flags and options that would be unreadable as positional values:
 
-```python
-def connect(host, port, *, timeout=10, retries=3):
-    ...
-
-connect("db", 5432, timeout=2)     # fine
-connect("db", 5432, 2)             # TypeError: takes 2 positional arguments
+```pycon
+>>> def connect(host, port, *, timeout=10, retries=3):
+...     return f"{host}:{port} timeout={timeout} retries={retries}"
+...
+>>> connect("db", 5432, timeout=2)     # fine
+'db:5432 timeout=2 retries=3'
+>>> connect("db", 5432, 2)
+Traceback (most recent call last):
+  ...
+TypeError: connect() takes 2 positional arguments but 3 were given
 ```
 
 There is also `/` for positional-only: `def f(a, b, /, c)`.
@@ -56,33 +66,43 @@ The full order is: positional-only, `/`, normal, `*args` or `*`, keyword-only, `
 
 The same symbols work the other way round:
 
-```python
-point = (3, 4)
-distance(*point)                   # distance(3, 4)
-
-settings = {"timeout": 2, "retries": 5}
-connect("db", 5432, **settings)    # connect("db", 5432, timeout=2, retries=5)
+```pycon
+>>> def distance(x, y):
+...     return (x * x + y * y) ** 0.5
+...
+>>> point = (3, 4)
+>>> distance(*point)                   # distance(3, 4)
+5.0
+>>> settings = {"timeout": 2, "retries": 5}
+>>> connect("db", 5432, **settings)    # connect("db", 5432, timeout=2, retries=5)
+'db:5432 timeout=2 retries=5'
 ```
 
 ## Functions are values
 
 A function is an object like any other. You can store it, pass it, return it:
 
-```python
-def shout(s): return s.upper()
-def whisper(s): return s.lower()
-
-styles = {"loud": shout, "quiet": whisper}
-styles["loud"]("hi")      # 'HI'
+```pycon
+>>> def shout(s): return s.upper()
+...
+>>> def whisper(s): return s.lower()
+...
+>>> styles = {"loud": shout, "quiet": whisper}
+>>> styles["loud"]("hi")
+'HI'
 ```
 
 `lambda` makes a small anonymous function from a single expression. Its most
 common use is a `key` for sorting:
 
-```python
-words = ["banana", "Apple", "cherry"]
-sorted(words, key=str.lower)
-sorted(words, key=lambda w: (len(w), w))   # by length, then alphabetically
+```pycon
+>>> words = ["banana", "Apple", "cherry", "fig"]
+>>> sorted(words)                            # capitals sort before lowercase
+['Apple', 'banana', 'cherry', 'fig']
+>>> sorted(["banana", "apple", "Cherry"], key=str.lower)
+['apple', 'banana', 'Cherry']
+>>> sorted(words, key=lambda w: (len(w), w))   # by length, then alphabetically
+['fig', 'Apple', 'banana', 'cherry']
 ```
 
 Sorting by a tuple compares the first items, then the second on a tie. To
@@ -92,13 +112,15 @@ reverse just one part of a numeric key, negate it.
 
 Defaults are evaluated **once**, when the function is defined:
 
-```python
-def add_item(item, bucket=[]):     # the same list every call!
-    bucket.append(item)
-    return bucket
-
-add_item(1)   # [1]
-add_item(2)   # [1, 2]  surprise
+```pycon
+>>> def add_item(item, bucket=[]):     # the same list every call!
+...     bucket.append(item)
+...     return bucket
+...
+>>> add_item(1)
+[1]
+>>> add_item(2)     # surprise
+[1, 2]
 ```
 
 Use `None` and create the list inside: `if bucket is None: bucket = []`.

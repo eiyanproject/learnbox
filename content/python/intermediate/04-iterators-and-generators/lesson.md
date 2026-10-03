@@ -15,20 +15,27 @@ hints:
 
 A `for` loop works on anything **iterable**. Under the hood:
 
-```python
-it = iter([10, 20])     # ask the iterable for an iterator
-next(it)                # 10
-next(it)                # 20
-next(it)                # raises StopIteration: the loop ends here
+```pycon
+>>> it = iter([10, 20])     # ask the iterable for an iterator
+>>> next(it)
+10
+>>> next(it)
+20
+>>> next(it)                # a for loop ends here
+Traceback (most recent call last):
+  ...
+StopIteration
 ```
 
 An **iterator** remembers its position and hands out one value per `next()`.
 Once used up, it stays used up:
 
-```python
-squares = map(lambda x: x * x, [1, 2, 3])
-list(squares)   # [1, 4, 9]
-list(squares)   # []  already consumed
+```pycon
+>>> squares = map(lambda x: x * x, [1, 2, 3])
+>>> list(squares)
+[1, 4, 9]
+>>> list(squares)   # already used up
+[]
 ```
 
 ## Generators
@@ -37,16 +44,19 @@ A function containing `yield` is a **generator function**. Calling it does not
 run the body; it returns a generator, which runs the body lazily, pausing at
 each `yield`:
 
-```python
-def countdown(n):
-    print("starting")
-    while n > 0:
-        yield n
-        n -= 1
-
-g = countdown(3)     # nothing printed yet
-next(g)              # prints "starting", returns 3
-list(g)              # [2, 1]
+```pycon
+>>> def countdown(n):
+...     print("starting")
+...     while n > 0:
+...         yield n
+...         n -= 1
+...
+>>> g = countdown(3)     # nothing printed yet
+>>> next(g)              # runs the body as far as the first yield
+starting
+3
+>>> list(g)              # carries on from where it paused
+[2, 1]
 ```
 
 Local variables survive between `yield`s. That is what makes generators so
@@ -109,23 +119,40 @@ def flatten(nested):
             yield from flatten(item)
         else:
             yield item
+
+print(list(flatten([1, [2, [3, 4]], 5])))
+```
+
+```output
+[1, 2, 3, 4, 5]
 ```
 
 ## itertools highlights
 
-```python
-import itertools as it
+Each of these returns an iterator; `list()` shows what it produces.
 
-it.islice(gen, 5)                 # first 5 items of any iterator
-it.count(10)                      # 10, 11, 12, ... forever
-it.cycle("ab")                    # a, b, a, b, ...
-it.chain([1, 2], [3])             # 1, 2, 3
-it.takewhile(lambda x: x < 5, xs)
-it.accumulate([1, 2, 3])          # 1, 3, 6
-it.groupby(sorted_items, key=f)   # runs of equal keys (sort first!)
-it.pairwise([1, 2, 3])            # (1, 2), (2, 3)
-it.product("ab", repeat=2)        # aa, ab, ba, bb
+```pycon
+>>> import itertools as it
+>>> list(it.islice(it.count(10), 5))    # count(10) goes 10, 11, 12... forever;
+[10, 11, 12, 13, 14]
+>>> list(it.islice(it.cycle("ab"), 5))  # islice takes the first few of any iterator
+['a', 'b', 'a', 'b', 'a']
+>>> list(it.chain([1, 2], [3]))
+[1, 2, 3]
+>>> list(it.takewhile(lambda x: x < 5, [1, 4, 6, 2]))   # stops at the first fail
+[1, 4]
+>>> list(it.accumulate([1, 2, 3]))      # running totals
+[1, 3, 6]
+>>> [(key, len(list(run))) for key, run in it.groupby("aaabcc")]
+[('a', 3), ('b', 1), ('c', 2)]
+>>> list(it.pairwise([1, 2, 3]))
+[(1, 2), (2, 3)]
+>>> ["".join(p) for p in it.product("ab", repeat=2)]
+['aa', 'ab', 'ba', 'bb']
 ```
+
+`groupby` only groups **neighbouring** equal keys - sort first if equal items
+can be apart.
 
 ## Your turn
 

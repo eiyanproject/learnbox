@@ -75,13 +75,19 @@ libraries - in the Intermediate section.
 
 `Path` objects are the modern way to handle file paths:
 
-```python
-from pathlib import Path
+```pycon
+>>> from pathlib import Path
+>>> p = Path("data") / "scores.csv"   # / joins path parts
+>>> p.name
+'scores.csv'
+>>> p.suffix
+'.csv'
+```
 
-p = Path("data") / "scores.csv"   # / joins path parts
-p.exists()
-p.name        # 'scores.csv'
-p.suffix      # '.csv'
+And the things you do with the file it points at:
+
+```python
+p.exists()                    # True or False
 p.read_text()                 # whole file, opened and closed for you
 p.write_text("hello\n")
 for child in Path(".").iterdir():
@@ -104,12 +110,17 @@ The first line of the file is used as the column names.
 
 JSON maps neatly onto dicts and lists:
 
-```python
-import json
-
-settings = {"theme": "dark", "size": 14}
-text = json.dumps(settings, indent=2)   # dict -> str
-back = json.loads(text)                 # str -> dict
+```pycon
+>>> import json
+>>> settings = {"theme": "dark", "size": 14}
+>>> text = json.dumps(settings, indent=2)   # dict -> str
+>>> print(text)
+{
+  "theme": "dark",
+  "size": 14
+}
+>>> json.loads(text)                        # str -> dict
+{'theme': 'dark', 'size': 14}
 ```
 
 `json.dump(obj, f)` and `json.load(f)` do the same with an open file.

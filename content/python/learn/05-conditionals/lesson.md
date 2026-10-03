@@ -24,6 +24,10 @@ else:
     print("Cool")
 ```
 
+```output
+Hot
+```
+
 Python checks each condition from the top and runs the **first** block that
 is true, then skips the rest. `elif` and `else` are both optional.
 
@@ -62,7 +66,14 @@ does not have to remember that.
 
 `if` accepts any value, not just `True` and `False`. These count as false:
 `False`, `None`, `0`, `0.0`, `""` (empty string), `[]`, `{}`. Everything else
-counts as true.
+counts as true. `bool()` shows how a value would be treated:
+
+```pycon
+>>> bool(0), bool(""), bool([]), bool(None)
+(False, False, False, False)
+>>> bool(-1), bool("0"), bool([0])     # not empty, so true
+(True, True, True)
+```
 
 ```python
 name = input("Name: ")

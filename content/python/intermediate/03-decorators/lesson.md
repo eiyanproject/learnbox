@@ -49,8 +49,32 @@ def timer(func):
 Without it, the decorated function takes the wrapper's identity:
 
 ```python
-build_report.__name__     # 'wrapper'   without wraps
-build_report.__name__     # 'build_report' with wraps
+import functools
+
+def plain(func):
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+    return wrapper
+
+def wrapped(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+    return wrapper
+
+@plain
+def build_report(): ...
+
+@wrapped
+def build_summary(): ...
+
+print(build_report.__name__)     # without wraps
+print(build_summary.__name__)    # with wraps
+```
+
+```output
+wrapper
+build_summary
 ```
 
 `wraps` copies the name, docstring and more, and sets `__wrapped__` to the
@@ -93,6 +117,8 @@ So `repeat(3)` has to *return a decorator*, which means one more level. Three
 functions, each with one job:
 
 ```python
+import functools
+
 def repeat(n):                              # 1. takes the ARGUMENTS
     def decorator(func):                    # 2. takes the FUNCTION
         @functools.wraps(func)
@@ -102,6 +128,18 @@ def repeat(n):                              # 1. takes the ARGUMENTS
             return result
         return wrapper                      # 2 returns 3
     return decorator                        # 1 returns 2
+
+@repeat(3)
+def ping():
+    print("ping")
+
+ping()
+```
+
+```output
+ping
+ping
+ping
 ```
 
 Read the returns from the bottom up: `repeat` returns `decorator`, `decorator`
@@ -118,6 +156,27 @@ arguments, then function, then call.
 @a
 @b
 def f(): ...          # f = a(b(f)): the decorator nearest the function applies first
+```
+
+You can watch the order with two decorators that label what they wrap:
+
+```python
+def a(func):
+    return lambda: "a(" + func() + ")"
+
+def b(func):
+    return lambda: "b(" + func() + ")"
+
+@a
+@b
+def f():
+    return "f"
+
+print(f())
+```
+
+```output
+a(b(f))
 ```
 
 ## In the standard library

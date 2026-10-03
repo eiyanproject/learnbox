@@ -13,14 +13,22 @@ hints:
 
 A **list** holds items in order, and can change:
 
-```python
-scores = [72, 88, 95]
-scores.append(60)        # [72, 88, 95, 60]
-scores.insert(0, 100)    # [100, 72, 88, 95, 60]
-scores.remove(88)        # removes the first 88
-last = scores.pop()      # removes and returns the last item (60)
-scores[0] = 99           # replace by position
-len(scores)              # 4
+```pycon
+>>> scores = [72, 88, 95]
+>>> scores.append(60)
+>>> scores
+[72, 88, 95, 60]
+>>> scores.insert(0, 100)    # at position 0
+>>> scores
+[100, 72, 88, 95, 60]
+>>> scores.remove(88)        # removes the first 88
+>>> scores.pop()             # removes and returns the last item
+60
+>>> scores[0] = 99           # replace by position
+>>> scores
+[99, 72, 95]
+>>> len(scores)
+3
 ```
 
 Indexing and slicing work exactly as they do on strings: `scores[0]`,
@@ -28,18 +36,31 @@ Indexing and slicing work exactly as they do on strings: `scores[0]`,
 
 ## Useful built-ins
 
-```python
-nums = [5, 2, 9, 1]
-sum(nums)          # 17
-min(nums)          # 1
-max(nums)          # 9
-sorted(nums)       # [1, 2, 5, 9]  a NEW list; nums is unchanged
-nums.sort()        # sorts nums itself, returns None
-sorted(nums, reverse=True)
-sorted(["bb", "a", "ccc"], key=len)   # ['a', 'bb', 'ccc']
-9 in nums          # True
-nums.index(9)      # position of 9
-nums.count(2)      # how many 2s
+```pycon
+>>> nums = [5, 2, 9, 1]
+>>> sum(nums)
+17
+>>> min(nums)
+1
+>>> max(nums)
+9
+>>> sorted(nums)       # a NEW list...
+[1, 2, 5, 9]
+>>> nums               # ...and nums is unchanged
+[5, 2, 9, 1]
+>>> nums.sort()        # sorts nums itself, and returns None
+>>> nums
+[1, 2, 5, 9]
+>>> sorted(nums, reverse=True)
+[9, 5, 2, 1]
+>>> sorted(["bb", "a", "ccc"], key=len)    # sort by length
+['a', 'bb', 'ccc']
+>>> 9 in nums
+True
+>>> nums.index(9)      # the position of 9
+3
+>>> nums.count(2)      # how many 2s
+1
 ```
 
 ## Two names, one list
@@ -50,9 +71,16 @@ Assignment does not copy a list. Both names point at the same object:
 a = [1, 2, 3]
 b = a
 b.append(4)
-print(a)       # [1, 2, 3, 4]  a changed too
+print(a)       # a changed too
 
 c = a.copy()   # or a[:] or list(a): a real, separate copy
+c.append(5)
+print(a, c)    # this time only the copy changed
+```
+
+```output
+[1, 2, 3, 4]
+[1, 2, 3, 4] [1, 2, 3, 4, 5]
 ```
 
 This matters for functions. A function that calls `.append()` or `.sort()`
@@ -74,12 +102,15 @@ You have already used tuples: `return a, b` returns one.
 
 ## Lists of lists
 
-```python
-grid = [
-    [1, 2, 3],
-    [4, 5, 6],
-]
-grid[1][2]    # 6
+```pycon
+>>> grid = [
+...     [1, 2, 3],
+...     [4, 5, 6],
+... ]
+>>> grid[1]       # the second row
+[4, 5, 6]
+>>> grid[1][2]    # the third item of the second row
+6
 ```
 
 ## zip
@@ -91,6 +122,11 @@ names = ["Ana", "Budi"]
 ages = [31, 27]
 for name, age in zip(names, ages):
     print(name, age)
+```
+
+```output
+Ana 31
+Budi 27
 ```
 
 ## Your turn

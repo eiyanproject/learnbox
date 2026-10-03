@@ -35,15 +35,22 @@ Quantifiers are **greedy** (match as much as possible). Add `?` for lazy:
 
 ## The functions
 
-```python
-import re
-
-re.search(r"\d+", "order 66 shipped")      # first match anywhere -> Match or None
-re.match(r"\d+", "66 orders")              # only at the start
-re.fullmatch(r"\d{4}", "2026")             # the whole string must match
-re.findall(r"\d+", "3 cats, 12 dogs")      # ['3', '12']
-re.sub(r"\s+", " ", "too   many  spaces")  # 'too many spaces'
-re.split(r"[,;]\s*", "a, b;c")             # ['a', 'b', 'c']
+```pycon
+>>> import re
+>>> re.search(r"\d+", "order 66 shipped")      # the first match anywhere
+<re.Match object; span=(6, 8), match='66'>
+>>> print(re.match(r"\d+", "order 66"))         # only at the start: None
+None
+>>> re.match(r"\d+", "66 orders")
+<re.Match object; span=(0, 2), match='66'>
+>>> re.fullmatch(r"\d{4}", "2026")             # the whole string must match
+<re.Match object; span=(0, 4), match='2026'>
+>>> re.findall(r"\d+", "3 cats, 12 dogs")
+['3', '12']
+>>> re.sub(r"\s+", " ", "too   many  spaces")
+'too many spaces'
+>>> re.split(r"[,;]\s*", "a, b;c")
+['a', 'b', 'c']
 ```
 
 `re.search` finds a match anywhere; use `re.fullmatch` for **validation**, or
@@ -51,38 +58,48 @@ re.split(r"[,;]\s*", "a, b;c")             # ['a', 'b', 'c']
 
 ## Groups
 
-```python
-m = re.search(r"(\d{4})-(\d{2})-(\d{2})", "due 2026-09-18")
-m.group(0)        # '2026-09-18'  the whole match
-m.group(1)        # '2026'
-m.groups()        # ('2026', '09', '18')
+```pycon
+>>> m = re.search(r"(\d{4})-(\d{2})-(\d{2})", "due 2026-09-18")
+>>> m.group(0)        # the whole match
+'2026-09-18'
+>>> m.group(1)
+'2026'
+>>> m.groups()
+('2026', '09', '18')
 ```
 
 With groups in the pattern, `findall` returns the groups instead of whole matches.
 
 Named groups read far better:
 
-```python
-m = re.match(r"(?P<user>\w+)@(?P<host>[\w.]+)", "ana@example.com")
-m["user"], m["host"]
-m.groupdict()     # {'user': 'ana', 'host': 'example.com'}
+```pycon
+>>> m = re.match(r"(?P<user>\w+)@(?P<host>[\w.]+)", "ana@example.com")
+>>> m["user"], m["host"]
+('ana', 'example.com')
+>>> m.groupdict()
+{'user': 'ana', 'host': 'example.com'}
 ```
 
 `(?:...)` groups without capturing.
 
 ## Substitution with groups
 
-```python
-re.sub(r"(\d{2})/(\d{2})/(\d{4})", r"\3-\2-\1", "18/09/2026")   # '2026-09-18'
-re.sub(r"\d+", lambda m: str(int(m[0]) * 2), "3 and 4")        # '6 and 8'
+```pycon
+>>> re.sub(r"(\d{2})/(\d{2})/(\d{4})", r"\3-\2-\1", "18/09/2026")
+'2026-09-18'
+>>> re.sub(r"\d+", lambda m: str(int(m[0]) * 2), "3 and 4")
+'6 and 8'
 ```
 
 ## Compile and flags
 
-```python
-DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
-DATE.findall(text)
-re.findall(r"error", text, flags=re.IGNORECASE)
+```pycon
+>>> text = "Error on 2026-09-18, retried 2026-09-19: error again"
+>>> DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+>>> DATE.findall(text)
+['2026-09-18', '2026-09-19']
+>>> re.findall(r"error", text, flags=re.IGNORECASE)
+['Error', 'error']
 ```
 
 `re.VERBOSE` lets you spread a complex pattern over lines with comments.

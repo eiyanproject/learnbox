@@ -16,20 +16,27 @@ hints:
 A **dict** maps keys to values. Looking something up by key is fast no
 matter how big the dict gets:
 
-```python
-ages = {"Ana": 31, "Budi": 27}
-ages["Ana"]          # 31
-ages["Citra"] = 45   # add or replace
-del ages["Budi"]     # remove
-"Ana" in ages        # True: 'in' checks keys
-len(ages)            # 2
+```pycon
+>>> ages = {"Ana": 31, "Budi": 27}
+>>> ages["Ana"]
+31
+>>> ages["Citra"] = 45   # add or replace
+>>> del ages["Budi"]     # remove
+>>> ages
+{'Ana': 31, 'Citra': 45}
+>>> "Ana" in ages        # 'in' checks the keys
+True
+>>> len(ages)
+2
 ```
 
 A missing key is an error (`KeyError`). `get` returns a default instead:
 
-```python
-ages.get("Dewi")        # None
-ages.get("Dewi", 0)     # 0
+```pycon
+>>> print(ages.get("Dewi"))    # None (the prompt shows nothing for None)
+None
+>>> ages.get("Dewi", 0)
+0
 ```
 
 ## Looping over a dict
@@ -50,7 +57,11 @@ Dicts remember the order keys were added.
 counts = {}
 for fruit in ["apple", "mango", "apple"]:
     counts[fruit] = counts.get(fruit, 0) + 1
-# {'apple': 2, 'mango': 1}
+print(counts)
+```
+
+```output
+{'apple': 2, 'mango': 1}
 ```
 
 ## Grouping
@@ -61,7 +72,11 @@ for fruit in ["apple", "mango", "apple"]:
 groups = {}
 for word in ["ant", "bee", "asp"]:
     groups.setdefault(word[0], []).append(word)
-# {'a': ['ant', 'asp'], 'b': ['bee']}
+print(groups)
+```
+
+```output
+{'a': ['ant', 'asp'], 'b': ['bee']}
 ```
 
 Keys must be unchangeable values: strings, numbers and tuples work, lists do
@@ -71,21 +86,31 @@ not.
 
 A **set** holds unique items with no order. Adding a duplicate does nothing:
 
-```python
-tags = {"python", "web"}
-tags.add("python")      # still two items
-set([3, 1, 3, 2])       # {1, 2, 3}: a quick way to drop duplicates
+```pycon
+>>> tags = {"python", "web"}
+>>> tags.add("python")
+>>> len(tags)              # still two items
+2
+>>> set([3, 1, 3, 2])      # a quick way to drop duplicates
+{1, 2, 3}
 ```
 
 Sets answer membership questions quickly, and do set algebra:
 
-```python
-a = {"ana", "budi", "citra"}
-b = {"budi", "dewi"}
-a & b     # {'budi'}                 in both
-a | b     # all four names           in either
-a - b     # {'ana', 'citra'}         in a but not b
+```pycon
+>>> a = {"ana", "budi", "citra"}
+>>> b = {"budi", "dewi"}
+>>> a & b             # in both
+{'budi'}
+>>> sorted(a | b)     # in either
+['ana', 'budi', 'citra', 'dewi']
+>>> sorted(a - b)     # in a but not b
+['ana', 'citra']
 ```
+
+A set has no order, so the same set can print its items in a different order
+from one run to the next; `sorted()` turns it into a list in a fixed order,
+which is why it appears above.
 
 `{}` is an empty **dict**. An empty set is `set()`.
 

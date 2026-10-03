@@ -18,14 +18,20 @@ work on strings.
 
 Positions start at 0. Negative positions count from the end:
 
-```python
-word = "learnbox"
-word[0]      # 'l'
-word[-1]     # 'x'
-word[0:5]    # 'learn'   start is included, stop is not
-word[5:]     # 'box'     leave out stop to go to the end
-word[:5]     # 'learn'   leave out start to begin at 0
-word[::-1]   # 'xobnrael' a step of -1 walks backwards
+```pycon
+>>> word = "learnbox"
+>>> word[0]
+'l'
+>>> word[-1]
+'x'
+>>> word[0:5]    # start is included, stop is not
+'learn'
+>>> word[5:]     # leave out stop to go to the end
+'box'
+>>> word[:5]     # leave out start to begin at 0
+'learn'
+>>> word[::-1]   # a step of -1 walks backwards
+'xobnrael'
 ```
 
 Strings cannot be changed in place. `word[0] = "L"` is an error; you build a
@@ -36,40 +42,59 @@ new string instead: `"L" + word[1:]`.
 Methods are functions attached to a value, called with a dot. None of them
 change the original; they return a new string.
 
-```python
-s = "  Hello, World  "
-s.strip()              # 'Hello, World'   trim spaces at both ends
-s.lower()              # '  hello, world  '
-s.upper()              # '  HELLO, WORLD  '
-s.replace("World", "Python")
-"a,b,c".split(",")     # ['a', 'b', 'c']
-"one  two".split()     # ['one', 'two']   no argument: split on any whitespace
-"-".join(["a", "b"])   # 'a-b'            the opposite of split
-"hello".startswith("he")   # True
-"hello".count("l")         # 2
-"hello".find("l")          # 2 (first position), -1 if missing
+```pycon
+>>> s = "  Hello, World  "
+>>> s.strip()              # trim spaces at both ends
+'Hello, World'
+>>> s.lower()
+'  hello, world  '
+>>> s.upper()
+'  HELLO, WORLD  '
+>>> s.replace("World", "Python")
+'  Hello, Python  '
+>>> "a,b,c".split(",")
+['a', 'b', 'c']
+>>> "one  two".split()     # no argument: split on any whitespace
+['one', 'two']
+>>> "-".join(["a", "b"])   # the opposite of split
+'a-b'
+>>> "hello".startswith("he")
+True
+>>> "hello".count("l")
+2
+>>> "hello".find("l")      # the first position...
+2
+>>> "hello".find("z")      # ...or -1 if it is not there
+-1
 ```
 
 Tests about a character:
 
-```python
-"a".isalpha()   # True
-"7".isdigit()   # True
-" ".isspace()   # True
+```pycon
+>>> "a".isalpha()
+True
+>>> "7".isdigit()
+True
+>>> " ".isspace()
+True
 ```
 
 ## in and len
 
-```python
-"box" in "learnbox"    # True
-len("learnbox")        # 8
+```pycon
+>>> "box" in "learnbox"
+True
+>>> len("learnbox")
+8
 ```
 
 ## Repeating and joining
 
-```python
-"ab" * 3               # 'ababab'
-"=" * 20               # a line of 20 '='
+```pycon
+>>> "ab" * 3
+'ababab'
+>>> "=" * 20
+'===================='
 ```
 
 ## Looping over characters
@@ -79,16 +104,25 @@ for ch in "abc":
     print(ch)
 ```
 
+```output
+a
+b
+c
+```
+
 You will see `for` loops properly in a later lesson; for now, this is enough
 to go through a string one character at a time.
 
 ## Formatting numbers inside f-strings
 
-```python
-price = 3.5
-f"{price:.2f}"      # '3.50'   two decimals
-f"{42:>5}"          # '   42'  right-aligned in 5 characters
-f"{0.256:.0%}"      # '26%'
+```pycon
+>>> price = 3.5
+>>> f"{price:.2f}"      # two decimals
+'3.50'
+>>> f"{42:>5}"          # right-aligned in 5 characters
+'   42'
+>>> f"{0.256:.0%}"      # as a percentage, no decimals
+'26%'
 ```
 
 ## Your turn

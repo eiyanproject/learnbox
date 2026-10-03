@@ -32,9 +32,14 @@ class Rectangle:
 
 
 box = Rectangle(3, 4)    # calls __init__
-box.area()               # 12
+print(box.area())
 box.scale(2)
-box.width                # 6
+print(box.width)
+```
+
+```output
+12
+6
 ```
 
 - `__init__` sets up a new object. Python calls it for you.

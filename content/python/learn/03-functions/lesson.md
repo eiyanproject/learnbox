@@ -18,8 +18,13 @@ often as you like:
 def area(width, height):
     return width * height
 
-print(area(3, 4))     # 12
-print(area(10, 2))    # 20
+print(area(3, 4))
+print(area(10, 2))
+```
+
+```output
+12
+20
 ```
 
 - `def` starts the definition; `width` and `height` are **parameters**.
@@ -29,17 +34,23 @@ print(area(10, 2))    # 20
 
 ## print is not return
 
-This trips up almost everyone once:
+This trips up almost everyone once. (At the `>>>` prompt, a definition carries
+on over `...` lines; press Enter on an empty `...` line to finish it.)
 
-```python
-def add_print(a, b):
-    print(a + b)
-
-def add_return(a, b):
-    return a + b
-
-x = add_print(2, 3)    # shows 5, but x is None
-y = add_return(2, 3)   # shows nothing, y is 5
+```pycon
+>>> def add_print(a, b):
+...     print(a + b)
+...
+>>> def add_return(a, b):
+...     return a + b
+...
+>>> x = add_print(2, 3)    # shows 5...
+5
+>>> print(x)               # ...but x is None
+None
+>>> y = add_return(2, 3)   # shows nothing...
+>>> y                      # ...but y is 5
+5
 ```
 
 `print` shows something to a human. `return` gives a value to the code.
@@ -47,13 +58,16 @@ Tests, and other functions, can only use what you `return`.
 
 ## Default values and keyword arguments
 
-```python
-def greet(name, greeting="Hello"):
-    return f"{greeting}, {name}!"
-
-greet("Ana")                        # 'Hello, Ana!'
-greet("Ana", "Hi")                  # 'Hi, Ana!'
-greet(greeting="Yo", name="Ana")    # by name, in any order
+```pycon
+>>> def greet(name, greeting="Hello"):
+...     return f"{greeting}, {name}!"
+...
+>>> greet("Ana")
+'Hello, Ana!'
+>>> greet("Ana", "Hi")
+'Hi, Ana!'
+>>> greet(greeting="Yo", name="Ana")    # by name, in any order
+'Yo, Ana!'
 ```
 
 The `f"..."` is an **f-string**: anything inside `{}` is evaluated and put
@@ -63,13 +77,17 @@ into the text.
 
 Separate the values with commas, and unpack them where you call it:
 
-```python
-def min_max(a, b):
-    if a < b:
-        return a, b
-    return b, a
-
-low, high = min_max(9, 4)    # low = 4, high = 9
+```pycon
+>>> def min_max(a, b):
+...     if a < b:
+...         return a, b
+...     return b, a
+...
+>>> low, high = min_max(9, 4)
+>>> low
+4
+>>> high
+9
 ```
 
 ## Docstrings

@@ -17,19 +17,20 @@ You wrote `__init__`, `__repr__` and `__eq__` by hand in the Classes lesson.
 For classes that mainly hold data, `dataclasses` generates them from type
 annotations:
 
-```python
-from dataclasses import dataclass, field
-
-@dataclass
-class Book:
-    title: str
-    author: str
-    pages: int = 0
-    tags: list[str] = field(default_factory=list)
-
-b = Book("Dune", "Herbert", 412)
-b                 # Book(title='Dune', author='Herbert', pages=412, tags=[])
-b == Book("Dune", "Herbert", 412)    # True
+```pycon
+>>> from dataclasses import dataclass, field
+>>> @dataclass
+... class Book:
+...     title: str
+...     author: str
+...     pages: int = 0
+...     tags: list[str] = field(default_factory=list)
+...
+>>> b = Book("Dune", "Herbert", 412)
+>>> b
+Book(title='Dune', author='Herbert', pages=412, tags=[])
+>>> b == Book("Dune", "Herbert", 412)
+True
 ```
 
 - The annotations define the fields, in order. Fields with defaults must come
@@ -76,21 +77,26 @@ Frozen instances are "changed" by making a copy: `dataclasses.replace(p, x=5)`.
 An **enum** names a fixed set of choices, so typos become errors instead of
 silent bugs:
 
-```python
-from enum import Enum, auto
-
-class Status(Enum):
-    DRAFT = auto()
-    PUBLISHED = auto()
-    ARCHIVED = auto()
-
-s = Status.DRAFT
-s.name            # 'DRAFT'
-s.value           # 1
-Status["DRAFT"]   # look up by name
-Status(1)         # look up by value
-s is Status.DRAFT # compare with `is` or ==
-list(Status)      # all members, in order
+```pycon
+>>> from enum import Enum, auto
+>>> class Status(Enum):
+...     DRAFT = auto()
+...     PUBLISHED = auto()
+...     ARCHIVED = auto()
+...
+>>> s = Status.DRAFT
+>>> s.name
+'DRAFT'
+>>> s.value              # auto() numbers from 1
+1
+>>> Status["DRAFT"]      # look up by name
+<Status.DRAFT: 1>
+>>> Status(1)            # look up by value
+<Status.DRAFT: 1>
+>>> s is Status.DRAFT    # compare with `is` or ==
+True
+>>> list(Status)         # all members, in order
+[<Status.DRAFT: 1>, <Status.PUBLISHED: 2>, <Status.ARCHIVED: 3>]
 ```
 
 `IntEnum` members also behave as ints; `StrEnum` members as strings.

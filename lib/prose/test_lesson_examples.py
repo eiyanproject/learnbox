@@ -44,8 +44,10 @@ def _ids(blocks):
 
 # ---------------------------------------------------------------- transcripts
 
-# One namespace for the whole lesson, kept between blocks.
-_GLOBS = {"__name__": "__lesson__"}
+# One namespace for the whole lesson, kept between blocks. It is __main__, as
+# at a real >>> prompt, so an exception class an example defines is reported
+# by its bare name, the way the learner will see it.
+_GLOBS = {"__name__": "__main__"}
 
 # ELLIPSIS lets an example write `...` for output it does not care about, such
 # as a memory address; NORMALIZE_WHITESPACE keeps line wrapping in the prose

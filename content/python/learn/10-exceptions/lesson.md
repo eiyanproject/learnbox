@@ -74,11 +74,16 @@ typos and Ctrl+C, and hides real bugs.
 
 ## Raising your own
 
-```python
-def set_volume(level):
-    if not 0 <= level <= 10:
-        raise ValueError(f"volume must be 0-10, got {level}")
-    ...
+```pycon
+>>> def set_volume(level):
+...     if not 0 <= level <= 10:
+...         raise ValueError(f"volume must be 0-10, got {level}")
+...     return level
+...
+>>> set_volume(11)
+Traceback (most recent call last):
+  ...
+ValueError: volume must be 0-10, got 11
 ```
 
 A good message says what was expected and what arrived.
@@ -87,11 +92,14 @@ A good message says what was expected and what arrived.
 
 Subclass `Exception` when callers need to tell your error apart from others:
 
-```python
-class OutOfStock(Exception):
-    pass
-
-raise OutOfStock("no mangoes left")
+```pycon
+>>> class OutOfStock(Exception):
+...     pass
+...
+>>> raise OutOfStock("no mangoes left")
+Traceback (most recent call last):
+  ...
+OutOfStock: no mangoes left
 ```
 
 ## Checking before, or asking forgiveness

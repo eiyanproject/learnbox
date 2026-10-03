@@ -17,15 +17,20 @@ write by hand.
 
 ## Counter
 
-```python
-from collections import Counter
-
-c = Counter("mississippi")
-c["s"]              # 4
-c["z"]              # 0: missing keys count as zero, no KeyError
-c.most_common(2)    # [('i', 4), ('s', 4)]
-c.update("sss")     # add more counts
-Counter(a=3) + Counter(a=1, b=2)   # Counter({'a': 4, 'b': 2})
+```pycon
+>>> from collections import Counter
+>>> c = Counter("mississippi")
+>>> c["s"]
+4
+>>> c["z"]              # missing keys count as zero, no KeyError
+0
+>>> c.most_common(2)
+[('i', 4), ('s', 4)]
+>>> c.update("sss")     # add more counts
+>>> c["s"]
+7
+>>> Counter(a=3) + Counter(a=1, b=2)
+Counter({'a': 4, 'b': 2})
 ```
 
 ## defaultdict
@@ -38,7 +43,11 @@ from collections import defaultdict
 groups = defaultdict(list)
 for name, team in [("ana", "red"), ("budi", "blue"), ("citra", "red")]:
     groups[team].append(name)
-# {'red': ['ana', 'citra'], 'blue': ['budi']}
+print(dict(groups))
+```
+
+```output
+{'red': ['ana', 'citra'], 'blue': ['budi']}
 ```
 
 The argument is a function that makes the default: `list`, `int`, `set`,
@@ -50,31 +59,37 @@ that should not auto-create keys.
 A double-ended queue: fast appends and pops at **both** ends (a list is slow
 at the front):
 
-```python
-from collections import deque
-
-q = deque([1, 2, 3])
-q.appendleft(0)
-q.popleft()
-q.rotate(1)
-
-recent = deque(maxlen=3)       # keeps only the last 3 items
-for x in range(10):
-    recent.append(x)
-list(recent)                   # [7, 8, 9]
+```pycon
+>>> from collections import deque
+>>> q = deque([1, 2, 3])
+>>> q.appendleft(0)
+>>> q
+deque([0, 1, 2, 3])
+>>> q.popleft()
+0
+>>> q.rotate(1)                # the last item moves to the front
+>>> q
+deque([3, 1, 2])
+>>> recent = deque(maxlen=3)   # keeps only the last 3 items
+>>> for x in range(10):
+...     recent.append(x)
+...
+>>> list(recent)
+[7, 8, 9]
 ```
 
 ## namedtuple
 
 A tuple with named fields: readable, immutable and lightweight:
 
-```python
-from collections import namedtuple
-
-Point = namedtuple("Point", "x y")
-p = Point(3, 4)
-p.x, p[1]            # 3, 4
-p._replace(x=10)     # Point(x=10, y=4)
+```pycon
+>>> from collections import namedtuple
+>>> Point = namedtuple("Point", "x y")
+>>> p = Point(3, 4)
+>>> p.x, p[1]            # by name or by position
+(3, 4)
+>>> p._replace(x=10)     # a new tuple; p itself cannot change
+Point(x=10, y=4)
 ```
 
 (`dataclasses`, next lesson, are the more flexible option.)
@@ -84,27 +99,36 @@ p._replace(x=10)     # Point(x=10, y=4)
 A heap is a list kept in an order where `heap[0]` is always the smallest item.
 Pushing and popping are fast even for huge lists:
 
-```python
-import heapq
-
-heap = []
-for n in [5, 1, 8, 3]:
-    heapq.heappush(heap, n)
-heapq.heappop(heap)             # 1
-heapq.nsmallest(2, [5, 1, 8])   # [1, 5]
-heapq.nlargest(2, data, key=len)
+```pycon
+>>> import heapq
+>>> heap = []
+>>> for n in [5, 1, 8, 3]:
+...     heapq.heappush(heap, n)
+...
+>>> heap[0]                      # the smallest, always
+1
+>>> heapq.heappop(heap)
+1
+>>> heap[0]                      # the next smallest moved up
+3
+>>> heapq.nsmallest(2, [5, 1, 8])
+[1, 5]
+>>> heapq.nlargest(2, ["fig", "banana", "kiwi"], key=len)
+['banana', 'kiwi']
 ```
 
 Push `(priority, item)` tuples to build a priority queue.
 
 ## bisect: searching sorted lists
 
-```python
-import bisect
-
-scores = [60, 70, 80, 90]
-bisect.bisect(scores, 75)       # 2: position where 75 would be inserted
-bisect.insort(scores, 85)       # insert keeping the list sorted
+```pycon
+>>> import bisect
+>>> scores = [60, 70, 80, 90]
+>>> bisect.bisect(scores, 75)       # the position where 75 would go
+2
+>>> bisect.insort(scores, 85)       # insert, keeping the list sorted
+>>> scores
+[60, 70, 80, 85, 90]
 ```
 
 ## Your turn
