@@ -36,6 +36,23 @@ makes a function that nobody can call without a `try`; returning a quiet `-1`
 for a real bug makes one that fails somewhere else, later, for reasons nobody
 can trace.
 
+The first two rules, run:
+
+```matlab
+if [1 0 1], disp('true'), else, disp('false'), end
+if [], disp('true'), else, disp('false'), end
+n = 1;
+f = @() n;
+n = 2;
+disp(f())
+```
+
+```output
+false
+false
+1
+```
+
 ## Your turn
 
 - `classify_all(v)` — a cell array the same size as `v`, each entry

@@ -44,10 +44,29 @@ week — so they read the same in both directions.
 | datetime + duration | datetime |
 | duration + duration | duration |
 | duration × number | duration |
-| datetime + number | **an error** |
+| datetime + number | datetime: the number counts **24-hour days** |
 
-That last row is the point. Adding a plain `7` to a date is ambiguous — seven
-of what? — so it is refused, and you write `d + days(7)`.
+That last row is legal, and it is the one to avoid writing. `d + 7` moves the
+date a week, because MATLAB reads a bare number as days - but nothing on the
+line says so, and the reader has to know the rule. `d + days(7)` means the same
+and says it, and `d + hours(7)` is then an obvious, different thing.
+
+```matlab
+d = datetime(2026, 1, 1);
+a = d + 7;               % legal: 7 is read as days
+b = d + days(7);         % the same date, and it says so
+c = d + hours(7);        % a different thing, and visibly so
+fprintf('%d %d %d\n', day(a), day(b), day(c));
+fprintf('%d\n', hour(c));
+gap = datetime(2026, 3, 1) - datetime(2026, 1, 1);
+fprintf('%s %g\n', class(gap), days(gap));
+```
+
+```output
+8 8 1
+7
+duration 59
+```
 
 ## Components and comparison
 

@@ -80,6 +80,34 @@ programming errors, not user input.
 `dbstop if error` is the one worth remembering. The alternative — adding
 `disp` calls and re-running — loses the state that caused the problem.
 
+## Run
+
+```matlab
+try
+  error('validate_scores:outOfRange', 'score %g is outside 0 to 100', 120);
+catch err
+  fprintf('%s\n%s\n', err.identifier, err.message);
+end
+
+try
+  try
+    error('parse:other', 'not the one we handle');
+  catch err
+    if ~strcmp(err.identifier, 'parse:bad')
+      rethrow(err);              % not ours: let it travel
+    end
+  end
+catch outer
+  disp(outer.identifier)
+end
+```
+
+```output
+validate_scores:outOfRange
+score 120 is outside 0 to 100
+parse:other
+```
+
 ## Your turn
 
 - `validate_scores(v)` — returns `true`, or throws `validate_scores:empty`,

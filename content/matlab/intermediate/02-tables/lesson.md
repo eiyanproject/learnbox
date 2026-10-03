@@ -77,6 +77,30 @@ t.Properties.VariableNames
 
 The names live here rather than in a variable of their own.
 
+## Run
+
+```matlab
+t = table([12; 30; 45], {'ann'; 'bo'; 'cy'}, 'VariableNames', {'Age', 'Name'});
+fprintf('%d rows, %d variables\n', height(t), width(t));
+disp(class(t(1, 'Age')))
+disp(t{1, 'Age'})
+adults = t(t.Age >= 18, :);
+disp(height(adults))
+oldest = sortrows(t, 'Age', 'descend');
+disp(oldest.Age')
+names = oldest.Name;
+fprintf('%s ', names{:}); fprintf('\n');
+```
+
+```output
+3 rows, 2 variables
+table
+12
+2
+45 30 12
+cy bo ann
+```
+
 ## Your turn
 
 The table has `Name`, `Age`, `Height` (metres) and `Weight` (kg).

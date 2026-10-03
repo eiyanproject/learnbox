@@ -22,6 +22,18 @@ y = sin(x);
 difference from `0:0.1:2*pi`, which guarantees the step and lets the last point
 fall wherever it falls — often just short of `2*pi`.
 
+```matlab
+x = linspace(0, 2*pi, 200);
+fprintf('%d points, last %.4f\n', numel(x), x(end));
+y = 0:0.1:2*pi;
+fprintf('%d points, last %.4f\n', numel(y), y(end));
+```
+
+```output
+200 points, last 6.2832
+63 points, last 6.2000
+```
+
 Keeping the data separate from the drawing is worth doing for its own sake: you
 can test the numbers, and you can draw them more than one way.
 

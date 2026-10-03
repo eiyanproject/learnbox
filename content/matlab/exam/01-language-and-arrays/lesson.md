@@ -25,6 +25,23 @@ Three things worth having straight before you start:
   run and disagree
 - a logical array used as a subscript selects; `sum` of it counts
 
+```matlab
+x = 7;
+fprintf('%s %d %d\n', class(x), size(x, 1), size(x, 2));
+A = [1 2; 3 4];
+disp(isequal(A * A, A .* A))
+v = [3 -1 4];
+disp(v(v > 0))
+disp(sum(v > 0))
+```
+
+```output
+double 1 1
+0
+3 4
+2
+```
+
 ## Your turn
 
 - `array_report(v)` — a struct describing `v`, with fields `n` (element count),

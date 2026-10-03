@@ -62,6 +62,37 @@ v(2) = [];         % removes the second element
 Assigning the empty matrix **deletes**. It is not "set it to empty" — the array
 gets shorter. That asymmetry with `v(2) = 0` is deliberate and is examined.
 
+## All of it, run
+
+```matlab
+v = [10 20 30 40 50];
+disp(v(2:4))
+disp(v(1:2:end))
+disp(v(end-1))
+disp(10:-3:1)
+disp(linspace(0, 1, 5))
+disp(1:0.5:3)
+v(end+1) = 60;
+v(2) = [];
+disp(v)
+try
+  v(0)
+catch
+  disp('v(0) is an error')
+end
+```
+
+```output
+20 30 40
+10 30 50
+40
+10 7 4 1
+0 0.2500 0.5000 0.7500 1.0000
+1.0000 1.5000 2.0000 2.5000 3.0000
+10 30 40 50 60
+v(0) is an error
+```
+
 ## Your turn
 
 - `take_first(v, n)` — the first `n`, throwing `take_first:tooMany` if there

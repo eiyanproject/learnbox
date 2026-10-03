@@ -10,7 +10,7 @@ lbx_run({
   'elapsed_days_is_a_number',    @() lbx_true(isnumeric(elapsed_days(datetime(2026,1,1), datetime(2026,1,2))))
   'a_difference_is_a_duration',  @() lbx_type('duration', datetime(2026,1,2) - datetime(2026,1,1))
   'adding_days_moves_the_date',  @() lbx_eq(8, day(datetime(2026,1,1) + days(7)))
-  'adding_a_number_is_refused',  @() lbx_error('datetime:badOperand', @() datetime(2026,1,1) + 7)
+  'a_number_counts_days',        @() lbx_eq(8, day(datetime(2026,1,1) + 7))
   'in_window_is_inclusive',      @() lbx_eq(logical([1 1 1]), in_window(three_dates(), datetime(2026,1,1), datetime(2026,1,3)))
   'in_window_excludes_outside',  @() lbx_eq(logical([0 1 0]), in_window(three_dates(), datetime(2026,1,2), datetime(2026,1,2)))
   'in_window_can_match_nothing', @() lbx_eq(0, sum(in_window(three_dates(), datetime(2027,1,1), datetime(2027,1,2))))

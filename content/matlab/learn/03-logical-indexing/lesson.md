@@ -89,6 +89,35 @@ Prefer the mask itself when you want the elements. Use `find` when you want the
 **position** — and take the `1` when you only need the first, so it stops
 looking.
 
+## All of it, run
+
+```matlab
+v = [3 -1 4 -1 5];
+disp(v > 0)
+disp(v(v > 0))
+disp(sum(v > 0))
+w = v;
+w(w < 0) = 0;
+disp(w)
+disp(v(v > 2 & v < 5))
+if [1 0 1], disp('if [1 0 1]: true'), else, disp('if [1 0 1]: false'), end
+if [], disp('if []: true'), else, disp('if []: false'), end
+disp(find(v < 0))
+disp(isempty(find(v > 10, 1)))
+```
+
+```output
+1 0 1 0 1
+3 4 5
+3
+3 0 4 0 5
+3 4
+if [1 0 1]: false
+if []: false
+2 4
+1
+```
+
 ## Your turn
 
 - `count_above(v, t)` — how many elements exceed `t`

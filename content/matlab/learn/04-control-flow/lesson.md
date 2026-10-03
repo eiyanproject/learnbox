@@ -89,6 +89,38 @@ end
 Growing an array inside a loop reallocates and copies every time. And the real
 lesson: most loops over an array want to be a vectorised expression instead.
 
+## Columns, run
+
+```matlab
+for col = [1 2; 3 4]
+  disp(col')
+end
+
+v = [1; 2; 3];
+n = 0;
+for x = v
+  n = n + 1;
+end
+fprintf('%d iteration(s), x has %d elements\n', n, numel(x));
+
+name = 'west';
+switch name
+  case 'north'
+    disp('N')
+  case {'east', 'west'}
+    disp('E or W')
+  otherwise
+    disp('?')
+end
+```
+
+```output
+1 3
+2 4
+1 iteration(s), x has 3 elements
+E or W
+```
+
 ## Your turn
 
 - `grade(score)` — `'A'` 90+, `'B'` 80+, `'C'` 70+, `'D'` 60+, `'F'` below;

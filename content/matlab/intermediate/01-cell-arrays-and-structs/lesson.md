@@ -84,6 +84,36 @@ array, which is why it needs `[ ]` or `{ }` around it to become one value.
 A struct array is the shape a table replaces: same fields, many rows, but with
 nothing keeping the lengths in step and no names on the columns.
 
+## Run
+
+```matlab
+c = {1, 'two', [3 4 5]};
+disp(class(c(2)))
+disp(class(c{2}))
+r.name = 'ada';
+r.age = 36;
+key = 'age';
+disp(r.(key))
+disp(isfield(r, 'age'))
+people(1).name = 'ada';
+people(2).name = 'bob';
+disp([people.name])
+disp(numel({people.name}))
+```
+
+```output
+cell
+char
+36
+1
+adabob
+2
+```
+
+`[people.name]` joined the two names into one char array - the brackets
+concatenate, which is rarely what you want for text. `{people.name}` kept them
+apart.
+
 ## Your turn
 
 - `count_type(c, className)` — how many elements of `c` have that class

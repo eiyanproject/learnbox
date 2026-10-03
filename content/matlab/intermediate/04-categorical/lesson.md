@@ -66,6 +66,33 @@ is built.
 
 This is why `readtable` columns are worth converting before you group them.
 
+## Run
+
+```matlab
+c = categorical({'red', 'blue', 'red'});
+cats = categories(c);
+fprintf('%s ', cats{:}); fprintf('\n');
+fprintf('%d ', countcats(c)); fprintf('\n');
+
+sizes = categorical({'large', 'small'}, {'small', 'medium', 'large'}, 'Ordinal', true);
+disp(sizes > 'small')
+
+fixed = categorical({'small', 'huge'}, {'small', 'medium', 'large'});
+disp(isundefined(fixed))
+fprintf('%d ', countcats(fixed)); fprintf('\n');
+```
+
+```output
+blue red
+1 2
+1 0
+0 1
+1 0 0
+```
+
+`huge` is not in the set, so it became `<undefined>` instead of a new
+category, and `medium` and `large` are still counted - as zero.
+
 ## Your turn
 
 - `to_sizes(c)` — an ordinal categorical over `small`, `medium`, `large`

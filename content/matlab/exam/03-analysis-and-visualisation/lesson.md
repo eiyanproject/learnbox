@@ -33,6 +33,24 @@ carrying the others along, destroys the correspondence between them silently.
 `sortrows` on a table moves whole rows, which is why it is the right tool even
 when the data would fit in a matrix.
 
+The first three rules, as numbers:
+
+```matlab
+v = [1 2 3 4 100];
+fprintf('mean %g, median %g\n', mean(v), median(v));
+fprintf('sample %.4f, population %.4f\n', std([1 2 3 4]), std([1 2 3 4], 1));
+M = [1 2; 3 4];
+disp(mean(M))
+disp(mean(M(:)))
+```
+
+```output
+mean 22, median 3
+sample 1.2910, population 1.1180
+2 3
+2.5000
+```
+
 ## Your turn
 
 - `summary_stats(v)` — a struct with `avg`, `med`, `sd` and `rng`

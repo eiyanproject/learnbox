@@ -70,6 +70,28 @@ tic; slow_way(v); toc
 Measure before rewriting. The loop you are about to spend an hour vectorising
 may be running once on twelve elements.
 
+## The table, run
+
+```matlab
+v = [3 1 4 1 5];
+disp(cumsum(v))
+disp(diff(v))
+fprintf('%d points, %d gaps\n', numel(v), numel(diff(v)));
+disp(cumprod([1 2 3 4]))
+[m, i] = max(v);
+fprintf('max %d at %d\n', m, i);
+disp(find(v == 1))
+```
+
+```output
+3 4 8 9 14
+-2 3 -3 4
+5 points, 4 gaps
+1 2 6 24
+max 5 at 5
+2 4
+```
+
 ## Your turn
 
 - `running_total(v)` — the cumulative sum

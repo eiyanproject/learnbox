@@ -74,6 +74,37 @@ A'     % complex-conjugate transpose
 They agree for real matrices and differ for complex ones. `.'` is the one that
 means "flip it".
 
+## All of it, run
+
+```matlab
+A = [1 2; 3 4];
+disp(A * A)
+disp(A .* A)
+disp(isequal(A^2, A * A))
+disp(A .* [10; 100])      % a column scales the rows
+disp(A .* [10 100])       % a row scales the columns
+disp(sum(A))
+disp(sum(A, 2))
+z = [1+2i 3];
+disp(isequal(z.', z'))
+```
+
+```output
+7 10
+15 22
+1 4
+9 16
+1
+10 20
+300 400
+10 200
+30 400
+4 6
+3
+7
+0
+```
+
 ## Your turn
 
 - `row_sums(M)` — the total of each row, as a column

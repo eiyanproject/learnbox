@@ -107,9 +107,12 @@ classdef datetime
         r = duration(a.n - b.n);
       elseif isa(a, 'datetime') && isa(b, 'duration')
         r = datetime.fromnum(a.n - days(b));
+      elseif isa(a, 'datetime') && isnumeric(b)
+        % As in MATLAB, a plain number is a count of 24-hour days.
+        r = datetime.fromnum(a.n - b);
       else
         error('datetime:badOperand', ...
-              'subtract a datetime or a duration from a datetime, not a %s', class(b));
+              'subtract a datetime, a duration or a number of days from a datetime, not a %s', class(b));
       end
     end
 
@@ -118,9 +121,15 @@ classdef datetime
         r = datetime.fromnum(a.n + days(b));
       elseif isa(a, 'duration') && isa(b, 'datetime')
         r = datetime.fromnum(b.n + days(a));
+      elseif isa(a, 'datetime') && isnumeric(b)
+        % As in MATLAB, a plain number is a count of 24-hour days. Legal, but
+        % the lessons write days(n) so the unit is visible.
+        r = datetime.fromnum(a.n + b);
+      elseif isnumeric(a) && isa(b, 'datetime')
+        r = datetime.fromnum(b.n + a);
       else
         error('datetime:badOperand', ...
-              'only a duration can be added to a datetime, not a %s', class(b));
+              'add a duration or a number of days to a datetime, not a %s', class(b));
       end
     end
 

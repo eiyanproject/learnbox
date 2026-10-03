@@ -32,6 +32,30 @@ Numbers are **double** unless you say otherwise. `int8(200)` saturates to 127
 rather than wrapping, which is a real difference from C and a favourite exam
 question.
 
+All of that, printed:
+
+```matlab
+x = 5;
+disp(size(x))
+disp(class(5)); disp(class('hi')); disp(class(true)); disp(class({1, 'a'}))
+disp(int8(200))
+disp(int8(-200))
+```
+
+```output
+1 1
+double
+char
+logical
+cell
+127
+-128
+```
+
+Examples here print with `disp` and `fprintf`, which show the same text in MATLAB and in Octave. Typing a bare expression, like
+`class(5)` with no semicolon, also shows its value, but the two lay it out
+slightly differently.
+
 ## The workspace
 
 Variables live in a workspace that persists between commands. `who` lists it,
@@ -67,9 +91,11 @@ name = string('Ada');
 Everything else about strings works normally. Where it matters, the lesson will
 remind you.
 
-Two smaller ones: `numel` is not overloaded on the shim types, so use
-`length`, `size`, `strlength` or `height`; and there is no Live Editor, no
-Simulink and no toolboxes.
+Three smaller ones: `numel` is not overloaded on the shim types, so use
+`length`, `size`, `strlength` or `height`; reaching through a table column
+into a cell in one step, `t.Name{:}`, gives only the **first** value, so take
+the column into a variable first (`names = t.Name; names{:}`); and there is no
+Live Editor, no Simulink and no toolboxes.
 
 ## Your turn
 

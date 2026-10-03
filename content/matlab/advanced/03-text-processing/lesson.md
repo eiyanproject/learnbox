@@ -64,6 +64,36 @@ Everything here works on char arrays. With a `string` you also get `strlength`,
 course's engine has no string literal, so a string is made explicitly with
 `string('...')`.
 
+## Run
+
+```matlab
+disp('abc' == 'abd')
+disp(strcmp('abc', 'abd'))
+try
+  tf = 'abc' == 'abcd';
+catch
+  disp('different lengths: an error')
+end
+disp(regexprep(strtrim('  too   many  spaces '), '\s+', ' '))
+m = regexp('a1 b22 c333', '\d+', 'match');
+fprintf('%s ', m{:}); fprintf('\n');
+disp(regexp('a1 b22', '\d+', 'match', 'once'))
+t = regexp('key=value', '(\w+)=(\w+)', 'tokens');
+fprintf('%s %s\n', t{1}{1}, t{1}{2});
+disp(strrep('a.b.c', '.', '-'))
+```
+
+```output
+1 1 0
+0
+different lengths: an error
+too many spaces
+1 22 333
+1
+key value
+a-b-c
+```
+
 ## Your turn
 
 - `normalise_name(s)` — trimmed, lower case, internal whitespace collapsed

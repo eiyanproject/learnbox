@@ -72,6 +72,29 @@ end
 The caller decides what `f` is. That is the whole idea, and it is how `fzero`,
 `integral`, `ode45` and `arrayfun` all take your code as an argument.
 
+## All of it, run
+
+```matlab
+n = 5;
+add = @(x) x + n;
+n = 100;
+disp(add(1))
+disp(arrayfun(@(x) x * 2, [1 2 3]))
+c = cellfun(@upper, {'a', 'b'}, 'UniformOutput', false);
+disp(class(c))
+fprintf('%s %s\n', c{:});
+twice = @(f, x) f(f(x));
+disp(twice(@(x) x * 3, 2))
+```
+
+```output
+6
+2 4 6
+cell
+A B
+18
+```
+
 ## Your turn
 
 - `apply_twice(f, x)` — `f` applied to `x`, twice

@@ -75,6 +75,20 @@ The first part is the **identifier**, `component:mnemonic`. It is the piece
 code is allowed to depend on — `catch err` then gives you `err.identifier`,
 which is stable, and `err.message`, which is for a person and may be reworded.
 
+```matlab
+try
+  error('summarise:empty', 'no values to summarise');
+catch err
+  disp(err.identifier)
+  disp(err.message)
+end
+```
+
+```output
+summarise:empty
+no values to summarise
+```
+
 ## Your turn
 
 In `summarise.m`:
