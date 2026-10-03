@@ -58,6 +58,46 @@ ArrayList::new           // a constructor
 argument, so it is a `Function<String,String>` even though `toUpperCase` takes
 none.
 
+## Run
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.*;
+
+public class Lambdas {
+    public static void main(String[] args) {
+        Function<Integer, Integer> plus1 = x -> x + 1, times2 = x -> x * 2;
+        System.out.println(plus1.andThen(times2).apply(5) + " " + plus1.compose(times2).apply(5));
+
+        Function<String, String> upper = String::toUpperCase;
+        Function<String, Integer> parse = Integer::parseInt;
+        Supplier<List<String>> make = ArrayList::new;
+        List<String> list = make.get();
+        list.add(upper.apply("hi"));
+        list.forEach(System.out::println);
+        System.out.println(parse.apply("41") + 1);
+
+        Predicate<String> empty = String::isEmpty;
+        System.out.println(empty.negate().test("") + " " + empty.or(s -> s.startsWith("a")).test("abc"));
+
+        int[] counter = {0};              // a local int could not be changed here
+        Runnable bump = () -> counter[0]++;
+        bump.run();
+        bump.run();
+        System.out.println(counter[0]);
+    }
+}
+```
+
+```output
+12 11
+HI
+42
+false true
+2
+```
+
 ## Your turn
 
 In `Funcs.java`:

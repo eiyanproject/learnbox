@@ -93,6 +93,50 @@ The pattern form tests and casts in one step, and `c` is only in scope where
 the test succeeded — which removes the cast that used to follow every
 `instanceof` and the `ClassCastException` when someone got it wrong.
 
+## Run
+
+```java
+public class Dispatch {
+    static class Parent {
+        String name = "parent-field";
+        String who() { return "parent"; }
+        String greet(Object o) { return "parent greet"; }
+    }
+
+    static class Child extends Parent {
+        String name = "child-field";
+        @Override String who() { return "child"; }
+        String greet(String s) { return "child greet"; }   // an overload, not an override
+    }
+
+    interface Named {
+        String name();
+        default String label() { return "<" + name() + ">"; }
+    }
+
+    public static void main(String[] args) {
+        Parent p = new Child();
+        System.out.println(p.who());        // methods: the object's type
+        System.out.println(p.name);         // fields: the variable's type
+        System.out.println(p.greet("hi"));  // Parent has only greet(Object)
+
+        Named n = () -> "ana";
+        System.out.println(n.label());
+
+        Object o = p;
+        if (o instanceof Child c) System.out.println("a Child, field " + c.name);
+    }
+}
+```
+
+```output
+child
+parent-field
+parent greet
+<ana>
+a Child, field child-field
+```
+
 ## Your turn
 
 In `Shapes.java`:

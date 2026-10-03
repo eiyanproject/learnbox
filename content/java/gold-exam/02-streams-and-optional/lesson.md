@@ -30,6 +30,42 @@ The second Gold paper: pipelines and absence.
 - **`peek` is for debugging.** Using it for side effects on a pipeline that may
   short-circuit gives results that depend on the terminal operation.
 
+Each rule, as a line of output:
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+import java.util.OptionalDouble;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+public class GoldStreams {
+    public static void main(String[] args) {
+        OptionalDouble none = IntStream.empty().average();
+        System.out.println(none.isPresent());
+        System.out.println(IntStream.of(2, 4).average().getAsDouble());
+
+        List<Integer> fixed = Stream.of(3, 1).toList();
+        try {
+            fixed.add(2);
+        } catch (UnsupportedOperationException e) {
+            System.out.println("toList() is unmodifiable");
+        }
+
+        List<String> seen = new ArrayList<>();
+        Stream.of("a", "b", "c").peek(seen::add).anyMatch(s -> s.equals("b"));
+        System.out.println(seen);               // "c" was never reached
+    }
+}
+```
+
+```output
+false
+3.0
+toList() is unmodifiable
+[a, b]
+```
+
 ## Your turn
 
 In `GoldPaper2.java`:

@@ -72,6 +72,40 @@ Validate at the boundary, throw immediately, and name what was wrong. A
 constructor that accepts nonsense pushes the failure somewhere far away, where
 the stack trace no longer points at the cause.
 
+## Run
+
+```java
+public class Bookings {
+    enum Status { PENDING, CONFIRMED, CANCELLED }
+
+    record Booking(String reference, int guests, Status status) {
+        Booking {
+            if (guests < 1) throw new IllegalArgumentException("at least one guest");
+        }
+
+        Booking confirm() { return new Booking(reference, guests, Status.CONFIRMED); }
+    }
+
+    public static void main(String[] args) {
+        Booking b = new Booking("R1", 2, Status.PENDING);
+        Booking c = b.confirm();
+        System.out.println(b.status() + " -> " + c.status());
+        System.out.println(c);
+        try {
+            new Booking("R2", 0, Status.PENDING);
+        } catch (IllegalArgumentException e) {
+            System.out.println("rejected: " + e.getMessage());
+        }
+    }
+}
+```
+
+```output
+PENDING -> CONFIRMED
+Booking[reference=R1, guests=2, status=CONFIRMED]
+rejected: at least one guest
+```
+
 ## Your turn
 
 In `Booking.java`:

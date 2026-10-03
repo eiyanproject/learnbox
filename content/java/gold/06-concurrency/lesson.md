@@ -73,6 +73,51 @@ check-then-act sequences; `ConcurrentHashMap` has `putIfAbsent`, `merge` and
 `compute` which are atomic on their own. That is the difference worth
 remembering.
 
+## Run
+
+Four threads, ten thousand increments each, and nothing lost:
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class Counting {
+    public static void main(String[] args) throws Exception {
+        AtomicInteger count = new AtomicInteger();
+        ExecutorService pool = Executors.newFixedThreadPool(4);
+        try {
+            List<Callable<Integer>> tasks = new ArrayList<>();
+            for (int t = 0; t < 4; t++) {
+                int id = t;
+                tasks.add(() -> {
+                    for (int i = 0; i < 10_000; i++) count.incrementAndGet();
+                    return id;
+                });
+            }
+            int ids = 0;
+            for (Future<Integer> f : pool.invokeAll(tasks)) ids += f.get();
+            System.out.println(count.get() + " increments, ids summed to " + ids);
+        } finally {
+            pool.shutdown();
+        }
+
+        ConcurrentHashMap<String, Integer> words = new ConcurrentHashMap<>();
+        for (String w : "a b a".split(" ")) words.merge(w, 1, Integer::sum);
+        System.out.println(words.get("a"));
+    }
+}
+```
+
+```output
+40000 increments, ids summed to 6
+2
+```
+
+With a plain `int` and `count++` the total comes out below 40000, by a
+different amount each run - which is why it cannot be shown as a fixed output.
+
 ## Your turn
 
 In `Concurrent.java`:

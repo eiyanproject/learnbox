@@ -90,6 +90,42 @@ the exam expects.
 
 Months are 1-based and sane, unlike the old `Calendar` API.
 
+## Run
+
+```java
+import java.time.LocalDate;
+
+public class CoreApis {
+    record Point(int x, int y) {}
+
+    public static void main(String[] args) {
+        Integer a = 127, b = 127, c = 1000, d = 1000;
+        System.out.println((a == b) + " " + (c == d) + " " + c.equals(d));
+
+        Integer maybe = null;
+        try {
+            int n = maybe;
+        } catch (NullPointerException e) {
+            System.out.println("unboxing null threw");
+        }
+
+        Point p = new Point(1, 2);
+        System.out.println(p + " " + p.x() + " " + p.equals(new Point(1, 2)));
+
+        LocalDate day = LocalDate.of(2026, 9, 24);
+        day.plusDays(10);                        // result ignored: day is unchanged
+        System.out.println(day + " " + day.plusDays(10) + " " + day.getDayOfWeek());
+    }
+}
+```
+
+```output
+true false true
+unboxing null threw
+Point[x=1, y=2] 1 true
+2026-09-24 2026-10-04 THURSDAY
+```
+
 ## Your turn
 
 In `Core.java`:

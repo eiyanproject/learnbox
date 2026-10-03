@@ -30,6 +30,38 @@ exam asks about it constantly.
 - **`split` takes a regex**, so splitting on `"."` matches every character
   unless you escape it.
 
+Each rule, as a line of output:
+
+```java
+import java.util.Arrays;
+
+public class Equality {
+    public static void main(String[] args) {
+        String s = "java";
+        s.toUpperCase();
+        System.out.println(s);
+        String built = new StringBuilder("ja").append("va").toString();
+        System.out.println((s == built) + " " + s.equals(built));
+
+        int[][] x = {{1}}, y = {{1}};
+        System.out.println(x.equals(y) + " " + Arrays.equals(x, y) + " " + Arrays.deepEquals(x, y));
+        System.out.println("hello".substring(1, 4).length());
+        System.out.println("a.b".split(".").length + " " + "a.b".split("\\.").length);
+    }
+}
+```
+
+```output
+java
+false true
+false false true
+3
+0 2
+```
+
+`Arrays.equals` on a nested array compares the inner arrays with `equals` -
+that is, by reference - which is why only `deepEquals` says `true`.
+
 ## Your turn
 
 In `Paper2.java`:

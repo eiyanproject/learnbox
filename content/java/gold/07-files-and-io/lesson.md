@@ -65,6 +65,47 @@ touching files either handles it or declares `throws IOException`. That is not
 an accident; the filesystem is exactly the kind of failure the checked
 mechanism was designed for.
 
+## Run
+
+```java
+import java.io.IOException;
+import java.nio.file.*;
+import java.util.stream.Stream;
+
+public class FilesDemo {
+    public static void main(String[] args) throws IOException {
+        Path ghost = Path.of("no", "such", "file.txt");      // touches no disk
+        System.out.println(ghost + " exists? " + Files.exists(ghost));
+
+        Path dir = Files.createTempDirectory("lesson");
+        Path p = dir.resolve("notes.txt");
+        Files.writeString(p, "one\ntwo\n");
+        Files.writeString(p, "three\n", StandardOpenOption.APPEND);
+        try (Stream<String> lines = Files.lines(p)) {
+            System.out.println(lines.count() + " lines");
+        }
+        System.out.println(Files.readAllLines(p));
+
+        Files.delete(p);
+        System.out.println(Files.deleteIfExists(p));
+        try {
+            Files.delete(p);
+        } catch (NoSuchFileException e) {
+            System.out.println("delete: NoSuchFileException");
+        }
+        Files.delete(dir);
+    }
+}
+```
+
+```output
+no/such/file.txt exists? false
+3 lines
+[one, two, three]
+false
+delete: NoSuchFileException
+```
+
 ## Your turn
 
 In `Files2.java`:

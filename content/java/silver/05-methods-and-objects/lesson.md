@@ -76,6 +76,40 @@ The first mutates the object both references point at. The second repoints the
 local copy and the caller's reference is untouched. "Java is pass by reference"
 is a persistent myth; the exam tests the difference above directly.
 
+## Run
+
+```java
+public class Methods {
+    static String pick(long x) { return "long (widening)"; }
+    static String pick(Integer x) { return "Integer (boxing)"; }
+    static String pick(int... x) { return "varargs"; }
+
+    static class Account { String owner = "ana"; }
+    static void rename(Account a) { a.owner = "x"; }
+    static void replace(Account a) { a = new Account(); a.owner = "y"; }
+
+    public static void main(String[] args) {
+        System.out.println(pick(5));                   // widening beats boxing
+        System.out.println(pick(Integer.valueOf(5)));  // an exact match
+        System.out.println(pick());                    // only varargs fits
+
+        Account acc = new Account();
+        rename(acc);
+        System.out.println(acc.owner);
+        replace(acc);
+        System.out.println(acc.owner);                 // unchanged by replace
+    }
+}
+```
+
+```output
+long (widening)
+Integer (boxing)
+varargs
+x
+x
+```
+
 ## Your turn
 
 In `Account.java`:

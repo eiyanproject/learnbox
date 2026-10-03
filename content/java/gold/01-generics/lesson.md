@@ -66,6 +66,50 @@ you read is only guaranteed to be an `Object`.
 The bound says what you may *do* with `T` — here, call `compareTo`. Without it
 `T` is only an `Object`. A parameter may have several bounds with `&`.
 
+## Run
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+public class Generics {
+    static class Box<T> { T value; }
+
+    static double sum(List<? extends Number> values) {
+        double total = 0;
+        for (Number n : values) total += n.doubleValue();
+        return total;
+    }
+
+    static void fill(List<? super Integer> target) {
+        for (int i = 1; i <= 3; i++) target.add(i);
+    }
+
+    static <T extends Comparable<T>> T max(List<T> list) {
+        T best = list.get(0);
+        for (T t : list) if (t.compareTo(best) > 0) best = t;
+        return best;
+    }
+
+    public static void main(String[] args) {
+        // erased: one class at run time
+        System.out.println(new Box<String>().getClass() == new Box<Integer>().getClass());
+        System.out.println(sum(List.of(1, 2.5, 3L)));
+        List<Object> sink = new ArrayList<>();
+        fill(sink);                                 // a List<Object> consumes Integers
+        System.out.println(sink);
+        System.out.println(max(List.of("pear", "apple", "plum")));
+    }
+}
+```
+
+```output
+true
+6.5
+[1, 2, 3]
+plum
+```
+
 ## Your turn
 
 In `Boxes.java`:

@@ -43,6 +43,37 @@ The declared type `Animal` decides what you are **allowed to call**. The actual
 object decides **which implementation runs**. Nearly every inheritance question
 on the exam is this sentence in disguise.
 
+One program, four of the rules:
+
+```java
+public class Hiding {
+    static class Animal {
+        String name = "animal";
+        Animal() { System.out.println("Animal()"); }
+        static String kind() { return "Animal.kind"; }
+        String speak() { return "..."; }
+    }
+
+    static class Dog extends Animal {
+        String name = "dog";
+        Dog() { System.out.println("Dog()"); }          // super() runs first
+        static String kind() { return "Dog.kind"; }     // hides, does not override
+        @Override String speak() { return "Woof"; }
+    }
+
+    public static void main(String[] args) {
+        Animal a = new Dog();
+        System.out.println(a.speak() + " " + a.name + " " + a.kind());
+    }
+}
+```
+
+```output
+Animal()
+Dog()
+Woof animal Animal.kind
+```
+
 ## Your turn
 
 In `Paper3.java`:

@@ -30,6 +30,40 @@ The first Gold paper: type parameters, wildcards, and the collection contracts.
   `UnsupportedOperationException` — a favourite question, because the code
   compiles perfectly.
 
+Each rule, as a line of output:
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+public class GoldRules {
+    public static void main(String[] args) {
+        List<Integer> fixed = List.of(1, 2);
+        try {
+            fixed.add(3);
+        } catch (UnsupportedOperationException e) {
+            System.out.println("List.of is immutable");
+        }
+
+        List<? extends Number> producer = new ArrayList<Integer>(List.of(1, 2));
+        Number first = producer.get(0);
+        producer.add(null);                     // the only thing you may add
+        System.out.println(first + " " + producer.size());
+
+        List<? super Integer> consumer = new ArrayList<Number>();
+        consumer.add(5);
+        Object back = consumer.get(0);          // only known to be an Object
+        System.out.println(back);
+    }
+}
+```
+
+```output
+List.of is immutable
+1 3
+5
+```
+
 ## Your turn
 
 In `GoldPaper1.java`:

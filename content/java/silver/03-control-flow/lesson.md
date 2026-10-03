@@ -88,6 +88,56 @@ for (...) { for (...) { if (found) break outer; } }
 Labels are the one legitimate use of anything goto-shaped in Java, and they
 exist precisely so you do not need a flag variable.
 
+## Traced
+
+```java
+public class Flow {
+    public static void main(String[] args) {
+        for (int day : new int[] {5, 6}) {
+            String type = "unset";
+            switch (day) {
+                case 5:
+                    type = "friday";          // no break: falls into case 6
+                case 6:
+                    type = type + "+weekend";
+                    break;
+                default:
+                    type = "weekday";
+            }
+            System.out.println(day + " " + type);
+        }
+
+        int n = 0;
+        do { n++; } while (n < 0);            // false at once, but the body ran
+        System.out.println("do-while ran " + n);
+
+        String found = "none";
+        outer:
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (i * j == 2) { found = i + "," + j; break outer; }
+            }
+        }
+        System.out.println(found);
+
+        int score = 72;
+        System.out.println(switch (score / 10) {
+            case 9, 10 -> "A";
+            case 7, 8 -> "B";
+            default -> "C";
+        });
+    }
+}
+```
+
+```output
+5 friday+weekend
+6 unset+weekend
+do-while ran 1
+1,2
+B
+```
+
 ## Your turn
 
 In `Flow.java`:

@@ -65,6 +65,47 @@ map.merge(k, 1, Integer::sum)        // the counting idiom
 `computeIfAbsent` for grouping and `merge` for counting replace most of the
 if-then-put code people still write.
 
+## Run
+
+```java
+import java.util.*;
+
+public class CollectionsDemo {
+    static class BadKey {
+        final String id;
+        BadKey(String id) { this.id = id; }
+        @Override public boolean equals(Object o) { return o instanceof BadKey b && b.id.equals(id); }
+        // no hashCode: equal keys get different hashes
+    }
+
+    record GoodKey(String id) {}
+
+    public static void main(String[] args) {
+        Set<BadKey> bad = new HashSet<>();
+        bad.add(new BadKey("a"));
+        Set<GoodKey> good = new HashSet<>();
+        good.add(new GoodKey("a"));
+        System.out.println(bad.contains(new BadKey("a")) + " " + good.contains(new GoodKey("a")));
+
+        Map<String, Integer> counts = new TreeMap<>();
+        for (String w : "b a b c b".split(" ")) counts.merge(w, 1, Integer::sum);
+        System.out.println(counts);
+
+        Map<Integer, List<String>> byLength = new LinkedHashMap<>();
+        for (String w : List.of("kiwi", "fig", "pear")) {
+            byLength.computeIfAbsent(w.length(), k -> new ArrayList<>()).add(w);
+        }
+        System.out.println(byLength);
+    }
+}
+```
+
+```output
+false true
+{a=1, b=3, c=1}
+{4=[kiwi, pear], 3=[fig]}
+```
+
 ## Your turn
 
 In `Store.java`:

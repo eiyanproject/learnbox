@@ -31,6 +31,39 @@ filesystem, or what the class file kept.
 - **Annotations default to `CLASS` retention**, which reflection cannot see.
 - **`getDeclaredMethods` has no defined order.** Sort if you compare.
 
+Two of the rules, as output:
+
+```java
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.stream.LongStream;
+import java.util.stream.Stream;
+
+public class GoldConcurrency {
+    public static void main(String[] args) {
+        // no shared state, so parallel is safe and exact
+        System.out.println(LongStream.rangeClosed(1, 1_000_000).parallel().sum());
+
+        try {
+            Stream.of("x").forEach(s -> {
+                try {
+                    throw new IOException("disk");
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);   // forEach forbids checked
+                }
+            });
+        } catch (UncheckedIOException e) {
+            System.out.println("wrapped: " + e.getCause().getMessage());
+        }
+    }
+}
+```
+
+```output
+500000500000
+wrapped: disk
+```
+
 ## Your turn
 
 In `GoldPaper3.java`:

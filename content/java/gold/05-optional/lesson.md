@@ -68,6 +68,48 @@ Two more rules from the API's designers:
 - **Never return `null` from a method that returns `Optional`.** That is the
   worst of both worlds, and it happens more than you would think.
 
+## Run
+
+```java
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
+public class Optionals {
+    static String expensive() {
+        System.out.println("computing default");
+        return "default";
+    }
+
+    public static void main(String[] args) {
+        Optional<String> some = Optional.of("value");
+        System.out.println(some.orElse(expensive()));             // runs expensive()
+        System.out.println(some.orElseGet(Optionals::expensive)); // does not
+
+        Optional<String> none = Optional.ofNullable(null);
+        System.out.println(none.map(String::length).orElse(-1));
+        try {
+            none.orElseThrow();
+        } catch (NoSuchElementException e) {
+            System.out.println("orElseThrow: NoSuchElementException");
+        }
+        try {
+            Optional.of(null);
+        } catch (NullPointerException e) {
+            System.out.println("of(null): NullPointerException");
+        }
+    }
+}
+```
+
+```output
+computing default
+value
+value
+-1
+orElseThrow: NoSuchElementException
+of(null): NullPointerException
+```
+
 ## Your turn
 
 In `Maybe.java`:

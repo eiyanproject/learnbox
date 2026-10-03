@@ -69,6 +69,38 @@ type.
 `Integer.MAX_VALUE + 1` is `Integer.MIN_VALUE`. No exception, no warning. Java
 wraps, and code that assumes otherwise is wrong in a way tests rarely catch.
 
+## Every rule above, run
+
+```java
+public class Promotion {
+    public static void main(String[] args) {
+        int a = 7 / 2;
+        double b = 7 / 2;
+        double c = 7 / 2.0;
+        System.out.println(a + " " + b + " " + c);
+
+        long big = 10_000_000_000L;
+        System.out.println((int) big);           // the high bits are thrown away
+        System.out.println(Integer.MAX_VALUE + 1);
+
+        byte x = 10, y = 20;
+        System.out.println((byte) (x + y) + " " + (byte) 200);
+
+        char ch = 'A';
+        int code = ch;                            // char widens to int
+        System.out.println(code + " " + (char) (code + 1));
+    }
+}
+```
+
+```output
+3 3.0 3.5
+1410065408
+-2147483648
+30 -56
+65 B
+```
+
 ## Your turn
 
 In `Numbers.java`:

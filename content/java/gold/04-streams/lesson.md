@@ -76,6 +76,53 @@ Collectors.counting()
 `groupingBy` takes a downstream collector too:
 `groupingBy(String::length, Collectors.counting())`.
 
+## Run
+
+```java
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+public class Streams {
+    public static void main(String[] args) {
+        List<String> items = List.of("ab", "abcd", "xyz", "hello");
+
+        Stream<String> lazy = items.stream().peek(s -> System.out.println("saw " + s));
+        System.out.println("nothing yet");
+        System.out.println(lazy.filter(s -> s.length() > 3).findFirst().orElse("none"));
+
+        Stream<String> once = items.stream();
+        once.count();
+        try {
+            once.count();
+        } catch (IllegalStateException e) {
+            System.out.println("reused: IllegalStateException");
+        }
+
+        Map<Integer, Long> byLength = items.stream()
+            .collect(Collectors.groupingBy(String::length, TreeMap::new, Collectors.counting()));
+        System.out.println(byLength);
+        System.out.println(items.stream().mapToInt(String::length).sum());
+        System.out.println(items.stream().collect(Collectors.joining(", ")));
+    }
+}
+```
+
+```output
+nothing yet
+saw ab
+saw abcd
+abcd
+reused: IllegalStateException
+{2=1, 3=1, 4=1, 5=1}
+14
+ab, abcd, xyz, hello
+```
+
+`xyz` and `hello` were never seen: `findFirst` stopped the pipeline.
+
 ## Your turn
 
 In `Pipe.java`:

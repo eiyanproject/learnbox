@@ -32,6 +32,32 @@ Worth a re-read before you start, because each appears at least once:
   and gives a wrapped value, where `b = b + 300` does not compile at all. This
   one catches almost everyone.
 
+Each rule, as a line of output:
+
+```java
+public class Rules {
+    public static void main(String[] args) {
+        double d = 7 / 2;
+        System.out.println(d);
+        System.out.println(Integer.MAX_VALUE + 1);
+        System.out.println(-7 % 3);
+        int a = 5;
+        System.out.println(a > 3 ? "big" : a > 1 ? "medium" : "small");
+        byte b = 10;
+        b += 300;                  // (byte) (10 + 300)
+        System.out.println(b);
+    }
+}
+```
+
+```output
+3.0
+-2147483648
+-1
+big
+54
+```
+
 ## Your turn
 
 In `Paper1.java`:

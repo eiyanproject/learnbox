@@ -76,6 +76,47 @@ Its methods — `append`, `insert`, `delete`, `reverse` — change the builder a
 return it, which is why they chain. That return-**this** behaviour is the
 opposite of String's return-a-copy, and the exam contrasts them deliberately.
 
+## The traps, run
+
+```java
+public class Strings {
+    public static void main(String[] args) {
+        String s = "  hello ";
+        s.trim();
+        System.out.println("[" + s + "]");
+        s = s.trim();
+        System.out.println("[" + s + "]");
+
+        String a = "java", b = "java", c = new String("java");
+        System.out.println((a == b) + " " + (a == c) + " " + a.equals(c));
+        String half = "ja";
+        String built = half + "va";                  // made at run time
+        System.out.println((a == built) + " " + a.equals(built));
+
+        System.out.println("hello".substring(1, 3));
+        System.out.println("a.b.c".split(".").length + " " + "a.b.c".split("\\.").length);
+
+        StringBuilder sb = new StringBuilder("abc");
+        sb.append("d").reverse();                    // changes sb itself
+        System.out.println(sb);
+    }
+}
+```
+
+```output
+[  hello ]
+[hello]
+true false true
+false true
+el
+0 3
+dcba
+```
+
+`split(".")` gives **zero** parts: `.` is the regex for "any character", so
+every character is a separator and only empty strings are left, which `split`
+then drops.
+
 ## Your turn
 
 In `Text.java`:

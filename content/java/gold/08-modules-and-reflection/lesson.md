@@ -77,6 +77,45 @@ on classes it has never seen.
 `getMethods` returns public ones including inherited. Neither promises an
 order, so code that depends on one is flaky.
 
+## Run
+
+```java
+import java.lang.annotation.*;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class Reflect {
+    @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.METHOD) @interface Kept {}
+    @Target(ElementType.METHOD) @interface Dropped {}       // CLASS retention, the default
+
+    static class Job {
+        @Kept public void a() {}
+        @Dropped public void b() {}
+        private void c() {}
+    }
+
+    public static void main(String[] args) {
+        List<String> seen = new ArrayList<>();
+        for (Method m : Job.class.getDeclaredMethods()) {
+            String name = m.getName();
+            if (m.isAnnotationPresent(Kept.class)) name += "+Kept";
+            if (m.isAnnotationPresent(Dropped.class)) name += "+Dropped";
+            seen.add(name);
+        }
+        Collections.sort(seen);              // no promised order: sort first
+        System.out.println(seen);
+    }
+}
+```
+
+```output
+[a+Kept, b, c]
+```
+
+`b` carries `@Dropped` in the source, and reflection cannot see it.
+
 ## Your turn
 
 In `Meta.java`:

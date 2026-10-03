@@ -76,6 +76,57 @@ exception during close can mask the real one — here the close exception is
 *suppressed* and attached to the original, retrievable with
 `getSuppressed()`.
 
+## The order, printed
+
+```java
+public class Finally {
+    static int f() {
+        try {
+            return 1;
+        } finally {
+            System.out.println("finally runs before the return completes");
+        }
+    }
+
+    @SuppressWarnings("finally")
+    static int g() {
+        try {
+            throw new RuntimeException("lost");
+        } finally {
+            return 2;                       // the exception is discarded
+        }
+    }
+
+    record Res(String name) implements AutoCloseable {
+        public void close() { System.out.println("close " + name); }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(f());
+        System.out.println(g());
+        try (Res a = new Res("a"); Res b = new Res("b")) {
+            System.out.println("body");
+            throw new IllegalStateException("boom");
+        } catch (IllegalStateException e) {
+            System.out.println("catch " + e.getMessage());
+        } finally {
+            System.out.println("finally");
+        }
+    }
+}
+```
+
+```output
+finally runs before the return completes
+1
+2
+body
+close b
+close a
+catch boom
+finally
+```
+
 ## Your turn
 
 In `Safe.java`:

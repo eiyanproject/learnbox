@@ -72,6 +72,54 @@ Inside the method, `values` is an ordinary `int[]`. The caller can pass any
 number of arguments, including none — which gives an empty array, never null.
 Varargs must be the **last** parameter, and a method can have only one.
 
+## Run
+
+```java
+import java.util.Arrays;
+
+public class ArraysDemo {
+    public static void main(String[] args) {
+        int[] a = new int[3];
+        String[] s = new String[2];
+        System.out.println(Arrays.toString(a) + " " + Arrays.toString(s));
+
+        int[] x = {3, 1, 2};
+        int[] y = {3, 1, 2};
+        System.out.println(x.equals(y) + " " + Arrays.equals(x, y));
+        Arrays.sort(x);
+        System.out.println(Arrays.toString(Arrays.copyOf(x, 5)));
+        System.out.println(String.valueOf(x).startsWith("[I@"));   // what println(x) shows
+
+        int[][] ragged = {{1}, {2, 3, 4}};
+        System.out.println(ragged.length + " " + ragged[1].length);
+        System.out.println(sum() + " " + sum(1, 2, 3));
+
+        try {
+            int[] z = new int[2];
+            z[2] = 1;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    static int sum(int... values) {
+        int total = 0;
+        for (int v : values) total += v;
+        return total;
+    }
+}
+```
+
+```output
+[0, 0, 0] [null, null]
+false true
+[1, 2, 3, 0, 0]
+true
+2 3
+0 6
+Index 2 out of bounds for length 2
+```
+
 ## Your turn
 
 In `Arrays2.java`:

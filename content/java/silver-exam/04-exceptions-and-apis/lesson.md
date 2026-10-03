@@ -32,6 +32,44 @@ prints.
   plain arithmetic.
 - **`java.time` types are immutable**; every method returns a new value.
 
+Each rule, as a line of output - plus one `java.time` edge the exam likes:
+
+```java
+import java.time.LocalDate;
+
+public class ExamApis {
+    @SuppressWarnings("finally")
+    static int f() {
+        try {
+            throw new IllegalStateException();
+        } finally {
+            return 7;
+        }
+    }
+
+    public static void main(String[] args) {
+        try {
+            Integer.parseInt("x");
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getClass().getSimpleName());
+        }
+        System.out.println(f());
+        Integer a = 128, b = 128;
+        System.out.println(a == b);
+        LocalDate d = LocalDate.of(2026, 1, 31);
+        d.plusMonths(1);
+        System.out.println(d + " " + d.plusMonths(1));   // no February 31st
+    }
+}
+```
+
+```output
+NumberFormatException
+7
+false
+2026-01-31 2026-02-28
+```
+
 ## Your turn
 
 In `Paper4.java`:
