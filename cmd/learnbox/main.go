@@ -9,6 +9,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -16,6 +17,7 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"syscall"
@@ -325,6 +327,10 @@ func verify(log *slog.Logger, c cfg, args []string) error {
 				if err := ws.CopyIn(l.SolutionDir(), rel); err != nil {
 					return err
 				}
+				examples, err := addExamples(ws, c, l, rel)
+				if err != nil {
+					return fmt.Errorf("%s: %w", l.ID(), err)
+				}
 				res, err := run.CheckDir(context.Background(), l, rel)
 				if err != nil {
 					return fmt.Errorf("%s: %w", l.ID(), err)
@@ -335,7 +341,14 @@ func verify(log *slog.Logger, c cfg, args []string) error {
 					mark = "FAIL"
 					failed++
 				}
-				fmt.Printf("%s %-55s %d tests %5dms\n", mark, l.ID(), len(res.Tests), res.DurationMS)
+				note := ""
+				switch {
+				case examples == 1:
+					note = " (1 lesson example)"
+				case examples > 1:
+					note = fmt.Sprintf(" (%d lesson examples)", examples)
+				}
+				fmt.Printf("%s %-55s %d tests %5dms%s\n", mark, l.ID(), len(res.Tests), res.DurationMS, note)
 				if !res.Passed {
 					fmt.Println(indent(res.Output))
 				}
@@ -348,6 +361,34 @@ func verify(log *slog.Logger, c cfg, args []string) error {
 		return fmt.Errorf("%d lessons failed verification", failed)
 	}
 	return nil
+}
+
+// addExamples writes a lesson's >>> transcripts into the scratch workspace,
+// beside the reference solution, along with the harness that runs them as
+// doctests. The lesson's own run then picks them up like any other test, so a
+// claim in the prose - "this prints 2790" - is executed instead of trusted.
+//
+// Only pytest-graded tracks, and only ```pycon blocks: see Lesson.Examples
+// for why the rest of a lesson's code is not run.
+func addExamples(ws *workspace.Manager, c cfg, l *content.Lesson, rel string) (int, error) {
+	if !runner.UsesPytest(l.Lang) {
+		return 0, nil
+	}
+	examples := l.Examples("pycon")
+	if len(examples) == 0 {
+		return 0, nil
+	}
+	raw, err := json.Marshal(examples)
+	if err != nil {
+		return 0, err
+	}
+	if err := ws.WriteFileRel(path.Join(rel, "lesson_examples.json"), raw); err != nil {
+		return 0, err
+	}
+	if err := ws.CopyIn(filepath.Join(c.PyLib, "prose"), rel); err != nil {
+		return 0, fmt.Errorf("copy the example harness: %w", err)
+	}
+	return len(examples), nil
 }
 
 func indent(s string) string {

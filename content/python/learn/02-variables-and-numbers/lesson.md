@@ -12,11 +12,11 @@ hints:
 
 A **variable** is a name that points at a value. You create one with `=`:
 
-```python
-city = "Jakarta"
-population = 10_560_000     # underscores are just for readability
-growth = 1.8
-is_capital = True
+```pycon
+>>> city = "Jakarta"
+>>> population = 10_560_000     # underscores are just for readability
+>>> growth = 1.8
+>>> is_capital = True
 ```
 
 There is no type declaration. Python works out the type from the value, and

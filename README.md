@@ -393,6 +393,26 @@ Check that every reference solution passes (inside the CT):
 LEARNBOX_CONTENT=/opt/learnbox/content /opt/learnbox/bin/learnbox verify python/learn
 ```
 
+In the pytest-graded tracks (Python, CCNA, mindset, security), `verify` also
+runs the lesson's own examples. Write an example whose output the prose relies
+on as a ` ```pycon ` interactive transcript, and it runs as a doctest next to
+the reference solution, so the lesson can `import` the module the learner
+writes:
+
+````markdown
+```pycon
+>>> pow(65, 17, 3233)
+2790
+```
+````
+
+The transcripts in one lesson share their names, top to bottom, the way a
+reader follows them. `...` in the expected output matches anything, e.g.
+`'...'` for a random token. A failure names the lesson.md line. Plain
+` ```python ` blocks are not run: they are often fragments that only make sense
+in context. This only happens in `verify`; a learner's **Check** never runs the
+prose.
+
 ## Development
 
 ```bash

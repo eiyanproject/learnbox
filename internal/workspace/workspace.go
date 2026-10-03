@@ -237,6 +237,11 @@ func (m *Manager) CopyWithin(srcRel, dstRel string) error {
 	})
 }
 
+// WriteFileRel writes one file at a path relative to the learner's home,
+// through the same os.Root as everything else here. `learnbox verify` uses it
+// to drop generated files into its scratch workspace.
+func (m *Manager) WriteFileRel(rel string, data []byte) error { return m.writeFile(rel, data) }
+
 func (m *Manager) writeFile(rel string, data []byte) error {
 	m.home.Remove(rel) // never write through an existing symlink or hard link
 	f, err := m.home.OpenFile(rel, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o644)

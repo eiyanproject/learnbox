@@ -52,9 +52,12 @@ type Lesson struct {
 	Hints      []string `yaml:"hints" json:"-"`
 	Source     string   `yaml:"source" json:"source,omitempty"` // attribution, Markdown
 
-	Dir     string `yaml:"-" json:"-"`
-	Body    string `yaml:"-" json:"-"` // Markdown
-	HasTest bool   `yaml:"-" json:"has_tests"`
+	Dir  string `yaml:"-" json:"-"`
+	Body string `yaml:"-" json:"-"` // Markdown
+	// BodyLine is the line of lesson.md the body starts on, so anything
+	// found in Body can be reported at its real line in the file.
+	BodyLine int  `yaml:"-" json:"-"`
+	HasTest  bool `yaml:"-" json:"has_tests"`
 }
 
 // ID is lang/section/slug, the key used everywhere else.
@@ -212,7 +215,9 @@ func loadLesson(dir string) (*Lesson, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s/lesson.md: %w", dir, err)
 	}
-	l := &Lesson{Dir: dir, Body: body}
+	// "---" is line 1, the front matter follows, then the closing "---"; the
+	// body begins on the line after that.
+	l := &Lesson{Dir: dir, Body: body, BodyLine: bytes.Count(front, []byte("\n")) + 4}
 	if err := yaml.Unmarshal(front, l); err != nil {
 		return nil, fmt.Errorf("%s/lesson.md front matter: %w", dir, err)
 	}

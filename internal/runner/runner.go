@@ -64,6 +64,20 @@ func New(sb *sandbox.Sandbox, ws *workspace.Manager, timeout time.Duration) *Run
 
 var ErrNoTests = errors.New("lesson has no tests")
 
+// pytestLangs are the tracks graded by pytest. Python, obviously; CCNA too,
+// because the learner edits IOS config files and the tests apply them to the
+// simulator and assert the network actually forwards; mindset, because the
+// subject is how to think about code and Python is the least distracting way
+// to write it; and security, where the learner writes a script or a fix and
+// the test runs it against a target inside the container. Same runner,
+// different thing being written.
+var pytestLangs = map[string]bool{"python": true, "ccna": true, "mindset": true, "security": true}
+
+// UsesPytest reports whether lessons in this language are graded by pytest.
+// `learnbox verify` uses it too: lesson >>> examples are run as doctests only
+// where pytest is already the harness.
+func UsesPytest(lang string) bool { return pytestLangs[lang] }
+
 // Check runs the hidden tests against the learner's current workspace.
 func (r *Runner) Check(ctx context.Context, l *content.Lesson) (*Result, error) {
 	return r.check(ctx, l, "")
@@ -100,19 +114,14 @@ func (r *Runner) check(ctx context.Context, l *content.Lesson, srcRel string) (*
 	}
 	checkDir := r.sb.Home + "/" + checkRel
 
-	switch l.Lang {
-	// CCNA lessons are graded by pytest as well: the learner edits IOS config
-	// files, and the tests apply them to the simulator and assert the network
-	// actually forwards. The mindset track is Python too - the subject is how
-	// to think about code, and Python is the least distracting way to write it.
-	// Security lessons are graded the same way: the learner writes a script or
-	// a fix, and the test runs it against a target that lives inside the
-	// container and confirms the result. Same runner, different thing written.
-	case "python", "ccna", "mindset", "security":
+	if UsesPytest(l.Lang) {
 		if err := r.ws.CopyIn(l.TestsDir(), checkRel); err != nil {
 			return nil, fmt.Errorf("copy tests: %w", err)
 		}
 		return r.python(ctx, checkRel, checkDir)
+	}
+
+	switch l.Lang {
 	case "rust":
 		if err := r.ws.CopyIn(l.TestsDir(), checkRel+"/tests"); err != nil {
 			return nil, fmt.Errorf("copy tests: %w", err)
