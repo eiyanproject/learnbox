@@ -22,7 +22,9 @@ def test_dangerous_calls_multiple():
 
 def test_safer_alternative_known():
     assert safer_alternative("gets") == "fgets"
-    assert safer_alternative("strcpy") == "strncpy"
+    # strncpy is the trap: it can leave the buffer unterminated.
+    assert safer_alternative("strcpy") == "snprintf"
+    assert safer_alternative("strcpy") != "strncpy"
     assert safer_alternative("sprintf") == "snprintf"
 
 

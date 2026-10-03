@@ -21,8 +21,8 @@ for you to practise on. You never point a tool at a machine you do not own and
 have permission to test. Not the network this container sits on, not the
 Proxmox host, not a server on the internet. That is the line between security
 work and a crime, and it is drawn by *permission*, not by technique - the same
-`nmap` command is routine on your own lab and an offence against someone else's
-network.
+`nmap` command is routine on your own lab and, aimed at someone else's network
+without permission, can break computer-misuse laws in many countries.
 
 Keep that rule and everything in this track is something you can be proud to
 know. The skills are the same ones a defender uses to find the hole before an

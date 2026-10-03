@@ -8,7 +8,7 @@ DANGERS = {
 }
 
 SAFER = {
-    "gets": "fgets", "strcpy": "strncpy", "strcat": "strncat",
+    "gets": "fgets", "strcpy": "snprintf", "strcat": "snprintf",
     "sprintf": "snprintf", "system": "execve", "scanf": "scanf with a width",
 }
 

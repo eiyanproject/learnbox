@@ -31,7 +31,10 @@ Containment comes first because every minute of delay is more damage.
 
 ## The phases, in order
 
-Incident response follows a fixed sequence, and the order is not optional:
+Incident response follows a fixed sequence. This is the SANS model, whose first
+phase - **preparation**: playbooks, logging and contacts in place *before*
+anything happens - is the one done before an incident starts. Once it has
+started, the order is not optional:
 
 ```text
 identify  ->  contain  ->  eradicate  ->  recover  ->  lessons learned

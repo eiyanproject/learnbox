@@ -21,7 +21,8 @@ unglamorous, high-value work of closing them.
 
 Hardening is systematic, not creative: you compare a configuration against a
 list of settings known to be dangerous, and for each one that matches, you set
-it to its safe value. The canonical examples for an SSH server:
+it to its safe value. Examples from an SSH server's `sshd_config`, plus one
+from an application's own config:
 
 | Setting | Insecure | Secure |
 |---|---|---|
@@ -29,7 +30,15 @@ it to its safe value. The canonical examples for an SSH server:
 | `PasswordAuthentication` | `yes` | `no` (keys only) |
 | `X11Forwarding` | `yes` | `no` |
 | `Protocol` | `1` | `2` |
-| `debug` | `true` | `false` |
+| `debug` *(application)* | `true` | `false` |
+
+Two notes on that list. `Protocol 1` meant the broken SSH version 1; OpenSSH
+removed SSHv1 entirely in version 7.6 (2017), so on a current system the line is
+a harmless leftover - but finding it is a strong sign the config, and maybe the
+server, has not been reviewed in years. And `debug` is not an SSH setting at all:
+it stands for the debug mode of a web application or framework, which in
+production exposes stack traces, internal paths and sometimes an interactive
+console.
 
 Benchmarks like the CIS guides are exactly this, at scale: hundreds of
 settings, each with a known-good value, checked automatically. Building the

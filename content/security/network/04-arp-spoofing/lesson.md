@@ -36,7 +36,10 @@ You detect it by watching the ARP traffic for impossibilities:
   fighting the real owner
 - **the gateway's IP suddenly at a new MAC** - the classic takeover
 
-Neither happens in normal operation, so either is a strong signal. This stays
+Both are rare in normal operation, so either is a strong signal - but not proof.
+A failover pair sharing an address, a replaced network card or a DHCP lease
+moving between machines can produce the same pattern legitimately, which is why
+real monitors keep an allow-list of known cases and alert on the rest. This stays
 firmly on the defender's side: you are building the detection, not the attack.
 
 ## Your turn

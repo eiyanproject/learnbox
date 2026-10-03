@@ -52,8 +52,8 @@ def test_constant_time_equal_handles_empty():
     assert constant_time_equal(b"", b"")
 
 
-def test_is_strong_accepts_a_long_passphrase():
-    assert is_strong("correcthorsebatterystaple")
+def test_is_strong_accepts_a_long_random_password():
+    assert is_strong("qvhtzmkwbrpxlnjdafcs")
 
 
 def test_is_strong_rejects_a_short_one():

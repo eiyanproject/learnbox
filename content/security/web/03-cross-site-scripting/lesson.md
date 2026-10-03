@@ -46,11 +46,18 @@ characters that have meaning in HTML into their harmless entities:
 | `>` | `&gt;` |
 | `&` | `&amp;` |
 | `"` | `&quot;` |
+| `'` | `&#x27;` |
 
 Now `<script>` arrives in the page as the literal text `&lt;script&gt;`, which
 the browser displays rather than executes. Python's `html.escape` does exactly
 this. The principle mirrors SQL injection: keep untrusted input as **data**, not
 code - there the boundary was the query, here it is the page.
+
+Escaping is **context-dependent**, and `html.escape` is right for text placed in
+an HTML element or a quoted attribute. It is not enough inside a `<script>`
+block, an event handler like `onclick`, or a URL in `href` - a value of
+`javascript:alert(1)` contains no characters it would change. Those contexts
+need their own encoding, or better, keeping untrusted data out of them entirely.
 
 (Real applications lean on auto-escaping template engines and a Content Security
 Policy as a second layer, but escaping on output is the foundation under both.)

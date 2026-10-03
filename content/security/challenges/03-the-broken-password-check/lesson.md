@@ -29,9 +29,10 @@ Replace the storage and the check:
 Two users with the same password must end up with different records, and a
 correct password must still verify. The two flaws compound: a fast unsalted
 hash lets an attacker who steals the store test billions of guesses a second,
-and the `==` comparison leaks, through its timing, how many leading bytes of a
-token were right - enough to recover it one byte at a time. Closing one and
-leaving the other is not a fix.
+and the `==` comparison is a timing side channel. Against a hash the timing leak
+is far less useful than against a token (the attacker cannot steer the hash's
+bytes), so the storage flaw is the serious one - but a constant-time compare is
+the habit to keep, and a review that leaves either in place is not finished.
 
 ## Your turn
 

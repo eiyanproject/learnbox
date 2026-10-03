@@ -34,7 +34,15 @@ The fix is to make each block depend on the one before it. **CBC** XORs each
 plaintext block with the *previous ciphertext block* before encrypting, so
 identical plaintext blocks no longer line up. The very first block has nothing
 before it, so it is XORed with an **initialisation vector** (IV) - a random,
-non-secret value, played by the same rules as a nonce: unique per message.
+non-secret value.
+
+For CBC, unique is **not** enough: the IV must be **unpredictable**. If an
+attacker can predict the next IV and get their own plaintext encrypted, they can
+craft a block that tests a guess at an earlier secret block - a match in the
+ciphertext confirms the guess. That is how the BEAST attack broke TLS 1.0, which
+used the previous message's last ciphertext block as the next IV. Generate every
+CBC IV with `secrets.token_bytes`. (Counter-mode nonces, from the last lesson,
+only need to be unique - a different rule for a different mode.)
 
 ```text
 ECB:  c_i = E(p_i)                      same p_i  ->  same c_i   (leaks)

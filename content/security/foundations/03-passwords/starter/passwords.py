@@ -21,5 +21,5 @@ def is_strong(password):
 
 
 if __name__ == "__main__":
-    for pw in ["P@ss1!", "correcthorsebatterystaple", "password"]:
+    for pw in ["P@ss1!", "qvhtzmkwbrpxlnjdafcs", "password"]:
         print(f"{pw:30} {estimate_bits(pw):6.1f} bits  strong={is_strong(pw)}")

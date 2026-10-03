@@ -33,8 +33,14 @@ an answer only if it matches a query you really made:
 - its **(id, name)** must match one you are waiting on
 
 Real resolvers strengthen this by randomising the id *and* the source port,
-turning a 16-bit guess into a 32-bit one - but the principle you implement is
-the core: never accept an answer to a question you did not ask.
+turning a 16-bit guess into roughly a 32-bit one - but the principle you
+implement is the core: never accept an answer to a question you did not ask.
+
+All of that makes forgery *harder*, not impossible. The fix that actually
+authenticates answers is **DNSSEC**, where zones sign their records and a
+validating resolver rejects anything whose signature does not check out - the
+chain-of-trust idea from the Cryptography section, applied to DNS. Encrypted
+transports (DNS over TLS or HTTPS) protect the hop to your resolver as well.
 
 ## Your turn
 

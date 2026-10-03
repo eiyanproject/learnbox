@@ -17,7 +17,7 @@ The other half is **speed**, and it is counter-intuitive - a *slower* hash is a
 
 ## Why fast hashing loses
 
-SHA-256 is built to be fast: a modern machine computes **billions** per second.
+SHA-256 is built to be fast: a single modern GPU computes **billions** per second.
 That is exactly what you want for checking a download and exactly what you do
 *not* want for passwords, because the attacker who stole your hashes runs those
 same billions per second against them. Salt stops one precomputed table from
@@ -44,24 +44,39 @@ character-pool size raised to the length, so length matters far more than
 "complexity":
 
 - `P@ss1!` - 6 characters, every class: about 39 bits
-- `correcthorsebatterystaple` - 25 lowercase letters: about 118 bits
+- `qvhtzmkwbrpxlnjdafcs` - 20 random lowercase letters: about 94 bits
 
-The long passphrase is astronomically stronger despite being "just letters".
+Twenty random lowercase letters beat six characters of every class by a huge
+margin. Length wins.
 
-But this estimate assumes the characters are **random**, and real passwords are
-not. `password1234567890` scores high by this maths and is worthless, because
-it is a dictionary word plus a predictable suffix - an attacker's word list
-tries it in seconds. This is why entropy estimation is only a first gate, and
-real systems *also* reject anything appearing in breach corpora. Treat the
-number as a floor on an ideal case, never a guarantee.
+But this estimate assumes every character is **random**, and real passwords
+are not. It is a **ceiling** - the best case - and real strength can only be
+lower. Two examples of how far lower:
+
+- `correcthorsebatterystaple` scores about 118 bits by this maths, but it is four
+  common words. An attacker guesses *words*, not letters: four picked at random
+  from a 2,048-word list is about **44 bits**. Still respectable - and if you
+  choose the words yourself rather than randomly, considerably less.
+- `password1234567890` scores high too, and is worthless: a dictionary word plus
+  a predictable suffix that any word list tries in seconds.
+
+This is why entropy estimation is only a first gate, and real systems *also*
+reject anything appearing in breach corpora. Never treat the number as a
+guarantee.
 
 ## Comparing without leaking
 
-Checking a password or a token means comparing the stored value with the
-supplied one. A plain `==` on secrets stops at the first differing byte, and the
-time it takes therefore reveals how many leading bytes were right - a **timing
-side channel** that lets an attacker recover a secret one byte at a time. The
-fix is a comparison that always inspects every byte.
+Checking an API token, a session id or a MAC means comparing a stored secret
+with a value the attacker supplies. A plain `==` stops at the first differing
+byte, so the time it takes reveals how many leading bytes were right - a
+**timing side channel** that lets an attacker who controls the input recover the
+secret one byte at a time. The fix is a comparison that always inspects every
+byte.
+
+(For passwords the stored value is a *hash*, and since the attacker cannot steer
+the bytes of a hash, the leak is far less useful there - but constant-time
+comparison is still the habit to have, because it costs nothing and you do not
+want to reason about which comparisons are safe to get wrong.)
 
 ## Your turn
 

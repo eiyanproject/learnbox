@@ -22,10 +22,19 @@ pointing at.
 | Call | Why it is dangerous | Safe replacement |
 |---|---|---|
 | `gets` | no limit at all on what it reads - guaranteed overflow | `fgets` |
-| `strcpy` / `strcat` | copy until a null, with no idea of the buffer size | `strncpy` / `strncat` |
+| `strcpy` / `strcat` | copy until a null, with no idea of the buffer size | `snprintf` (or `strlcpy` / `strlcat`) |
 | `sprintf` | formats into a buffer with no size bound | `snprintf` |
 | `system` | hands a string to the shell - the command injection lesson | `execve` with an argument list |
 | `scanf("%s")` | reads an unbounded string into a fixed buffer | a width, `%9s` |
+
+**A warning about the obvious replacement.** `strncpy` looks like the bounded
+version of `strcpy` and is not a safe one. When the source is at least as long as
+the limit, it copies exactly that many bytes and **does not write a null
+terminator** - so the next read runs off the end of the buffer into whatever sits
+beside it. `strncat`'s size argument means the space *remaining*, not the buffer
+size, which is a different off-by-one trap. `snprintf` always terminates and
+always respects the size you pass; `strlcpy`/`strlcat` do the same and are now
+in glibc.
 
 The thread tying them together is the one from the web section: a call where
 **input decides a size, a format, or a command** that the programmer assumed

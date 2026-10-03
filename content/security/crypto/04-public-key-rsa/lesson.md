@@ -50,6 +50,12 @@ sign:    s = m^d mod n           (only you)
 verify:  m == s^e mod n          (anyone)
 ```
 
+"Encrypting with the private key" is a fair description of *textbook* RSA only,
+and a misleading one in general - signatures and encryption are different
+operations with different padding, and other signature schemes (ECDSA, Ed25519)
+involve no encryption at all. Real RSA signatures also sign a **hash** of the
+message, never the message itself.
+
 > **This is textbook RSA, for learning only.** Real RSA pads the message first
 > (OAEP for encryption, PSS for signatures) and uses keys hundreds of digits
 > long. Raw RSA on an unpadded message, with the tiny primes here, is insecure -

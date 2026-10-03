@@ -37,8 +37,17 @@ have changed where the program goes next. That is the entire mechanism behind
 the classic stack buffer overflow, and it is why `gets` into a fixed buffer is
 catastrophic: the attacker controls how far the write goes.
 
-The distances are simple arithmetic: it takes `N` bytes to fill the buffer, 8
-more to cover the saved base pointer, and the next 8 are the return address.
+In this idealised layout the distances are simple arithmetic: it takes `N`
+bytes to fill the buffer, 8 more to cover the saved base pointer, and the next 8
+are the return address. The exercise below uses exactly that model.
+
+Real binaries add to it. The compiler pads the frame for alignment, places other
+local variables around the buffer, and - with a stack canary - inserts another 8
+bytes before the saved base pointer. Built with `gcc -O0`, a function holding a
+64-byte buffer had its return address **88** bytes away, not the 72 the model
+predicts. Analysts therefore *measure* the offset in a debugger rather than
+compute it; the model is for understanding why the overflow works, not for
+predicting a particular binary.
 
 ## Why your programs are (mostly) safe now
 
