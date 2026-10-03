@@ -299,6 +299,10 @@ func verify(log *slog.Logger, c cfg, args []string) error {
 		return err
 	}
 	run := newRunner(sb, ws, c)
+	// Examples compile one program at a time - a C# lesson can hold several
+	// dotnet builds - so they get more time than a single learner Check.
+	exRun := newRunner(sb, ws, c)
+	exRun.Timeout = max(c.CheckTimeout, 10*time.Minute)
 
 	var failed, checked, skipped int
 	for _, t := range lib.Tracks {
@@ -315,29 +319,22 @@ func verify(log *slog.Logger, c cfg, args []string) error {
 					continue
 				}
 				rel := path.Join(".cache/learnbox/verify", l.ID())
-				if err := ws.RemoveAll(rel); err != nil {
-					return err
-				}
-				if err := ws.MkdirAll(rel); err != nil {
-					return err
-				}
-				if err := ws.CopyIn(l.StarterDir(), rel); err != nil && !os.IsNotExist(err) {
-					return err
-				}
-				if err := ws.CopyIn(l.SolutionDir(), rel); err != nil {
-					return err
-				}
-				examples, err := addExamples(ws, c, l, rel)
-				if err != nil {
+				if err := stage(ws, l, rel); err != nil {
 					return fmt.Errorf("%s: %w", l.ID(), err)
 				}
 				res, err := run.CheckDir(context.Background(), l, rel)
 				if err != nil {
 					return fmt.Errorf("%s: %w", l.ID(), err)
 				}
+				ws.RemoveAll(rel)
+				ex, examples, err := runExamples(exRun, ws, c, l)
+				if err != nil {
+					return fmt.Errorf("%s: %w", l.ID(), err)
+				}
 				checked++
+				passed := res.Passed && (ex == nil || ex.Passed)
 				mark := "ok  "
-				if !res.Passed {
+				if !passed {
 					mark = "FAIL"
 					failed++
 				}
@@ -352,7 +349,9 @@ func verify(log *slog.Logger, c cfg, args []string) error {
 				if !res.Passed {
 					fmt.Println(indent(res.Output))
 				}
-				ws.RemoveAll(rel)
+				if ex != nil && !ex.Passed {
+					fmt.Println(indent("lesson examples:\n" + ex.Output))
+				}
 			}
 		}
 	}
@@ -363,32 +362,85 @@ func verify(log *slog.Logger, c cfg, args []string) error {
 	return nil
 }
 
-// addExamples writes a lesson's >>> transcripts into the scratch workspace,
-// beside the reference solution, along with the harness that runs them as
-// doctests. The lesson's own run then picks them up like any other test, so a
-// claim in the prose - "this prints 2790" - is executed instead of trusted.
+// stage puts a fresh copy of a lesson's starter files, overlaid with its
+// reference solution, at rel.
+func stage(ws *workspace.Manager, l *content.Lesson, rel string) error {
+	if err := ws.RemoveAll(rel); err != nil {
+		return err
+	}
+	if err := ws.MkdirAll(rel); err != nil {
+		return err
+	}
+	if err := ws.CopyIn(l.StarterDir(), rel); err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	return ws.CopyIn(l.SolutionDir(), rel)
+}
+
+// lessonExamples is what lib/prose/test_lesson_examples.py reads.
+type lessonExamples struct {
+	Lang     string            `json:"lang"`
+	Pycon    []content.Example `json:"pycon"`
+	Programs []content.Program `json:"programs"`
+	// OctavePath is lib/octave, for MATLAB programs: Octave lacks string,
+	// table and the other types it supplies.
+	OctavePath string `json:"octave_path"`
+}
+
+// programTag is the fence tag of a complete program in a track's lessons.
+// The pytest-graded tracks all write Python; the rest write their own language.
+func programTag(lang string) string {
+	if runner.UsesPytest(lang) {
+		return "python"
+	}
+	return lang
+}
+
+// runExamples runs the examples in a lesson's prose, so a claim like "this
+// prints 2790" is executed instead of trusted. Two kinds are checked, both
+// opted into by their format (see Lesson.Examples and Lesson.Programs):
+// ```pycon transcripts, run as doctests, in the Python-based tracks; and in
+// every track, a complete program followed by an ```output block, compiled,
+// run and compared.
 //
-// Only pytest-graded tracks, and only ```pycon blocks: see Lesson.Examples
-// for why the rest of a lesson's code is not run.
-func addExamples(ws *workspace.Manager, c cfg, l *content.Lesson, rel string) (int, error) {
-	if !runner.UsesPytest(l.Lang) {
-		return 0, nil
+// They run beside a copy of the reference solution, so an example may import
+// the lesson's own module, and apart from the lesson's tests, so the test
+// count stays the real one. It returns nil when the lesson has no examples.
+func runExamples(run *runner.Runner, ws *workspace.Manager, c cfg, l *content.Lesson) (*runner.Result, int, error) {
+	ex := lessonExamples{Lang: l.Lang, Programs: l.Programs(programTag(l.Lang))}
+	if l.Lang == "matlab" {
+		ex.OctavePath = c.OctaveDir
+		if ex.OctavePath == "" {
+			ex.OctavePath = filepath.Join(c.PyLib, "octave")
+		}
 	}
-	examples := l.Examples("pycon")
-	if len(examples) == 0 {
-		return 0, nil
+	if runner.UsesPytest(l.Lang) {
+		ex.Pycon = l.Examples("pycon")
 	}
-	raw, err := json.Marshal(examples)
+	n := len(ex.Pycon) + len(ex.Programs)
+	if n == 0 {
+		return nil, 0, nil
+	}
+	rel := path.Join(".cache/learnbox/verify-examples", l.ID())
+	if err := stage(ws, l, rel); err != nil {
+		return nil, 0, err
+	}
+	defer ws.RemoveAll(rel)
+	raw, err := json.Marshal(ex)
 	if err != nil {
-		return 0, err
+		return nil, 0, err
 	}
 	if err := ws.WriteFileRel(path.Join(rel, "lesson_examples.json"), raw); err != nil {
-		return 0, err
+		return nil, 0, err
 	}
 	if err := ws.CopyIn(filepath.Join(c.PyLib, "prose"), rel); err != nil {
-		return 0, fmt.Errorf("copy the example harness: %w", err)
+		return nil, 0, fmt.Errorf("copy the example harness: %w", err)
 	}
-	return len(examples), nil
+	res, err := run.PytestDir(context.Background(), rel)
+	if err != nil {
+		return nil, 0, err
+	}
+	return res, n, nil
 }
 
 func indent(s string) string {

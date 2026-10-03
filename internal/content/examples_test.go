@@ -46,6 +46,55 @@ func TestExamplesIgnoreAnUnterminatedFence(t *testing.T) {
 	}
 }
 
+func TestExamplesStripCarriageReturns(t *testing.T) {
+	l := &Lesson{Body: "```pycon\r\n>>> 1\r\n1\r\n```\r\n"}
+	ex := l.Examples("pycon")
+	if len(ex) != 1 || ex[0].Source != ">>> 1\n1\n" {
+		t.Fatalf("got %+v", ex)
+	}
+}
+
+func TestProgramsPairCodeWithItsOutput(t *testing.T) {
+	l := &Lesson{BodyLine: 10, Body: "text\n" +
+		"```rust\nfn main() { println!(\"hi\"); }\n```\n" +
+		"\n" +
+		"```output\nhi\n```\n"}
+	ps := l.Programs("rust")
+	if len(ps) != 1 {
+		t.Fatalf("got %d programs, want 1: %+v", len(ps), ps)
+	}
+	p := ps[0]
+	if p.Line != 12 || p.Source != "fn main() { println!(\"hi\"); }\n" || p.Output != "hi\n" {
+		t.Fatalf("got %+v", p)
+	}
+}
+
+func TestProgramsNeedTheOutputDirectlyAfter(t *testing.T) {
+	// Prose between the two blocks means they are not a pair.
+	l := &Lesson{Body: "```c\nint main(void) { return 0; }\n```\n" +
+		"Some words.\n" +
+		"```output\n\n```\n"}
+	if ps := l.Programs("c"); len(ps) != 0 {
+		t.Fatalf("got %+v", ps)
+	}
+}
+
+func TestProgramsIgnoreBlocksWithoutOutput(t *testing.T) {
+	l := &Lesson{Body: "```c\nint x;\n```\n\n```c\nint y;\n```\n"}
+	if ps := l.Programs("c"); len(ps) != 0 {
+		t.Fatalf("got %+v", ps)
+	}
+}
+
+func TestProgramsOnlyForTheTaggedLanguage(t *testing.T) {
+	l := &Lesson{Body: "```text\nnot a program\n```\n```output\nx\n```\n" +
+		"```java\nclass A {}\n```\n```output\ny\n```\n"}
+	ps := l.Programs("java")
+	if len(ps) != 1 || ps[0].Output != "y\n" {
+		t.Fatalf("got %+v", ps)
+	}
+}
+
 func TestExamplesNoneWhenAbsent(t *testing.T) {
 	l := &Lesson{Body: "```rust\nfn main() {}\n```\n"}
 	if ex := l.Examples("pycon"); len(ex) != 0 {

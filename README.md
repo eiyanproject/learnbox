@@ -393,11 +393,30 @@ Check that every reference solution passes (inside the CT):
 LEARNBOX_CONTENT=/opt/learnbox/content /opt/learnbox/bin/learnbox verify python/learn
 ```
 
-In the pytest-graded tracks (Python, CCNA, mindset, security), `verify` also
-runs the lesson's own examples. Write an example whose output the prose relies
-on as a ` ```pycon ` interactive transcript, and it runs as a doctest next to
-the reference solution, so the lesson can `import` the module the learner
-writes:
+`verify` also runs the examples in a lesson's prose, so a lesson that says
+"this prints 2790" is checked, not trusted. Two formats opt an example in.
+
+A **program and its output**, in any track: a complete program in the track's
+language (Python for CCNA, mindset and security) directly followed - nothing
+but blank lines between - by an ` ```output ` block. `verify` compiles it the
+way the lesson checks do (gcc `-std=c17`, g++ `-std=c++20`, rustc edition 2024,
+single-file `java`, a net8.0 project, Octave), runs it and compares its standard
+output. The learner sees the block labelled **Output**.
+
+````markdown
+```c
+#include <stdio.h>
+int main(void) { printf("%d\n", 6 * 7); }
+```
+
+```output
+42
+```
+````
+
+An **interactive transcript**, in the Python-based tracks: a ` ```pycon `
+block, run as a doctest. The transcripts in one lesson share their names, top
+to bottom, the way a reader follows them.
 
 ````markdown
 ```pycon
@@ -406,12 +425,14 @@ writes:
 ```
 ````
 
-The transcripts in one lesson share their names, top to bottom, the way a
-reader follows them. `...` in the expected output matches anything, e.g.
-`'...'` for a random token. A failure names the lesson.md line. Plain
-` ```python ` blocks are not run: they are often fragments that only make sense
-in context. This only happens in `verify`; a learner's **Check** never runs the
-prose.
+Both run beside a copy of the reference solution, so an example can `import`
+the module the learner writes. In expected output `...` matches anything, e.g.
+`'...'` for a random token; trailing spaces never matter, and for MATLAB
+neither does spacing (Octave lays values out differently). A program must exit
+with status 0. A failure names the lesson.md line.
+
+Blocks without one of these formats are not run: many are fragments that only
+make sense in context. None of this happens in a learner's **Check**.
 
 ## Development
 

@@ -89,6 +89,15 @@ func (r *Runner) CheckDir(ctx context.Context, l *content.Lesson, srcRel string)
 	return r.check(ctx, l, srcRel)
 }
 
+// PytestDir runs pytest in rel (relative to the learner's home) as it is.
+// `learnbox verify` uses it to run lesson examples, whatever language the
+// lesson teaches: the harness is Python, and it calls the compilers itself.
+func (r *Runner) PytestDir(ctx context.Context, rel string) (*Result, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return r.python(ctx, rel, r.sb.Home+"/"+rel)
+}
+
 func (r *Runner) check(ctx context.Context, l *content.Lesson, srcRel string) (*Result, error) {
 	if !l.HasTest {
 		return nil, ErrNoTests

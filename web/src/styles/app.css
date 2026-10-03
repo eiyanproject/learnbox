@@ -1128,6 +1128,23 @@ details.raw summary::-webkit-details-marker {
   font-size: inherit;
 }
 
+/* ```output blocks: what the program above prints. `learnbox verify` runs the
+   program and checks it, so they are labelled to read as results, not code. */
+.prose pre:has(> code.language-output) {
+  background: var(--surf);
+  border-left-color: var(--line);
+}
+
+.prose pre:has(> code.language-output)::before {
+  content: "Output";
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mut);
+}
+
 .prose blockquote {
   margin: 14px 0;
   padding: 10px 14px;
