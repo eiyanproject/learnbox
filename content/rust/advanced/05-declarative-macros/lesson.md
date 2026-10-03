@@ -87,6 +87,43 @@ Prefer functions. Reach for a macro when a function cannot do it: a variable
 number of arguments of different types, generating items (structs, impls),
 or new syntax such as `key => value`.
 
+## Run it
+
+```rust
+macro_rules! square {
+    ($x:expr) => {
+        $x * $x
+    };
+}
+
+macro_rules! my_vec {
+    ($($item:expr),* $(,)?) => {{
+        let mut v = Vec::new();
+        $( v.push($item); )*
+        v
+    }};
+}
+
+macro_rules! sum {
+    ($x:expr) => { $x };
+    ($x:expr, $($rest:expr),+) => { $x + sum!($($rest),+) };
+}
+
+fn main() {
+    println!("{}", square!(3 + 1));          // (3 + 1) * (3 + 1), not 3 + 1 * 3 + 1
+    let v = 5;
+    let made: Vec<i32> = my_vec![1, 2, 3,];  // trailing comma accepted
+    println!("{made:?} {v}");                // the macro's own v left this one alone
+    println!("{}", sum!(1, 2, 3, 4));
+}
+```
+
+```output
+16
+[1, 2, 3] 5
+10
+```
+
 ## Your turn
 
 In `src/lib.rs`, all exported with `#[macro_export]`:

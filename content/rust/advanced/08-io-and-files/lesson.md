@@ -87,6 +87,46 @@ Functions that take paths usually accept `impl AsRef<Path>` (see Conversions).
 `io::Error::new(io::ErrorKind::InvalidData, "bad row 3")` makes an `io::Error`
 for data problems, so a function can keep returning `io::Result`.
 
+## Run it
+
+```rust
+use std::io::{self, BufRead, Write};
+use std::path::Path;
+
+fn longest_line<R: BufRead>(reader: R) -> io::Result<String> {
+    let mut best = String::new();
+    for line in reader.lines() {
+        let line = line?;
+        if line.len() > best.len() {
+            best = line;
+        }
+    }
+    Ok(best)
+}
+
+fn main() -> io::Result<()> {
+    println!("{}", longest_line("a\nbbb\ncc\n".as_bytes())?);   // no file needed
+
+    let mut out = Vec::new();
+    writeln!(out, "hello")?;
+    println!("{:?} {}", out, out == b"hello\n");
+
+    let p = Path::new("data").join("scores.csv");
+    println!("{} {:?} {:?}", p.display(), p.extension(), p.file_stem());
+
+    let err = io::Error::new(io::ErrorKind::InvalidData, "bad row 3");
+    println!("{:?}: {err}", err.kind());
+    Ok(())
+}
+```
+
+```output
+bbb
+[104, 101, 108, 108, 111, 10] true
+data/scores.csv Some("csv") Some("scores")
+InvalidData: bad row 3
+```
+
 ## Your turn
 
 In `src/lib.rs`:

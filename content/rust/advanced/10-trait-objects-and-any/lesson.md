@@ -70,6 +70,69 @@ is an `as_any` method on the trait that each implementor fills in with `self`.
 Downcasting is an escape hatch. If you find yourself doing it a lot, an enum is
 often the better model: the set of variants is closed and `match` is exhaustive.
 
+## Run it
+
+```rust
+use std::any::Any;
+
+fn describe(value: &dyn Any) -> String {
+    if let Some(n) = value.downcast_ref::<i32>() {
+        format!("an i32: {n}")
+    } else {
+        "something else".into()
+    }
+}
+
+trait Widget {
+    fn name(&self) -> String;
+    fn as_any(&self) -> &dyn Any;
+}
+
+struct Button {
+    label: String,
+}
+struct Slider;
+
+impl Widget for Button {
+    fn name(&self) -> String {
+        "button".into()
+    }
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+impl Widget for Slider {
+    fn name(&self) -> String {
+        "slider".into()
+    }
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+fn main() {
+    println!("{} | {}", describe(&7_i32), describe(&"seven"));
+    let items: Vec<Box<dyn Widget>> = vec![Box::new(Button { label: "OK".into() }), Box::new(Slider)];
+    for w in &items {
+        match w.as_any().downcast_ref::<Button>() {
+            Some(b) => println!("{} with label {}", w.name(), b.label),
+            None => println!("{}", w.name()),
+        }
+    }
+    println!("{} {}", std::mem::size_of::<&dyn Widget>(), std::mem::size_of::<&Button>());
+}
+```
+
+```output
+an i32: 7 | something else
+button with label OK
+slider
+16 8
+```
+
+The last line is the vtable showing: a `&dyn Widget` is two pointers wide - the data and the table of methods - where a plain reference is one.
+
 ## Your turn
 
 In `src/lib.rs`:

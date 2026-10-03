@@ -74,6 +74,77 @@ For large or heavily mutated graphs, an **arena** (all nodes in a `Vec`, edges
 as indices) is often simpler and faster than `Rc<RefCell<...>>`. The `Rc`/`Weak`
 style shines for moderate, naturally hierarchical data like UI trees and DOMs.
 
+## Run it
+
+```rust
+use std::cell::RefCell;
+use std::rc::{Rc, Weak};
+
+struct Node {
+    name: String,
+    parent: RefCell<Weak<Node>>,
+    children: RefCell<Vec<Rc<Node>>>,
+}
+
+fn node(name: &str) -> Rc<Node> {
+    Rc::new(Node {
+        name: name.into(),
+        parent: RefCell::new(Weak::new()),
+        children: RefCell::new(vec![]),
+    })
+}
+
+fn add_child(parent: &Rc<Node>, child: &Rc<Node>) {
+    *child.parent.borrow_mut() = Rc::downgrade(parent);
+    parent.children.borrow_mut().push(Rc::clone(child));
+}
+
+fn path(n: &Rc<Node>) -> String {
+    let mut names = vec![n.name.clone()];
+    let mut cur = n.parent.borrow().upgrade();
+    while let Some(p) = cur {
+        names.push(p.name.clone());
+        cur = p.parent.borrow().upgrade();
+    }
+    names.reverse();
+    names.join("/")
+}
+
+fn main() {
+    let strong = Rc::new(5);
+    let weak: Weak<i32> = Rc::downgrade(&strong);
+    println!("{:?}", weak.upgrade());
+    drop(strong);
+    println!("{:?}", weak.upgrade());
+
+    let root = node("root");
+    let docs = node("docs");
+    let file = node("a.txt");
+    add_child(&root, &docs);
+    add_child(&docs, &file);
+    println!("{}", path(&file));
+    println!("{} {}", Rc::strong_count(&docs), Rc::weak_count(&docs));
+
+    let leaf = Rc::downgrade(&file);
+    drop(file);
+    drop(docs);
+    println!("{}", leaf.upgrade().is_some());   // root still owns the chain
+    drop(root);
+    println!("{}", leaf.upgrade().is_some());   // the whole tree was freed
+}
+```
+
+```output
+Some(5)
+None
+root/docs/a.txt
+2 1
+true
+false
+```
+
+`docs` has two strong owners - the variable and `root`'s child list - and one weak one, `a.txt`'s parent pointer, which does not keep it alive.
+
 ## Your turn
 
 In `src/lib.rs`:

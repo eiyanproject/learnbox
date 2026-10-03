@@ -79,6 +79,42 @@ thread-safe alternatives: channels, `Arc` and `Mutex`.
 CPU-bound threads than cores only adds switching overhead. In this LXC, the
 learner's processes also share a process-count limit.
 
+## Run it
+
+```rust
+use std::thread;
+
+fn main() {
+    let handle = thread::spawn(|| (1..=10).sum::<u64>());
+    println!("{}", handle.join().unwrap());
+
+    let name = String::from("worker");
+    let h = thread::spawn(move || format!("{name} done"));
+    println!("{}", h.join().unwrap());
+
+    let data = vec![1, 2, 3, 4];
+    let (left, right) = data.split_at(2);
+    let total = thread::scope(|s| {
+        let a = s.spawn(|| left.iter().sum::<i32>());
+        let b = s.spawn(|| right.iter().sum::<i32>());
+        a.join().unwrap() + b.join().unwrap()
+    });
+    println!("{total} {}", data.len());       // data is still ours
+
+    let crashed = thread::spawn(|| -> i32 { panic!("boom") }).join();
+    println!("{}", crashed.is_err());
+}
+```
+
+```output
+55
+worker done
+10 4
+true
+```
+
+The panic message goes to standard error; the program carries on, because `join` handed the panic back as an `Err`.
+
 ## Your turn
 
 In `src/lib.rs`:

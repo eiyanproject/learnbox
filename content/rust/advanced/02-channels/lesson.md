@@ -76,6 +76,53 @@ numbers ──▶ [square] ──▶ [collect]
 Each stage exits when its input channel closes, and drops its own sender,
 which closes the next stage's input: the shutdown ripples down the pipeline.
 
+## Run it
+
+```rust
+use std::sync::mpsc;
+use std::thread;
+
+fn main() {
+    let (tx, rx) = mpsc::channel();
+    for id in 0..3 {
+        let tx = tx.clone();
+        thread::spawn(move || {
+            tx.send(format!("hello from {id}")).unwrap();
+        });
+    }
+    drop(tx);                                   // otherwise collect waits forever
+    let mut msgs: Vec<String> = rx.iter().collect();
+    msgs.sort();                                // threads finish in any order
+    println!("{msgs:?}");
+
+    let (num_tx, num_rx) = mpsc::channel();
+    let (sq_tx, sq_rx) = mpsc::channel();
+    thread::spawn(move || {
+        for n in 1..=4 {
+            num_tx.send(n).unwrap();
+        }
+    });
+    thread::spawn(move || {
+        for n in num_rx {
+            sq_tx.send(n * n).unwrap();
+        }
+    });
+    println!("{:?}", sq_rx.iter().collect::<Vec<i32>>());
+
+    let (btx, brx) = mpsc::sync_channel::<i32>(1);
+    btx.send(1).unwrap();
+    println!("{}", btx.try_send(2).is_err());   // the buffer of one is full
+    println!("{:?}", brx.recv());
+}
+```
+
+```output
+["hello from 0", "hello from 1", "hello from 2"]
+[1, 4, 9, 16]
+true
+Ok(1)
+```
+
 ## Your turn
 
 In `src/lib.rs`:

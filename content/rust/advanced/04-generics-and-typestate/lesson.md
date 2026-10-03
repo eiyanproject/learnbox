@@ -97,6 +97,83 @@ Because transitions take `self` by value, the old state cannot be used after
 the transition either. A whole class of runtime checks becomes a compile-time
 guarantee.
 
+## Run it
+
+```rust
+use std::marker::PhantomData;
+
+trait Unit {
+    const SYMBOL: &'static str;
+    const PER_METER: f64;
+}
+
+struct Km;
+impl Unit for Km {
+    const SYMBOL: &'static str = "km";
+    const PER_METER: f64 = 0.001;
+}
+
+struct Cm;
+impl Unit for Cm {
+    const SYMBOL: &'static str = "cm";
+    const PER_METER: f64 = 100.0;
+}
+
+fn label<U: Unit>(meters: f64) -> String {
+    format!("{} {}", meters * U::PER_METER, U::SYMBOL)
+}
+
+struct Empty;
+struct Ready;
+
+struct Conn<S> {
+    addr: String,
+    _s: PhantomData<S>,
+}
+
+impl Conn<Empty> {
+    fn new() -> Self {
+        Conn { addr: String::new(), _s: PhantomData }
+    }
+    fn connect(self, addr: &str) -> Conn<Ready> {
+        Conn { addr: addr.to_string(), _s: PhantomData }
+    }
+}
+
+impl Conn<Ready> {
+    fn send(&self, msg: &str) -> String {
+        format!("{} <- {msg}", self.addr)
+    }
+}
+
+fn summarize<T, K, F>(items: &[T], key: F) -> Vec<K>
+where
+    F: Fn(&T) -> K,
+    K: Ord + Clone,
+{
+    let mut keys: Vec<K> = items.iter().map(key).collect();
+    keys.sort();
+    keys.dedup();
+    keys
+}
+
+fn main() {
+    println!("{} | {}", label::<Km>(1500.0), label::<Cm>(1.5));
+    println!("{}", Conn::new().connect("10.0.0.1:80").send("hi"));
+    println!("{}", std::mem::size_of::<PhantomData<String>>());
+    println!("{:?}", summarize(&["kiwi", "fig", "pear"], |w| w.len()));
+}
+```
+
+```output
+1.5 km | 150 cm
+10.0.0.1:80 <- hi
+0
+[3, 4]
+```
+
+`PhantomData` takes no space at all; and `Conn::new().send(...)` would not compile, because `send` only exists on `Conn<Ready>`.
+
 ## Your turn
 
 In `src/lib.rs`:

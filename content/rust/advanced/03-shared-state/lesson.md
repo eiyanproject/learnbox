@@ -90,6 +90,60 @@ need several locks, always take them in the same order (by id, by address).
 
 Rust prevents data races at compile time, but not deadlocks.
 
+## Run it
+
+```rust
+use std::collections::HashMap;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{Arc, Mutex, RwLock};
+use std::thread;
+
+static REQUESTS: AtomicU64 = AtomicU64::new(0);
+
+fn main() {
+    let counter = Arc::new(Mutex::new(0));
+    let handles: Vec<_> = (0..8)
+        .map(|_| {
+            let counter = Arc::clone(&counter);
+            thread::spawn(move || {
+                for _ in 0..1000 {
+                    *counter.lock().unwrap() += 1;
+                    REQUESTS.fetch_add(1, Ordering::Relaxed);
+                }
+            })
+        })
+        .collect();
+    for h in handles {
+        h.join().unwrap();
+    }
+    println!("{} {}", *counter.lock().unwrap(), REQUESTS.load(Ordering::Relaxed));
+    println!("{}", Arc::strong_count(&counter));    // the threads' clones are gone
+
+    let settings = RwLock::new(HashMap::new());
+    settings.write().unwrap().insert("theme", "dark");
+    let r1 = settings.read().unwrap();
+    let r2 = settings.read().unwrap();              // two readers at once
+    println!("{:?} {}", r1.get("theme"), r2.len());
+    drop((r1, r2));
+
+    let m = Arc::new(Mutex::new(0));
+    let m2 = Arc::clone(&m);
+    let _ = thread::spawn(move || {
+        let _guard = m2.lock().unwrap();
+        panic!("while holding the lock");
+    })
+    .join();
+    println!("{}", m.lock().is_err());              // poisoned
+}
+```
+
+```output
+8000 8000
+1
+Some("dark") 1
+true
+```
+
 ## Your turn
 
 In `src/lib.rs`:

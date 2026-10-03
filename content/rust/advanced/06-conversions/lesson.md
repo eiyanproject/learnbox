@@ -105,6 +105,87 @@ n.len();                        // str::len through Deref
 Use it for smart-pointer-like wrappers that add a guarantee (non-empty,
 validated, sorted). Do not use it to fake inheritance.
 
+## Run it
+
+```rust
+use std::ops::Deref;
+use std::str::FromStr;
+
+struct Celsius(f64);
+
+impl From<f64> for Celsius {
+    fn from(v: f64) -> Self {
+        Celsius(v)
+    }
+}
+
+struct Percent(u8);
+
+impl TryFrom<i32> for Percent {
+    type Error = String;
+    fn try_from(v: i32) -> Result<Self, Self::Error> {
+        if (0..=100).contains(&v) {
+            Ok(Percent(v as u8))
+        } else {
+            Err(format!("{v} is not a percentage"))
+        }
+    }
+}
+
+#[derive(Debug)]
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+impl FromStr for Point {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (a, b) = s.split_once(',').ok_or("no comma")?;
+        let x = a.trim().parse().map_err(|_| "bad x")?;
+        let y = b.trim().parse().map_err(|_| "bad y")?;
+        Ok(Point { x, y })
+    }
+}
+
+struct Name(String);
+
+impl Deref for Name {
+    type Target = str;
+    fn deref(&self) -> &str {
+        &self.0
+    }
+}
+
+fn shout<S: AsRef<str>>(s: S) -> String {
+    s.as_ref().to_uppercase()
+}
+
+fn main() {
+    let b: Celsius = 21.5.into();                 // Into, from our From
+    println!("{}", b.0);
+
+    let ok: Result<Percent, _> = 42.try_into();
+    println!("{} {:?}", ok.unwrap().0, Percent::try_from(250).err());
+    println!("{} {}", 300_i32 as u8, u8::try_from(300_i32).is_err());
+
+    println!("{:?} {:?}", "3, 4".parse::<Point>(), "3".parse::<Point>().err());
+    println!("{} {}", shout("hi"), shout(String::from("there")));
+
+    let n = Name("Ana".into());
+    println!("{} {}", n.len(), n.to_uppercase()); // str methods, through Deref
+}
+```
+
+```output
+21.5
+42 Some("250 is not a percentage")
+44 true
+Ok(Point { x: 3, y: 4 }) Some("no comma")
+HI THERE
+3 ANA
+```
+
 ## Your turn
 
 In `src/lib.rs`:
