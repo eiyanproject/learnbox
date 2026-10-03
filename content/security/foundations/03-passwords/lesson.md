@@ -41,10 +41,20 @@ the entire design.
 Password strength is measured in **bits of entropy** - the base-2 logarithm of
 how many passwords an attacker would have to try. A rough estimate is the
 character-pool size raised to the length, so length matters far more than
-"complexity":
+"complexity".
 
-- `P@ss1!` - 6 characters, every class: about 39 bits
-- `qvhtzmkwbrpxlnjdafcs` - 20 random lowercase letters: about 94 bits
+The **pool** is the sum of the character classes the password uses: 26 if it
+has any lowercase letter, 26 more for any uppercase, 10 for any digit, and 33
+for any other character (the symbols on a keyboard, roughly). The estimate is
+then `length * log2(pool)` bits:
+
+```pycon
+>>> from math import log2
+>>> round(6 * log2(26 + 26 + 10 + 33), 1)    # P@ss1! - 6 characters, every class
+39.4
+>>> round(20 * log2(26), 1)                   # 20 random lowercase letters
+94.0
+```
 
 Twenty random lowercase letters beat six characters of every class by a huge
 margin. Length wins.
@@ -82,7 +92,8 @@ want to reason about which comparisons are safe to get wrong.)
 
 In `passwords.py`:
 
-- `estimate_bits(password)` - estimated entropy in bits, as described above
+- `estimate_bits(password)` - estimated entropy in bits, as described above:
+  `length * log2(pool)`, and `0.0` for an empty password
 - `slow_hash(password, salt, iterations)` - the PBKDF2-HMAC-SHA256 derived key
   as a hex string (`password` and `salt` are bytes)
 - `constant_time_equal(a, b)` - compare two byte strings without an early exit

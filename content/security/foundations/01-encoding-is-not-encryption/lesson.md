@@ -29,9 +29,13 @@ protecting nothing. `base64.b64decode` is the entire attack.
 XOR is the one operation underneath almost all symmetric encryption, and on its
 own it is also a classic trap. Combining each byte of data with a key byte:
 
-```python
-cipher = data ^ key
-data   = cipher ^ key      # XOR undoes itself with the same key
+```pycon
+>>> data, key = 0x68, 0x5A     # the byte for "h", and a key byte
+>>> cipher = data ^ key
+>>> cipher
+50
+>>> cipher ^ key               # XOR undoes itself with the same key
+104
 ```
 
 With a long, random, never-reused key this is unbreakable - it is the one-time
@@ -56,6 +60,10 @@ In `codes.py`:
 - `xor_bytes(data, key)` - XOR `data` (bytes) with `key` (bytes), repeating the
   key as needed; returns bytes. The same function encrypts and decrypts.
 - `looks_like_text(data)` - `True` when `data` (bytes) is plausibly an English
-  sentence: almost all printable, and containing at least one space
+  sentence: non-empty, at least 95% of its bytes printable (32 to 126), and
+  containing at least one space
 - `break_single_byte_xor(data)` - given bytes that were XORed with one repeated
-  key byte, return the `(key, plaintext_str)` that decodes to real text
+  key byte, return the `(key, plaintext_str)` that decodes to real text, where
+  `key` is the key byte as an integer (0-255). If several keys pass
+  `looks_like_text`, pick the one whose decode has the most letters and spaces;
+  if none do, return `None`

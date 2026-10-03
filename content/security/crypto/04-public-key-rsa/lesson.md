@@ -34,6 +34,23 @@ encrypt:  c = m^e mod n          (anyone, with the public key)
 decrypt:  m = c^d mod n          (only you, with the private key)
 ```
 
+The classic worked example, with primes small enough to check by hand:
+
+```pycon
+>>> p, q, e = 61, 53, 17         # toy primes; real ones are hundreds of digits long
+>>> n, phi = p * q, (p - 1) * (q - 1)
+>>> n, phi
+(3233, 3120)
+>>> d = pow(e, -1, phi)
+>>> d
+2753
+>>> c = pow(65, e, n)            # encrypt the message 65
+>>> c
+2790
+>>> pow(c, d, n)                 # decrypt
+65
+```
+
 It works because of how `e` and `d` are chosen: raising to `e` then to `d`
 (mod n) returns the original. The security rests on **factoring** - recovering
 `d` means finding `p` and `q` from `n`, and for large enough primes nobody knows
@@ -66,6 +83,6 @@ message, never the message itself.
 In `rsa.py` (all values are integers):
 
 - `keygen(p, q, e=65537)` - return `(n, e, d)`; raise `ValueError` if `e` is not
-  coprime with `phi`
+  coprime with `phi` (`math.gcd(e, phi) != 1`)
 - `encrypt(m, e, n)` and `decrypt(c, d, n)`
 - `sign(m, d, n)` and `verify(m, sig, e, n)` (returning a bool)

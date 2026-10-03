@@ -54,6 +54,6 @@ In `perms.py` (mode values are integers, written in octal like `0o640`):
 - `mode_to_rwx(mode)` - the nine-character string, e.g. `0o640` gives
   `"rw-r-----"`
 - `is_world_writable(mode)` - `True` when anyone on the system can write the file
-- `is_too_open_for_secret(mode)` - `True` when a secret with this mode is
-  readable or writable by anyone other than its owner
+- `is_too_open_for_secret(mode)` - `True` when anyone other than the owner has
+  any permission on it at all (read, write or execute)
 - `tighten(mode)` - the same file restricted to owner-only access

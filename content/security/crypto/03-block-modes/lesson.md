@@ -58,8 +58,10 @@ gets wrong and CBC gets right regardless of how strong the underlying cipher is.
 
 In `modes.py` (all data is a whole number of `bs`-byte blocks):
 
-- `ecb_encrypt(key, data, bs=16)` - transform each block independently
+- `ecb_encrypt(key, data, bs=16)` - apply `block_transform(key, block)` to each
+  block independently and join the results
 - `has_repeated_blocks(data, bs=16)` - `True` when any two `bs`-byte blocks are
   identical; your ECB detector
-- `cbc_encrypt(key, iv, data, bs=16)` - chain each block with the previous
-  ciphertext block, the first using `iv`
+- `cbc_encrypt(key, iv, data, bs=16)` - XOR each plaintext block with the
+  previous *ciphertext* block (the first block with `iv`), then apply
+  `block_transform` to the result

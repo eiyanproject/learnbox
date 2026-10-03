@@ -40,7 +40,8 @@ each one worth as little as possible.
 In `privreview.py` (an account is `{'role': ..., 'privileges': [...]}`):
 
 - `excess(account, allowed_by_role)` - the sorted privileges the account holds
-  beyond what its role allows
+  beyond what its role allows (a role missing from `allowed_by_role` allows
+  nothing)
 - `review(accounts, allowed_by_role)` - a dict of account name to its excess, for
   only the accounts that have any
 - `unused(account, used)` - the sorted privileges granted but not in `used`

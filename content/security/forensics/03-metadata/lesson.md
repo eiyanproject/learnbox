@@ -26,7 +26,11 @@ same way:
 length (4 bytes) | type (4 bytes) | data (length bytes) | CRC (4 bytes)
 ```
 
-- **IHDR** - the header; its data begins with width and height.
+The length is a big-endian 4-byte integer and counts only the data, not the
+type or CRC; the type is four ASCII letters.
+
+- **IHDR** - the header; its data begins with width and height, each a
+  big-endian 4-byte integer.
 - **tEXt** - optional text metadata, stored as `keyword\x00value`. This is
   where an author name or a comment with GPS coordinates hides.
 - **IEND** - marks the end.
@@ -44,6 +48,8 @@ file is quietly telling the world.
 
 `SAMPLE_PNG` is provided in `png_data.py`. In `meta.py`:
 
-- `parse_chunks(data)` - a list of `(type, data_bytes)` for each chunk
+- `parse_chunks(data)` - a list of `(type, data_bytes)` for each chunk, in file
+  order, with `type` as a string such as `"IHDR"`
 - `dimensions(data)` - `(width, height)` from the IHDR chunk
-- `text_metadata(data)` - a dict of every tEXt keyword to its value
+- `text_metadata(data)` - a dict of every tEXt keyword to its value, both as
+  strings (PNG text is Latin-1: `.decode("latin-1")`)

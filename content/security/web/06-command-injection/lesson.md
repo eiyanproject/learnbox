@@ -41,6 +41,19 @@ program with exactly those arguments and no shell ever parses the string:
 subprocess.run(["echo", "pinging", host], capture_output=True, text=True)
 ```
 
+Both versions side by side, with the same input:
+
+```pycon
+>>> import os, subprocess
+>>> host = r"127.0.0.1; expr 6 \* 7"
+>>> print(os.popen("echo pinging " + host).read(), end="")    # through a shell
+pinging 127.0.0.1
+42
+>>> result = subprocess.run(["echo", "pinging", host], capture_output=True, text=True)
+>>> print(result.stdout, end="")                               # no shell
+pinging 127.0.0.1; expr 6 \* 7
+```
+
 Now `127.0.0.1; expr 6 \* 7` is a single argument to `echo` - literal text,
 printed and never executed. There is no command boundary for `;` to create,
 because there is no shell to find it. (Validating the input against an allow-list
@@ -55,6 +68,8 @@ Keep untrusted input as data; never let it become code.
 `run_vulnerable(host)` is provided. In `shellcmd.py`:
 
 - `injection_payload()` - a `host` value that makes a second command run through
-  `run_vulnerable`, whose output contains `42`
-- `run_safe(host)` - run the ping without a shell, so the payload is treated as
-  one literal argument and `42` never appears
+  `run_vulnerable`, whose output contains `42`. The payload itself must not
+  contain `42` - have the injected command *compute* it
+- `run_safe(host)` - run the same `echo pinging <host>` without a shell, as an
+  argument list, and return its output; the payload is then one literal
+  argument and `42` never appears

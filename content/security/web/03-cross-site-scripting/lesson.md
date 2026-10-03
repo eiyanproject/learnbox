@@ -50,7 +50,17 @@ characters that have meaning in HTML into their harmless entities:
 
 Now `<script>` arrives in the page as the literal text `&lt;script&gt;`, which
 the browser displays rather than executes. Python's `html.escape` does exactly
-this. The principle mirrors SQL injection: keep untrusted input as **data**, not
+this:
+
+```pycon
+>>> import html
+>>> html.escape("<script>steal(document.cookie)</script>")
+'&lt;script&gt;steal(document.cookie)&lt;/script&gt;'
+>>> html.escape("Tom & Jerry's \"show\"")
+'Tom &amp; Jerry&#x27;s &quot;show&quot;'
+```
+
+ The principle mirrors SQL injection: keep untrusted input as **data**, not
 code - there the boundary was the query, here it is the page.
 
 Escaping is **context-dependent**, and `html.escape` is right for text placed in

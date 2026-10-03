@@ -15,10 +15,16 @@ A **hash** turns any input into a fixed-length fingerprint. A good one -
 SHA-256 - has two properties that matter: the same input always gives the same
 output, and you cannot work backwards from the output to the input.
 
-```python
-import hashlib
-hashlib.sha256(b"hello").hexdigest()   # 2cf24dba5fb0a30e26e83b2ac5b9e29e...
+```pycon
+>>> import hashlib
+>>> hashlib.sha256(b"hello").hexdigest()
+'2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824'
+>>> hashlib.sha256(b"hello!").hexdigest()     # one character more
+'ce06092fb948d9ffac7d1a376e404b26b7575bcc11ee05a4615fef4fec3a308b'
 ```
+
+Change one character and the whole fingerprint changes - which is what lets a
+hash catch tampering.
 
 This is **integrity**, not secrecy. A hash tells you whether data changed: store
 the hash, recompute it later, and if they differ the data was altered. It is

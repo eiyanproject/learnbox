@@ -44,7 +44,8 @@ allow tcp from any        to port 443     # public HTTPS
 
 In `firewall.py` (a rule is a dict with `action` plus any of `proto`, `src`,
 `dst_port`; a missing or `None` field means "any". A packet is a dict with
-`proto`, `src`, `dst_port`):
+`proto`, `src`, `dst_port`. To keep it short, `src` is one exact address rather
+than a range like `10.0.0.0/8`):
 
 - `matches(rule, packet)` - does this rule apply to this packet?
 - `evaluate(rules, packet, default="deny")` - the action of the first matching

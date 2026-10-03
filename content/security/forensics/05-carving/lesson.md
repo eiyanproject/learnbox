@@ -34,5 +34,6 @@ header-to-footer scan.
 `CARVE_BLOB` - a PNG buried in junk - is provided in `forensics_data.py`. In
 `carve.py`:
 
-- `carve_png(blob)` - the exact bytes of the PNG embedded in the blob, or `None`
-  if there is no complete PNG
+- `carve_png(blob)` - the exact bytes of the PNG embedded in the blob: from the
+  first byte of its signature through the 4-byte CRC that follows `IEND`. Return
+  `None` if there is no complete PNG (no signature, or no `IEND` after it)

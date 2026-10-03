@@ -20,7 +20,7 @@ what to do first, and how long they were inside.
 indicator names) are in `data.py`. Produce a verdict dict:
 
 - `compromised_ip` - the ip with more than five failed logins followed by a
-  success
+  success, or `None` if there is no such ip
 - `severity` - the worst of the indicators (`data_exfiltration` and `ransomware`
   are `critical`, `credential_compromise` `high`, `port_scan` `low`)
 - `containment` - `isolate the host` for critical, `disable the affected account`

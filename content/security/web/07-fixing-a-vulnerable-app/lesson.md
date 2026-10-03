@@ -33,5 +33,9 @@ alongside the tests that the attacks now fail.
 
 ## Your turn
 
-In `app.py`, fix `login`, `render_message` and `read_note`. The checks confirm
-each attack is closed **and** that ordinary use still works.
+In `app.py`, fix `login`, `render_message` and `read_note`. Keep what each
+returns: `login` gives the username or `None`; `render_message` gives
+`<li class='msg'>...</li>` with the text inside escaped; `read_note` gives the
+note's text only when `user` owns it, and `None` otherwise - including for an id
+that does not exist. The checks confirm each attack is closed **and** that
+ordinary use still works.

@@ -45,7 +45,9 @@ The rule is simple: a run of printable bytes (roughly space through `~`, bytes
 ```
 
 Three columns: the **offset** (where in the file you are), the **bytes** as
-hex, and the **ASCII** rendering with a dot for anything unprintable. Those
+hex, and the **ASCII** rendering with a dot for anything unprintable. Plain
+`xxd` prints the bytes in pairs (`7f45`); `xxd -g1` prints them one at a time
+(`7f 45`), which is easier to read and is the layout you will build. Those
 first four bytes - `7f 45 4c 46`, which read as `.ELF` - are a **magic number**,
 the fingerprint that says "this is a Linux executable" no matter what the file
 is named.
@@ -60,10 +62,13 @@ up and you can see structure - repeats, padding, boundaries - at a glance.
 
 Reimplement the core of two of these tools, in `byteview.py`:
 
-- `hexdump(data)` - a string of `xxd`-style lines: an 8-digit hex offset, up to
-  16 space-separated two-digit hex bytes, two spaces, then the ASCII column
-  (the byte as a character when printable, a `.` otherwise). One line per 16
-  bytes; the last line may be short. (For this exercise do not pad the hex
-  columns on a short final line - just the bytes that are there.)
+- `hexdump(data)` - a string of `xxd -g1`-style lines: an 8-digit lowercase
+  hex offset and a colon, a space, up to 16 two-digit lowercase hex bytes
+  separated by single spaces, two spaces, then the ASCII column (the byte as a
+  character when printable, a `.` otherwise). One line per 16 bytes; the last
+  line may be short. (For this exercise do not pad the hex columns on a short
+  final line - just the bytes that are there.) Join the lines with `\n`, with
+  no newline after the last one; empty data gives `""`. For example,
+  `hexdump(b"\x00\xff")` is `"00000000: 00 ff  .."`.
 - `find_strings(data, min_len=4)` - a list of the printable runs at least
   `min_len` bytes long, in order, as strings

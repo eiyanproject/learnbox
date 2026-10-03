@@ -53,12 +53,21 @@ certificate for `bank.example` - because valid is not the same as trusted.
 
 ## Your turn
 
-`keypair(p, q)` is provided. In `pki.py`:
+`keypair(p, q)` is provided; it returns a dict with the keys `"n"`, `"e"` and
+`"d"`. In `pki.py`:
 
 - `fingerprint(subject, n, e)` - the sha256 hex of `f"{subject}|{n}|{e}"`
-- `make_cert(subject, subj_n, subj_e, issuer, issuer_key)` - a cert dict with a
-  `sig` from the issuer's private key; `issuer` is the issuer's subject name
-- `verify_cert(cert, issuer_n, issuer_e)` - is the signature valid for this
-  issuer key?
-- `verify_chain(chain, trusted)` - leaf-to-root list; each signed by the next,
-  the root self-signed and its fingerprint in `trusted`
+- `make_cert(subject, subj_n, subj_e, issuer, issuer_key)` - a cert dict with
+  exactly these keys: `"subject"`, `"n"`, `"e"` (the subject's public key),
+  `"issuer"` (the issuer's subject name) and `"sig"`. The signature is
+  `h = int(fingerprint(subject, subj_n, subj_e), 16) % issuer_key["n"]` signed
+  with the issuer's private key: `pow(h, issuer_key["d"], issuer_key["n"])`.
+  (The `% n` is only because these toy keys are smaller than a sha256 digest.)
+- `verify_cert(cert, issuer_n, issuer_e)` - `True` when the signature checks
+  out: recompute `h` from the cert's own fields and compare it with
+  `pow(cert["sig"], issuer_e, issuer_n)`
+- `verify_chain(chain, trusted)` - `chain` is a list of certs from leaf to root,
+  and `trusted` a set of root fingerprints. `True` only when every cert names
+  the next one as its issuer and verifies under the next one's key, the last
+  cert verifies under its *own* key (self-signed), and that root's fingerprint
+  is in `trusted`

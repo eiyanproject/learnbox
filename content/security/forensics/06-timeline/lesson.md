@@ -39,4 +39,5 @@ ISO-8601 strings):
 
 - `merge(sources)` - all events from a list of event-lists, sorted by time
 - `sequence(sources)` - just the descriptions, in time order
-- `dwell_time(sources)` - seconds between the earliest and latest event
+- `dwell_time(sources)` - seconds between the earliest and latest event (`0`
+  when there are fewer than two events)

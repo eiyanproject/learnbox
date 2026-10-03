@@ -37,4 +37,12 @@ the habit to keep, and a review that leaves either in place is not finished.
 ## Your turn
 
 In `pwcheck.py`, implement `make_record(password)` and
-`check_password(attempt, record)`.
+`check_password(attempt, record)`. `password` and `attempt` are strings. The
+record is a dict with exactly the keys the checks read:
+
+- `"salt"` - the random salt as a hex string (`secrets.token_bytes(16).hex()`)
+- `"iterations"` - the PBKDF2 iteration count, an integer of at least 10,000
+- `"hash"` - `hashlib.pbkdf2_hmac("sha256", password.encode(), salt,
+  iterations)` as a hex string
+
+`check_password` returns a bool.

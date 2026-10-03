@@ -23,12 +23,17 @@ Each line of disassembly is an **address**, a **mnemonic** (the operation), and
 its **operands**:
 
 ```text
-401136:  mov    edi, 0x402004
-40113b:  call   gets
-401140:  lea    rax, [rbp-0x10]
-401144:  cmp    eax, 0x0
-401147:  je     401160
+401136:  lea    rax, [rbp-0x10]
+40113a:  mov    rdi, rax
+40113d:  call   gets
+401142:  test   rax, rax
+401145:  je     401160
 ```
+
+Read top to bottom: the address of a 16-byte buffer on the stack (`rbp-0x10`)
+is passed to `gets` as its argument (`rdi`), and if `gets` returns 0 - nothing
+read - the code jumps to `401160`. That one `call gets` is already a finding,
+as the next lesson explains.
 
 The two that drive everything:
 
@@ -50,6 +55,8 @@ analyst's daily tools. Here you work the instruction list directly.
 
 Each instruction is `{addr, mnemonic, operands}`. In `disasm.py`:
 
-- `find_calls(instrs)` - `(addr, target)` for every `call`
+- `find_calls(instrs)` - a list of `(addr, target)` for every `call`, in order,
+  where `target` is the `operands` string as it stands
 - `calls_function(instrs, name)` - does any `call` target `name`?
-- `control_flow_targets(instrs)` - the set of targets of all calls and jumps
+- `control_flow_targets(instrs)` - the set of `operands` of every call and every
+  jump, where a jump is any mnemonic starting with `j` (`jmp`, `je`, `jne`...)

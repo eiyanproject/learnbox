@@ -53,5 +53,7 @@ are provided. In `access.py`:
   do not own through `fetch_vulnerable`
 - `fetch_safe(objects, obj_id, user)` - return the data only if `user` owns the
   object, else `None`
-- `delete_user_safe(users, actor, target)` - delete `target` only if `actor` is
-  an admin, else raise `PermissionError`
+- `delete_user_safe(users, actor, target)` - delete `target` from `users` only
+  if `actor` is in `users` with the role `"admin"`; otherwise (including an
+  `actor` who is not in `users` at all) raise `PermissionError` and change
+  nothing

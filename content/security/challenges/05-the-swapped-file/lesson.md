@@ -33,5 +33,6 @@ makes the recovery step tractable at all.
 In `tamper.py`:
 
 - `find_tampered(original, current)` - the name of the file whose contents
-  changed
-- `extract_payload(data)` - the bytes hidden after the PNG's IEND chunk
+  changed, or `None` if none did
+- `extract_payload(data)` - the bytes hidden after the PNG's IEND chunk and its
+  CRC, or `b""` if there are none

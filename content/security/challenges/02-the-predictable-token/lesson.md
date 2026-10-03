@@ -30,4 +30,6 @@ exists and `random` must never issue anything an attacker should not guess.
 ## Your turn
 
 In `recover.py`, write `recover_admin_token(my_token, my_position, lo=1000, hi=2000)`
-returning the admin's token, or `None` if no seed in range fits.
+returning the admin's token (#1), or `None` if no seed from `lo` to `hi` -
+both included - reproduces `my_token` at position `my_position` (counting from
+1).

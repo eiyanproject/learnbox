@@ -21,11 +21,18 @@ ports, and what was in the traffic.
 Simple by design:
 
 - a **24-byte global header** (a magic number, version, and the link type)
-- then, repeated to the end: a **16-byte record header** - timestamp and the
-  captured length - followed by that many bytes of the raw frame
+- then, repeated to the end: a **16-byte record header** - four 4-byte unsigned
+  integers: timestamp seconds, timestamp microseconds, the **captured length**,
+  and the original length - followed by captured-length bytes of the raw frame
 
-Each frame is the layering from the last lesson: Ethernet, then IP, then TCP,
-then payload. Walking from the global header, record by record, gives you every
+Unlike the packets inside it, the pcap headers are **little-endian** (`struct`
+format `"<IIII"` for a record header) - the file format was written by
+machines, not networks.
+
+Each frame is the layering from the last lesson: a 14-byte **Ethernet** header
+(destination MAC 6 bytes, source MAC 6, type 2), then IP, then TCP, then
+payload. The IP header's length is in its first byte, as last lesson; TCP's own
+header length is the high nibble of its byte 12, again in 32-bit words. Walking from the global header, record by record, gives you every
 packet.
 
 ## The point: plain HTTP hides nothing
@@ -48,5 +55,7 @@ stop being magic.
 - `parse_pcap(data)` - the list of raw frames (bytes) in the capture
 - `frame_endpoints(frame)` - `(src_ip, dst_ip, src_port, dst_port)` for a frame
 - `frame_payload(frame)` - the bytes after the TCP header (may be empty)
-- `find_basic_auth(frames)` - the decoded `user:pass` from an HTTP Basic auth
-  header in any frame, or `None`
+- `find_basic_auth(frames)` - for the first frame whose payload contains
+  `Authorization: Basic `, the base64 token after it (up to the `\r\n` that
+  ends the header line) decoded to the string `user:pass`; `None` if no frame
+  has one

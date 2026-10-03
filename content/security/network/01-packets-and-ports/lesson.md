@@ -25,12 +25,14 @@ segment, which carries your data. Each header is a fixed, documented layout.
 **IPv4** (20 bytes, usually) carries the **addresses**: who sent it, who it is
 for. The fields you reach for first:
 
-- byte 0, low nibble: header length in 32-bit words
+- byte 0: the high nibble is the version (4 for IPv4); the low nibble is the
+  header length in 32-bit words, so `5` means 20 bytes
 - byte 9: protocol (6 = TCP, 17 = UDP, 1 = ICMP)
 - bytes 12-15: source address; bytes 16-19: destination
 
 **TCP** carries the **ports** - which service - and the flags that drive the
-connection. Source and destination ports are the first two 16-bit fields. A
+connection. Source and destination ports are the first two 16-bit fields, and
+the flags are byte 13. A
 port is how one machine runs many services at once: 80 is HTTP, 443 HTTPS, 22
 SSH, 53 DNS.
 
@@ -56,7 +58,8 @@ go.
 
 In `packet.py` (headers are `bytes`; addresses come back as dotted strings):
 
-- `parse_ipv4(data)` - `{version, ihl, protocol, src, dst}`
+- `parse_ipv4(data)` - `{version, ihl, protocol, src, dst}`, with `ihl` as the
+  header length in **bytes** (the field's value times 4)
 - `parse_tcp(data)` - `{src_port, dst_port, flags}` where `flags` is a set of
   names
 - `tcp_flag_names(flags_byte)` - the set of flag names set in the byte

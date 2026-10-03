@@ -30,6 +30,10 @@ Cookie: session=abc123
 - **Headers**, `Name: value`, one per line - metadata about the request.
 - A blank line, then an optional **body** (where `POST` data goes).
 
+On the wire every line ends with `\r\n` - a carriage return then a line feed,
+not just the `\n` you are used to - so the blank line is a bare `\r\n` and the
+**head** (request line plus headers) is separated from the body by `\r\n\r\n`.
+
 The methods that matter: `GET` reads, `POST` submits, and the rest (`PUT`,
 `DELETE`, `HEAD`) round it out. The security-relevant point is that the method,
 path, headers and body are all **attacker-controlled** - every one of them is a
@@ -61,8 +65,13 @@ and do directly.
 
 In `http_tools.py`:
 
-- `parse_request(raw)` - a dict with `method`, `path`, `version`, `headers`
-  (lower-cased names), and `body`
-- `build_response(status, headers, body)` - the raw response text
-- `query_params(path)` - the `?k=v&k=v` part of a path as a dict (empty when
-  there is none)
+- `parse_request(raw)` - a dict with the keys `method`, `path`, `version`,
+  `headers` and `body`. `headers` is a dict whose names are lower-cased and
+  whose values have surrounding spaces stripped; `body` is everything after the
+  blank line, or `""` when there is nothing
+- `build_response(status, headers, body)` - the raw response text: the status
+  line `HTTP/1.1 <status>` (e.g. `status="200 OK"`), one `Name: value` line per
+  header in `headers`, a blank line, then `body` - every line ending in `\r\n`
+- `query_params(path)` - the `?k=v&k=v` part of a path as a dict of strings
+  (empty when there is none; a `k=` with nothing after it gives `""`, and no
+  URL-decoding is needed)

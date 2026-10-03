@@ -47,7 +47,10 @@ transports (DNS over TLS or HTTPS) protect the hop to your resolver as well.
 In `dns.py`:
 
 - `parse_header(data)` - `{id, is_response, questions, answers}` from the 12-byte
-  DNS header
+  DNS header. The header is six big-endian 16-bit fields: id, flags, question
+  count, answer count, and two more counts you can ignore. `is_response` is a
+  bool: the top bit of the flags field (the **QR** bit) is 1 in a response and
+  0 in a query
 - `accept_response(pending, response)` - given `pending`, a set of `(id, name)`
   queries you sent, and `response` as `(id, name, is_response, answer_ip)`,
   return `answer_ip` if it matches a pending query and is a response, else `None`

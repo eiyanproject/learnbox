@@ -32,6 +32,10 @@ to spell out the secret, and the image looks identical. To read it, collect the
 low bit of each byte, pack them back into characters, and a hidden message
 appears out of what looked like ordinary pixel data.
 
+The scheme in this lesson packs eight low bits into one character, **most
+significant bit first**, and ends the message with a zero byte (eight zero
+bits) - read `embed_lsb` to see it done the other way round.
+
 Detecting LSB stego in the wild is harder (it needs statistics), but
 **extracting** a known-scheme message is exactly this: the attacker's channel,
 and the investigator's recovery, are the same operation.
@@ -42,4 +46,4 @@ and the investigator's recovery, are the same operation.
 
 - `data_after_iend(png)` - the bytes hidden after the PNG's IEND chunk, or `b""`
 - `extract_lsb(pixels)` - the message hidden in the least-significant bits of
-  the pixel bytes, up to a null terminator
+  the pixel bytes, as a string, up to (not including) the zero-byte terminator

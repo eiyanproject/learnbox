@@ -10,7 +10,7 @@ def run_vulnerable(host):
 def injection_payload():
     # The ; ends the echo and starts a second command. expr computes 42, a
     # value that appears nowhere in the input - so seeing it proves execution.
-    return "127.0.0.1; expr 6 \* 7"
+    return r"127.0.0.1; expr 6 \* 7"
 
 
 def run_safe(host):

@@ -27,12 +27,17 @@ Python has two, and they look interchangeable:
   operating system's entropy. Its output cannot be predicted even by someone
   who has seen everything it produced before.
 
-```python
-import secrets
-secrets.token_hex(16)     # 32 hex chars, unguessable
-secrets.token_urlsafe(16) # for URLs
-secrets.choice(items)     # a secure pick
+```pycon
+>>> import secrets
+>>> len(secrets.token_hex(16))     # 16 random bytes, as 32 hex characters
+32
+>>> secrets.token_urlsafe(16)      # safe inside a URL; different every time
+'...'
+>>> secrets.choice(["red", "green", "blue"])   # a secure pick
+'...'
 ```
+
+(`'...'` stands for "some string" - the real output is different on every run.)
 
 ## Why predictable randomness is fatal
 
@@ -54,10 +59,12 @@ perfect generator.
 
 In `rng.py`:
 
-- `secure_token(n_bytes=16)` - an unguessable hex token from `secrets`
-- `weak_token(seed)` - a 32-bit number from `random` seeded with `seed`; the
-  same seed always returns the same number, which is the point
+- `secure_token(n_bytes=16)` - an unguessable hex token of `n_bytes` random
+  bytes from `secrets` (so `2 * n_bytes` hex characters)
+- `weak_token(seed)` - `random.Random(seed).getrandbits(32)`: a 32-bit number
+  from a generator seeded with `seed`; the same seed always returns the same
+  number, which is the point
 - `predict(seed, n)` - the `n`-th token (1-indexed) a server would issue if it
   seeded `random` with `seed` and handed out `weak_token`-style values in order
-- `enough_entropy(n_bytes)` - whether a token of that many random bytes is at
-  least 128 bits
+- `enough_entropy(n_bytes)` - `True` when a token of that many random bytes
+  carries at least 128 bits (each byte is 8 bits)

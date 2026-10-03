@@ -49,7 +49,10 @@ step - a response that recovers before eradicating reinfects itself.
 
 `SEVERITY`, `RANK`, `CONTAINMENT` and `PHASES` are provided. In `incident.py`:
 
-- `severity(indicators)` - the worst severity among the indicators, or `"none"`
+- `severity(indicators)` - the worst severity among the indicators, by `RANK`;
+  indicators not in `SEVERITY` are ignored, and with none left it is `"none"`
 - `containment(sev)` - the immediate action for that severity
 - `next_phase(current)` - the phase after `current`, or `None` if it is last
-- `is_valid_order(phases)` - whether the phases are in the canonical order
+- `is_valid_order(phases)` - whether the phases appear in the same order as
+  `PHASES` (phases may be skipped, but none may come before one that precedes it
+  in `PHASES`)

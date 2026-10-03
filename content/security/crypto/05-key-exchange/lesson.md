@@ -29,6 +29,18 @@ exponents does not matter. Yet an eavesdropper who saw `g`, `p`, `A` and `B`
 cannot get there: recovering `a` from `A = g^a mod p` is the **discrete
 logarithm** problem, and for a large prime nobody can do it in time.
 
+The textbook example, small enough to follow:
+
+```pycon
+>>> p, g = 23, 5                 # public: a toy prime and a generator
+>>> a, b = 6, 15                 # private: Alice's and Bob's secrets
+>>> A, B = pow(g, a, p), pow(g, b, p)
+>>> A, B                         # all that crosses the wire
+(8, 19)
+>>> pow(B, a, p), pow(A, b, p)   # each side's own calculation
+(2, 2)
+```
+
 The shared integer is then hashed into an actual key.
 
 ## The hole this leaves
@@ -52,4 +64,5 @@ In `dh.py`:
 
 - `public_key(g, private, p)` - your public value to send
 - `shared_secret(their_public, my_private, p)` - the agreed integer
-- `derive_key(shared)` - the shared integer hashed into a hex key
+- `derive_key(shared)` - the shared integer hashed into a key: the SHA-256 hex
+  digest of `str(shared).encode()`

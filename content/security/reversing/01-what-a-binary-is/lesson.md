@@ -44,6 +44,11 @@ This is what `readelf -h` and `file` report; you are building their core.
 
 `SAMPLE_ELF` is provided in `elf_data.py`. In `elf.py`:
 
-- `parse_elf(data)` - `{magic_ok, bits, endian, type, machine, entry}`
+- `parse_elf(data)` - `{magic_ok, bits, endian, type, machine, entry}`:
+  `magic_ok` a bool, `bits` the integer `32` or `64`, `endian` the string
+  `"little"` or `"big"`, `type` the name `"REL"`, `"EXEC"` or `"DYN"`, `machine`
+  `"x86-64"` or `"AArch64"`, and `entry` an integer. The multi-byte fields are
+  little-endian in this exercise, and `entry` is the 64-bit form at offset 24.
+  When the magic is wrong, only `magic_ok` (`False`) has to be right
 - `is_executable(data)` - `True` for an EXEC or DYN type
 - `is_pie(data)` - `True` for a position-independent executable (type DYN)

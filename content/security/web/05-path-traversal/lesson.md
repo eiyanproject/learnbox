@@ -23,8 +23,17 @@ def serve(root, name):
     return open(os.path.join(root, name)).read()
 ```
 
-`os.path.join("/var/www", "../../etc/passwd")` is `/var/www/../../etc/passwd`,
-which resolves to `/etc/passwd`. The `..` entries mean "parent directory", and
+```pycon
+>>> import os
+>>> os.path.join("/var/www", "../../etc/passwd")
+'/var/www/../../etc/passwd'
+>>> os.path.normpath("/var/www/../../etc/passwd")    # what that path really means
+'/etc/passwd'
+>>> os.path.join("/var/www", "/etc/passwd")          # an absolute name drops the root
+'/etc/passwd'
+```
+
+The joined path resolves to `/etc/passwd`. The `..` entries mean "parent directory", and
 nothing here stops the name from climbing above `root`. Source code, config
 files with credentials, SSH keys - all readable with the right number of `../`.
 You will write the payload that escapes the web root.
@@ -54,7 +63,8 @@ you can test.
 
 `serve_vulnerable(root, name)` is provided. In `files.py`:
 
-- `traversal_payload()` - a `name` that escapes the web root to read a file one
-  directory above it
+- `traversal_payload()` - a `name` that escapes the web root to read
+  `secret.txt`, a file sitting one directory above the root (the checks create
+  both)
 - `serve_safe(root, name)` - serve the file only when it resolves to a location
   inside `root`; raise `ValueError` otherwise

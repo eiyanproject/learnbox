@@ -46,11 +46,16 @@ it survives being copied around. Base64 is the most common. It looks like
 scrambled nonsense and protects nothing: anyone can reverse it. Recognising it,
 and reversing it, is a reflex you will use constantly.
 
-```python
-import base64
-base64.b64encode(b"hello")      # b'aGVsbG8='
-base64.b64decode(b"aGVsbG8=")   # b'hello'
+```pycon
+>>> import base64
+>>> base64.b64encode(b"hello")
+b'aGVsbG8='
+>>> base64.b64decode(b"aGVsbG8=")
+b'hello'
 ```
+
+(The `b` in front means **bytes**, not text. `.decode()` turns bytes into a
+string - your function should return a string.)
 
 ## Your turn
 

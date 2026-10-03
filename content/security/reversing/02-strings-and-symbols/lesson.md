@@ -39,7 +39,9 @@ list directly to learn what they surface.
 
 `RISKY` (a set of dangerous imports) is provided. In `symbols.py`:
 
-- `extract_strings(data, min_len=4)` - the printable runs in the bytes
+- `extract_strings(data, min_len=4)` - the runs of printable bytes (32 to 126)
+  at least `min_len` long, in order, as strings - the `strings` tool from the
+  environment section
 - `find_symbol(symbols, name)` - the address for a symbol name, or `None`
   (symbols is a list of `(name, address)`)
 - `imported_danger(symbols)` - the set of imported names that are in `RISKY`

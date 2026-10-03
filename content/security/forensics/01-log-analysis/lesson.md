@@ -42,8 +42,9 @@ compromised. Finding those is the exercise.
 
 In `logs.py`:
 
-- `parse_line(line)` - `{ts, service, result, user, ip}`, or `None` if the line
-  does not parse
+- `parse_line(line)` - `{ts, service, result, user, ip}` (`user` and `ip`
+  without their `user=` / `ip=` prefixes), or `None` if the line does not have
+  that shape or its result is anything other than `FAILED` or `OK`
 - `failed_by_ip(lines)` - a dict of ip to number of `FAILED` attempts
 - `compromised_ips(lines, threshold=5)` - the set of ips with more than
   `threshold` failures that are then followed by an `OK` from the same ip
