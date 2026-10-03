@@ -23,10 +23,11 @@ may stay open and its writes unflushed. Never let a resource's lifetime rest on
 refcounting: use `with`, and let the reference count be an optimisation you
 benefit from rather than a guarantee you depend on.
 
-```python
-import sys
-x = []
-sys.getrefcount(x)       # 2: `x` plus the temporary argument
+```pycon
+>>> import sys
+>>> x = []
+>>> sys.getrefcount(x)       # `x` plus the temporary argument
+2
 ```
 
 ## Cycles
@@ -59,10 +60,19 @@ class Big: ...
 
 obj = Big()
 r = weakref.ref(obj)
-r()          # the object
+print(r() is obj)    # the weak reference reaches the object
 del obj
-r()          # None: it was collected
+print(r())           # None: it was collected
 ```
+
+```output
+True
+None
+```
+
+Run this as a script. At the `>>>` prompt the result is different, because the
+prompt keeps the last value it displayed in the variable `_` - a strong
+reference that keeps the object alive.
 
 The standard use cases:
 

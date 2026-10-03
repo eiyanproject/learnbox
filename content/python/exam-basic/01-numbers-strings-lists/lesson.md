@@ -17,11 +17,19 @@ easy, and that is exactly why it is worth being precise about.
 
 ## Division has three operators
 
-```python
-7 / 2       # 3.5   true division, always a float
-7 // 2      # 3     floor division
-7 % 2       # 1     remainder
-2 ** 10     # 1024  power
+```pycon
+>>> 7 / 2       # true division, always a float
+3.5
+>>> 6 / 2       # even when it divides exactly
+3.0
+>>> 7 // 2      # floor division
+3
+>>> -7 // 2     # floor means towards minus infinity, not towards zero
+-4
+>>> 7 % 2       # remainder
+1
+>>> 2 ** 10     # power
+1024
 ```
 
 `6 / 3` is `2.0`, not `2`. The exam likes that one.
@@ -40,14 +48,20 @@ reason for both oddities.
 
 ## Strings are immutable, and slices are forgiving
 
-```python
-word = "Python"
-word[0]        # 'P'
-word[-1]       # 'n'      negative counts from the end
-word[0:2]      # 'Py'     start included, end excluded
-word[:2]       # 'Py'     omitted start means 0
-word[2:]       # 'thon'   omitted end means len
-word[::-1]     # 'nohtyP' negative step reverses
+```pycon
+>>> word = "Python"
+>>> word[0]
+'P'
+>>> word[-1]       # negative counts from the end
+'n'
+>>> word[0:2]      # start included, end excluded
+'Py'
+>>> word[:2]       # omitted start means 0
+'Py'
+>>> word[2:]       # omitted end means len
+'thon'
+>>> word[::-1]     # negative step reverses
+'nohtyP'
 ```
 
 `word[0] = "J"` raises `TypeError` — strings cannot be changed in place. But
@@ -58,9 +72,11 @@ not**: `word[10:20]` is just `''`. One raises, the other shrugs.
 
 Everything above works on lists, and slices can also be assigned:
 
-```python
-values = [1, 2, 3, 4, 5]
-values[1:4] = [0, 0]      # [1, 0, 0, 5]  - the list got shorter
+```pycon
+>>> values = [1, 2, 3, 4, 5]
+>>> values[1:4] = [0, 0]
+>>> values                 # three items replaced by two: the list got shorter
+[1, 0, 0, 5]
 ```
 
 A nested list is a list of lists, and `matrix[1][2]` reads row 1, column 2.

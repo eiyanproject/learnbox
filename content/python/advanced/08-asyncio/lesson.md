@@ -18,14 +18,16 @@ network connections.
 
 ## Coroutines and the event loop
 
-```python
-import asyncio
-
-async def greet(name, delay):
-    await asyncio.sleep(delay)      # yields control while waiting
-    return f"hi {name}"
-
-asyncio.run(greet("ana", 1))        # start an event loop, run until done
+```pycon
+>>> import asyncio
+>>> async def greet(name, delay):
+...     await asyncio.sleep(delay)      # yields control while waiting
+...     return f"hi {name}"
+...
+>>> greet("ana", 1)                     # calling it only makes a coroutine...
+<coroutine object greet at 0x...>
+>>> asyncio.run(greet("ana", 1))        # ...run starts an event loop and runs it
+'hi ana'
 ```
 
 - `async def` defines a **coroutine function**. Calling it returns a coroutine

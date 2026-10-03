@@ -19,16 +19,19 @@ values, which turns it into a small coroutine with private state.
 `yield` is an expression. `gen.send(value)` resumes the generator and makes the
 paused `yield` evaluate to `value`:
 
-```python
-def echo():
-    received = None
-    while True:
-        received = yield f"got {received}"
-
-g = echo()
-next(g)            # 'got None'   run to the first yield ("priming")
-g.send("hi")       # 'got hi'
-g.send(42)         # 'got 42'
+```pycon
+>>> def echo():
+...     received = None
+...     while True:
+...         received = yield f"got {received}"
+...
+>>> g = echo()
+>>> next(g)            # run to the first yield ("priming")
+'got None'
+>>> g.send("hi")
+'got hi'
+>>> g.send(42)
+'got 42'
 ```
 
 A new generator has not reached any `yield` yet, so the first call must be
@@ -64,19 +67,21 @@ def worker():
 
 A generator can `return value`. The value travels inside `StopIteration`:
 
-```python
-def collect():
-    items = []
-    while (x := (yield)) is not None:
-        items.append(x)
-    return items
-
-g = collect(); next(g)
-g.send(1); g.send(2)
-try:
-    g.send(None)
-except StopIteration as stop:
-    stop.value        # [1, 2]
+```pycon
+>>> def collect():
+...     items = []
+...     while (x := (yield)) is not None:
+...         items.append(x)
+...     return items
+...
+>>> g = collect(); next(g)
+>>> g.send(1); g.send(2)
+>>> try:
+...     g.send(None)
+... except StopIteration as stop:
+...     print(stop.value)
+...
+[1, 2]
 ```
 
 ## yield from, fully
@@ -85,11 +90,16 @@ except StopIteration as stop:
 `close` straight through to the sub-generator, and **evaluates to its return
 value**. That makes it possible to split a coroutine into smaller ones:
 
-```python
-def outer():
-    while True:
-        batch = yield from collect()     # delegate until collect returns
-        print("batch done:", batch)
+```pycon
+>>> def outer():
+...     while True:
+...         batch = yield from collect()     # delegate until collect returns
+...         print("batch done:", batch)
+...
+>>> o = outer(); next(o)
+>>> o.send("a"); o.send("b")       # passed straight through to collect
+>>> o.send(None)                   # collect returns, and outer prints it
+batch done: ['a', 'b']
 ```
 
 This delegation is exactly what `async`/`await` grew out of; the Asyncio lesson

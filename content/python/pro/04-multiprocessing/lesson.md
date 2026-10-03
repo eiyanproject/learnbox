@@ -53,10 +53,13 @@ if __name__ == "__main__":
 Sending a million tiny tasks spends all the time pickling. Send a few large
 chunks instead, roughly one or a few per worker:
 
-```python
-def split(start, stop, parts):
-    step = -(-(stop - start) // parts)       # ceiling division
-    return [(lo, min(lo + step, stop)) for lo in range(start, stop, step)]
+```pycon
+>>> def split(start, stop, parts):
+...     step = -(-(stop - start) // parts)       # ceiling division
+...     return [(lo, min(lo + step, stop)) for lo in range(start, stop, step)]
+...
+>>> split(0, 10, 3)        # the last chunk takes what is left
+[(0, 4), (4, 8), (8, 10)]
 ```
 
 `pool.map(func, items, chunksize=500)` does the same batching for you when the

@@ -35,18 +35,18 @@ Point = type("Point", (object,), {"x": 0})
 Called on the parent whenever a subclass is created. It covers most things
 people used to need a metaclass for, such as registries:
 
-```python
-class Command:
-    registry = {}
-
-    def __init_subclass__(cls, /, name=None, **kwargs):
-        super().__init_subclass__(**kwargs)
-        Command.registry[name or cls.__name__.lower()] = cls
-
-class Deploy(Command, name="deploy"): ...
-class Status(Command): ...
-
-Command.registry     # {'deploy': Deploy, 'status': Status}
+```pycon
+>>> class Command:
+...     registry = {}
+...
+...     def __init_subclass__(cls, /, name=None, **kwargs):
+...         super().__init_subclass__(**kwargs)
+...         Command.registry[name or cls.__name__.lower()] = cls
+...
+>>> class Deploy(Command, name="deploy"): ...
+>>> class Status(Command): ...
+>>> Command.registry
+{'deploy': <class '__main__.Deploy'>, 'status': <class '__main__.Status'>}
 ```
 
 Keyword arguments in the class statement are passed to `__init_subclass__`.
@@ -70,15 +70,18 @@ A metaclass customises how the class object itself is **created**. Its
 `__new__(mcls, name, bases, namespace)` runs when the `class` statement
 executes:
 
-```python
-class Meta(type):
-    def __new__(mcls, name, bases, ns):
-        if "run" not in ns and bases:
-            raise TypeError(f"{name} must define run()")
-        return super().__new__(mcls, name, bases, ns)
-
-class Task(metaclass=Meta): ...
-class Broken(Task): ...     # TypeError at class definition time
+```pycon
+>>> class Meta(type):
+...     def __new__(mcls, name, bases, ns):
+...         if "run" not in ns and bases:
+...             raise TypeError(f"{name} must define run()")
+...         return super().__new__(mcls, name, bases, ns)
+...
+>>> class Task(metaclass=Meta): ...
+>>> class Broken(Task): ...     # fails as the class is defined, not when used
+Traceback (most recent call last):
+  ...
+TypeError: Broken must define run()
 ```
 
 Reach for a metaclass only when you must control class **creation** or

@@ -21,22 +21,25 @@ You have used descriptors all along: `property` is one, and every function in a
 class is one too. That is how `obj.method` becomes a bound method with `self`
 filled in.
 
-```python
-class Loud:
-    def __get__(self, obj, objtype=None):
-        if obj is None:
-            return self                 # accessed on the class: Thing.word
-        return obj._word.upper()
-
-    def __set__(self, obj, value):
-        obj._word = value
-
-class Thing:
-    word = Loud()
-
-t = Thing()
-t.word = "hi"      # Loud.__set__(t, "hi")
-t.word             # Loud.__get__(t, Thing) -> 'HI'
+```pycon
+>>> class Loud:
+...     def __get__(self, obj, objtype=None):
+...         if obj is None:
+...             return self                 # accessed on the class: Thing.word
+...         return obj._word.upper()
+...
+...     def __set__(self, obj, value):
+...         obj._word = value
+...
+>>> class Thing:
+...     word = Loud()
+...
+>>> t = Thing()
+>>> t.word = "hi"      # Loud.__set__(t, "hi")
+>>> t.word             # Loud.__get__(t, Thing)
+'HI'
+>>> t.__dict__         # the stored value is the one __set__ wrote
+{'_word': 'hi'}
 ```
 
 ## __set_name__
@@ -81,14 +84,17 @@ can shadow a method by assigning to `obj.method`, but not a property.
 Normally every instance has a `__dict__`, which costs memory. Listing the
 attributes in `__slots__` replaces it with fixed storage:
 
-```python
-class Point:
-    __slots__ = ("x", "y")
-    def __init__(self, x, y):
-        self.x, self.y = x, y
-
-p = Point(1, 2)
-p.z = 3          # AttributeError: no __dict__ to put it in
+```pycon
+>>> class Point:
+...     __slots__ = ("x", "y")
+...     def __init__(self, x, y):
+...         self.x, self.y = x, y
+...
+>>> p = Point(1, 2)
+>>> p.z = 3          # no __dict__ to put it in
+Traceback (most recent call last):
+  ...
+AttributeError: 'Point' object has no attribute 'z'...
 ```
 
 Slotted instances are smaller and attribute access is slightly faster. Use them

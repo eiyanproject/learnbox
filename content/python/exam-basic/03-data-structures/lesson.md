@@ -16,10 +16,17 @@ Seven of the forty questions come from this section. The recurring theme is
 
 ## List methods mutate and return None
 
-```python
-values = [3, 1, 2]
-values.sort()            # None - the list is now [1, 2, 3]
-sorted(values)           # [1, 2, 3] - a new list, original untouched
+```pycon
+>>> values = [3, 1, 2]
+>>> print(values.sort())     # sorts in place and returns None
+None
+>>> values
+[1, 2, 3]
+>>> other = [9, 7, 8]
+>>> sorted(other)            # a new list...
+[7, 8, 9]
+>>> other                    # ...and the original is untouched
+[9, 7, 8]
 ```
 
 `sort`, `reverse`, `append`, `extend`, `insert`, `remove` all return `None`.
@@ -36,12 +43,16 @@ leaving `x` as `None` is a classic exam question.
 
 ## Sets are algebra
 
-```python
-a, b = {1, 2, 3}, {3, 4}
-a | b      # {1, 2, 3, 4}   union
-a & b      # {3}            intersection
-a - b      # {1, 2}         difference
-a ^ b      # {1, 2, 4}      symmetric difference
+```pycon
+>>> a, b = {1, 2, 3}, {3, 4}
+>>> a | b      # union
+{1, 2, 3, 4}
+>>> a & b      # intersection
+{3}
+>>> a - b      # difference
+{1, 2}
+>>> a ^ b      # symmetric difference: in one but not both
+{1, 2, 4}
 ```
 
 `{}` is an empty **dict**, not an empty set — `set()` is the only way to write

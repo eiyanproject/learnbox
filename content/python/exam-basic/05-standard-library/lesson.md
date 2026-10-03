@@ -17,12 +17,16 @@ already solves the problem.
 
 ## statistics
 
-```python
-import statistics
-statistics.mean([1, 2, 3, 4])     # 2.5
-statistics.median([1, 2, 3, 4])   # 2.5   - the average of the middle two
-statistics.pstdev([1, 2, 3, 4])   # 1.118 - population
-statistics.stdev([1, 2, 3, 4])    # 1.291 - sample, divides by n-1
+```pycon
+>>> import statistics
+>>> statistics.mean([1, 2, 3, 4])
+2.5
+>>> statistics.median([1, 2, 3, 4])            # the average of the middle two
+2.5
+>>> round(statistics.pstdev([1, 2, 3, 4]), 3)  # population
+1.118
+>>> round(statistics.stdev([1, 2, 3, 4]), 3)   # sample, divides by n-1
+1.291
 ```
 
 Two standard deviations exist and they give different answers. `pstdev` treats
@@ -30,13 +34,17 @@ the data as the entire population; `stdev` treats it as a sample.
 
 ## datetime
 
-```python
-from datetime import date
-d = date.fromisoformat("2026-09-23")
-d.weekday()                # 2   Monday is 0, Sunday is 6
-d.isoweekday()             # 3   Monday is 1 - a different convention
-d.strftime("%Y/%m/%d")     # '2026/09/23'
-d.timetuple().tm_yday      # 266 day of the year
+```pycon
+>>> from datetime import date
+>>> d = date.fromisoformat("2026-09-23")      # a Wednesday
+>>> d.weekday()                # Monday is 0, Sunday is 6
+2
+>>> d.isoweekday()             # Monday is 1 - a different convention
+3
+>>> d.strftime("%Y/%m/%d")
+'2026/09/23'
+>>> d.timetuple().tm_yday      # day of the year
+266
 ```
 
 `weekday()` and `isoweekday()` differ by one. That is a question waiting to
@@ -44,11 +52,14 @@ happen.
 
 ## re
 
-```python
-import re
-re.findall(r"\d+", "a1 b22")     # ['1', '22']   every match
-re.search(r"\d+", "a1 b22")      # a match object for the first, or None
-re.match(r"\d+", "a1")           # None - match only anchors at the start
+```pycon
+>>> import re
+>>> re.findall(r"\d+", "a1 b22")       # every match
+['1', '22']
+>>> re.search(r"\d+", "a1 b22")        # a match object for the first, or None
+<re.Match object; span=(1, 2), match='1'>
+>>> print(re.match(r"\d+", "a1"))      # match only anchors at the start
+None
 ```
 
 `findall` returns strings; `search` and `match` return match objects you call
@@ -57,10 +68,12 @@ reliable exam distinction.
 
 ## json
 
-```python
-import json
-json.dumps({"b": 1, "a": 2}, sort_keys=True)   # '{"a": 2, "b": 1}'
-json.loads('{"a": 1}')                          # {'a': 1}
+```pycon
+>>> import json
+>>> json.dumps({"b": 1, "a": 2}, sort_keys=True)
+'{"a": 2, "b": 1}'
+>>> json.loads('{"a": 1}')
+{'a': 1}
 ```
 
 JSON has no tuples and no sets: a tuple serialises to an array and comes back

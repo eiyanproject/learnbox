@@ -17,14 +17,22 @@ Four of the forty questions, and they are almost all about **order** and
 ## Four clauses, one fixed order
 
 ```python
-try:
-    risky()
-except ValueError as err:
-    print("failed:", err)
-else:
-    print("no exception was raised")
-finally:
-    print("always runs")
+for text in ["42", "forty-two"]:
+    try:
+        int(text)
+    except ValueError as err:
+        print("failed:", err)
+    else:
+        print("no exception was raised")
+    finally:
+        print("always runs")
+```
+
+```output
+no exception was raised
+always runs
+failed: invalid literal for int() with base 10: 'forty-two'
+always runs
 ```
 
 - `try` — the code being guarded
@@ -58,11 +66,16 @@ why it is considered a mistake rather than a shortcut.
 
 ## Raising your own
 
-```python
-class AgeError(ValueError):
-    pass
-
-raise AgeError("age must not be negative")
+```pycon
+>>> class AgeError(ValueError):
+...     pass
+...
+>>> raise AgeError("age must not be negative")
+Traceback (most recent call last):
+  ...
+AgeError: age must not be negative
+>>> issubclass(AgeError, ValueError)     # so `except ValueError` catches it too
+True
 ```
 
 Subclassing `ValueError` rather than `Exception` means existing code that

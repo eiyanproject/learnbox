@@ -15,24 +15,27 @@ hints:
 
 Pre-fill some arguments of a function to make a new one:
 
-```python
-from functools import partial
-
-int_from_binary = partial(int, base=2)
-int_from_binary("1010")          # 10
-
-log_error = partial(log, level="ERROR")
+```pycon
+>>> from functools import partial
+>>> int_from_binary = partial(int, base=2)
+>>> int_from_binary("1010")
+10
+>>> int_from_binary          # it shows what it wraps
+functools.partial(<class 'int'>, base=2)
 ```
 
-Unlike a `lambda`, a `partial` keeps a readable repr and can be pickled.
+The same move turns a general `log(message, level)` into
+`log_error = partial(log, level="ERROR")`. Unlike a `lambda`, a `partial` keeps
+a readable repr, as above, and can be pickled.
 
 ## functools.reduce
 
 Fold a sequence into one value by repeatedly combining:
 
-```python
-from functools import reduce
-reduce(lambda acc, x: acc * x, [1, 2, 3, 4], 1)     # 24
+```pycon
+>>> from functools import reduce
+>>> reduce(lambda acc, x: acc * x, [1, 2, 3, 4], 1)     # ((1*1)*2)*3)*4
+24
 ```
 
 Most folds have a clearer built-in (`sum`, `max`, `"".join`, `any`). `reduce`
@@ -42,14 +45,19 @@ earns its place for things like composing functions or merging dicts.
 
 Function versions of operators and lookups, faster and clearer than lambdas:
 
-```python
-import operator as op
-
-reduce(op.mul, nums, 1)
-sorted(users, key=op.attrgetter("last", "first"))
-sorted(rows, key=op.itemgetter(2))
-list(map(op.methodcaller("strip"), lines))
+```pycon
+>>> import operator as op
+>>> reduce(op.mul, [1, 2, 3, 4], 1)
+24
+>>> rows = [("ana", "red", 31), ("budi", "blue", 27)]
+>>> sorted(rows, key=op.itemgetter(2))       # by the third field
+[('budi', 'blue', 27), ('ana', 'red', 31)]
+>>> list(map(op.methodcaller("strip"), ["  a ", "b  "]))
+['a', 'b']
 ```
+
+`op.attrgetter("last", "first")` does for attributes what `itemgetter` does for
+positions: `sorted(users, key=op.attrgetter("last", "first"))`.
 
 ## singledispatch
 
@@ -57,20 +65,30 @@ One function name, different implementations chosen by the **type of the first
 argument**. It is the functional alternative to a long `if isinstance` chain,
 and it is open to extension: other modules can register new types.
 
-```python
-from functools import singledispatch
-
-@singledispatch
-def describe(x):
-    raise TypeError(f"cannot describe {type(x).__name__}")
-
-@describe.register
-def _(x: int):
-    return f"the number {x}"
-
-@describe.register
-def _(x: list):
-    return f"a list of {len(x)}"
+```pycon
+>>> from functools import singledispatch
+>>> @singledispatch
+... def describe(x):
+...     raise TypeError(f"cannot describe {type(x).__name__}")
+...
+>>> @describe.register
+... def _(x: int):
+...     return f"the number {x}"
+...
+>>> @describe.register
+... def _(x: list):
+...     return f"a list of {len(x)}"
+...
+>>> describe(7)
+'the number 7'
+>>> describe([1, 2])
+'a list of 2'
+>>> describe(True)           # see below
+'the number True'
+>>> describe("hi")
+Traceback (most recent call last):
+  ...
+TypeError: cannot describe str
 ```
 
 Dispatch follows the class hierarchy, choosing the most specific registration.

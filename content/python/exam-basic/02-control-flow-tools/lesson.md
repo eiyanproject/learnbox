@@ -18,11 +18,16 @@ that only shows up in an edge case.
 ## Loops have an else
 
 ```python
+values = [1, 3, 5]
 for item in values:
-    if matches(item):
+    if item % 2 == 0:         # looking for an even number
         break
 else:
-    print("nothing matched")
+    print("nothing matched")  # the loop ran out without a break
+```
+
+```output
+nothing matched
 ```
 
 The `else` runs when the loop **finishes without breaking**. It is the cleanest
@@ -33,13 +38,15 @@ exam question because most people expect `else` to pair with `if`.
 
 ## Default arguments are evaluated once
 
-```python
-def broken(item, target=[]):    # evaluated at definition time
-    target.append(item)
-    return target
-
-broken(1)       # [1]
-broken(2)       # [1, 2]   - the same list, still there
+```pycon
+>>> def broken(item, target=[]):    # evaluated at definition time
+...     target.append(item)
+...     return target
+...
+>>> broken(1)
+[1]
+>>> broken(2)       # the same list, still there
+[1, 2]
 ```
 
 This is the single most asked-about trap in the language. The fix is always the

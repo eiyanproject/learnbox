@@ -30,15 +30,17 @@ User.find(conn, name="Ana")        # [User(id=1, name='Ana', age=31)]
 
 SQLite is a full SQL database in one file, and it ships with Python:
 
-```python
-import sqlite3
-
-conn = sqlite3.connect(":memory:")          # or a file path
-conn.execute("CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT)")
-cur = conn.execute("INSERT INTO notes (body) VALUES (?)", ("hello",))
-cur.lastrowid                                # the new id
-rows = conn.execute("SELECT id, body FROM notes WHERE body = ?", ("hello",)).fetchall()
-conn.commit()
+```pycon
+>>> import sqlite3
+>>> conn = sqlite3.connect(":memory:")          # or a file path
+>>> conn.execute("CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT)")
+<sqlite3.Cursor object at 0x...>
+>>> cur = conn.execute("INSERT INTO notes (body) VALUES (?)", ("hello",))
+>>> cur.lastrowid                                # the new id
+1
+>>> conn.execute("SELECT id, body FROM notes WHERE body = ?", ("hello",)).fetchall()
+[(1, 'hello')]
+>>> conn.commit()
 ```
 
 **Always pass values as parameters (`?`), never with f-strings.** Formatting user

@@ -19,11 +19,17 @@ comprehensions.
 A **comprehension** builds a new collection in one expression, and the brackets
 decide what kind:
 
-```python
-[x * 2 for x in values]          # list
-{x * 2 for x in values}          # set
-{k: v for k, v in pairs}         # dict
-(x * 2 for x in values)          # generator - lazy, not a tuple
+```pycon
+>>> values = [1, 2, 2]
+>>> [x * 2 for x in values]          # list
+[2, 4, 4]
+>>> {x * 2 for x in values}          # set: the duplicate is gone
+{2, 4}
+>>> pairs = [("a", 1), ("b", 2)]
+>>> {k: v for k, v in pairs}         # dict
+{'a': 1, 'b': 2}
+>>> (x * 2 for x in values)          # generator - lazy, not a tuple
+<generator object <genexpr> at 0x...>
 ```
 
 There is no tuple comprehension; round brackets give you a generator that

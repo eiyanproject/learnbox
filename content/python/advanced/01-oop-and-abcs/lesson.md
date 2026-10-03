@@ -38,13 +38,13 @@ inheritance it is what makes cooperative classes work.
 
 ## The MRO
 
-```python
-class A: ...
-class B(A): ...
-class C(A): ...
-class D(B, C): ...
-
-D.__mro__     # (D, B, C, A, object)
+```pycon
+>>> class A: ...
+>>> class B(A): ...
+>>> class C(A): ...
+>>> class D(B, C): ...
+>>> [cls.__name__ for cls in D.__mro__]
+['D', 'B', 'C', 'A', 'object']
 ```
 
 Attribute lookup walks this list. Python computes it with C3 linearisation:
@@ -97,18 +97,20 @@ class Date:
 An ABC defines an interface that subclasses must fill in. A class with any
 unimplemented `@abstractmethod` cannot be instantiated:
 
-```python
-from abc import ABC, abstractmethod
-
-class Storage(ABC):
-    @abstractmethod
-    def save(self, key, data): ...
-
-    def save_all(self, items):          # concrete method built on the abstract one
-        for k, v in items.items():
-            self.save(k, v)
-
-Storage()        # TypeError: Can't instantiate abstract class Storage
+```pycon
+>>> from abc import ABC, abstractmethod
+>>> class Storage(ABC):
+...     @abstractmethod
+...     def save(self, key, data): ...
+...
+...     def save_all(self, items):      # concrete method built on the abstract one
+...         for k, v in items.items():
+...             self.save(k, v)
+...
+>>> Storage()
+Traceback (most recent call last):
+  ...
+TypeError: Can't instantiate abstract class Storage...
 ```
 
 This catches a forgotten method at construction time rather than much later,
