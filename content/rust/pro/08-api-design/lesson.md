@@ -93,6 +93,65 @@ and you stay free to extend it.
 - Follow the naming conventions: `as_` borrows cheaply, `to_` converts at a
   cost, `into_` consumes.
 
+## Run it
+
+```rust
+use std::time::Duration;
+
+#[derive(Debug)]
+struct Client {
+    url: String,
+    timeout: Duration,
+    retries: u8,
+}
+
+#[must_use = "a ClientBuilder does nothing until you call build()"]
+struct ClientBuilder {
+    url: String,
+    timeout: Duration,
+    retries: u8,
+}
+
+impl Client {
+    fn builder(url: impl Into<String>) -> ClientBuilder {
+        ClientBuilder { url: url.into(), timeout: Duration::from_secs(30), retries: 0 }
+    }
+}
+
+impl ClientBuilder {
+    fn timeout(mut self, t: Duration) -> Self {
+        self.timeout = t;
+        self
+    }
+    fn retries(mut self, n: u8) -> Self {
+        self.retries = n;
+        self
+    }
+    fn build(self) -> Result<Client, String> {
+        if !self.url.starts_with("https://") {
+            return Err(format!("not https: {}", self.url));
+        }
+        Ok(Client { url: self.url, timeout: self.timeout, retries: self.retries })
+    }
+}
+
+fn main() {
+    let client = Client::builder("https://api.example.com")
+        .timeout(Duration::from_secs(5))
+        .retries(3)
+        .build();
+    println!("{client:?}");
+    println!("{:?}", Client::builder(String::from("http://x")).build().err());
+}
+```
+
+```output
+Ok(Client { url: "https://api.example.com", timeout: 5s, retries: 3 })
+Some("not https: http://x")
+```
+
+`builder` took a `&str` the first time and a `String` the second: `impl Into<String>` at work.
+
 ## Your turn
 
 In `src/lib.rs`:

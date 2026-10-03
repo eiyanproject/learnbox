@@ -94,6 +94,59 @@ pub unsafe fn get_unchecked(slice: &[i32], index: usize) -> i32 {
 - Test under Miri (`cargo +nightly miri test`) when you can: it catches many
   kinds of undefined behaviour that normal tests miss.
 
+## Run it
+
+```rust
+fn split_at_mut(slice: &mut [i32], mid: usize) -> (&mut [i32], &mut [i32]) {
+    let len = slice.len();
+    let ptr = slice.as_mut_ptr();
+    assert!(mid <= len);
+    // SAFETY: mid <= len, so both halves are in bounds, and they do not overlap.
+    unsafe {
+        (
+            std::slice::from_raw_parts_mut(ptr, mid),
+            std::slice::from_raw_parts_mut(ptr.add(mid), len - mid),
+        )
+    }
+}
+
+/// # Safety
+/// `index` must be less than `slice.len()`.
+unsafe fn get_unchecked(slice: &[i32], index: usize) -> i32 {
+    unsafe { *slice.as_ptr().add(index) }
+}
+
+fn main() {
+    let mut x = 5;
+    let p: *mut i32 = &mut x;
+    // SAFETY: p points at x, which is alive and not borrowed elsewhere.
+    unsafe { *p += 1; }
+    println!("{x}");
+
+    let mut v = [1, 2, 3, 4, 5];
+    let (a, b) = split_at_mut(&mut v, 2);
+    a[0] = 10;
+    b[0] = 30;                         // two &mut into one array, safely
+    println!("{v:?}");
+
+    // SAFETY: 4 < v.len()
+    println!("{}", unsafe { get_unchecked(&v, 4) });
+
+    let refused = std::panic::catch_unwind(|| {
+        let mut w = [0; 2];
+        split_at_mut(&mut w, 3);       // the assert stops it before any unsafe code
+    });
+    println!("{}", refused.is_err());
+}
+```
+
+```output
+6
+[10, 2, 30, 4, 5]
+5
+true
+```
+
 ## Your turn
 
 In `src/lib.rs`:

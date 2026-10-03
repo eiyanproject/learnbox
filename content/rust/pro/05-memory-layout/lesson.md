@@ -81,6 +81,51 @@ Allocation is the usual reason "fast-looking" Rust is slow:
 Measure before optimising: `cargo build --release`, then time the real workload.
 A debug build is several times slower and says nothing about release performance.
 
+## Every size above, checked
+
+```rust
+use std::mem::{align_of, size_of};
+use std::num::NonZeroU32;
+
+#[allow(dead_code)]
+#[repr(C)]
+struct WastefulC { a: u8, b: u64, c: u8 }
+
+#[allow(dead_code)]
+#[repr(C)]
+struct Tight { b: u64, a: u8, c: u8 }
+
+#[allow(dead_code)]
+struct Wasteful { a: u8, b: u64, c: u8 }      // no repr: the compiler reorders
+
+trait Trait {}
+
+fn main() {
+    println!("{} {} {}", size_of::<WastefulC>(), size_of::<Tight>(), size_of::<Wasteful>());
+    println!("{} {}", size_of::<u64>(), align_of::<Tight>());
+    println!("{} {}", size_of::<Option<u8>>(), size_of::<Option<&u8>>());
+    println!("{} {} {}", size_of::<Option<Box<u8>>>(), size_of::<Option<NonZeroU32>>(), size_of::<Option<u32>>());
+    println!(
+        "{} {} {} {} {}",
+        size_of::<[u8; 1024]>(),
+        size_of::<Vec<u8>>(),
+        size_of::<Box<[u8]>>(),
+        size_of::<&[u8]>(),
+        size_of::<&dyn Trait>()
+    );
+}
+```
+
+```output
+24 16 16
+8 8
+2 8
+8 4 8
+1024 24 16 16 16
+```
+
+`Option<NonZeroU32>` is 4 bytes and `Option<u32>` is 8: zero is free to mean `None` only when the value can never be zero.
+
 ## Your turn
 
 In `src/lib.rs`:

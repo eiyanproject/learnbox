@@ -93,6 +93,46 @@ pub fn c_strlen(s: &str) -> Option<usize> {
 }
 ```
 
+## Run it
+
+```rust
+use std::ffi::{c_char, c_int, CStr, CString};
+
+unsafe extern "C" {
+    fn abs(n: c_int) -> c_int;
+    fn strlen(s: *const c_char) -> usize;
+}
+
+fn c_strlen(s: &str) -> Option<usize> {
+    let owned = CString::new(s).ok()?;             // checked: no interior NUL
+    Some(unsafe { strlen(owned.as_ptr()) })        // sound: owned lives to the end
+}
+
+#[allow(dead_code)]
+#[repr(C)]
+struct Point {
+    x: f64,
+    y: f64,
+}
+
+fn main() {
+    println!("{}", unsafe { abs(-3) });
+    println!("{:?} {:?}", c_strlen("héllo"), c_strlen("bad\0inside"));
+    let lit: &CStr = c"from C";
+    println!("{} {}", lit.to_str().unwrap(), lit.to_bytes_with_nul().len());
+    println!("{}", std::mem::size_of::<Point>());
+}
+```
+
+```output
+3
+Some(6) None
+from C 7
+16
+```
+
+C's `strlen` counts bytes, so `héllo` is 6; and a string with a NUL inside cannot become a C string at all.
+
 ## Your turn
 
 In `src/lib.rs`:

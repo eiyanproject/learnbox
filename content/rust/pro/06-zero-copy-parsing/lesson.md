@@ -76,6 +76,57 @@ data (or use `Cow` and call `.into_owned()`).
 Do not force it everywhere: a `String` per field is fine in code that runs once
 per request. Reach for zero-copy in hot loops and large inputs.
 
+## Run it
+
+```rust
+use std::borrow::Cow;
+
+struct Entry<'a> {
+    level: &'a str,
+    message: &'a str,
+}
+
+fn parse(line: &str) -> Option<Entry<'_>> {
+    let (level, message) = line.split_once(": ")?;
+    Some(Entry { level, message })
+}
+
+fn decode(raw: &str) -> Cow<'_, str> {
+    if raw.contains('+') {
+        Cow::Owned(raw.replace('+', " "))
+    } else {
+        Cow::Borrowed(raw)
+    }
+}
+
+fn main() {
+    let text = String::from("INFO: started\nWARN: disk at 91%\nnot a log line");
+    let entries: Vec<Entry> = text.lines().filter_map(parse).collect();
+    for e in &entries {
+        println!("[{}] {}", e.level, e.message);
+    }
+
+    // the message is a window into `text` itself: same memory, 6 bytes in
+    let offset = entries[0].message.as_ptr() as usize - text.as_ptr() as usize;
+    println!("{offset}");
+
+    for raw in ["plain", "a+b"] {
+        let d = decode(raw);
+        println!("{d} {}", matches!(d, Cow::Borrowed(_)));
+    }
+    println!("{:?}", "a=b=c".rsplit_once('='));
+}
+```
+
+```output
+[INFO] started
+[WARN] disk at 91%
+6
+plain true
+a b false
+Some(("a=b", "c"))
+```
+
 ## Your turn
 
 In `src/lib.rs`, without a single `to_string()` in the parsing path:

@@ -91,6 +91,78 @@ task queue part.
 `.await` is "poll the inner future; if `Pending`, return `Pending` (remembering
 where we were)". Your `block_on` runs those too, because they are just futures.
 
+## Run it
+
+```rust
+use std::future::Future;
+use std::pin::Pin;
+use std::sync::Arc;
+use std::task::{Context, Poll, Wake, Waker};
+use std::thread;
+use std::time::Duration;
+
+struct ThreadWaker(thread::Thread);
+
+impl Wake for ThreadWaker {
+    fn wake(self: Arc<Self>) {
+        self.0.unpark();
+    }
+}
+
+fn block_on<F: Future>(future: F) -> F::Output {
+    let mut future = std::pin::pin!(future);
+    let waker = Waker::from(Arc::new(ThreadWaker(thread::current())));
+    let mut cx = Context::from_waker(&waker);
+    loop {
+        match future.as_mut().poll(&mut cx) {
+            Poll::Ready(value) => return value,
+            Poll::Pending => thread::park(),
+        }
+    }
+}
+
+/// Pending `remaining` times - each time arranging a wake from a timer
+/// thread - then Ready with the number of polls it took.
+struct CountDown {
+    remaining: u32,
+    polls: u32,
+}
+
+impl Future for CountDown {
+    type Output = u32;
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<u32> {
+        let this = self.get_mut();
+        this.polls += 1;
+        if this.remaining == 0 {
+            return Poll::Ready(this.polls);
+        }
+        this.remaining -= 1;
+        let waker = cx.waker().clone();
+        thread::spawn(move || {
+            thread::sleep(Duration::from_millis(5));
+            waker.wake();                  // the contract: Pending, then a wake
+        });
+        Poll::Pending
+    }
+}
+
+fn main() {
+    println!("{}", block_on(CountDown { remaining: 3, polls: 0 }));
+    let answer = block_on(async {
+        let a = async { 20 }.await;        // async blocks are just futures
+        a + 22
+    });
+    println!("{answer}");
+}
+```
+
+```output
+4
+42
+```
+
+Three `Pending`s and a `Ready`: four polls, each after a wake. Delete the `waker.wake()` line and the program hangs - the contract, broken.
+
 ## Your turn
 
 In `src/lib.rs`:

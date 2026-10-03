@@ -80,6 +80,59 @@ where
 must belong to your crate, so `impl Display for Vec<T>` is not yours to write.
 The workaround is a newtype wrapper.
 
+## Run it
+
+```rust
+trait LendingIterator {
+    type Item<'a>
+    where
+        Self: 'a;
+    fn next(&mut self) -> Option<Self::Item<'_>>;
+}
+
+/// Overlapping mutable windows of two - impossible with `Iterator`.
+struct Windows {
+    buf: Vec<i32>,
+    pos: usize,
+}
+
+impl LendingIterator for Windows {
+    type Item<'a> = &'a mut [i32];
+    fn next(&mut self) -> Option<Self::Item<'_>> {
+        if self.pos + 2 > self.buf.len() {
+            return None;
+        }
+        let window = &mut self.buf[self.pos..self.pos + 2];
+        self.pos += 1;
+        Some(window)
+    }
+}
+
+fn shout<I>(items: I) -> Vec<String>
+where
+    I: IntoIterator,
+    I::Item: AsRef<str>,
+{
+    items.into_iter().map(|s| s.as_ref().to_uppercase()).collect()
+}
+
+fn main() {
+    let mut w = Windows { buf: vec![1, 2, 3, 4], pos: 0 };
+    while let Some(pair) = w.next() {
+        pair[1] += pair[0];            // each window sees the last one's write
+    }
+    println!("{:?}", w.buf);
+    println!("{:?} {:?}", shout(["a", "b"]), shout(vec![String::from("c")]));
+}
+```
+
+```output
+[1, 3, 6, 10]
+["A", "B"] ["C"]
+```
+
+The windows overlap and are mutable, so two could never exist at once - which is exactly what the lending signature lets the compiler enforce. The result is running totals.
+
 ## Your turn
 
 In `src/lib.rs`:

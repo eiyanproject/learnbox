@@ -107,6 +107,70 @@ with strong reason, since correctness arguments get subtle fast (the ABA
 problem, memory reclamation). Measure before and after; an uncontended `Mutex`
 is already very fast.
 
+## Run it
+
+```rust
+use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
+use std::sync::Arc;
+use std::thread;
+
+static HITS: AtomicUsize = AtomicUsize::new(0);
+
+fn main() {
+    let handles: Vec<_> = (0..4)
+        .map(|_| {
+            thread::spawn(|| {
+                for _ in 0..1000 {
+                    HITS.fetch_add(1, Ordering::Relaxed);
+                }
+            })
+        })
+        .collect();
+    for h in handles {
+        h.join().unwrap();
+    }
+    println!("{}", HITS.load(Ordering::Relaxed));   // never a lost update
+
+    let payload = Arc::new(AtomicU64::new(0));
+    let ready = Arc::new(AtomicBool::new(false));
+    let (p, r) = (Arc::clone(&payload), Arc::clone(&ready));
+    let writer = thread::spawn(move || {
+        p.store(42, Ordering::Relaxed);
+        r.store(true, Ordering::Release);            // publish
+    });
+    while !ready.load(Ordering::Acquire) {           // observe
+        std::hint::spin_loop();
+    }
+    println!("{}", payload.load(Ordering::Relaxed)); // guaranteed to be 42
+    writer.join().unwrap();
+
+    let counter = AtomicU64::new(3);
+    let mut current = counter.load(Ordering::Relaxed);
+    loop {
+        let next = current * 2;
+        match counter.compare_exchange_weak(current, next, Ordering::AcqRel, Ordering::Relaxed) {
+            Ok(_) => break,
+            Err(actual) => current = actual,
+        }
+    }
+    println!("{}", counter.load(Ordering::Relaxed));
+    println!(
+        "{:?} {:?}",
+        counter.compare_exchange(5, 0, Ordering::AcqRel, Ordering::Relaxed),
+        counter.compare_exchange(6, 0, Ordering::AcqRel, Ordering::Relaxed)
+    );
+}
+```
+
+```output
+4000
+42
+6
+Err(6) Ok(6)
+```
+
+A failed `compare_exchange` hands back the value it actually found - which is what the retry loop uses.
+
 ## Your turn
 
 In `src/lib.rs`:
