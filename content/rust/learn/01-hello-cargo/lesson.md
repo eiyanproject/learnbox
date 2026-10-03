@@ -81,6 +81,31 @@ The difference comes down to **ownership**, which gets its own lesson soon.
 runs. The starter uses it so the project compiles before you have written
 anything.
 
+## Run it
+
+```rust
+fn add(a: i32, b: i32) -> i32 {
+    a + b
+}
+
+fn main() {
+    let name = "Ana";
+    let score = 92;
+    println!("{name} scored {score}");
+    println!("{} scored {}", name, score);
+    let line = format!("{name}: {score:>5}|");   // the | shows the padding
+    println!("{line}");
+    println!("{}", add(2, 3));
+}
+```
+
+```output
+Ana scored 92
+Ana scored 92
+Ana:    92|
+5
+```
+
 ## Your turn
 
 In `src/lib.rs`:

@@ -109,6 +109,66 @@ impl fmt::Display for Robot {
 }
 ```
 
+## Run it
+
+```rust
+use std::fmt;
+
+trait Speak {
+    fn speak(&self) -> String;
+
+    fn shout(&self) -> String {
+        self.speak().to_uppercase() + "!"
+    }
+}
+
+struct Dog;
+struct Robot {
+    id: u32,
+}
+
+impl Speak for Dog {
+    fn speak(&self) -> String {
+        "woof".to_string()
+    }
+}
+
+impl Speak for Robot {
+    fn speak(&self) -> String {
+        format!("unit {} online", self.id)
+    }
+}
+
+impl fmt::Display for Robot {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Robot #{}", self.id)
+    }
+}
+
+fn announce(thing: &impl Speak) -> String {
+    format!("It says: {}", thing.speak())
+}
+
+fn main() {
+    println!("{}", Dog.shout());
+    println!("{}", announce(&Robot { id: 7 }));
+    let things: Vec<Box<dyn Speak>> = vec![Box::new(Dog), Box::new(Robot { id: 7 })];
+    for t in &things {
+        println!("{}", t.speak());
+    }
+    let r = Robot { id: 3 };
+    println!("{r} / {}", r.to_string());    // Display gives to_string for free
+}
+```
+
+```output
+WOOF!
+It says: unit 7 online
+woof
+unit 7 online
+Robot #3 / Robot #3
+```
+
 ## Your turn
 
 In `src/lib.rs`:

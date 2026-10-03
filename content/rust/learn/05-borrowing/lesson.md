@@ -99,6 +99,52 @@ String slice positions are **bytes**. Slicing in the middle of a multi-byte
 character panics, so find positions with `char_indices()` or `find()` rather
 than guessing.
 
+## Run it
+
+```rust
+fn length(s: &String) -> usize {
+    s.len()
+}
+
+fn add_bang(s: &mut String) {
+    s.push('!');
+}
+
+fn main() {
+    let name = String::from("Ana");
+    let n = length(&name);
+    println!("{name} {n}");
+
+    let mut msg = String::from("hi");
+    add_bang(&mut msg);
+    println!("{msg}");
+
+    let mut x = 5;
+    let r = &mut x;
+    *r += 1;
+    println!("{x}");
+
+    let s = String::from("hello world");
+    println!("[{}] [{}]", &s[0..5], &s[6..]);
+    let nums = [10, 20, 30, 40];
+    println!("{:?}", &nums[1..3]);
+
+    let word = "naïve";
+    println!("{} bytes, {} chars, ï at byte {:?}", word.len(), word.chars().count(), word.find('ï'));
+}
+```
+
+```output
+Ana 3
+hi!
+6
+[hello] [world]
+[20, 30]
+6 bytes, 5 chars, ï at byte Some(2)
+```
+
+`ï` takes two bytes, so `&word[0..3]` would end in the middle of it and panic.
+
 ## Your turn
 
 In `src/lib.rs`:

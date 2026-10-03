@@ -113,6 +113,62 @@ impl Direction {
 }
 ```
 
+## Run it
+
+```rust
+enum Message {
+    Quit,
+    Write(String),
+    Move { x: i32, y: i32 },
+    Color(u8, u8, u8),
+}
+
+fn describe(m: &Message) -> String {
+    match m {
+        Message::Quit => "quit".to_string(),
+        Message::Write(text) => format!("write {text}"),
+        Message::Move { x, y } => format!("move {x},{y}"),
+        Message::Color(r, g, b) => format!("#{r:02x}{g:02x}{b:02x}"),
+    }
+}
+
+fn size(n: i32) -> &'static str {
+    match n {
+        0 => "zero",
+        1 | 2 | 3 => "a few",
+        4..=9 => "several",
+        x if x < 0 => "negative",
+        _ => "lots",
+    }
+}
+
+fn main() {
+    let msgs = [
+        Message::Quit,
+        Message::Write("hi".to_string()),
+        Message::Move { x: 3, y: -1 },
+        Message::Color(255, 128, 0),
+    ];
+    for m in &msgs {
+        println!("{}", describe(m));
+    }
+    let sizes: Vec<&str> = [0, 2, 7, -4, 50].iter().map(|&n| size(n)).collect();
+    println!("{sizes:?}");
+    if let Message::Write(text) = &msgs[1] {
+        println!("{text}");
+    }
+}
+```
+
+```output
+quit
+write hi
+move 3,-1
+#ff8000
+["zero", "a few", "several", "negative", "lots"]
+hi
+```
+
 ## Your turn
 
 In `src/lib.rs`:

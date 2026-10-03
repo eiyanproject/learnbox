@@ -97,6 +97,49 @@ The error type must match the function's return type (or be convertible to
 it). If it does not, convert it with `map_err` first. `?` works on `Option`
 in functions returning `Option` too.
 
+## Run it
+
+```rust
+use std::num::ParseIntError;
+
+fn first_even(nums: &[i32]) -> Option<i32> {
+    for &n in nums {
+        if n % 2 == 0 {
+            return Some(n);
+        }
+    }
+    None
+}
+
+fn double_string(s: &str) -> Result<i32, ParseIntError> {
+    let n: i32 = s.parse()?;
+    Ok(n * 2)
+}
+
+fn main() {
+    println!("{:?} {:?}", first_even(&[1, 3, 4]), first_even(&[1, 3]));
+    match "4x".parse::<i32>() {
+        Ok(n) => println!("{n}"),
+        Err(e) => println!("bad number: {e}"),
+    }
+
+    let opt: Option<i32> = None;
+    println!("{} {:?}", opt.unwrap_or(0), Some(5).map(|n| n * 2));
+    println!("{:?} {:?}", double_string("21"), double_string("x").map_err(|e| e.to_string()));
+
+    let res: Result<i32, String> = Err("nope".into());
+    println!("{:?} {}", res.clone().ok(), res.unwrap_or_default());
+}
+```
+
+```output
+Some(4) None
+bad number: invalid digit found in string
+0 Some(10)
+Ok(42) Err("invalid digit found in string")
+None 0
+```
+
 ## Your turn
 
 In `src/lib.rs`:

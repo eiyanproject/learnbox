@@ -112,6 +112,66 @@ The returned `&'a str` borrows from the original text, not from the
 `&'static str` because they are baked into the binary, which is why functions
 returning literals could use `&'static str` in earlier lessons.
 
+## Run it
+
+```rust
+struct Pair<T> {
+    first: T,
+    second: T,
+}
+
+impl<T> Pair<T> {
+    fn new(first: T, second: T) -> Self {
+        Self { first, second }
+    }
+    fn swap(self) -> Self {
+        Self { first: self.second, second: self.first }
+    }
+}
+
+impl<T: PartialOrd + Copy> Pair<T> {
+    fn larger(&self) -> T {
+        if self.first > self.second { self.first } else { self.second }
+    }
+}
+
+fn longest<'a>(a: &'a str, b: &'a str) -> &'a str {
+    if a.len() > b.len() { a } else { b }
+}
+
+struct Excerpt<'a> {
+    text: &'a str,
+}
+
+impl<'a> Excerpt<'a> {
+    fn first_word(&self) -> &'a str {
+        self.text.split_whitespace().next().unwrap_or("")
+    }
+}
+
+fn main() {
+    let p = Pair::new(1, 2).swap();
+    println!("{} {} {}", p.first, p.second, p.larger());
+    println!("{}", Pair::new("a", "b").larger());
+    println!("{}", longest("a long string", "short"));
+
+    let text = String::from("call me Ishmael");
+    let word;
+    {
+        let e = Excerpt { text: &text };
+        word = e.first_word();
+    }   // e is gone, but word borrows from text, not from e
+    println!("{word}");
+}
+```
+
+```output
+2 1 2
+b
+a long string
+call
+```
+
 ## Your turn
 
 In `src/lib.rs`:

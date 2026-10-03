@@ -95,6 +95,59 @@ To break out of an outer loop from an inner one, name it:
 A parameter behaves like a `let` binding. To change it inside the function,
 shadow it: `let mut n = n;`.
 
+## Run it
+
+```rust
+fn sign(n: i32) -> &'static str {
+    if n < 0 {
+        "negative"
+    } else if n == 0 {
+        "zero"
+    } else {
+        "positive"
+    }
+}
+
+fn main() {
+    println!("{} {} {}", sign(-5), sign(0), sign(9));
+
+    let mut n = 1;
+    let first_big_power = loop {
+        n *= 2;
+        if n > 1000 {
+            break n;
+        }
+    };
+    println!("{first_big_power}");
+
+    println!("{:?}", (0..5).collect::<Vec<_>>());
+    println!("{:?}", (1..=5).collect::<Vec<_>>());
+    println!("{:?}", (1..=3).rev().collect::<Vec<_>>());
+    println!("{:?}", (0..10).step_by(2).collect::<Vec<_>>());
+
+    let mut found = (0, 0);
+    'outer: for x in 0..10 {
+        for y in 0..10 {
+            if x * y == 42 {
+                found = (x, y);
+                break 'outer;
+            }
+        }
+    }
+    println!("{found:?}");
+}
+```
+
+```output
+negative zero positive
+1024
+[0, 1, 2, 3, 4]
+[1, 2, 3, 4, 5]
+[3, 2, 1]
+[0, 2, 4, 6, 8]
+(6, 7)
+```
+
 ## Your turn
 
 In `src/lib.rs`:

@@ -99,6 +99,48 @@ for word in ["a", "b", "a"] {
 `or_insert` returns a `&mut` to the value, hence the `*` to add to it.
 `or_insert_with(Vec::new)` builds the default only when needed.
 
+## Run it
+
+```rust
+use std::collections::HashMap;
+
+fn main() {
+    let w = vec![3, 1, 4, 1, 5];
+    println!("{} {:?} {} {}", w[0], w.get(10), w.len(), w.contains(&4));
+
+    let mut nums = vec![3, 1, 3, 2];
+    nums.sort();
+    print!("{nums:?} ");
+    nums.dedup();
+    print!("{nums:?} ");
+    nums.reverse();
+    println!("{nums:?}");
+
+    let mut s = String::from("hello");
+    s.push(' ');
+    s.push_str("world");
+    let t = s.clone() + "!";
+    println!("{t} | {} {}", "héllo".len(), "héllo".chars().count());
+    println!("{:?}", s.chars().next());
+
+    let mut counts: HashMap<&str, usize> = HashMap::new();
+    for word in ["a", "b", "a"] {
+        *counts.entry(word).or_insert(0) += 1;
+    }
+    let mut pairs: Vec<_> = counts.into_iter().collect();
+    pairs.sort();                       // a HashMap has no order of its own
+    println!("{pairs:?}");
+}
+```
+
+```output
+3 None 5 true
+[1, 2, 3, 3] [1, 2, 3] [3, 2, 1]
+hello world! | 6 5
+Some('h')
+[("a", 2), ("b", 1)]
+```
+
 ## Your turn
 
 In `src/lib.rs`:

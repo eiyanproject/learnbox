@@ -105,6 +105,47 @@ fn exclaim(s: String) -> String {
 Ownership of `s` came with the call, but the binding is immutable. Write
 `mut s` in the parameter list.
 
+## The working versions, run
+
+```rust
+fn consume(s: String) -> usize {
+    s.len()
+}
+
+fn main() {
+    let a = String::from("hello");
+    let b = a.clone();          // two independent Strings
+    println!("{a} {b}");
+
+    let x = 5;
+    let y = x;                  // i32 is Copy
+    println!("{x} {y}");
+
+    let names = vec![String::from("Ana")];
+    let first = &names[0];      // borrow, do not move
+    println!("{first} {}", names.len());
+
+    let n = consume(b);         // b moves in; using b after this would not compile
+    println!("{n}");
+
+    let words = vec!["a", "b"];
+    for w in &words {
+        print!("{w} ");
+    }
+    println!("{}", words.len()); // still here: the loop borrowed it
+}
+```
+
+```output
+hello hello
+5 5
+Ana 1
+5
+a b 2
+```
+
+Each line that compiles here is the fix for one of the errors above.
+
 ## Your turn
 
 Make `cargo check` succeed without changing any function signatures, and

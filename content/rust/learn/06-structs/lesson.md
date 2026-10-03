@@ -105,6 +105,62 @@ assert_eq!(p, q);           // PartialEq, and Debug to print on failure
 `assert_eq!` needs both `PartialEq` and `Debug`, which is why the starter
 derives them.
 
+## Run it
+
+```rust
+#[derive(Debug, Clone, PartialEq)]
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+struct Meters(f64);
+
+struct User {
+    name: String,
+    age: u32,
+    active: bool,
+}
+
+impl User {
+    fn new(name: &str, age: u32) -> Self {
+        Self { name: name.to_string(), age, active: true }
+    }
+    fn is_adult(&self) -> bool {
+        self.age >= 18
+    }
+    fn birthday(&mut self) {
+        self.age += 1;
+    }
+    fn into_name(self) -> String {
+        self.name
+    }
+}
+
+fn main() {
+    let mut u = User::new("Ana", 17);
+    println!("{} {}", u.is_adult(), u.active);
+    u.birthday();
+    println!("{} {}", u.age, u.is_adult());
+    println!("{}", u.into_name());     // u is used up after this
+
+    let d = Meters(3.5);
+    println!("{}", d.0);
+
+    let p = Point { x: 1, y: 2 };
+    let q = p.clone();
+    println!("{p:?} {}", p == q);
+}
+```
+
+```output
+false true
+18 true
+Ana
+3.5
+Point { x: 1, y: 2 } true
+```
+
 ## Your turn
 
 In `src/lib.rs`, implement the `Rectangle` methods:

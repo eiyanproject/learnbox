@@ -103,6 +103,42 @@ const SECONDS_PER_HOUR: u32 = 3600;
 
 Constants always need a type, and are written in `SCREAMING_SNAKE_CASE`.
 
+## Run it
+
+```rust
+fn main() {
+    let input = "42";
+    let input: i32 = input.parse().unwrap();
+    println!("{}", input + 1);
+
+    let count: i32 = 7;
+    println!("{} {}", count as f64 / 2.0, 3.9_f64 as i32);
+    println!("{} {} {} {}", 7 / 2, 7 % 2, 7.0 / 2.0, -7 / 2);
+    println!("{}", (-3.9_f64) as i32);      // toward zero, not down
+
+    let point = (3, 4);
+    let (x, y) = point;
+    println!("{x} {y} {}", point.0);
+
+    let days = ["Mon", "Tue", "Wed"];
+    println!("{} {} {:?}", days[0], days.len(), [0; 3]);
+
+    println!("{:?}", 250u8.checked_add(10)); // would overflow: None
+}
+```
+
+```output
+43
+3.5 3
+3 1 3.5 -3
+-3
+3 4 3
+Mon 3 [0, 0, 0]
+None
+```
+
+`checked_add` is how you ask for overflow as a value instead of a panic.
+
 ## Your turn
 
 The **Run** button here runs `cargo test`, which compiles the project and runs
