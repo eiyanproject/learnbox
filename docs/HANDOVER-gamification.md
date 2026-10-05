@@ -26,54 +26,64 @@ settling a genuine judgement call; do only what was asked; the owner runs
 deploys themselves (`bash update-lxc.sh --ctid 116 --yes`, then
 `learnbox verify` in the CT).
 
+## Plan: four milestones, each mergeable to main on its own
+
+The first attempt tried to build everything in one pass and stalled. Split
+into pieces that each work and ship by themselves:
+
+1. **Profiles** - DONE on this branch (see below). Can be merged now.
+2. **XP, levels and badges** - the scoring engine (a pure package, computed
+   from a progress snapshot, unit-tested), a profile summary endpoint, rewards
+   returned with each check, an XP/level indicator in the top bar, a badges
+   page, toasts. No timed challenges yet.
+3. **Arena, one track** - challenge start/forfeit endpoints, the server-side
+   clock, loss and cooldown, unlock rules, the Arena page and the countdown in
+   the lesson view, with the Python ladder (rounds then a boss) as content.
+4. **Arena, every other track** - ladders for rust, c, cpp, java, csharp,
+   matlab, ccna, mindset and security, each passing `learnbox verify`. The
+   owner chose every track; this order only decides what ships first.
+
+Then README docs for the game rules and how to write a challenge, and
+**suggestions for what could come next**, as the owner asked.
+
+A note for whoever continues: two responses in the original session were
+stopped by a safety filter, the second while writing the scoring engine.
+That session carried a great deal of security-course material (attack
+walkthroughs); a session without it is the better place for this work. Keep
+any security-track challenges defensive (detect, decode, fix, harden).
+
 ## Done on this branch
 
 - `internal/profiles` - the profile registry (`profiles.json` in the data
-  dir). The first start creates profile `default`, which keeps the existing
-  `progress.json` and `~/learn`, so nothing moves. Other profiles get
+  dir). The first start creates profile `default` ("Learner"), which keeps the
+  existing `progress.json` and `~/learn`, so nothing moves. Other profiles get
   `progress-<id>.json` and `~/profiles/<id>/learn`. Ids are validated
-  (`ValidID`) because they become paths. Create, rename, delete (not the last
-  one; lesson files are left on disk). Tested.
-- `internal/workspace` - `Manager.For(base)` returns a view whose lesson
-  folders live under `base`; `Rel` and the reset backups follow it.
-- `internal/progress` - `Challenge` records (server-side start and deadline,
-  wins, losses, cooldown, best time and XP) and earned-badge timestamps, with
-  `Snapshot`, `Challenge`, `UpdateChallenge`, `AwardBadges`.
-- `internal/content` - a track section may be `arena: true`; its lessons
-  carry a `challenge:` front-matter block (`boss`, `minutes`,
-  `cooldown_minutes`, `xp`, `requires: {xp, badges}`), with defaults applied
-  and validation (a challenge needs tests and must sit in an arena section).
-  `Neighbours` keeps arena lessons and ordinary lessons apart.
+  (`ValidID`) because they become paths. Create, rename, delete (not the last;
+  lesson files are kept). Tested.
+- **Server** - each request acts for the profile its `learnbox_profile`
+  cookie names, or the only one; with several and none picked the API returns
+  409 `{"code":"choose_profile"}`. Lessons, files, checks (via
+  `Runner.CheckDir` on the profile's workspace), hints, resets and terminals
+  all use the profile's store and folder; terminals for non-default profiles
+  are keyed `profile/<id>/...`, and clients may not ask for that prefix.
+  Endpoints: `GET/POST /api/profiles`, `POST /api/profiles/{id}/select`,
+  `POST /api/profiles/{id}/rename`, `DELETE /api/profiles/{id}`. Tested
+  (`internal/httpapi/profiles_test.go`).
+- **Frontend** - a profile button in the top bar opening a picker (pick,
+  create, rename, delete); the picker opens by itself when the server asks.
+  Picking reloads the page to drop the old profile's state.
+- **Verified in a browser** against a real server: creating a profile
+  switches to it, a lesson passed as one profile does not touch another's
+  progress or files, terminals are separate per profile.
+- Groundwork for milestones 2-4, not yet used: challenge records and
+  earned-badge timestamps in `internal/progress`; arena sections and the
+  `challenge:` front matter in `internal/content` (validated: a challenge
+  needs tests and must sit in an arena section; `Neighbours` keeps arena and
+  ordinary lessons apart).
+- README describes profiles and what they are not (not a login).
 
-`GOOS=linux go vet ./...` is clean and the package tests pass.
-
-## Still to do
-
-1. **The scoring engine** - XP per lesson, levels with titles, the badge
-   catalogue (global and per track), challenge unlock rules (every earlier
-   round won, plus `requires`), win rewards with a speed bonus, settling an
-   expired attempt into a loss and cooldown. Computed from the progress
-   snapshot, so earlier passes count automatically. Unit-test it.
-2. **Server wiring** - pick the profile per request from a cookie (validate
-   with `profiles.ValidID`; if only one profile exists, use it; otherwise ask
-   the frontend to show a picker); use the profile's progress store and
-   `Workspace.For(profiles.WorkspaceBase(id))` everywhere a lesson is read,
-   written, reset or checked (call `Runner.CheckDir` with the profile's
-   workspace); key terminal sessions by profile too. Endpoints for profiles
-   (list, create, select, rename, delete), the profile summary (XP, level,
-   badges), the arena, and challenge start and forfeit. A check on a
-   challenge only counts inside a running attempt that has not expired.
-   Return the rewards (XP gained, level change, new badges) with every check.
-3. **Frontend** - profile picker and switcher, an XP and level indicator in
-   the top bar, a badges page, an Arena page with each track's ladder and its
-   locks, and the challenge view in the lesson page (start, countdown,
-   forfeit, win and loss, cooldown). Toasts for XP, level-ups and badges.
-4. **Content** - an `arena` section in every `track.yaml` and a ladder in each
-   track: a few timed rounds of rising difficulty, then a boss. Each needs
-   starter, solution and tests, and must pass `learnbox verify`. Set the
-   unlock thresholds per track from the XP that track can actually award.
-5. **Docs** - README: profiles, the game rules, how to write a challenge.
-6. Then **suggest what could come next**, as the owner asked.
+All Go tests pass (`go test ./...` in a golang:1.26 container) and the
+frontend builds.
 
 The verify harness from the previous work (lesson examples) is unaffected.
 To test a track end to end, the scripts used before ran `learnbox verify`

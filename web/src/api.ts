@@ -95,6 +95,21 @@ export interface ServerStatus {
   lessons: number;
 }
 
+export interface Profile {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
+export interface ProfilesResponse {
+  profiles: Profile[];
+  /** Empty when several profiles exist and this browser has not picked one. */
+  current: string;
+}
+
+/** Fired when the server needs a profile picked before it can answer. */
+export const CHOOSE_PROFILE = "learnbox:choose-profile";
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -121,6 +136,9 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
     /* non-JSON error page */
   }
   if (!res.ok) {
+    if (res.status === 409 && (data as { code?: string } | null)?.code === "choose_profile") {
+      window.dispatchEvent(new CustomEvent(CHOOSE_PROFILE));
+    }
     const msg = (data as { error?: string } | null)?.error ?? `${res.status} ${res.statusText}`;
     throw new ApiError(res.status, msg);
   }
@@ -140,4 +158,9 @@ export const api = {
   check: (id: string) => call<CheckResponse>("POST", `${L(id)}/check`),
   hint: (id: string) => call<{ hints: string[]; hints_total: number }>("POST", `${L(id)}/hint`),
   reset: (id: string) => call<{ status: string; backup?: string }>("POST", `${L(id)}/reset`),
+  profiles: () => call<ProfilesResponse>("GET", "/api/profiles"),
+  createProfile: (name: string) => call<Profile>("POST", "/api/profiles", { name }),
+  selectProfile: (id: string) => call<Profile>("POST", `/api/profiles/${encodeURIComponent(id)}/select`),
+  renameProfile: (id: string, name: string) => call<Profile>("POST", `/api/profiles/${encodeURIComponent(id)}/rename`, { name }),
+  deleteProfile: (id: string) => call<{ status: string; files: string }>("DELETE", `/api/profiles/${encodeURIComponent(id)}`),
 };

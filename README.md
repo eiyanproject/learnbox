@@ -1,13 +1,15 @@
 # learnbox
 
-A private, single-user learning platform for Python and Rust. Each lesson is an
+A private learning platform for programming and security. Each lesson is an
 explanation on the left and a real workspace on the right: a code editor over a
 real `bash` terminal, hidden tests behind a **Check** button, and hints when you
 are stuck. Everything runs in one small LXC on your own network.
 
-- **Four levels per language**, 42 guided lessons each, written for this project:
-  Beginner (12), Intermediate (10), Advanced (10) and Pro (10)
+- **Ten tracks**, written for this project: Python, Rust, C, C++, C#, Java,
+  MATLAB, CCNA, Security and Programming mindset (see [Curriculum](#curriculum))
 - **Practice**: ~130 Python and ~90 Rust exercises imported from [Exercism](https://exercism.org) (MIT)
+- **Profiles**: a few people can share one box, each with their own progress
+  and files - picked from a list, no login
 - **Terminal**: a free scratch shell with `python`, `cargo` and `git`
 
 Python runs from `print()` to metaclasses, asyncio, a mini ORM and a capstone
@@ -211,16 +213,33 @@ browser ──HTTP / WebSocket──▶ learnbox (Go, runs as root, systemd)
                                 └─ learner/       every shell and check: memory.max, pids.max
 ```
 
-- **Workspaces** live in `/home/learner/learn/<lang>/<section>/<lesson>/`. The
-  editor and the terminal work on the same files; the editor reloads files that
-  change on disk.
+- **Workspaces** live in `/home/learner/learn/<lang>/<section>/<lesson>/`, or
+  `/home/learner/profiles/<id>/learn/...` for a profile other than the first.
+  The editor and the terminal work on the same files; the editor reloads files
+  that change on disk.
 - **Check** copies the workspace and the lesson's hidden tests to
   `~/.cache/learnbox/check/`, runs `pytest` or `cargo test` there as `learner`
   with a timeout, and parses the results per test.
 - **Reset** moves the workspace to `~/learn/.reset-backups/` and restores the starter.
-- **Progress** is one JSON file, `/var/lib/learnbox/progress.json`.
+- **Progress** is one JSON file per profile in `/var/lib/learnbox`.
 - **Terminal sessions** survive page changes: reopening a lesson reattaches to
   its shell and replays recent output.
+
+### Profiles
+
+The box starts with one profile, **Learner**, which owns the original
+`progress.json` and `~/learn` - upgrading loses nothing, and a single person
+never sees a profile prompt. Create more from the name button in the top bar.
+Each profile has its own progress, its own copy of every lesson's files
+(`~/profiles/<id>/learn`) and its own terminals. The browser remembers the
+choice in a cookie; with several profiles and none picked, the app asks.
+
+A profile is a preference, **not a login**. Anyone who can open the page can
+pick any profile, and every profile runs as the same `learner` account, so one
+person's shell can read another's files. That suits a household or a couple
+of friends you trust. Strangers need real accounts - and, since the box hands
+out a shell, separate system users or containers too - which this does not
+attempt. Deleting a profile removes its progress and keeps its files.
 
 ### Safety model
 
@@ -277,7 +296,7 @@ bash update-lxc.sh --ctid <id> --snapshot --yes
 
 Or inside the CT: `/opt/learnbox/scripts/update.sh`. An update pulls, rebuilds,
 refreshes the Exercism import and restarts the service. It never touches
-`/home/learner` or `/var/lib/learnbox/progress.json`.
+`/home/learner` or the profile and progress files in `/var/lib/learnbox`.
 
 ### Scripts
 
@@ -333,7 +352,7 @@ Cloudflare Access, the tunnel and Caddy.
 |---|---|---|
 | `/opt/learnbox` | root | this repo, `bin/learnbox`, `web/dist` |
 | `/opt/learnbox-toolchain` | root | Go and Node, used only to build |
-| `/var/lib/learnbox` | root | `progress.json`, Exercism checkouts and import |
+| `/var/lib/learnbox` | root | `profiles.json`, `progress*.json` (one per profile), Exercism checkouts and import |
 | `/home/learner` | learner | workspaces, `.venv` (pytest), `.cargo` / `.rustup` |
 
 ### Monitoring

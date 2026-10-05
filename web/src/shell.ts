@@ -1,4 +1,5 @@
-import { api, type ServerStatus, type TracksResponse } from "./api";
+import { api, CHOOSE_PROFILE, type ServerStatus, type TracksResponse } from "./api";
+import { openProfilePicker } from "./components/profiles";
 import { clear, h, icon } from "./dom";
 import { icons } from "./icons";
 import { navigate } from "./router";
@@ -11,6 +12,7 @@ export class Shell {
   private statusEl: HTMLElement;
   private themeBtn: HTMLButtonElement;
   private themeIcon: HTMLElement;
+  private profileBtn: HTMLButtonElement;
   private tracks: TracksResponse | null = null;
 
   constructor(root: HTMLElement) {
@@ -50,9 +52,10 @@ export class Shell {
 
     this.statusEl = h("div", { class: "status" }, h("span", { class: "dot off" }), h("span", null, "CONNECTING"));
     this.themeBtn = h("button", { class: "tog", onclick: () => toggleTheme() });
+    this.profileBtn = h("button", { class: "tog prof", title: "Switch profile", onclick: () => void openProfilePicker(false) }, "Profile");
     this.content = h("main", { class: "content" });
 
-    const top = h("header", { class: "top" }, this.jumpBox(), this.statusEl, this.themeBtn);
+    const top = h("header", { class: "top" }, this.jumpBox(), this.statusEl, this.profileBtn, this.themeBtn);
     root.append(h("div", { class: "shell" }, rail, h("div", { class: "col" }, top, this.content)));
 
     const paintTheme = () => {
@@ -65,6 +68,21 @@ export class Shell {
 
     this.refreshStatus();
     setInterval(() => this.refreshStatus(), 30000);
+
+    window.addEventListener(CHOOSE_PROFILE, () => void openProfilePicker(true));
+    void this.refreshProfile();
+  }
+
+  /** Shows who is learning, and asks if nobody has been picked yet. */
+  private async refreshProfile() {
+    try {
+      const r = await api.profiles();
+      const me = r.profiles.find((p) => p.id === r.current);
+      this.profileBtn.textContent = me ? me.name : "Profile";
+      if (!me) void openProfilePicker(true);
+    } catch {
+      /* the status line already says the server is offline */
+    }
   }
 
   setActive(key: string) {
