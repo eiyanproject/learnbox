@@ -20,3 +20,7 @@ sections:
     xp: 100
     title: Advanced
     description: "A container the standard algorithms accept, concepts and constraints, compile-time computation, and an expression evaluator capstone."
+  - id: arena
+    title: Arena
+    arena: true
+    description: "Timed challenges against the clock. Rounds, then the boss."
