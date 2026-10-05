@@ -1,0 +1,175 @@
+- id: acc-stop-safe
+  en: "After a traffic accident, to prevent further accidents, stop the car in a safe place that does not obstruct traffic and switch off the engine."
+  ja: "交通事故が起きたときは、事故の続発を防ぐため、他の交通の妨げにならないような安全な場所に車を止め、エンジンを切る。"
+  answer: true
+  why: "The first of the driver's duties."
+  ref: "教則 第10章第1節1(1)"
+  exams: [hon]
+
+- id: acc-first-aid
+  en: "If someone is injured in an accident, give what first aid you can, such as stopping bleeding, until a doctor or ambulance arrives."
+  ja: "負傷者がいる場合は、医師や救急車が到着するまでの間、止血するなど、可能な応急救護処置を行う。"
+  answer: true
+  why: "Helping the injured is a duty, not a favour."
+  ref: "教則 第10章第1節1(2)"
+  exams: [hon]
+
+- id: acc-move-head-injury
+  en: "A person with a head injury should be moved to the roadside at once, even when there is no risk of a further accident."
+  ja: "頭部に傷を受けている負傷者は、後続事故のおそれがなくても、直ちに道路の端に移動させる。"
+  answer: false
+  why: "Don't move the injured needlessly, least of all with a head injury. Only when a further accident threatens are they moved quickly to safety."
+  ref: "教則 第10章第1節1(2)"
+  exams: [hon]
+
+- id: acc-move-if-danger
+  en: "If there is a danger of a further accident, an injured person should be rescued quickly and moved to a safe place."
+  ja: "後続事故のおそれがある場合は、早く負傷者を救出して安全な場所に移動させる。"
+  answer: true
+  why: "That is the exception to 'do not move the injured'."
+  ref: "教則 第10章第1節1(2)"
+  exams: [hon]
+
+- id: acc-report-police
+  en: "After an accident you must report to a police officer the place, the number and condition of the injured, and the damage."
+  ja: "交通事故が起きたときは、事故が発生した場所、負傷者数や負傷の程度、物の損壊の程度などを警察官に報告しなければならない。"
+  answer: true
+  why: "Then follow the officer's instructions."
+  ref: "教則 第10章第1節1(3)"
+  exams: [hon]
+
+- id: acc-settle-privately
+  en: "If an accident causes only slight injury and both sides agree to settle it between themselves, there is no need to report it to the police."
+  ja: "交通事故でけがが軽く、当事者同士で話がついたときは、警察官に届け出る必要はない。"
+  answer: false
+  why: "Even a minor injury must be reported to the police."
+  ref: "教則 第10章第1節1(3)・2"
+  exams: [hon]
+
+- id: acc-doctor-head
+  en: "After a strong blow to the head in an accident, see a doctor even if there is no visible injury."
+  ja: "外傷がなくても、頭部などに強い衝撃を受けたときは、医師の診断を受ける。"
+  answer: true
+  why: "After-effects can appear later."
+  ref: "教則 第10章第1節2"
+  exams: [hon]
+
+- id: acc-bus-driver
+  en: "A bus driver who is needed to keep driving on duty may have another crew member help the injured and report to the police, and drive on."
+  ja: "乗合バスの運転者は、業務のため引き続き運転する必要があるときは、他の乗務員に負傷者の救護や警察官への報告などを行わせて、運転を続けることができる。"
+  answer: true
+  why: "The same goes for emergency vehicles and vehicles carrying the injured or sick."
+  ref: "教則 第10章第1節1(3)"
+  exams: [hon]
+
+- id: acc-hit-and-run
+  en: "If you see a hit-and-run, help the injured and report the car's number, type and colour to the police."
+  ja: "ひき逃げを見かけたときは、負傷者を救護するとともに、その車のナンバー、車種、色などを警察官に届け出る。"
+  answer: true
+  why: "What is asked of someone at the scene."
+  ref: "教則 第10章第1節3(2)"
+  exams: [hon]
+
+- id: acc-smoking
+  en: "At the scene of an accident, do not smoke: fuel may have spilt or the load may be dangerous."
+  ja: "事故現場では、ガソリンが流れたり、積荷に危険物があったりするので、たばこを吸わないようにする。"
+  answer: true
+  why: "Nor throw away a match."
+  ref: "教則 第10章第1節3(3)"
+  exams: [hon]
+
+- id: brk-night-ordinary
+  en: "If you have to park a broken-down car on an ordinary road at night, switch on the hazard lights or set out a warning triangle so that others can tell it is stopped."
+  ja: "夜間やむを得ず一般道路で駐車する場合には、非常点滅表示灯などをつけるか、停止表示器材を置くなどしなければならない。"
+  answer: true
+  why: "By day, a triangle or an open boot lid does the same job."
+  ref: "教則 第10章第2節2"
+  exams: [hon]
+
+- id: brk-tow-5m
+  en: "When towing a broken-down car with a rope, keep the gap between the two cars within 5 metres."
+  ja: "故障車をロープでけん引するときは、けん引する車と故障車の間に5メートル以内の安全な間隔を保つ。"
+  answer: true
+  why: "5 m or less, with a strong rope tied securely."
+  ref: "教則 第10章第2節4"
+  exams: [hon]
+
+- id: brk-tow-cloth
+  en: "A tow rope must carry a red cloth at least 30 centimetres square."
+  ja: "故障車をけん引するロープには、30センチメートル平方以上の赤い布を付けなければならない。"
+  answer: false
+  why: "The cloth is white, 30 cm square or larger."
+  ref: "教則 第10章第2節4"
+  exams: [hon]
+
+- id: brk-expressway-shoulder
+  en: "If you have to park on an expressway because of a breakdown, park on the shoulder or side strip so as not to obstruct other vehicles."
+  ja: "高速道路でやむを得ず駐車する場合には、他の車の走行の妨害にならないよう路肩又は路側帯に車を駐車させなければならない。"
+  answer: true
+  why: "And set the warning triangle or light behind the car."
+  ref: "教則 第10章第2節1・3"
+  exams: [hon]
+
+- id: eq-early-warning
+  en: "On hearing an earthquake early warning while driving, brake hard and stop at once."
+  ja: "車を運転中に緊急地震速報が発表されたことを知ったときは、直ちに急ブレーキを掛けて停止する。"
+  answer: false
+  why: "Switch on the hazard lights to warn those around you, avoid hard braking, and slow down gently."
+  ref: "教則 第10章第3節2"
+  exams: [hon]
+
+- id: eq-stop-left
+  en: "If a major earthquake strikes while you are driving, stop on the left side of the road as safely as you can, avoiding sudden steering and braking."
+  ja: "車を運転中に大地震が発生したときは、急ハンドル、急ブレーキを避けるなど、できるだけ安全な方法により道路の左側に停止させる。"
+  answer: true
+  why: "Then listen to the car radio and act on the information."
+  ref: "教則 第10章第3節3(1)ア"
+  exams: [hon]
+
+- id: eq-key-lock
+  en: "If you must leave your car on the road to evacuate after a major earthquake, take the key with you and lock the doors against theft."
+  ja: "大地震が発生し、やむを得ず車を道路上に置いて避難するときは、盗難防止のためエンジンキーを抜き、ドアをロックする。"
+  answer: false
+  why: "Leave the key in the car and the doors unlocked, so the car can be moved. Engine off, windows shut."
+  ref: "教則 第10章第3節3(1)エ"
+  exams: [hon]
+
+- id: eq-leave-left-side
+  en: "A car left on the road during evacuation after a major earthquake is parked on the left side with the engine off and the windows closed."
+  ja: "大地震で車を道路上に置いて避難するときは、道路の左側に寄せて駐車し、エンジンを止め、窓を閉める。"
+  answer: true
+  why: "Better still, move it off the road if you can."
+  ref: "教則 第10章第3節3(1)エ"
+  exams: [hon]
+
+- id: eq-evacuate-by-car
+  en: "When a major earthquake strikes, evacuating by car is recommended because it is fastest."
+  ja: "大地震が発生したときは、最も早く避難できるので、車を使って避難するのがよい。"
+  answer: false
+  why: "Don't use a car to evacuate, except when it is unavoidable to escape a tsunami."
+  ref: "教則 第10章第3節3(2)ア"
+  exams: [hon]
+
+- id: eq-continue-driving
+  en: "If you carry on driving after a major earthquake, watch for damage to the road, signals that have stopped working, and obstacles."
+  ja: "大地震の後、引き続き車を運転するときは、道路の損壊、信号機の作動停止、道路上の障害物などに十分注意する。"
+  answer: true
+  why: "The road may no longer be what it was a minute ago."
+  ref: "教則 第10章第3節3(1)ウ"
+  exams: [hon]
+
+- id: dis-control-area
+  en: "When traffic is restricted over a whole area under the Disaster Countermeasures Act, a driver inside it must promptly move the car off the road."
+  ja: "災害対策基本法により区域を指定して交通の規制が行われたときは、区域内の一般車両の運転者は、速やかに車を道路外の場所へ移動させなければならない。"
+  answer: true
+  why: "If a stretch of road is closed instead, move to somewhere other than that stretch."
+  ref: "教則 第10章第3節4(1)"
+  exams: [hon]
+
+- id: dis-control-cannot-move
+  en: "Under disaster traffic control, if you cannot move the car promptly, park it as far as possible along the left edge of the road so that emergency vehicles can pass."
+  ja: "災害時の交通規制で速やかな移動が困難なときは、車をできるだけ道路の左端に沿って駐車するなど、緊急通行車両の通行の妨害とならない方法により駐車する。"
+  answer: true
+  why: "Keeping the way clear for emergency traffic is the point of the control."
+  ref: "教則 第10章第3節4(2)"
+  exams: [hon]

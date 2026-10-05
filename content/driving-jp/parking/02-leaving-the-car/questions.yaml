@@ -1,0 +1,159 @@
+- id: lv-meter-at-once
+  en: "In a zone with parking meters, start the meter as soon as you park."
+  ja: "パーキング・メーターがある時間制限駐車区間で駐車するときは、パーキング・メーターを直ちに作動させなければならない。"
+  answer: true
+  why: "The meter is started at once."
+  ref: "教則 第5章第8節4(1)"
+  exams: [hon]
+
+- id: lv-ticket-display
+  en: "A parking ticket should be kept in your wallet in case an officer asks for it."
+  ja: "パーキング・チケットは、警察官に求められたときに見せられるように、財布などに入れて携帯しておけばよい。"
+  answer: false
+  why: "It must be displayed at the front of the car - inside the windscreen - so it can be read from in front, the whole time you are parked."
+  ref: "教則 第5章第8節4(2)"
+  exams: [hon]
+
+- id: lv-meter-overstay
+  en: "In a time-limited parking zone, you may stay longer than the time on the sign if you pay again."
+  ja: "時間制限駐車区間では、手数料をもう一度支払えば、標識に表示されている時間を超えて駐車を続けてよい。"
+  answer: false
+  why: "You must not park beyond the time the sign shows, counted from when the meter sensed the car or the ticket was issued."
+  ref: "教則 第5章第8節4(3)"
+  exams: [hon]
+
+- id: lv-reserved-permit
+  en: "A parking space reserved for senior and other eligible drivers may be used only by a car displaying the permit issued for it."
+  ja: "高齢運転者等専用場所には、専用場所駐車標章を掲示した普通自動車でなければ、駐車や停車をすることができない。"
+  answer: true
+  why: "Without the permit from the Public Safety Commission, you may neither park nor stop there."
+  ref: "教則 第5章第8節5"
+  exams: [hon]
+
+- id: lv-reserved-pregnant
+  en: "A driver who is pregnant, or within 8 weeks of giving birth, can apply for the reserved-space parking permit."
+  ja: "妊娠中又は出産後8週間以内の運転者は、専用場所駐車標章の交付を申請することができる。"
+  answer: true
+  why: "Eligible: drivers 70 or over, those with a hearing or physical condition on their licence, and those pregnant or within 8 weeks after birth."
+  ref: "教則 第5章第8節5(3)"
+  exams: [hon]
+
+- id: lv-tow-cost
+  en: "If an illegally parked car is towed away, the cost of moving and storing it is paid by the police."
+  ja: "違法駐車の車がレッカー移動された場合、移動や保管に要した費用は警察が負担する。"
+  answer: false
+  why: "The driver, user or owner of the car bears those costs."
+  ref: "教則 第5章第8節6(3)"
+  exams: [hon]
+
+- id: lv-sticker-remove
+  en: "The user or driver of a car may remove a parking-violation confirmation sticker fixed to it, and should do so before driving."
+  ja: "放置車両確認標章を取り付けられた車の使用者や運転者は、これを取り除くことができ、運転するときは取り除くべきである。"
+  answer: true
+  why: "Nobody may tear or deface it, but the car's user, driver or keeper may take it off - and should before driving, for safety."
+  ref: "教則 第5章第8節7(2)(3)"
+  exams: [hon]
+
+- id: lv-handbrake
+  en: "When leaving the car, stop the engine and apply the handbrake."
+  ja: "車から離れるときは、エンジンを止め、ハンドブレーキを掛けなければならない。"
+  answer: true
+  why: "The first step against the car running away."
+  ref: "教則 第5章第8節10(1)ア"
+  exams: [hon]
+
+- id: lv-gear-uphill
+  en: "Leaving a manual car facing uphill, leave it in reverse gear."
+  ja: "マニュアル車を上り坂に止めて離れるときは、ギアをバックに入れておく。"
+  answer: false
+  why: "Facing uphill, leave it in low (first). Reverse is for the flat and for facing downhill."
+  ref: "教則 第5章第8節10(1)イ"
+  exams: [hon]
+
+- id: lv-gear-downhill
+  en: "Leaving a manual car on the flat or facing downhill, leave it in reverse gear."
+  ja: "マニュアル車を平地や下り坂に止めて離れるときは、ギアをバックに入れておく。"
+  answer: true
+  why: "Flat or downhill: reverse. Uphill: low."
+  ref: "教則 第5章第8節10(1)イ"
+  exams: [hon]
+
+- id: lv-at-park
+  en: "When leaving an automatic car, put the selector in P."
+  ja: "オートマチック車から離れるときは、チェンジレバーをPに入れておく。"
+  answer: true
+  why: "P for an automatic."
+  ref: "教則 第5章第8節10(1)イ"
+  exams: [hon]
+
+- id: lv-chock
+  en: "On a slope, also chock a wheel when you leave the car."
+  ja: "坂道で車から離れるときは、輪止めをしなければならない。"
+  answer: true
+  why: "On a slope, a wheel chock is part of the required measures."
+  ref: "教則 第5章第8節10(1)ウ"
+  exams: [hon]
+
+- id: lv-key-short-time
+  en: "If you are leaving the car for only a moment, you may leave the key in it with the engine off."
+  ja: "短時間だけ車から離れるときは、エンジンを止めていれば、キーを付けたままにしておいてよい。"
+  answer: false
+  why: "Against theft, stop the engine and take the key with you whenever you leave the car."
+  ref: "教則 第5章第8節10(2)ア"
+  exams: [hon]
+
+- id: at-start-check
+  en: "Before starting an automatic, check that the handbrake is on and the selector is in P, then press the brake pedal and start the engine."
+  ja: "オートマチック車のエンジンを始動するときは、ハンドブレーキが掛かっており、チェンジレバーがPの位置にあることを確認した上で、ブレーキペダルを踏んで始動する。"
+  answer: true
+  why: "That is the starting sequence."
+  ref: "教則 第5章第9節1(2)イ"
+  exams: [kari, hon]
+
+- id: at-select-without-brake
+  en: "In an automatic, you can move the selector from P to D without pressing the brake pedal, because the car will not move until you accelerate."
+  ja: "オートマチック車では、アクセルを踏むまで車は動かないので、ブレーキペダルを踏まずにチェンジレバーをPからDに入れてよい。"
+  answer: false
+  why: "Select a gear only with the brake pedal firmly down; otherwise the car can lurch forward or back."
+  ref: "教則 第5章第9節1(3)"
+  exams: [kari, hon]
+
+- id: at-creep
+  en: "In an automatic with a drive gear selected, the car can creep forward slowly even without the accelerator being pressed."
+  ja: "オートマチック車は、アクセルペダルを踏まなくても、自動車がゆっくり動き出すことがある。"
+  answer: true
+  why: "That is creep (クリープ現象): keep the brake pedal firmly down while stopped."
+  ref: "教則 第5章第9節1(4)"
+  exams: [kari, hon]
+
+- id: at-stop-neutral
+  en: "When you expect a long wait at a stop in an automatic, it is good to move the selector to N."
+  ja: "オートマチック車で停止時間が長くなりそうなときは、チェンジレバーをNに入れておくとよい。"
+  answer: true
+  why: "Brake pedal down, handbrake on, and N for a long stop."
+  ref: "教則 第5章第9節1(4)"
+  exams: [kari, hon]
+
+- id: at-aircon-revs
+  en: "Just after starting, or with the air conditioning on, an automatic's engine revs higher, so there is a risk of setting off suddenly."
+  ja: "オートマチック車は、エンジン始動直後やエアコン作動時は、エンジンの回転数が高くなり、急発進する危険がある。"
+  answer: true
+  why: "Hold the brake pedal especially firmly at those times."
+  ref: "教則 第5章第9節1(3)"
+  exams: [kari, hon]
+
+- id: at-park-before-stop
+  en: "When parking an automatic, moving the selector to P just before the car stops helps it stop."
+  ja: "オートマチック車を駐車するときは、完全に停止する少し前にチェンジレバーをPに入れると、止まりやすくなる。"
+  answer: false
+  why: "Never select P before the car has completely stopped. Brake pedal, handbrake, then P."
+  ref: "教則 第5章第9節1(5)"
+  exams: [kari, hon]
+
+- id: asv-limits
+  en: "Driver-assistance systems such as automatic emergency braking mean the driver no longer needs to watch the road closely."
+  ja: "衝突被害軽減ブレーキなどを備えた先進安全自動車（ASV）では、運転者は周囲の状況を絶えず確認する必要はない。"
+  answer: false
+  why: "They assist a driver who keeps watching and driving, and they have limits - above a certain speed, for instance, they may not work properly."
+  ref: "教則 第5章第9節2"
+  exams: [hon]

@@ -1,0 +1,99 @@
+- id: sc-night-rain
+  kind: scenario
+  en: "It is night and raining. You are driving at 40 km/h on a two-way road in a suburb. The headlights of an oncoming car are dazzling you."
+  ja: "夜間、雨の中を時速40キロメートルで郊外の対面通行の道路を走行しています。対向車のライトがまぶしく感じられます。"
+  ref: "教則 第6章第3節1(2)・2(3), 第4節1(2)"
+  exams: [hon]
+  statements:
+    - en: "A pedestrian near the centre of the road may be invisible between my lights and the oncoming car's, so I slow down."
+      ja: "自分の車と対向車のライトで道路の中央付近の歩行者が見えなくなることがあるので、速度を落とす。"
+      answer: true
+      why: "Between two sets of headlights a person can disappear."
+    - en: "I look straight at the oncoming headlights so that I can judge exactly where the car is."
+      ja: "対向車の位置を正確につかむため、対向車のライトを直視する。"
+      answer: false
+      why: "Shift your eyes a little to the left front so as not to be blinded."
+    - en: "The road is wet and the stopping distance is longer, so I drive more slowly than on a dry night and leave a longer gap."
+      ja: "路面がぬれて停止距離が長くなるので、晴れの日よりも速度を落とし、車間距離を十分にとる。"
+      answer: true
+      why: "Rain: lower speed, longer gap, nothing sudden."
+
+- id: sc-railway-crossing
+  kind: scenario
+  en: "You are approaching a railway crossing. The barriers are up and the alarm is silent. Beyond the crossing, traffic is queuing and the last car in the queue is stopped just past the tracks."
+  ja: "踏切に近づいています。遮断機は上がっており、警報機も鳴っていません。踏切の先は渋滞しており、最後尾の車が踏切を出たすぐのところで止まっています。"
+  ref: "教則 第6章第1節"
+  exams: [hon]
+  statements:
+    - en: "The barriers are up and the alarm is silent, so I drive across without stopping."
+      ja: "遮断機が上がっており警報機も鳴っていないので、一時停止をせずに通過する。"
+      answer: false
+      why: "Stop just before the crossing and check, barriers up or not. Only a green traffic signal for the crossing lets you go without stopping."
+    - en: "I stop just before the crossing and check left and right with my own eyes and ears."
+      ja: "踏切の直前で一時停止をし、自分の目と耳で左右の安全を確かめる。"
+      answer: true
+      why: "Look and listen."
+    - en: "There is no room for my car beyond the tracks, so I wait before the crossing until there is."
+      ja: "踏切の先に自分の車が入る余地がないので、余地ができるまで踏切の手前で待つ。"
+      answer: true
+      why: "Never enter a crossing when you could end up stopped on it."
+
+- id: sc-expressway-join
+  kind: scenario
+  en: "You are in the acceleration lane of an expressway, about to join the main carriageway. In the mirror a large truck is coming up in the left-hand lane of the main carriageway."
+  ja: "高速道路の加速車線から本線車道へ入ろうとしています。ミラーには、本線車道の左側の車両通行帯を大型トラックが近づいてくるのが見えます。"
+  ref: "教則 第7章第2節1"
+  exams: [hon]
+  statements:
+    - en: "I build up enough speed in the acceleration lane and join where I will not hinder the truck."
+      ja: "加速車線で十分に加速し、トラックの進行を妨げないように本線車道へ入る。"
+      answer: true
+      why: "Accelerate in the lane; do not hinder traffic on the main carriageway."
+    - en: "Traffic on the main carriageway has to make room for joining cars, so I move across at once."
+      ja: "本線車道の車は合流する車に進路を譲らなければならないので、すぐに本線車道へ入る。"
+      answer: false
+      why: "It is the joining car that must not get in the way."
+    - en: "I judge the truck's speed and distance in the mirror and by looking directly, then signal and join."
+      ja: "ミラーと目視でトラックの速度と距離を確かめ、合図をしてから本線車道へ入る。"
+      answer: true
+      why: "A truck closes faster than it seems; check properly before moving."
+
+- id: sc-expressway-rain
+  kind: scenario
+  en: "You are driving at 100 km/h on an expressway in the rain, about 50 metres behind a truck that is throwing up spray."
+  ja: "雨の高速道路を時速100キロメートルで走行しています。水しぶきを上げて走るトラックの約50メートル後方にいます。"
+  ref: "教則 第7章第2節2(4)・(5), 3(9)"
+  exams: [hon]
+  statements:
+    - en: "The gap is far too short for a wet road, so I ease off and drop back."
+      ja: "ぬれた路面では車間距離が短すぎるので、速度を落として車間距離を空ける。"
+      answer: true
+      why: "About 100 m is needed at 100 km/h on a dry road, and roughly double on a wet one with worn tyres."
+    - en: "At this speed in the rain the tyres may ride up on the water and stop gripping, so I reduce speed."
+      ja: "雨の中を高速で走るとタイヤが浮いてハンドルやブレーキが効かなくなることがあるので、速度を落とす。"
+      answer: true
+      why: "Hydroplaning."
+    - en: "To get out of the spray, I pull out sharply and accelerate hard past the truck."
+      ja: "水しぶきを避けるため、急ハンドルで進路を変え、強く加速してトラックを追い越す。"
+      answer: false
+      why: "Sudden steering at high speed on a wet road is how a skid starts."
+
+- id: sc-mountain-downhill
+  kind: scenario
+  en: "You are descending a long, winding mountain road behind a slow truck. You have been using the foot brake often. Ahead the road bends to the right and you cannot see round it."
+  ja: "長い下り坂の続く山道を、速度の遅いトラックに続いて走行しています。フットブレーキをひんぱんに使っています。前方は見通しの悪い右カーブです。"
+  ref: "教則 第6章第2節1(4)・(5)・(7), 2(1)・(3)・(5)"
+  exams: [hon]
+  statements:
+    - en: "I change to a low gear and let engine braking hold the speed, because overusing the foot brake can make it fail."
+      ja: "フットブレーキを使い過ぎると効かなくなることがあるので、低速ギアに入れてエンジンブレーキを活用する。"
+      answer: true
+      why: "Low gear on a long descent."
+    - en: "An oncoming car may come round the bend over the centre of the road, so I slow down before the bend and keep to the left."
+      ja: "対向車が道路の中央からはみ出してくるかもしれないので、カーブの手前で速度を落とし、左側に寄って走行する。"
+      answer: true
+      why: "Slow on the straight, stay on your side, expect the other car wide."
+    - en: "Following the truck spoils my view, so I overtake it just before the bend."
+      ja: "トラックの後ろでは見通しが悪いので、カーブの手前でトラックを追い越す。"
+      answer: false
+      why: "No overtaking on a bend or on a steep downhill - and you cannot see what is coming."

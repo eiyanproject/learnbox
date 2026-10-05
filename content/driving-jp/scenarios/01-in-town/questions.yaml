@@ -1,0 +1,159 @@
+- id: sc-bus-stop
+  kind: scenario
+  en: "You are driving at 30 km/h on a two-way road in town. Ahead on the left a route bus has stopped at a bus stop and passengers are getting off. An oncoming car is approaching in the other lane."
+  ja: "時速30キロメートルで市街地の対面通行の道路を走行しています。前方左側の停留所に路線バスが止まっており、乗客が降りています。対向車線には対向車が近づいています。"
+  ref: "教則 第5章第2節6(1)・第3節1(5)"
+  exams: [hon]
+  statements:
+    - en: "Someone who has got off may cross the road from in front of the bus, so I slow down and watch the front of the bus as I approach."
+      ja: "バスを降りた人がバスの前方から道路を横断するかもしれないので、速度を落とし、バスの前方に注意しながら近づく。"
+      answer: true
+      why: "The bus hides people crossing in front of it."
+    - en: "The oncoming car is still some way off, so I speed up and pass the bus on its right before the car arrives."
+      ja: "対向車はまだ離れているので、加速して、対向車が来る前にバスの右側を通過する。"
+      answer: false
+      why: "Speeding up past a hiding place, towards an oncoming car, leaves no room to stop."
+    - en: "The bus may signal and pull out, so I get ready to slow down and let it go."
+      ja: "バスが合図をして発進するかもしれないので、発進を妨げないよう、速度を落とせるようにしておく。"
+      answer: true
+      why: "A following car must not hinder a route bus that has signalled to leave its stop, unless that would take sudden braking or steering."
+
+- id: sc-crosswalk-stopped-car
+  kind: scenario
+  en: "You are driving at 40 km/h towards a crosswalk with no traffic signals. A van is stopped on the left just before the crosswalk. You cannot see anyone on the crosswalk."
+  ja: "時速40キロメートルで、信号機のない横断歩道に近づいています。横断歩道のすぐ手前の左側にワゴン車が止まっています。横断歩道に人の姿は見えません。"
+  ref: "教則 第5章第3節2(2)・(3)"
+  exams: [hon]
+  statements:
+    - en: "The van may be hiding a pedestrian, so I stop before moving out past the front of the van."
+      ja: "ワゴン車の陰に歩行者がいるかもしれないので、ワゴン車の前方に出る前に一時停止をする。"
+      answer: true
+      why: "Before passing a vehicle stopped at or just before a crosswalk and going ahead of it, you must stop."
+    - en: "Nobody can be seen on the crosswalk, so I go through at the same speed."
+      ja: "横断歩道に人の姿が見えないので、そのままの速度で通過する。"
+      answer: false
+      why: "Not being able to see is not the same as nobody being there. The van blocks the view."
+    - en: "As long as I slow to a crawl beside the van, I do not need to stop."
+      ja: "ワゴン車のそばを徐行して通れば、一時停止をする必要はない。"
+      answer: false
+      why: "Here the rule is a stop, not a crawl."
+
+- id: sc-right-turn-truck
+  kind: scenario
+  en: "You are waiting in the middle of an intersection to turn right on a green light. An oncoming truck is also waiting to turn right, and its driver flashes the headlights to let you go first."
+  ja: "青信号の交差点で右折のため待っています。対向車線では右折待ちのトラックが止まっており、運転者がパッシングをして先に行くよう合図しています。"
+  ref: "教則 第5章第7節1(1)・(5)"
+  exams: [hon]
+  statements:
+    - en: "A motorcycle may come straight through from behind the truck, so I move forward slowly, checking, until I can see past it."
+      ja: "トラックの陰から二輪車が直進してくるかもしれないので、安全を確かめながらゆっくり進む。"
+      answer: true
+      why: "Straight-on traffic has priority over a right turn, and a motorcycle is easily hidden by a truck."
+    - en: "The truck driver has given way, so I turn quickly before anything changes."
+      ja: "トラックの運転者が道を譲ってくれたので、状況が変わらないうちに素早く右折する。"
+      answer: false
+      why: "The truck driver can give up only the truck's own turn - not the right of way of whatever is beside or behind it."
+    - en: "Pedestrians may be on the crosswalk of the road I am turning into, so I check it as I turn."
+      ja: "右折する先の横断歩道を歩行者が横断しているかもしれないので、その安全を確かめながら右折する。"
+      answer: true
+      why: "A right turn has to give way to pedestrians on the crosswalk it crosses as well."
+
+- id: sc-left-turn-moped
+  kind: scenario
+  en: "You are about to turn left at an intersection on a green light. In the left mirror a moped is coming up along your left side. Pedestrians have started to cross on the crosswalk of the road you are turning into."
+  ja: "青信号の交差点で左折しようとしています。左のミラーには左後方から近づく原動機付自転車が見えます。左折する先の横断歩道では歩行者が横断を始めています。"
+  ref: "教則 第5章第7節1(1)・2(1), 第3節2(2)"
+  exams: [hon]
+  statements:
+    - en: "I keep as far to the left as I can beforehand and turn at a crawl, checking that I do not catch the moped on the inside."
+      ja: "あらかじめできるだけ道路の左端に寄り、原動機付自転車を巻き込まないよう確かめながら徐行して左折する。"
+      answer: true
+      why: "Close to the left edge, at a crawl, minding the inner wheel difference."
+    - en: "The moped is behind me, so it has to wait; I turn without checking for it."
+      ja: "原動機付自転車は後ろにいるので待つはずだから、確かめずに左折する。"
+      answer: false
+      why: "A rider on your left can be alongside by the time you turn. Check the mirror and look."
+    - en: "I stop before the crosswalk and let the pedestrians cross."
+      ja: "横断歩道の手前で一時停止をして、歩行者に道を譲る。"
+      answer: true
+      why: "Pedestrians crossing, or about to cross, on a crosswalk: stop and give way."
+
+- id: sc-children-ball
+  kind: scenario
+  en: "You are driving at 20 km/h along a residential street. Children are playing beside a parked car on the right, and a ball rolls out into the road in front of you."
+  ja: "時速20キロメートルで住宅街の道路を走行しています。右側に駐車している車のそばで子供たちが遊んでおり、ボールが前方の道路に転がってきました。"
+  ref: "教則 第5章第3節1(5)・4(1)"
+  exams: [hon]
+  statements:
+    - en: "A child may run out after the ball, so I brake and get ready to stop."
+      ja: "子供がボールを追って飛び出してくるかもしれないので、ブレーキを掛けて止まれるようにする。"
+      answer: true
+      why: "A child absorbed in something does not look. Stop or crawl."
+    - en: "I sound the horn to warn the children and carry on at the same speed."
+      ja: "警音器を鳴らして子供たちに知らせ、そのままの速度で進む。"
+      answer: false
+      why: "A horn does not stop a child, and the speed leaves no margin."
+    - en: "A second child may follow the first from behind the parked car, so I move on only when I can see it is safe."
+      ja: "駐車車両の陰から別の子供が続いて出てくるかもしれないので、安全を確かめてから進む。"
+      answer: true
+      why: "Where one child is, expect another."
+
+- id: sc-parked-car-oncoming
+  kind: scenario
+  en: "You are driving at 30 km/h on a narrow two-way road. A car is parked on your side ahead; to pass it you would have to move over the centre of the road. An oncoming car is approaching."
+  ja: "時速30キロメートルで幅の狭い対面通行の道路を走行しています。前方の自分の側に駐車車両があり、避けるには道路の中央を越えなければなりません。対向車が近づいています。"
+  ref: "教則 第5章第6節5(2)・第3節1(5)"
+  exams: [hon]
+  statements:
+    - en: "The obstacle is on my side, so I slow down or stop before it and let the oncoming car through."
+      ja: "障害物は自分の側にあるので、手前で減速か一時停止をして、対向車に道を譲る。"
+      answer: true
+      why: "With an obstacle in your path, stop or slow beforehand and give way to oncoming traffic."
+    - en: "I am closer to the parked car than the oncoming car is, so it should wait; I move out and pass."
+      ja: "自分のほうが駐車車両に近いので、対向車が待つべきであり、そのまま進路を変えて通過する。"
+      answer: false
+      why: "Being nearer does not give priority. The side with the obstacle gives way."
+    - en: "When I do pass, I leave room and go slowly, because a door may open or someone may step out from in front of the parked car."
+      ja: "駐車車両のそばを通るときは、急にドアが開いたり、車の陰から人が出てきたりするかもしれないので、間隔を空けて速度を落とす。"
+      answer: true
+      why: "Beside a stopped car, a door can open or a person can appear."
+
+- id: sc-elderly-cyclist
+  kind: scenario
+  en: "You are driving at 30 km/h on a road with no pavement. Ahead on the left an elderly person with a walking stick is walking, and just beyond them a cyclist is wobbling along. An oncoming car is approaching."
+  ja: "時速30キロメートルで歩道のない道路を走行しています。前方左側をつえを持った高齢者が歩いており、その先を自転車がふらつきながら走っています。対向車が近づいています。"
+  ref: "教則 第5章第3節1(1)・5"
+  exams: [hon]
+  statements:
+    - en: "With the oncoming car there I cannot leave a safe gap, so I slow down and wait behind until it has gone by."
+      ja: "対向車がいて安全な間隔を空けられないので、速度を落とし、対向車が通り過ぎるまで後ろで待つ。"
+      answer: true
+      why: "A safe gap or a crawl - and here there is no room for the gap."
+    - en: "For the elderly person with a stick I must stop or crawl so that they can go on safely."
+      ja: "つえを持った高齢者が安全に通れるように、一時停止か徐行をしなければならない。"
+      answer: true
+      why: "That is the rule for elderly people walking with a stick or a walking frame."
+    - en: "I sound the horn so that both move to the edge, then pass at the same speed."
+      ja: "警音器を鳴らして二人を道路の端に寄らせ、そのままの速度で通過する。"
+      answer: false
+      why: "The horn is not for clearing your way, and it may startle the cyclist into the road."
+
+- id: sc-ambulance
+  kind: scenario
+  en: "You are driving towards an intersection in town when an ambulance with its siren on comes up from behind."
+  ja: "市街地の交差点に近づいているとき、後方からサイレンを鳴らした救急車が近づいてきました。"
+  ref: "教則 第5章第2節5"
+  exams: [hon]
+  statements:
+    - en: "I keep clear of the intersection, pull over to the left side of the road, and stop."
+      ja: "交差点を避けて、道路の左側に寄って一時停止をする。"
+      answer: true
+      why: "Near an intersection: avoid it, keep left and stop."
+    - en: "I speed up to get through the intersection ahead of the ambulance and keep out of its way."
+      ja: "救急車の妨げにならないよう、加速して先に交差点を通過する。"
+      answer: false
+      why: "That puts you in the intersection exactly when the ambulance needs it."
+    - en: "On a one-way road where pulling to the left would get in the ambulance's way, I pull over to the right instead."
+      ja: "一方通行の道路で、左側に寄るとかえって救急車の妨げになるときは、右側に寄る。"
+      answer: true
+      why: "That is the one-way exception."

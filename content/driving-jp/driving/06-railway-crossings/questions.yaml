@@ -1,0 +1,111 @@
+- id: rx-stop-and-check
+  en: "Before a railway crossing, stop just in front of it and check left and right with your own eyes and ears."
+  ja: "踏切を通過しようとするときは、その直前で一時停止をし、自分の目と耳で左右の安全を確かめなければならない。"
+  answer: true
+  why: "Stop just before the crossing (or its stop line) and check for yourself - opening the window helps."
+  ref: "教則 第6章第1節1(1)"
+  exams: [kari, hon]
+
+- id: rx-barrier-up-no-stop
+  en: "If the barrier is up and the alarm is silent, you may cross without stopping."
+  ja: "遮断機が上がっていて警報機が鳴っていなければ、一時停止しないで踏切を通過してよい。"
+  answer: false
+  why: "You must stop and check at every crossing. Only a crossing with traffic lights lets you go through on its signal."
+  ref: "教則 第6章第1節1(1)"
+  exams: [kari, hon]
+
+- id: rx-signal-green
+  en: "At a railway crossing with traffic lights, you may go through on a green signal without stopping."
+  ja: "信号機のある踏切では、信号に従って通過することができ、青信号であれば一時停止する必要はない。"
+  answer: true
+  why: "Where a crossing has traffic lights, you follow the signal."
+  ref: "教則 第6章第1節1(1)"
+  exams: [kari, hon]
+
+- id: rx-follow-car-ahead
+  en: "When following the car ahead over a crossing, you need not stop if that car has already stopped and checked."
+  ja: "前の車に続いて踏切を通過するときは、前の車が一時停止して安全を確かめていれば、自分は一時停止しなくてよい。"
+  answer: false
+  why: "Even when following another car, you must stop and check for yourself."
+  ref: "教則 第6章第1節1(4)"
+  exams: [kari, hon]
+
+- id: rx-second-train
+  en: "Just after a train has passed, another may be approaching from the opposite direction, so keep checking."
+  ja: "一方からの列車が通過しても、その直後に反対方向からの列車が近づいて来ることがあるので、十分注意する。"
+  answer: true
+  why: "The Rules of the Road warn about exactly this."
+  ref: "教則 第6章第1節1(2)"
+  exams: [kari, hon]
+
+- id: rx-alarm-sounding
+  en: "If the alarm has started but the barrier has not yet begun to come down, you may hurry across."
+  ja: "警報機が鳴り始めても、遮断機がまだ降り始めていなければ、急いで踏切を通過してよい。"
+  answer: false
+  why: "Once the alarm is sounding you must not enter - as when the barrier is down or coming down."
+  ref: "教則 第6章第1節1(3)"
+  exams: [kari, hon]
+
+- id: rx-far-side-jammed
+  en: "If traffic beyond the crossing is so heavy that you could be left stopped on the tracks, you must not enter the crossing."
+  ja: "踏切の向こう側が混雑していて、そのまま進むと踏切内で動きがとれなくなるおそれがあるときは、踏切に入ってはならない。"
+  answer: true
+  why: "Never enter a crossing you may not be able to clear."
+  ref: "教則 第6章第1節1(4)"
+  exams: [kari, hon]
+
+- id: rx-change-gear
+  en: "On a railway crossing, change up a gear promptly so as to clear it quickly."
+  ja: "踏切内では、早く通過するために、すばやくギアを高速に入れ替えるのがよい。"
+  answer: false
+  why: "To avoid stalling, do not change gear on the crossing: go straight across in the low gear you set off in."
+  ref: "教則 第6章第1節1(5)"
+  exams: [kari, hon]
+
+- id: rx-keep-centre
+  en: "Crossing the tracks, keep slightly towards the centre so a wheel does not drop off the edge."
+  ja: "踏切内では、落輪しないようにやや中央寄りを通るのがよい。"
+  answer: true
+  why: "Slightly towards the centre, watching for pedestrians and oncoming cars."
+  ref: "教則 第6章第1節1(5)"
+  exams: [kari, hon]
+
+- id: rx-breakdown-button
+  en: "If your car stops on a crossing that has an alarm, use the push-button emergency device on the alarm post to warn the train."
+  ja: "警報機のある踏切で車が動かなくなったときは、警報機の柱などに取り付けられている押しボタン式の踏切支障報知装置を活用する。"
+  answer: true
+  why: "That is the first thing to use where a crossing has it."
+  ref: "教則 第6章第1節2(1)"
+  exams: [kari, hon]
+
+- id: rx-breakdown-flare
+  en: "Where a crossing has no emergency button, signal to the train as early as you can with the flare you carry."
+  ja: "踏切支障報知装置のない踏切で車が動かなくなったときは、携帯している発炎筒などを使い、できるだけ早く列車に合図をする。"
+  answer: true
+  why: "The flare is the signal where there is no emergency device."
+  ref: "教則 第6章第1節2(2)"
+  exams: [kari, hon]
+
+- id: rx-breakdown-push-first
+  en: "If the car stops on a crossing, your first job is to push it clear; warning the train can wait until the car is off the tracks."
+  ja: "踏切で車が動かなくなったときは、まず車を踏切の外に出すことを優先し、列車への連絡は車を動かした後でよい。"
+  answer: false
+  why: "Warn the train driver as fast as you possibly can, and get the car off the crossing - the warning is not left until afterwards."
+  ref: "教則 第6章第1節2"
+  exams: [kari, hon]
+
+- id: rx-starter-motor
+  en: "In a manual car stalled on a crossing, as an emergency measure you can put it in first or second gear and move it using the starter motor."
+  ja: "踏切内でエンストしたときは、非常手段として、ギアをローかセコンドに入れ、セルモーターを使って車を動かすこともできる。"
+  answer: true
+  why: "That works in a manual car. It does not work in an automatic, or in a car that needs the clutch pressed to start."
+  ref: "教則 第6章第5節(1)"
+  exams: [hon]
+
+- id: rx-starter-motor-at
+  en: "An automatic car stalled on a crossing can also be moved off using the starter motor."
+  ja: "オートマチック車が踏切内でエンストしたときも、セルモーターを使って車を動かすことができる。"
+  answer: false
+  why: "The starter-motor method cannot be used in an automatic."
+  ref: "教則 第6章第5節(1)"
+  exams: [hon]

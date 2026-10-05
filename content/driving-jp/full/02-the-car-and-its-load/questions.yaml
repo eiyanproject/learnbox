@@ -1,0 +1,279 @@
+- id: lic-ordinary-moped
+  en: "An ordinary licence also allows you to ride an ordinary moped."
+  ja: "普通免許を受けていれば、一般原動機付自転車を運転することができる。"
+  answer: true
+  why: "An ordinary licence covers ordinary cars, small special vehicles and ordinary mopeds."
+  ref: "教則 第4章第2節2"
+  exams: [kari, hon]
+
+- id: lic-ordinary-motorcycle
+  en: "An ordinary licence also allows you to ride an ordinary motorcycle."
+  ja: "普通免許を受けていれば、普通自動二輪車を運転することができる。"
+  answer: false
+  why: "Motorcycles need a motorcycle licence. The ordinary licence stops at mopeds and small special vehicles."
+  ref: "教則 第4章第2節2"
+  exams: [kari, hon]
+
+- id: lic-ordinary-small-special
+  en: "An ordinary licence allows you to drive a small special vehicle."
+  ja: "普通免許を受けていれば、小型特殊自動車を運転することができる。"
+  answer: true
+  why: "Small special vehicles are covered by every licence class except the moped licence."
+  ref: "教則 第4章第2節2"
+  exams: [kari, hon]
+
+- id: lic-suspended
+  en: "A driver whose licence is suspended may still drive during the suspension if they carry the licence."
+  ja: "免許の停止処分中であっても、免許証を携帯していれば運転することができる。"
+  answer: false
+  why: "Holding a licence is not enough: during a suspension you may not drive."
+  ref: "教則 第4章第2節"
+  exams: [kari, hon]
+
+- id: tow-750kg
+  en: "Towing a vehicle with a gross weight of 750 kilograms or less does not need a towing licence."
+  ja: "車の総重量が750キログラム以下の車をけん引するときは、けん引免許は必要ない。"
+  answer: true
+  why: "750 kg or less: no towing licence."
+  ref: "教則 第4章第2節3"
+  exams: [hon]
+
+- id: tow-broken-down
+  en: "Towing a broken-down car with a rope needs a towing licence."
+  ja: "故障車をロープでけん引するときは、けん引免許が必要である。"
+  answer: false
+  why: "Towing a broken-down car by rope or crane is the other exception."
+  ref: "教則 第4章第2節3"
+  exams: [hon]
+
+- id: chk-daily-private
+  en: "The user of a private passenger car carries out the daily check at suitable times, judged from the mileage and the car's condition."
+  ja: "自家用の普通乗用自動車の使用者は、走行距離や運行時の状態などから判断した適切な時期に、日常点検を行わなければならない。"
+  answer: true
+  why: "For a private car the timing is the user's judgement; it is still an obligation."
+  ref: "教則 第4章第3節1"
+  exams: [hon]
+
+- id: chk-daily-business
+  en: "A taxi must have its daily check once a day, before it is driven."
+  ja: "タクシーなどの事業用の自動車は、1日1回、運行する前に日常点検を行わなければならない。"
+  answer: true
+  why: "Business vehicles, large and medium private vehicles, goods vehicles and rental cars: once a day before driving."
+  ref: "教則 第4章第3節1"
+  exams: [hon]
+
+- id: chk-periodic-1y
+  en: "A private passenger car must have its periodic inspection every 6 months."
+  ja: "自家用の普通乗用自動車は、6か月ごとに定期点検を行わなければならない。"
+  answer: false
+  why: "Private passenger cars: every year. Six months is for private goods vehicles and rental passenger cars."
+  ref: "教則 第4章第3節3"
+  exams: [hon]
+
+- id: chk-periodic-business-3m
+  en: "A business vehicle must have its periodic inspection every 3 months."
+  ja: "事業用の自動車は、3か月ごとに定期点検を行わなければならない。"
+  answer: true
+  why: "Three months for business vehicles and private large or medium vehicles."
+  ref: "教則 第4章第3節3"
+  exams: [hon]
+
+- id: chk-defective
+  en: "A car whose brakes or silencer are not in working order must not be driven."
+  ja: "ブレーキやマフラーなどの装置が整備されておらず、交通の危険を生じさせたり、他人に迷惑を及ぼしたりするおそれのある車を運転してはならない。"
+  answer: true
+  why: "A car that is a danger, or a nuisance through gas or noise, is not to be driven."
+  ref: "教則 第4章第3節"
+  exams: [kari, hon]
+
+- id: chk-tyre-groove
+  en: "Tyre tread depth is checked with the wear indicator (slip sign)."
+  ja: "タイヤの溝の深さが十分であるかは、ウェア・インジケータ（スリップ・サイン）などにより点検する。"
+  answer: true
+  why: "That is the standard method in the daily check."
+  ref: "教則 第4章第3節1"
+  exams: [hon]
+
+- id: chk-flare
+  en: "A car must carry emergency signalling equipment such as a flare or a red lamp."
+  ja: "自動車には、発炎筒や赤ランプなどの非常信号用具を備えなければならない。"
+  answer: true
+  why: "Compulsory equipment; on an expressway carry a warning triangle or light as well."
+  ref: "教則 第4章第3節2"
+  exams: [hon]
+
+- id: load-capacity-driver
+  en: "A car's seating capacity is counted without the driver."
+  ja: "自動車の乗車定員には、運転者は含まれない。"
+  answer: false
+  why: "The capacity includes the driver."
+  ref: "教則 第4章第4節1"
+  exams: [hon]
+
+- id: load-children-3-2
+  en: "For seating capacity, three children under 12 count as two people."
+  ja: "乗車定員は、12歳未満の子供3人を大人2人として計算する。"
+  answer: true
+  why: "Under 12: three count as two."
+  ref: "教則 第4章第4節1"
+  exams: [hon]
+
+- id: load-capacity-5-example
+  en: "A car with a seating capacity of 5 may carry the driver, two other adults and three children under 12."
+  ja: "乗車定員5人の普通乗用自動車には、運転者のほかに大人2人と12歳未満の子供3人を乗せることができる。"
+  answer: true
+  why: "Driver 1 + 2 adults + three children counted as 2 = 5."
+  ref: "教則 第4章第4節1"
+  exams: [hon]
+
+- id: load-length-12
+  en: "On an ordinary car, the load may be up to 1.2 times the length of the car."
+  ja: "普通自動車の積載物の長さは、自動車の長さの1.2倍までである。"
+  answer: true
+  why: "Length x 1.2, and it may not stick out more than 1/10 of the car's length at the front or the back."
+  ref: "教則 第4章第4節1"
+  exams: [hon]
+
+- id: load-width-12
+  en: "On an ordinary car, the load must not be any wider than the car itself."
+  ja: "普通自動車の積載物の幅は、自動車の幅を超えてはならない。"
+  answer: false
+  why: "Width x 1.2 is allowed, with no more than 1/10 of the car's width sticking out on either side."
+  ref: "教則 第4章第4節1"
+  exams: [hon]
+
+- id: load-height-38
+  en: "On an ordinary car, the load may reach a height of 3.8 metres from the ground."
+  ja: "普通自動車の積載物の高さの制限は、地上から3.8メートルである。"
+  answer: true
+  why: "3.8 m, measured from the ground and not from the load bed."
+  ref: "教則 第4章第4節1"
+  exams: [hon]
+
+- id: load-height-kei
+  en: "A car with an engine of 660 cc or less may also carry a load up to 3.8 metres from the ground."
+  ja: "総排気量660cc以下の普通自動車も、積載物の高さの制限は地上から3.8メートルである。"
+  answer: false
+  why: "For three-wheelers and cars of 660 cc or less the limit is 2.5 m."
+  ref: "教則 第4章第4節1"
+  exams: [hon]
+
+- id: load-moped-30kg
+  en: "An ordinary moped may carry a load of up to 60 kilograms."
+  ja: "一般原動機付自転車の積載物の重量の制限は、60キログラムである。"
+  answer: false
+  why: "A moped: 30 kg. 60 kg is the limit for motorcycles."
+  ref: "教則 第4章第4節1"
+  exams: [hon]
+
+- id: load-guard
+  en: "The minimum number of people needed to watch a load may ride on the load bed of a goods vehicle."
+  ja: "荷物の見張りのため必要最小限度の人を、荷台に乗せることができる。"
+  answer: true
+  why: "That, and permission from the police chief at the starting point, are the exceptions to the no-riding-outside-seats rule."
+  ref: "教則 第4章第4節2"
+  exams: [hon]
+
+- id: load-hide-lights
+  en: "A load may cover the number plate if it is tied down securely."
+  ja: "荷物は、確実に固定していれば、ナンバープレートが見えなくなるように積んでもよい。"
+  answer: false
+  why: "A load must not make the indicators, number plate, brake lights or tail lights hard to see."
+  ref: "教則 第4章第4節3"
+  exams: [hon]
+
+- id: load-fallen
+  en: "If part of your load falls onto the road, you must take steps promptly, such as removing it."
+  ja: "荷物が転落、飛散してしまったときは、速やかにその物を除去するなど必要な措置を採らなければならない。"
+  answer: true
+  why: "And watch out for following traffic while you do it."
+  ref: "教則 第4章第4節4"
+  exams: [hon]
+
+- id: eye-speed
+  en: "As speed rises, eyesight gets worse, and nearby objects become especially hard to see."
+  ja: "高速になると視力が低下し、特に近くのものが見えにくくなる。"
+  answer: true
+  why: "One reason to look further ahead the faster you go."
+  ref: "教則 第4章第5節1(1)"
+  exams: [hon]
+
+- id: eye-fatigue
+  en: "The effects of tiredness show most strongly in the eyes."
+  ja: "疲労の影響は、目に最も強く現れる。"
+  answer: true
+  why: "As tiredness grows, things are overlooked or misread more often."
+  ref: "教則 第4章第5節1(2)"
+  exams: [hon]
+
+- id: eye-tunnel
+  en: "When brightness changes suddenly, eyesight drops sharply for a moment, so slow down before entering and when leaving a tunnel."
+  ja: "明るさが急に変わると視力は一時急激に低下するので、トンネルに入る前やトンネルから出るときは速度を落とす。"
+  answer: true
+  why: "The eyes need time to adjust."
+  ref: "教則 第4章第5節1(3)"
+  exams: [hon]
+
+- id: force-centrifugal-radius
+  en: "Centrifugal force is greater on a gentle bend with a large radius than on a tight one."
+  ja: "遠心力は、カーブの半径が大きいほど大きくなる。"
+  answer: false
+  why: "The smaller the radius - the tighter the bend - the greater the force."
+  ref: "教則 第4章第5節2(2)"
+  exams: [hon]
+
+- id: force-speed-double
+  en: "If speed doubles, braking distance and centrifugal force also double."
+  ja: "速度が2倍になると、制動距離や遠心力も2倍になる。"
+  answer: false
+  why: "They grow with the square of the speed: double the speed, four times the distance and force."
+  ref: "教則 第4章第5節2(4)"
+  exams: [hon]
+
+- id: force-impact-14m
+  en: "Hitting a concrete wall at 60 km/h gives about the same impact as falling from around 14 metres, about the fifth floor of a building."
+  ja: "時速60キロメートルでコンクリートの壁に激突した場合は、約14メートルの高さ（ビルの5階程度）から落ちた場合と同じ程度の衝撃力を受ける。"
+  answer: true
+  why: "The figure given in the Rules of the Road."
+  ref: "教則 第4章第5節2(3)"
+  exams: [hon]
+
+- id: force-wet-road
+  en: "On wet asphalt, friction is lower and the braking distance is longer."
+  ja: "ぬれたアスファルト路面では、摩擦抵抗が小さくなり、制動距離が長くなる。"
+  answer: true
+  why: "The tyres grip less."
+  ref: "教則 第4章第5節2(1)"
+  exams: [hon]
+
+- id: force-high-load
+  en: "A load stacked high makes the car more stable in a bend, because of its weight."
+  ja: "荷物を高く積むと、重みで車が安定し、カーブで倒れにくくなる。"
+  answer: false
+  why: "A high or lopsided centre of gravity makes the car tip more easily."
+  ref: "教則 第4章第5節2(2)"
+  exams: [hon]
+
+- id: force-brake-in-bend
+  en: "To take a bend safely, brake early on the straight before it and get the speed well down."
+  ja: "安全にカーブを回るためには、カーブに入る前の直線部分で早目にブレーキを掛け、十分速度を落としておく。"
+  answer: true
+  why: "Braking in the bend itself invites a skid."
+  ref: "教則 第4章第5節2(2)"
+  exams: [hon]
+
+- id: eco-idling
+  en: "Switching the engine off rather than idling while parked is part of eco-driving."
+  ja: "駐停車時のアイドリングストップは、エコドライブの一つである。"
+  answer: true
+  why: "Gentle starts, little acceleration, and no idling when parked or stopped."
+  ref: "教則 第4章第5節3(3)"
+  exams: [hon]
+
+- id: eco-smog
+  en: "When photochemical smog has been reported, it is better to hold back from using the car."
+  ja: "光化学スモッグが発生したときや発生するおそれのあるときは、自動車の使用を控える。"
+  answer: true
+  why: "Exhaust gas is one of its causes."
+  ref: "教則 第4章第5節3(2)"
+  exams: [hon]

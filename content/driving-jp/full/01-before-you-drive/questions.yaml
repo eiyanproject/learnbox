@@ -1,0 +1,199 @@
+- id: pre-licence-carry
+  en: "When driving, you must carry the driving licence that covers the vehicle you are driving."
+  ja: "自動車を運転するときは、その車種に応じた運転免許を受け、その免許証を携帯しなければならない。"
+  answer: true
+  why: "The right licence, and with you."
+  ref: "教則 第4章第2節"
+  exams: [kari, hon]
+
+- id: pre-licence-at-home
+  en: "On a short drive near home, you may leave your licence at home as long as you hold a valid one."
+  ja: "有効な運転免許を受けていれば、近所への短い運転のときは免許証を自宅に置いたままでもよい。"
+  answer: false
+  why: "The licence must be carried whenever you drive, however short the trip."
+  ref: "教則 第4章第2節"
+  exams: [kari, hon]
+
+- id: pre-documents-in-car
+  en: "A valid vehicle inspection certificate and compulsory insurance certificate must be kept in the car."
+  ja: "有効な自動車検査証と自動車損害賠償責任保険証明書（又は責任共済証明書）を自動車に備えていなければならない。"
+  answer: true
+  why: "Both are checked before driving and belong in the vehicle."
+  ref: "教則 第4章第1節1(1)イ"
+  exams: [kari, hon]
+
+- id: pre-licence-conditions
+  en: "If your licence carries the condition 'glasses required', you may drive without them on roads you know well."
+  ja: "免許証に「眼鏡等使用」の条件が記載されていても、慣れた道であれば眼鏡を掛けずに運転してよい。"
+  answer: false
+  why: "The conditions written on the licence must always be met."
+  ref: "教則 第4章第1節1(1)ウ"
+  exams: [kari, hon]
+
+- id: pre-beginner-mark
+  en: "A driver who has held an ordinary licence for less than a year must display the beginner mark on the front and back of the car."
+  ja: "普通免許を受けて1年を経過していない初心運転者が普通自動車を運転するときは、車の前と後ろに初心者マークを付けなければならない。"
+  answer: true
+  why: "For the first year the beginner mark is compulsory, front and back."
+  ref: "教則 第4章第1節1(1)オ"
+  exams: [kari, hon]
+
+- id: pre-beginner-mark-back-only
+  en: "The beginner mark only needs to be shown on the back of the car, where following drivers can see it."
+  ja: "初心者マークは、後続車から見える車の後ろだけに付ければよい。"
+  answer: false
+  why: "It goes on both the front and the back, in the set positions."
+  ref: "教則 第4章第1節1(1)オ"
+  exams: [kari, hon]
+
+- id: pre-senior-mark
+  en: "Drivers aged 70 or over are asked to display the senior driver's mark when driving an ordinary car."
+  ja: "70歳以上の高齢運転者が普通自動車を運転するときは、高齢者マークを付けるようにする。"
+  answer: true
+  why: "For drivers 70 and over the Rules of the Road say it should be shown."
+  ref: "教則 第4章第1節1(2)"
+  exams: [kari, hon]
+
+- id: pre-learner-supervisor
+  en: "A learner on a provisional licence must be accompanied by someone who has held the licence for that vehicle for at least 3 years, or who holds a second-class licence."
+  ja: "仮免許で練習のため運転するときは、その車を運転できる第一種免許を3年以上受けている者や第二種免許を受けている者などを横に乗せ、指導を受けなければならない。"
+  answer: true
+  why: "And the learner plates go on the front and back of the car."
+  ref: "教則 第4章第2節1(3)"
+  exams: [kari, hon]
+
+- id: pre-learner-alone
+  en: "With a provisional licence you may practise alone on quiet roads if the learner plates are displayed."
+  ja: "仮免許を受けていれば、仮免許練習標識を付けることで、交通の少ない道路を一人で練習してよい。"
+  answer: false
+  why: "A qualified person must sit beside the learner and instruct them, every time."
+  ref: "教則 第4章第2節1(3)"
+  exams: [kari, hon]
+
+- id: pre-alcohol
+  en: "You must not drive after drinking alcohol, even a small amount."
+  ja: "少量であっても、酒気を帯びているときは運転してはならない。"
+  answer: true
+  why: "Driving while under the influence of alcohol is forbidden outright."
+  ref: "教則 第4章第1節4"
+  exams: [kari, hon]
+
+- id: pre-alcohol-next-morning
+  en: "If you drank the night before, the alcohol is certain to have left your body by morning, so driving is fine."
+  ja: "酒を飲んだのが前夜であれば、翌朝には酒の影響は必ずなくなっているので、運転してよい。"
+  answer: false
+  why: "Drink from the night before can still be affecting you when you drive the next morning."
+  ref: "教則 第4章第1節4"
+  exams: [kari, hon]
+
+- id: pre-overwork
+  en: "When you are exhausted from overwork, you must not drive."
+  ja: "過労のときは、運転してはならない。"
+  answer: true
+  why: "Tiredness dulls attention and judgement; when exhausted, driving is forbidden."
+  ref: "教則 第4章第1節3"
+  exams: [kari, hon]
+
+- id: pre-medicine
+  en: "After taking a cold medicine that causes drowsiness, you should not drive."
+  ja: "睡眠作用のある風邪薬などを服用したときは、運転をしないようにする。"
+  answer: true
+  why: "Medicines that make you sleepy and driving do not mix."
+  ref: "教則 第4章第1節3"
+  exams: [kari, hon]
+
+- id: pre-rest-2h
+  en: "On a long drive, take a rest at least once every 2 hours."
+  ja: "長時間にわたって運転するときは、2時間に1回は休息をとるようにする。"
+  answer: true
+  why: "That is the guideline in the Rules of the Road."
+  ref: "教則 第4章第1節2"
+  exams: [kari, hon]
+
+- id: pre-rest-4h
+  en: "On a long drive, a rest once every 4 hours is enough."
+  ja: "長時間にわたって運転するときは、4時間に1回休息をとれば十分である。"
+  answer: false
+  why: "The guideline is once every 2 hours - and at once if you feel sleepy."
+  ref: "教則 第4章第1節2"
+  exams: [kari, hon]
+
+- id: belt-rear-seat
+  en: "The driver must have passengers in the rear seats wear seat belts too."
+  ja: "運転者は、後部座席の同乗者にもシートベルトを着用させなければならない。"
+  answer: true
+  why: "The driver wears one and must have front and rear passengers wear theirs."
+  ref: "教則 第5章第1節3(1)"
+  exams: [kari, hon]
+
+- id: belt-airbag
+  en: "In a car fitted with air bags, the driver does not need to wear a seat belt."
+  ja: "エアバッグを備えている自動車では、運転者はシートベルトを着用しなくてもよい。"
+  answer: false
+  why: "The belt rule applies just the same in a car with air bags."
+  ref: "教則 第5章第1節3(1)"
+  exams: [kari, hon]
+
+- id: belt-shoulder-neck
+  en: "A three-point belt should be worn so the shoulder belt does not cross the neck and is not slack."
+  ja: "三点式シートベルトの肩ベルトは、首にかからないようにし、たるまないように着用する。"
+  answer: true
+  why: "A slack shoulder belt, or one across the neck, is dangerous in a crash."
+  ref: "教則 第5章第1節3(2)ウ"
+  exams: [kari, hon]
+
+- id: belt-pregnant-lap-only
+  en: "A pregnant woman should wear only the lap belt, to keep pressure off the abdomen."
+  ja: "妊娠中は、腹部を圧迫しないように、腰ベルトのみを着用するのがよい。"
+  answer: false
+  why: "Wear both the lap and the shoulder belt, positioned so that no belt crosses the bump - and check with a doctor."
+  ref: "教則 第5章第1節3(3)"
+  exams: [hon]
+
+- id: belt-child-seat
+  en: "When carrying a small child in a car, you must use a child seat suited to the child's size."
+  ja: "幼児を自動車に乗せるときは、その幼児に発育の程度に応じた形状のチャイルドシートを使用させなければならない。"
+  answer: true
+  why: "A child seat is compulsory for small children, unless illness or the like makes it unavoidable."
+  ref: "教則 第5章第1節4(1)"
+  exams: [kari, hon]
+
+- id: phone-while-moving
+  en: "While the car is moving, you may look at a navigation screen for as long as you need, because it is part of the car."
+  ja: "カーナビゲーション装置は車の装備なので、走行中に画像を注視してもよい。"
+  answer: false
+  why: "While moving you must not use a mobile phone or stare at a navigation or other screen."
+  ref: "教則 第5章第1節2(4)"
+  exams: [kari, hon]
+
+- id: phone-silence
+  en: "Before driving, it is good to switch your phone off or to drive mode so that it does not ring."
+  ja: "携帯電話は、運転する前に電源を切ったり、ドライブモードに設定したりして、呼出音が鳴らないようにしておく。"
+  answer: true
+  why: "That is the advice, to keep it from distracting you."
+  ref: "教則 第5章第1節2(4)"
+  exams: [kari, hon]
+
+- id: door-left-side
+  en: "On a busy road, get in and out of the car on the left side."
+  ja: "交通量の多いところでは、左側のドアから乗り降りするのがよい。"
+  answer: true
+  why: "The left is the side away from passing traffic."
+  ref: "教則 第5章第1節1(1)"
+  exams: [kari, hon]
+
+- id: door-passenger-driver
+  en: "If a passenger opens a door carelessly and causes an accident, that is the passenger's concern and not the driver's."
+  ja: "同乗者が不用意にドアを開けて事故が起きても、それは同乗者の問題であり、運転者には関係がない。"
+  answer: false
+  why: "The driver must check behind and see that passengers do not open doors carelessly."
+  ref: "教則 第5章第1節1(2)"
+  exams: [kari, hon]
+
+- id: shoes-geta
+  en: "You must not drive wearing clogs or high heels."
+  ja: "げたやハイヒールなどを履いて運転してはならない。"
+  answer: true
+  why: "Footwear that hampers the pedals is forbidden."
+  ref: "教則 第5章第1節2(2)"
+  exams: [kari, hon]
