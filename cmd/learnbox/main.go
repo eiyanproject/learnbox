@@ -27,7 +27,7 @@ import (
 	"github.com/eiyanproject/learnbox/internal/content"
 	"github.com/eiyanproject/learnbox/internal/exercism"
 	"github.com/eiyanproject/learnbox/internal/httpapi"
-	"github.com/eiyanproject/learnbox/internal/progress"
+	"github.com/eiyanproject/learnbox/internal/profiles"
 	"github.com/eiyanproject/learnbox/internal/runner"
 	"github.com/eiyanproject/learnbox/internal/sandbox"
 	"github.com/eiyanproject/learnbox/internal/term"
@@ -203,9 +203,11 @@ func serve(log *slog.Logger, c cfg) error {
 	if err != nil {
 		return err
 	}
-	prog, err := progress.Open(path.Join(c.DataDir, "progress.json"))
+	// The first start creates the default profile around the existing
+	// progress.json, so a box upgraded from before profiles loses nothing.
+	profs, err := profiles.Open(c.DataDir)
 	if err != nil {
-		return fmt.Errorf("open progress: %w", err)
+		return fmt.Errorf("open profiles: %w", err)
 	}
 	terms := term.NewManager(sb, log)
 	terms.MaxSessions = c.MaxSessions
@@ -228,7 +230,7 @@ func serve(log *slog.Logger, c cfg) error {
 	api := httpapi.New(httpapi.Deps{
 		Version: version, Commit: commit, Log: log, Lib: lib,
 		Sandbox: sb, Workspace: ws, Runner: newRunner(sb, ws, c),
-		Progress: prog, Terms: terms, WebDir: c.WebDir, AllowedHosts: c.AllowedHosts,
+		Profiles: profs, Terms: terms, WebDir: c.WebDir, AllowedHosts: c.AllowedHosts,
 		MinFreeDisk: c.MinFreeDisk,
 		AccessHosts: c.AccessHosts, Access: verifier,
 	})

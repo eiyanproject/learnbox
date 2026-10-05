@@ -23,6 +23,7 @@ import (
 
 	"github.com/eiyanproject/learnbox/internal/access"
 	"github.com/eiyanproject/learnbox/internal/content"
+	"github.com/eiyanproject/learnbox/internal/profiles"
 	"github.com/eiyanproject/learnbox/internal/progress"
 	"github.com/eiyanproject/learnbox/internal/runner"
 	"github.com/eiyanproject/learnbox/internal/sandbox"
@@ -31,14 +32,15 @@ import (
 )
 
 type Deps struct {
-	Version      string
-	Commit       string
-	Log          *slog.Logger
-	Lib          *content.Library
-	Sandbox      *sandbox.Sandbox
-	Workspace    *workspace.Manager
-	Runner       *runner.Runner
-	Progress     *progress.Store
+	Version   string
+	Commit    string
+	Log       *slog.Logger
+	Lib       *content.Library
+	Sandbox   *sandbox.Sandbox
+	Workspace *workspace.Manager
+	Runner    *runner.Runner
+	// Profiles holds each profile's progress; requests pick one by cookie.
+	Profiles     *profiles.Registry
 	Terms        *term.Manager
 	WebDir       string   // built frontend; empty disables static serving
 	AllowedHosts []string // besides IP literals and localhost
@@ -126,6 +128,11 @@ func (s *Server) routes() {
 
 	m.HandleFunc("GET /api/status", s.status)
 	m.HandleFunc("GET /api/tracks", s.tracks)
+	m.HandleFunc("GET /api/profiles", s.listProfiles)
+	m.HandleFunc("POST /api/profiles", s.createProfile)
+	m.HandleFunc("POST /api/profiles/{id}/select", s.selectProfile)
+	m.HandleFunc("POST /api/profiles/{id}/rename", s.renameProfile)
+	m.HandleFunc("DELETE /api/profiles/{id}", s.deleteProfile)
 	const L = "/api/lessons/{lang}/{section}/{slug}"
 	m.HandleFunc("GET "+L, s.lesson)
 	m.HandleFunc("GET "+L+"/files/{name...}", s.readFile)
@@ -349,7 +356,11 @@ type lessonSummary struct {
 }
 
 func (s *Server) tracks(w http.ResponseWriter, r *http.Request) {
-	prog, last := s.Progress.All()
+	v := s.who(w, r)
+	if v == nil {
+		return
+	}
+	prog, last := v.Progress.All()
 	type sectionOut struct {
 		ID          string          `json:"id"`
 		Title       string          `json:"title"`
@@ -409,11 +420,15 @@ func (s *Server) lesson(w http.ResponseWriter, r *http.Request) {
 	if l == nil {
 		return
 	}
-	if _, err := s.Workspace.Ensure(l); err != nil {
+	v := s.who(w, r)
+	if v == nil {
+		return
+	}
+	if _, err := v.WS.Ensure(l); err != nil {
 		s.fail(w, "workspace", err)
 		return
 	}
-	e, err := s.Progress.Opened(l.ID())
+	e, err := v.Progress.Opened(l.ID())
 	if err != nil {
 		s.fail(w, "progress", err)
 		return
@@ -452,7 +467,7 @@ func (s *Server) lesson(w http.ResponseWriter, r *http.Request) {
 		"files": l.Files, "run": l.Run, "has_tests": l.HasTest,
 		"hints_total": len(l.Hints), "hints": renderHints(l.Hints, e.HintsRevealed),
 		"status": e.Status, "attempts": e.Attempts,
-		"workspace": "~/" + s.Workspace.Rel(l),
+		"workspace": "~/" + v.WS.Rel(l),
 		"prev":      link(prev), "next": link(next),
 	})
 }
@@ -462,7 +477,11 @@ func (s *Server) readFile(w http.ResponseWriter, r *http.Request) {
 	if l == nil {
 		return
 	}
-	f, err := s.Workspace.Read(l, r.PathValue("name"))
+	v := s.who(w, r)
+	if v == nil {
+		return
+	}
+	f, err := v.WS.Read(l, r.PathValue("name"))
 	if errors.Is(err, workspace.ErrNotAllowed) {
 		writeErr(w, http.StatusNotFound, err.Error())
 		return
@@ -479,6 +498,10 @@ func (s *Server) writeFile(w http.ResponseWriter, r *http.Request) {
 	if l == nil {
 		return
 	}
+	v := s.who(w, r)
+	if v == nil {
+		return
+	}
 	var body struct {
 		Content string `json:"content"`
 	}
@@ -486,7 +509,7 @@ func (s *Server) writeFile(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "body must be {\"content\": string}, max 2 MB")
 		return
 	}
-	mtime, err := s.Workspace.Write(l, r.PathValue("name"), body.Content)
+	mtime, err := v.WS.Write(l, r.PathValue("name"), body.Content)
 	if errors.Is(err, workspace.ErrNotAllowed) {
 		writeErr(w, http.StatusNotFound, err.Error())
 		return
@@ -503,7 +526,11 @@ func (s *Server) mtimes(w http.ResponseWriter, r *http.Request) {
 	if l == nil {
 		return
 	}
-	writeJSON(w, http.StatusOK, s.Workspace.MTimes(l))
+	v := s.who(w, r)
+	if v == nil {
+		return
+	}
+	writeJSON(w, http.StatusOK, v.WS.MTimes(l))
 }
 
 func (s *Server) check(w http.ResponseWriter, r *http.Request) {
@@ -516,7 +543,17 @@ func (s *Server) check(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusInsufficientStorage, err.Error())
 		return
 	}
-	res, err := s.Runner.Check(r.Context(), l)
+	v := s.who(w, r)
+	if v == nil {
+		return
+	}
+	if _, err := v.WS.Ensure(l); err != nil {
+		s.fail(w, "workspace", err)
+		return
+	}
+	// CheckDir, not Check: the runner's own workspace is the default
+	// profile's, and this may be someone else's copy of the lesson.
+	res, err := s.Runner.CheckDir(r.Context(), l, v.WS.Rel(l))
 	if errors.Is(err, runner.ErrNoTests) {
 		writeErr(w, http.StatusBadRequest, err.Error())
 		return
@@ -526,7 +563,7 @@ func (s *Server) check(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.checks.WithLabelValues(l.Lang, res.Status).Inc()
-	e, err := s.Progress.Update(l.ID(), func(e *progress.Entry) {
+	e, err := v.Progress.Update(l.ID(), func(e *progress.Entry) {
 		e.Attempts++
 		if res.Passed && e.Status != progress.Passed {
 			e.Status = progress.Passed
@@ -545,7 +582,11 @@ func (s *Server) hint(w http.ResponseWriter, r *http.Request) {
 	if l == nil {
 		return
 	}
-	e, err := s.Progress.Update(l.ID(), func(e *progress.Entry) {
+	v := s.who(w, r)
+	if v == nil {
+		return
+	}
+	e, err := v.Progress.Update(l.ID(), func(e *progress.Entry) {
 		if e.HintsRevealed < len(l.Hints) {
 			e.HintsRevealed++
 		}
@@ -562,8 +603,12 @@ func (s *Server) reset(w http.ResponseWriter, r *http.Request) {
 	if l == nil {
 		return
 	}
-	s.Terms.Kill("lesson/" + l.ID()) // its shell may be sitting in the old directory
-	backup, err := s.Workspace.Reset(l)
+	v := s.who(w, r)
+	if v == nil {
+		return
+	}
+	s.Terms.Kill(v.sessionKey("lesson/" + l.ID())) // its shell may be sitting in the old directory
+	backup, err := v.WS.Reset(l)
 	if err != nil {
 		s.fail(w, "workspace", err)
 		return

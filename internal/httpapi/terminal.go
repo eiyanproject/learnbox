@@ -20,7 +20,9 @@ import (
 // anything else starts in the learner's home.
 func (s *Server) terminal(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("session")
-	if !term.ValidID(id) {
+	// "profile/" is the server's own prefix for keeping profiles apart; a
+	// client asking for it directly would be reaching for another's shell.
+	if !term.ValidID(id) || strings.HasPrefix(id, "profile/") {
 		writeErr(w, http.StatusBadRequest, "bad session id")
 		return
 	}
@@ -31,14 +33,25 @@ func (s *Server) terminal(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusInsufficientStorage, err.Error())
 		return
 	}
+	v := s.who(w, r)
+	if v == nil {
+		return
+	}
 	cwd := s.Sandbox.Home
+	if rel := v.home(); rel != "" {
+		if err := v.WS.MkdirAll(rel); err != nil {
+			s.fail(w, "workspace", err)
+			return
+		}
+		cwd = filepath.Join(s.Sandbox.Home, filepath.FromSlash(rel))
+	}
 	if lessonID, ok := strings.CutPrefix(id, "lesson/"); ok {
 		l := s.Lib.Lesson(lessonID)
 		if l == nil {
 			writeErr(w, http.StatusNotFound, "no such lesson")
 			return
 		}
-		dir, err := s.Workspace.Ensure(l)
+		dir, err := v.WS.Ensure(l)
 		if err != nil {
 			s.fail(w, "workspace", err)
 			return
@@ -53,7 +66,7 @@ func (s *Server) terminal(w http.ResponseWriter, r *http.Request) {
 		s.errs.WithLabelValues("ws_accept").Inc()
 		return
 	}
-	if err := s.Terms.Attach(r.Context(), id, cwd, conn); err != nil {
+	if err := s.Terms.Attach(r.Context(), v.sessionKey(id), cwd, conn); err != nil {
 		s.errs.WithLabelValues("terminal").Inc()
 		s.Log.Error("terminal attach failed", "session", id, "err", err.Error())
 	}

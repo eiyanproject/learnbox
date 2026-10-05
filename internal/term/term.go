@@ -17,6 +17,7 @@ import (
 	"os/exec"
 	"regexp"
 	"sort"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -295,6 +296,18 @@ func (m *Manager) Kill(id string) {
 	defer m.mu.Unlock()
 	if s := m.sessions[id]; s != nil {
 		m.killLocked(s, "requested")
+	}
+}
+
+// KillPrefix ends every session whose id starts with prefix - all of one
+// profile's shells, when the profile is deleted.
+func (m *Manager) KillPrefix(prefix string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for id, s := range m.sessions {
+		if strings.HasPrefix(id, prefix) {
+			m.killLocked(s, "requested")
+		}
 	}
 }
 
