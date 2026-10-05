@@ -26,6 +26,7 @@ import (
 	"github.com/eiyanproject/learnbox/internal/access"
 	"github.com/eiyanproject/learnbox/internal/content"
 	"github.com/eiyanproject/learnbox/internal/exercism"
+	"github.com/eiyanproject/learnbox/internal/game"
 	"github.com/eiyanproject/learnbox/internal/httpapi"
 	"github.com/eiyanproject/learnbox/internal/profiles"
 	"github.com/eiyanproject/learnbox/internal/runner"
@@ -195,6 +196,9 @@ func serve(log *slog.Logger, c cfg) error {
 	if err != nil {
 		return fmt.Errorf("load content: %w", err)
 	}
+	if err := game.Validate(lib); err != nil {
+		return fmt.Errorf("load content: %w", err)
+	}
 	sb, err := sandbox.New(c.User, c.Limits, log)
 	if err != nil {
 		return err
@@ -302,6 +306,9 @@ func verify(log *slog.Logger, c cfg, args []string) error {
 	}
 	lib, err := content.Load(c.ContentRoots...)
 	if err != nil {
+		return err
+	}
+	if err := game.Validate(lib); err != nil {
 		return err
 	}
 	sb, err := sandbox.New(c.User, sandbox.Limits{}, slog.New(slog.DiscardHandler))

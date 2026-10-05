@@ -16,6 +16,7 @@ export const icons = {
   code: svg(`<path d="M8.5 8.5 4 12l4.5 3.5"/><path d="M15.5 8.5 20 12l-4.5 3.5"/><path d="M13.5 5l-3 14"/>`),
   left: svg(`<path d="M15 5l-7 7 7 7"/>`, 14, 2),
   right: svg(`<path d="M9 5l7 7-7 7"/>`, 14, 2),
+  swords: svg(`<path d="M4 4l10 10M4 4v3.5M4 4h3.5M11 17l3-3M12.5 18.5l-3-3M16 16l4 4"/><path d="M20 4 10 14M20 4v3.5M20 4h-3.5M13 17l-3-3M11.5 18.5l3-3M8 16l-4 4"/>`),
   medal: svg(`<circle cx="12" cy="14.5" r="5.5"/><path d="M8.5 9.5 6 3h4l2 4.5L14 3h4l-2.5 6.5"/>`),
   flag: svg(`<path d="M5 21V4"/><path d="M5 4.5h12l-2.5 4 2.5 4H5"/>`),
   star: svg(`<path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.8z"/>`),

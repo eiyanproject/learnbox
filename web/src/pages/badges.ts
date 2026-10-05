@@ -9,6 +9,7 @@ const families: { id: BadgeFamily; title: string; note: string }[] = [
   { id: "completion", title: "Completion", note: "Sections and tracks finished" },
   { id: "style", title: "Style", note: "How you got there" },
   { id: "calendar", title: "Calendar", note: "When you showed up" },
+  { id: "arena", title: "Arena", note: "Against the clock" },
   { id: "secret", title: "Secret", note: "Find out by doing" },
 ];
 

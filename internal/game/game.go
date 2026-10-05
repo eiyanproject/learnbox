@@ -217,6 +217,13 @@ type stats struct {
 	lucky13     bool
 	allHints    bool
 
+	arenaWins    int // challenges won at least once
+	bossWins     int
+	bossTotal    int
+	fastWin      bool // a win in under a quarter of the time
+	flawlessBoss bool // a boss beaten at the first attempt
+	comeback     bool // a win after three losses
+
 	streak    int // longest run of days with a pass
 	bestDay   int // most passes in one day
 	nightOwl  bool
@@ -265,9 +272,28 @@ func compute(lib *content.Library, snap progress.Snapshot, loc *time.Location) *
 			sec := &t.Sections[i]
 			if sec.Arena {
 				for _, l := range sec.Lessons {
-					if c := snap.Challenges[l.ID()]; c.Wins > 0 {
-						tx.XP += c.BestXP
-						mark(c.FirstWonAt)
+					boss := l.Challenge != nil && l.Challenge.Boss
+					if boss {
+						st.bossTotal++
+					}
+					c := snap.Challenges[l.ID()]
+					if c.Wins == 0 {
+						continue
+					}
+					tx.XP += c.BestXP
+					mark(c.FirstWonAt)
+					st.arenaWins++
+					if boss {
+						st.bossWins++
+						if c.LossesBeforeWin == 0 {
+							st.flawlessBoss = true
+						}
+					}
+					if c.BestFraction > 0 && c.BestFraction < 25 {
+						st.fastWin = true
+					}
+					if c.LossesBeforeWin >= 3 {
+						st.comeback = true
 					}
 				}
 				continue

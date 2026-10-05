@@ -45,7 +45,7 @@ into pieces that each work and ship by themselves:
    from a progress snapshot, unit-tested), a profile summary endpoint, rewards
    returned with each check, an XP/level indicator in the top bar, a badges
    page, toasts. No timed challenges yet.
-3. **Arena, one track** - challenge start/forfeit endpoints, the server-side
+3. **Arena, one track** - DONE on this branch. Challenge start/forfeit endpoints, the server-side
    clock, loss and cooldown, unlock rules, the Arena page and the countdown in
    the lesson view, with the Python ladder (rounds then a boss) as content.
 4. **Arena, every other track** - ladders for rust, c, cpp, java, csharp,
@@ -107,6 +107,21 @@ How it was going to be built - a starting point, not a decision:
 - Once XP exists, quiz topics and passed mock exams can award it.
 
 ## Done on this branch
+
+- **Milestone 3.** `internal/game/arena.go`: the rules as pure functions
+  (unlocking, start, win with speed bonus, loss and cooldown) with tests.
+  `internal/httpapi/arena.go`: `GET /api/arena`, `POST
+  .../challenge/start` and `.../challenge/forfeit`, and Check for an arena
+  lesson. An expired attempt is settled as a loss by whoever looks next;
+  nothing runs on a timer. A challenge's text, files and shell answer 409
+  `challenge_not_started` outside an attempt until it has been won. Frontend:
+  `/arena`, the countdown and Forfeit in the lesson view. Content: the Python
+  ladder (`content/python/arena`, three rounds and a boss), passing `learnbox
+  verify python/arena`. Eight arena badges. `learnbox_challenges_total`.
+  Calls made without asking: speed bonus up to +50%, linear in time left;
+  replaying a won challenge is allowed and keeps the best result; every
+  attempt starts from the starter files; arena lessons have no hints and are
+  left out of the track pages and lesson counts.
 
 - **Milestone 2.** `internal/game`: XP, hint cost, levels and badges as pure
   functions of the library and a progress snapshot, with tests. `GET

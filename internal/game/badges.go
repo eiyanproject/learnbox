@@ -12,6 +12,7 @@ const (
 	Completion = "completion"
 	Style      = "style"
 	Calendar   = "calendar"
+	ArenaFam   = "arena"
 	Secret     = "secret"
 )
 
@@ -117,6 +118,23 @@ var fixed = []def{
 		flag(func(st *stats) bool { return st.earlyBird })},
 	{"weekend", "Weekend Warrior", "Pass a lesson on both days of one weekend.", Calendar,
 		flag(func(st *stats) bool { return st.weekend })},
+
+	{"arena-first", "Into the Arena", "Win an arena challenge.", ArenaFam,
+		count(func(st *stats) int { return st.arenaWins }, 1)},
+	{"arena-10", "Gladiator", "Win 10 different arena challenges.", ArenaFam,
+		count(func(st *stats) int { return st.arenaWins }, 10)},
+	{"boss-1", "Boss Slayer", "Beat a boss.", ArenaFam,
+		count(func(st *stats) int { return st.bossWins }, 1)},
+	{"boss-3", "Boss Rush", "Beat the boss of 3 tracks.", ArenaFam,
+		count(func(st *stats) int { return st.bossWins }, 3)},
+	{"boss-all", "No Bosses Left", "Beat every boss there is.", ArenaFam,
+		func(st *stats) (int, int) { return st.bossWins, max(st.bossTotal, 1) }},
+	{"arena-fast", "Blink and You'll Miss It", "Win a challenge in under a quarter of its time.", ArenaFam,
+		flag(func(st *stats) bool { return st.fastWin })},
+	{"boss-flawless", "One Shot, One Boss", "Beat a boss at the first attempt.", ArenaFam,
+		flag(func(st *stats) bool { return st.flawlessBoss })},
+	{"arena-comeback", "Came Back Swinging", "Win a challenge you had lost 3 times.", ArenaFam,
+		flag(func(st *stats) bool { return st.comeback })},
 
 	{"lucky-13", "Lucky Thirteen", "Pass a lesson on exactly the thirteenth attempt.", Secret,
 		flag(func(st *stats) bool { return st.lucky13 })},

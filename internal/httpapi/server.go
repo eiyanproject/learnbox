@@ -68,7 +68,9 @@ type Server struct {
 	dur    *prometheus.HistogramVec
 	errs   *prometheus.CounterVec
 	checks *prometheus.CounterVec
-	reg    *prometheus.Registry
+	// challenges counts arena attempts by how they went.
+	challenges *prometheus.CounterVec
+	reg        *prometheus.Registry
 
 	toolsMu   sync.Mutex
 	tools     map[string]string
@@ -100,6 +102,7 @@ func New(d Deps) *Server {
 	s.dur = prometheus.NewHistogramVec(prometheus.HistogramOpts{Name: "learnbox_request_duration_seconds", Help: "HTTP request latency.", Buckets: prometheus.DefBuckets}, []string{"route"})
 	s.errs = prometheus.NewCounterVec(prometheus.CounterOpts{Name: "learnbox_errors_total", Help: "Errors by kind."}, []string{"kind"})
 	s.checks = prometheus.NewCounterVec(prometheus.CounterOpts{Name: "learnbox_checks_total", Help: "Exercise checks by result."}, []string{"lang", "status"})
+	s.challenges = prometheus.NewCounterVec(prometheus.CounterOpts{Name: "learnbox_challenges_total", Help: "Arena challenge attempts by outcome."}, []string{"lang", "outcome"})
 	sessions := prometheus.NewGaugeFunc(prometheus.GaugeOpts{Name: "learnbox_terminal_sessions", Help: "Live terminal sessions."}, func() float64 { return float64(d.Terms.Count()) })
 	// Both of these are things you want an alert on rather than a discovery:
 	// an uncapped learner cgroup looks fine until something spins, and a
@@ -119,7 +122,7 @@ func New(d Deps) *Server {
 			}
 			return float64(free)
 		})
-	s.reg.MustRegister(buildInfo, s.reqs, s.dur, s.errs, s.checks, sessions, cpuCapped, diskFree)
+	s.reg.MustRegister(buildInfo, s.reqs, s.dur, s.errs, s.checks, s.challenges, sessions, cpuCapped, diskFree)
 
 	s.routes()
 	return s
@@ -134,6 +137,7 @@ func (s *Server) routes() {
 	m.HandleFunc("GET /api/status", s.status)
 	m.HandleFunc("GET /api/tracks", s.tracks)
 	m.HandleFunc("GET /api/summary", s.summary)
+	m.HandleFunc("GET /api/arena", s.arena)
 	m.HandleFunc("GET /api/profiles", s.listProfiles)
 	m.HandleFunc("POST /api/profiles", s.createProfile)
 	m.HandleFunc("POST /api/profiles/{id}/select", s.selectProfile)
@@ -147,6 +151,8 @@ func (s *Server) routes() {
 	m.HandleFunc("POST "+L+"/check", s.check)
 	m.HandleFunc("POST "+L+"/hint", s.hint)
 	m.HandleFunc("POST "+L+"/reset", s.reset)
+	m.HandleFunc("POST "+L+"/challenge/start", s.startChallenge)
+	m.HandleFunc("POST "+L+"/challenge/forfeit", s.forfeitChallenge)
 	m.HandleFunc("GET /api/term", s.terminal)
 	m.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusNotFound, "no such endpoint")
@@ -386,6 +392,9 @@ func (s *Server) tracks(w http.ResponseWriter, r *http.Request) {
 	for _, t := range s.Lib.Tracks {
 		to := trackOut{Lang: t.Lang, Title: t.Title, Description: t.Description}
 		for _, sec := range t.Sections {
+			if sec.Arena {
+				continue // challenges are listed in the arena, not as lessons
+			}
 			so := sectionOut{ID: sec.ID, Title: sec.Title, Description: sec.Description, Lessons: []lessonSummary{}}
 			for _, l := range sec.Lessons {
 				e := prog[l.ID()]
@@ -430,14 +439,33 @@ func (s *Server) lesson(w http.ResponseWriter, r *http.Request) {
 	if v == nil {
 		return
 	}
+	if !s.challengeOpen(w, v, l) {
+		return
+	}
 	if _, err := v.WS.Ensure(l); err != nil {
 		s.fail(w, "workspace", err)
 		return
 	}
-	e, err := v.Progress.Opened(l.ID())
-	if err != nil {
-		s.fail(w, "progress", err)
-		return
+	var e progress.Entry
+	var challenge any
+	if l.Challenge != nil {
+		// A challenge keeps its own record, and is not somewhere to "resume".
+		now := time.Now()
+		cv, err := s.challengeView(v, l, now)
+		if err != nil {
+			s.fail(w, "progress", err)
+			return
+		}
+		challenge = map[string]any{"now": now.UTC(), "challenge": cv}
+		if cv.Wins > 0 {
+			e.Status = progress.Passed
+		}
+	} else {
+		var err error
+		if e, err = v.Progress.Opened(l.ID()); err != nil {
+			s.fail(w, "progress", err)
+			return
+		}
 	}
 	html, err := content.RenderMarkdown(l.Body)
 	if err != nil {
@@ -466,6 +494,9 @@ func (s *Server) lesson(w http.ResponseWriter, r *http.Request) {
 		return map[string]string{"id": x.ID(), "title": x.Title}
 	}
 	prev, next := s.Lib.Neighbours(l.ID())
+	if l.Challenge != nil {
+		prev, next = nil, nil // the way on from a challenge is the arena
+	}
 	xpFull, xpNow, hintCost := s.worth(l, e)
 	writeJSON(w, http.StatusOK, map[string]any{
 		"id": l.ID(), "lang": l.Lang, "section": l.Section, "slug": l.Slug,
@@ -475,6 +506,7 @@ func (s *Server) lesson(w http.ResponseWriter, r *http.Request) {
 		"hints_total": len(l.Hints), "hints": renderHints(l.Hints, e.HintsRevealed),
 		"status": e.Status, "attempts": e.Attempts,
 		"xp_full": xpFull, "xp": xpNow, "hint_cost": hintCost,
+		"arena":     challenge,
 		"workspace": "~/" + v.WS.Rel(l),
 		"prev":      link(prev), "next": link(next),
 	})
@@ -487,6 +519,9 @@ func (s *Server) readFile(w http.ResponseWriter, r *http.Request) {
 	}
 	v := s.who(w, r)
 	if v == nil {
+		return
+	}
+	if !s.challengeOpen(w, v, l) {
 		return
 	}
 	f, err := v.WS.Read(l, r.PathValue("name"))
@@ -508,6 +543,9 @@ func (s *Server) writeFile(w http.ResponseWriter, r *http.Request) {
 	}
 	v := s.who(w, r)
 	if v == nil {
+		return
+	}
+	if !s.challengeOpen(w, v, l) {
 		return
 	}
 	var body struct {
@@ -538,6 +576,9 @@ func (s *Server) mtimes(w http.ResponseWriter, r *http.Request) {
 	if v == nil {
 		return
 	}
+	if !s.challengeOpen(w, v, l) {
+		return
+	}
 	writeJSON(w, http.StatusOK, v.WS.MTimes(l))
 }
 
@@ -553,6 +594,14 @@ func (s *Server) check(w http.ResponseWriter, r *http.Request) {
 	}
 	v := s.who(w, r)
 	if v == nil {
+		return
+	}
+	if l.Challenge != nil {
+		received := time.Now()
+		if !s.challengeOpen(w, v, l) {
+			return
+		}
+		s.checkChallenge(w, r, v, l, received)
 		return
 	}
 	if _, err := v.WS.Ensure(l); err != nil {
@@ -610,6 +659,10 @@ func (s *Server) hint(w http.ResponseWriter, r *http.Request) {
 	if v == nil {
 		return
 	}
+	if l.Challenge != nil {
+		writeErr(w, http.StatusBadRequest, "arena challenges have no hints")
+		return
+	}
 	e, err := v.Progress.Update(l.ID(), func(e *progress.Entry) {
 		if e.HintsRevealed < len(l.Hints) {
 			e.HintsRevealed++
@@ -636,6 +689,9 @@ func (s *Server) reset(w http.ResponseWriter, r *http.Request) {
 	}
 	v := s.who(w, r)
 	if v == nil {
+		return
+	}
+	if !s.challengeOpen(w, v, l) {
 		return
 	}
 	s.Terms.Kill(v.sessionKey("lesson/" + l.ID())) // its shell may be sitting in the old directory

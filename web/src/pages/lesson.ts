@@ -3,7 +3,8 @@ import { CodeEditor } from "../components/editor";
 import { keyBar } from "../components/keybar";
 import { TermView } from "../components/terminal";
 import { clear, h, html, icon, toast } from "../dom";
-import { showReward } from "../game";
+import { showReward, xpText } from "../game";
+import { clock } from "./arena";
 import { icons } from "../icons";
 import { navigate, type Page } from "../router";
 import type { Shell } from "../shell";
@@ -23,7 +24,7 @@ interface FileState {
 }
 
 export async function lessonPage(shell: Shell, id: string): Promise<Page> {
-  shell.setActive(id.split("/")[0]);
+  shell.setActive(id.split("/")[1] === "arena" ? "arena" : id.split("/")[0]);
   shell.setFill(true);
   const root = shell.content;
   clear(root);
@@ -33,6 +34,11 @@ export async function lessonPage(shell: Shell, id: string): Promise<Page> {
   try {
     lesson = await api.lesson(id);
   } catch (e) {
+    if (e instanceof ApiError && e.code === "challenge_not_started") {
+      // A challenge opens from the arena, where its clock is started.
+      navigate("/arena", { replace: true });
+      return {};
+    }
     clear(root);
     root.append(
       h(
@@ -68,6 +74,10 @@ class LessonView {
   private termTab!: HTMLButtonElement;
   private resultsTab!: HTMLButtonElement;
   private checkBtn!: HTMLButtonElement;
+  // Arena only: the countdown, and how far this clock is from the server's.
+  private clockBadge = h("span", { class: "badge clock num", hidden: true });
+  private clockTimer = 0;
+  private skew = 0;
 
   constructor(
     private shell: Shell,
@@ -107,21 +117,30 @@ class LessonView {
         h(
           "span",
           { class: "lbl" },
-          h("a", { href: `/track/${l.lang}`, onclick: go(`/track/${l.lang}`), style: "color:inherit" }, l.track_title),
+          h("a", { href: l.arena ? "/arena" : `/track/${l.lang}`, onclick: go(l.arena ? "/arena" : `/track/${l.lang}`), style: "color:inherit" }, l.track_title),
           ` · ${l.section_title} · `,
           h("span", { style: "text-transform:none;letter-spacing:0.02em" }, l.workspace),
         ),
         h("h1", { title: l.title }, l.title),
       ),
       this.xpBadge,
+      this.clockBadge,
       this.statusBadge,
-      h(
-        "div",
-        { class: "nav-btns" },
-        h("button", { class: "btn ghost", disabled: !l.prev, title: l.prev?.title ?? "", onclick: () => l.prev && navigate(`/learn/${l.prev.id}`) }, icon(icons.left), "Prev"),
-        h("button", { class: "btn ghost", disabled: !l.next, title: l.next?.title ?? "", onclick: () => l.next && navigate(`/learn/${l.next.id}`) }, "Next", icon(icons.right)),
-      ),
+      l.arena
+        ? h(
+            "div",
+            { class: "nav-btns" },
+            h("button", { class: "btn ghost", onclick: () => navigate("/arena") }, icon(icons.left), "Arena"),
+            (this.forfeitBtn = h("button", { class: "btn ghost", title: "Give up this attempt", onclick: () => void this.forfeit() }, "Forfeit")),
+          )
+        : h(
+            "div",
+            { class: "nav-btns" },
+            h("button", { class: "btn ghost", disabled: !l.prev, title: l.prev?.title ?? "", onclick: () => l.prev && navigate(`/learn/${l.prev.id}`) }, icon(icons.left), "Prev"),
+            h("button", { class: "btn ghost", disabled: !l.next, title: l.next?.title ?? "", onclick: () => l.next && navigate(`/learn/${l.next.id}`) }, "Next", icon(icons.right)),
+          ),
     );
+    if (l.arena) this.startClock(l.arena.now);
 
     // ---- left: explanation
     const left = h(
@@ -327,13 +346,18 @@ class LessonView {
     try {
       const r = await api.check(this.lesson.id);
       if (this.disposed) return;
+      if (this.lesson.arena && r.challenge) {
+        this.lesson.arena = { now: r.now ?? this.lesson.arena.now, challenge: r.challenge };
+        if (r.outcome === "lost" || !r.result) return this.timeUp();
+        this.startClock(this.lesson.arena.now);
+      }
       const wasPassed = this.lesson.status === "passed";
       this.lesson.status = r.status;
       this.lesson.attempts = r.attempts;
       this.paintStatus();
       this.paintResults(r);
       showReward(r.reward);
-      if (r.result.passed && !wasPassed) {
+      if (r.result?.passed && !wasPassed) {
         this.shell.invalidateTracks();
         this.lesson.hint_cost = 0; // hints read from here on are free
         this.paintHints(this.lesson.hints);
@@ -382,6 +406,49 @@ class LessonView {
     }
   }
 
+  // ---------- arena ----------
+
+  private forfeitBtn: HTMLButtonElement | null = null;
+
+  /** Runs the countdown while an attempt is on; hides it otherwise. */
+  private startClock(serverNow: string) {
+    clearInterval(this.clockTimer);
+    const c = this.lesson.arena?.challenge;
+    const running = c?.state === "active" && !!c.deadline;
+    this.clockBadge.hidden = !running;
+    if (this.forfeitBtn) this.forfeitBtn.hidden = !running;
+    if (!c || !running) return;
+    this.skew = new Date(serverNow).getTime() - Date.now();
+    const total = c.minutes * 60_000;
+    const tick = () => {
+      const t = clock(c.deadline!, this.skew);
+      this.clockBadge.textContent = t.text;
+      this.clockBadge.classList.toggle("low", t.ms < total / 5);
+      if (t.ms === 0) this.timeUp();
+    };
+    tick();
+    this.clockTimer = window.setInterval(tick, 250);
+  }
+
+  private timeUp() {
+    clearInterval(this.clockTimer);
+    if (this.disposed) return;
+    const c = this.lesson.arena?.challenge;
+    toast(`Time is up: "${this.lesson.title}" is lost. You can try again after a ${c?.cooldown_minutes ?? 3} minute cooldown.`, true);
+    navigate("/arena");
+  }
+
+  private async forfeit() {
+    if (!confirm("Forfeit this attempt?\n\nIt counts as a loss, and the cooldown starts.")) return;
+    try {
+      await api.forfeitChallenge(this.lesson.id);
+      clearInterval(this.clockTimer);
+      navigate("/arena");
+    } catch (e) {
+      toast(`Forfeit failed: ${e instanceof Error ? e.message : e}`, true);
+    }
+  }
+
   // ---------- painting ----------
 
   private paintStatus() {
@@ -420,8 +487,9 @@ class LessonView {
 
   private paintResults(r: CheckResponse) {
     const res = r.result;
-    const tests = res.tests ?? [];
+    const tests = res?.tests ?? [];
     const failed = tests.filter((t) => !t.passed).length;
+    if (!res) return;
     const secs = (res.duration_ms / 1000).toFixed(1);
 
     let headline: string;
@@ -450,15 +518,20 @@ class LessonView {
 
     const next = this.lesson.next;
     clear(this.resultsBox);
+    if (r.outcome === "won") {
+      headline = `Challenge won · +${xpText(r.challenge_xp ?? 0)}`;
+    }
     this.resultsBox.append(
       h(
         "div",
         { class: "res-summary" },
         h("span", { class: `big ${cls}` }, headline),
         h("span", { class: "lbl" }, `${secs}s · attempt ${r.attempts}`),
-        res.passed && next
-          ? h("button", { class: "btn primary", style: "margin-left:auto", onclick: () => navigate(`/learn/${next.id}`) }, "Next lesson", icon(icons.right))
-          : null,
+        res.passed && this.lesson.arena
+          ? h("button", { class: "btn primary", style: "margin-left:auto", onclick: () => navigate("/arena") }, "Back to the arena", icon(icons.right))
+          : res.passed && next
+            ? h("button", { class: "btn primary", style: "margin-left:auto", onclick: () => navigate(`/learn/${next.id}`) }, "Next lesson", icon(icons.right))
+            : null,
       ),
       ...tests.map((t) =>
         h(
@@ -556,6 +629,7 @@ class LessonView {
   private dispose() {
     this.disposed = true;
     clearInterval(this.pollTimer);
+    clearInterval(this.clockTimer);
     void this.flush();
     this.term.dispose();
     this.editor?.destroy();

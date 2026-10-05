@@ -60,6 +60,8 @@ export interface Lesson {
   xp: number;
   /** XP the next hint would take off; 0 once passed or out of hints. */
   hint_cost: number;
+  /** Set for an arena challenge: how it stands, and the server's time. */
+  arena: { now: string; challenge: ChallengeView } | null;
   workspace: string;
   prev: LessonLink | null;
   next: LessonLink | null;
@@ -87,10 +89,54 @@ export interface CheckResult {
 }
 
 export interface CheckResponse {
-  result: CheckResult;
+  /** Null when an arena check arrives after the clock ran out. */
+  result: CheckResult | null;
   status: Status;
   attempts: number;
   reward: Reward;
+  // The rest is only there for an arena challenge.
+  now?: string;
+  challenge?: ChallengeView;
+  outcome?: "" | "won" | "lost";
+  challenge_xp?: number;
+}
+
+export type ChallengeState = "locked" | "ready" | "active" | "cooldown" | "won";
+
+export interface ChallengeView {
+  id: string;
+  title: string;
+  summary: string;
+  boss: boolean;
+  minutes: number;
+  cooldown_minutes: number;
+  xp: number;
+  max_xp: number;
+  state: ChallengeState;
+  locks: string[];
+  deadline?: string;
+  cooldown_until?: string;
+  wins: number;
+  losses: number;
+  best_seconds?: number;
+  best_xp?: number;
+}
+
+export interface Ladder {
+  lang: string;
+  title: string;
+  track_xp: number;
+  challenges: ChallengeView[];
+}
+
+export interface ArenaResponse {
+  now: string;
+  ladders: Ladder[];
+}
+
+export interface ChallengeResponse {
+  now: string;
+  challenge: ChallengeView;
 }
 
 export interface Standing {
@@ -102,7 +148,7 @@ export interface Standing {
   next_level: number;
 }
 
-export type BadgeFamily = "milestone" | "completion" | "style" | "calendar" | "secret";
+export type BadgeFamily = "milestone" | "completion" | "style" | "calendar" | "arena" | "secret";
 
 export interface Badge {
   id: string;
@@ -163,6 +209,8 @@ export class ApiError extends Error {
   constructor(
     public status: number,
     message: string,
+    /** The server's machine-readable reason, when it gave one. */
+    public code = "",
   ) {
     super(message);
   }
@@ -189,7 +237,7 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
       window.dispatchEvent(new CustomEvent(CHOOSE_PROFILE));
     }
     const msg = (data as { error?: string } | null)?.error ?? `${res.status} ${res.statusText}`;
-    throw new ApiError(res.status, msg);
+    throw new ApiError(res.status, msg, (data as { code?: string } | null)?.code ?? "");
   }
   return data as T;
 }
@@ -201,6 +249,9 @@ export const api = {
   status: () => call<ServerStatus>("GET", "/api/status"),
   tracks: () => call<TracksResponse>("GET", "/api/tracks"),
   summary: () => call<Summary>("GET", "/api/summary"),
+  arena: () => call<ArenaResponse>("GET", "/api/arena"),
+  startChallenge: (id: string) => call<ChallengeResponse>("POST", `${L(id)}/challenge/start`),
+  forfeitChallenge: (id: string) => call<ChallengeResponse>("POST", `${L(id)}/challenge/forfeit`),
   lesson: (id: string) => call<Lesson>("GET", L(id)),
   readFile: (id: string, name: string) => call<FileBody>("GET", F(id, name)),
   writeFile: (id: string, name: string, content: string) => call<{ mtime: number }>("PUT", F(id, name), { content }),

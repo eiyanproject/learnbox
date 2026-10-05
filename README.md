@@ -263,6 +263,27 @@ Everything is computed from the progress file (`internal/game`, a pure
 package), so lessons passed before this existed count in full. Calendar
 badges count days in `LEARNBOX_TZ`.
 
+### The arena
+
+The crossed swords in the rail open the arena: each track's ladder of timed
+challenges, a few rounds and then a boss.
+
+- **Starting** a challenge starts its clock and resets its files to the
+  starter. The clock is the server's, so reloading the page, or closing it,
+  does not stop it. The task itself is not shown until then.
+- **Winning** is passing every hidden test before the deadline. A win pays the
+  challenge's XP plus up to half as much again for speed, in proportion to
+  the time left. Check as often as you like; a failed check costs nothing but
+  time.
+- **Losing** is running out of time, or forfeiting. A loss costs no XP but
+  starts a short cooldown (3 minutes, 5 for a boss) before the next attempt.
+- **Unlocking**: a challenge opens when the one before it is won and its own
+  requirements are met - XP earned in that track, and sometimes a badge. The
+  arena lists what is still missing.
+- A challenge you have won stays open to read, and you can go again for a
+  better time; only a result that pays more than your best counts.
+- There are no hints in the arena.
+
 ### Safety model
 
 One trusted user on a private network, so the goal is protecting the machine
@@ -432,6 +453,35 @@ hints:
 A section in `track.yaml` takes `xp:` (what each of its lessons pays, default
 100) and `beginner: true` on the track's entry-level section; the track itself
 takes `badge:`, the name of the badge for finishing every guided lesson in it.
+
+#### Writing a challenge
+
+A track's ladder is a section with `arena: true` in `track.yaml`. Its lessons
+are ordinary lesson directories - `lesson.md`, `starter/`, `tests/`,
+`solution/` - with a `challenge:` block and no hints, run in `order`:
+
+```yaml
+---
+title: "Round 2: Squeeze"
+summary: One line for the arena list. Shown before the clock starts.
+order: 2
+files: [squeeze.py]
+challenge:
+  minutes: 15            # required
+  xp: 200                # default 150, or 500 for a boss
+  cooldown_minutes: 3    # default 3, or 5 for a boss
+  boss: false
+  requires:              # on top of "win the one before"
+    xp: 600              # XP earned in this track
+    badges: [beginner-1] # badge ids, see internal/game/badges.go
+---
+```
+
+The summary is visible to everyone; the body, files and shell only once an
+attempt has started. Write the task so it can be read in a minute, say
+exactly what is returned, and give examples: the clock is the difficulty, not
+the wording. The service refuses to start if a challenge asks for a badge
+that does not exist.
 
 Check that every reference solution passes (inside the CT):
 

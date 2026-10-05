@@ -51,6 +51,9 @@ func (s *Server) terminal(w http.ResponseWriter, r *http.Request) {
 			writeErr(w, http.StatusNotFound, "no such lesson")
 			return
 		}
+		if !s.challengeOpen(w, v, l) {
+			return
+		}
 		dir, err := v.WS.Ensure(l)
 		if err != nil {
 			s.fail(w, "workspace", err)

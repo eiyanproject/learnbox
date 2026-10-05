@@ -47,6 +47,7 @@ export class Shell {
       nav("python", "Python", "/track/python", "py"),
       nav("rust", "Rust", "/track/rust", "rs"),
       nav("terminal", "Terminal", "/terminal", icon(icons.terminal)),
+      nav("arena", "Arena", "/arena", icon(icons.swords)),
       nav("badges", "Badges", "/badges", icon(icons.medal)),
       h("div", { class: "spacer" }),
       railTheme,

@@ -28,6 +28,10 @@ sections:
     xp: 100
     title: Exam - Review
     description: Cumulative exams over the Beginner section. Topics arrive mixed and unlabelled, the way they do when you actually need them.
+  - id: arena
+    title: Arena
+    arena: true
+    description: Timed challenges against the clock. Three rounds, then the boss.
   - id: practice
     title: Practice
     description: Exercises from the Exercism Python track (MIT). Same editor, same tests, less hand-holding.

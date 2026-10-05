@@ -1890,3 +1890,102 @@ a.secbar:hover .lbl {
 .badge.xp[hidden] {
   display: none;
 }
+
+/* ---------- arena ---------- */
+
+.ch {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.ch:last-child {
+  border-bottom: 0;
+}
+
+.ch .idx {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  color: var(--dim);
+}
+
+.ch.boss {
+  background: var(--surf2);
+}
+
+.ch.boss .idx {
+  color: var(--mg);
+  letter-spacing: 0.08em;
+}
+
+.ch.locked .rt,
+.ch.locked .rd {
+  color: var(--dim);
+}
+
+.ch-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ch-body .rt,
+.ch-body .rd {
+  margin: 0;
+  white-space: normal;
+}
+
+.ch-locks {
+  margin: 4px 0 0;
+  padding-left: 16px;
+  font-size: 12px;
+  color: var(--am);
+}
+
+.ch-act {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ch-clock {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.badge.clock {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--cy);
+  border-color: var(--cyl);
+  background: var(--cyw);
+}
+
+.badge.clock.low {
+  color: var(--am);
+  border-color: var(--aml);
+  background: var(--amw);
+}
+
+.badge.clock[hidden] {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .ch {
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+
+  .ch > .badge {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .ch-act {
+    grid-column: 2;
+  }
+}

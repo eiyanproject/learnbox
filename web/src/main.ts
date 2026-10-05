@@ -8,6 +8,7 @@ import "@fontsource/ibm-plex-mono/600.css";
 import "./styles/tokens.css";
 import "./styles/app.css";
 
+import { arenaPage } from "./pages/arena";
 import { badgesPage } from "./pages/badges";
 import { homePage } from "./pages/home";
 import { lessonPage } from "./pages/lesson";
@@ -23,5 +24,6 @@ route("/track/:lang", (p) => trackPage(shell, p.lang));
 route("/learn/:lang/:section/:slug", (p) => lessonPage(shell, `${p.lang}/${p.section}/${p.slug}`));
 route("/terminal", () => terminalPage(shell));
 route("/badges", () => badgesPage(shell));
+route("/arena", () => arenaPage(shell));
 
 start();

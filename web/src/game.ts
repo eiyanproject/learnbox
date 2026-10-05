@@ -51,7 +51,7 @@ function card(cls: string, glyph: HTMLElement, title: string, text: string, ms: 
 }
 
 export function badgeGlyph(b: Pick<Badge, "family">): HTMLElement {
-  return icon(b.family === "secret" ? icons.key : b.family === "calendar" ? icons.flame : b.family === "style" ? icons.star : b.family === "completion" ? icons.flag : icons.medal);
+  return icon(b.family === "secret" ? icons.key : b.family === "arena" ? icons.swords : b.family === "calendar" ? icons.flame : b.family === "style" ? icons.star : b.family === "completion" ? icons.flag : icons.medal);
 }
 
 /** Announces what a check earned and moves the top bar along. */
