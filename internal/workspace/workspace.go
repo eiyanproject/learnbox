@@ -1,5 +1,6 @@
 // Package workspace manages the learner's editable copy of each lesson under
-// ~/learn/<lang>/<section>/<slug>.
+// ~/learn/<lang>/<section>/<slug>, or ~/profiles/<id>/learn/... for a profile
+// other than the first (see For).
 //
 // The service runs as root but everything here lives in a directory the
 // learner owns, so a symlink planted there (say ~/learn/python -> /etc) must
@@ -29,6 +30,7 @@ var ErrNotAllowed = errors.New("file is not part of this lesson")
 type Manager struct {
 	home *os.Root
 	sb   *sandbox.Sandbox
+	base string // where lesson workspaces live, relative to the learner's home
 }
 
 func New(sb *sandbox.Sandbox) (*Manager, error) {
@@ -36,12 +38,21 @@ func New(sb *sandbox.Sandbox) (*Manager, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Manager{home: home, sb: sb}, nil
+	return &Manager{home: home, sb: sb, base: "learn"}, nil
+}
+
+// For returns a view of the same home whose lesson workspaces live under base
+// instead of "learn", so each profile edits its own copy of every lesson.
+// base is chosen by the server, never taken from a request.
+func (m *Manager) For(base string) *Manager {
+	c := *m
+	c.base = base
+	return &c
 }
 
 // Rel is the workspace path relative to the learner's home.
 func (m *Manager) Rel(l *content.Lesson) string {
-	return path.Join("learn", l.Lang, l.Section, l.Slug)
+	return path.Join(m.base, l.Lang, l.Section, l.Slug)
 }
 
 // Dir is the absolute workspace path, for use as a process working directory.
@@ -77,10 +88,11 @@ func (m *Manager) Ensure(l *content.Lesson) (string, error) {
 func (m *Manager) Reset(l *content.Lesson) (backup string, err error) {
 	rel := m.Rel(l)
 	if _, err := m.home.Stat(rel); err == nil {
-		if err := m.MkdirAll("learn/.reset-backups"); err != nil {
+		backups := path.Join(m.base, ".reset-backups")
+		if err := m.MkdirAll(backups); err != nil {
 			return "", err
 		}
-		backup = path.Join("learn/.reset-backups",
+		backup = path.Join(backups,
 			fmt.Sprintf("%s-%s-%s-%s", l.Lang, l.Section, l.Slug, time.Now().Format("20060102-150405")))
 		if err := m.home.Rename(rel, backup); err != nil {
 			return "", err

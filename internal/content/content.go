@@ -32,10 +32,31 @@ type Track struct {
 }
 
 type Section struct {
-	ID          string    `yaml:"id" json:"id"`
-	Title       string    `yaml:"title" json:"title"`
-	Description string    `yaml:"description" json:"description"`
-	Lessons     []*Lesson `yaml:"-" json:"lessons"`
+	ID          string `yaml:"id" json:"id"`
+	Title       string `yaml:"title" json:"title"`
+	Description string `yaml:"description" json:"description"`
+	// Arena marks the track's challenge ladder. Its lessons are timed
+	// challenges, listed on the Arena page rather than in the track.
+	Arena   bool      `yaml:"arena" json:"arena,omitempty"`
+	Lessons []*Lesson `yaml:"-" json:"lessons"`
+}
+
+// Challenge is the front matter of an arena lesson.
+type Challenge struct {
+	Boss bool `yaml:"boss" json:"boss"`
+	// Minutes is the time limit; CooldownMinutes the wait after a loss.
+	Minutes         int `yaml:"minutes" json:"minutes"`
+	CooldownMinutes int `yaml:"cooldown_minutes" json:"cooldown_minutes"`
+	// XP is the reward for a win before the speed bonus.
+	XP       int      `yaml:"xp" json:"xp"`
+	Requires Requires `yaml:"requires" json:"requires"`
+}
+
+// Requires gates a challenge. Every earlier challenge in the same ladder must
+// also have been won; that rule is implied, not written here.
+type Requires struct {
+	XP     int      `yaml:"xp" json:"xp,omitempty"`         // XP earned in this track
+	Badges []string `yaml:"badges" json:"badges,omitempty"` // badge ids
 }
 
 type Lesson struct {
@@ -51,6 +72,8 @@ type Lesson struct {
 	Run        string   `yaml:"run" json:"run,omitempty"`
 	Hints      []string `yaml:"hints" json:"-"`
 	Source     string   `yaml:"source" json:"source,omitempty"` // attribution, Markdown
+	// Challenge is set for lessons in an arena section.
+	Challenge *Challenge `yaml:"challenge" json:"challenge,omitempty"`
 
 	Dir  string `yaml:"-" json:"-"`
 	Body string `yaml:"-" json:"-"` // Markdown
@@ -88,6 +111,11 @@ func (lib *Library) Neighbours(id string) (prev, next *Lesson) {
 		}
 		var all []*Lesson
 		for _, s := range t.Sections {
+			// Arena challenges are not a next lesson to wander into: they
+			// are entered from the Arena, with a clock.
+			if s.Arena != (l.Challenge != nil) {
+				continue
+			}
 			all = append(all, s.Lessons...)
 		}
 		for i, x := range all {
@@ -157,6 +185,9 @@ func Load(roots ...string) (*Library, error) {
 						return nil, err
 					}
 					l.Lang, l.Section, l.Slug = lang, sec.ID, d.Name()
+					if err := checkChallenge(l, sec.Arena); err != nil {
+						return nil, err
+					}
 					if _, dup := lib.lessons[l.ID()]; dup {
 						return nil, fmt.Errorf("duplicate lesson %s", l.ID())
 					}
@@ -233,6 +264,39 @@ func loadLesson(dir string) (*Lesson, error) {
 		l.HasTest = true
 	}
 	return l, nil
+}
+
+// checkChallenge applies defaults to an arena lesson's challenge settings and
+// refuses a challenge outside an arena, or an arena lesson without one.
+func checkChallenge(l *Lesson, arena bool) error {
+	c := l.Challenge
+	switch {
+	case arena && c == nil:
+		return fmt.Errorf("%s: lessons in an arena section need a challenge: block", l.ID())
+	case !arena && c != nil:
+		return fmt.Errorf("%s: challenge: is only allowed in an arena section", l.ID())
+	case c == nil:
+		return nil
+	}
+	if c.Minutes <= 0 {
+		return fmt.Errorf("%s: challenge.minutes must be positive", l.ID())
+	}
+	if c.CooldownMinutes <= 0 {
+		c.CooldownMinutes = 3
+		if c.Boss {
+			c.CooldownMinutes = 5
+		}
+	}
+	if c.XP <= 0 {
+		c.XP = 150
+		if c.Boss {
+			c.XP = 500
+		}
+	}
+	if !l.HasTest {
+		return fmt.Errorf("%s: a challenge needs tests to be won", l.ID())
+	}
+	return nil
 }
 
 func splitFrontMatter(raw []byte) (front []byte, body string, err error) {
