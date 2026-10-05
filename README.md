@@ -8,6 +8,8 @@ are stuck. Everything runs in one small LXC on your own network.
 - **Ten tracks**, written for this project: Python, Rust, C, C++, C#, Java,
   MATLAB, CCNA, Security and Programming mindset (see [Curriculum](#curriculum))
 - **Practice**: ~130 Python and ~90 Rust exercises imported from [Exercism](https://exercism.org) (MIT)
+- **Misc**: things that are not programming, as question banks with timed mock
+  exams - so far the written tests for a Japanese driving licence
 - **Profiles**: a few people can share one box, each with their own progress
   and files - picked from a list, no login
 - **Terminal**: a free scratch shell with `python`, `cargo` and `git`
@@ -198,6 +200,42 @@ the language.
 **Advanced** (10) — Threads; Channels; Shared state; Generics and typestate; Declarative macros; Conversions; Trees, graphs and Weak; I/O and files; A tokenizer and parser; Trait objects and dynamic dispatch
 
 **Pro** (10) — Unsafe Rust; Futures by hand; A tiny executor; Atomics and lock-free code; Memory layout and allocation; Zero-copy parsing; FFI: calling C and being called; Designing a library API; Advanced traits; Capstone: a concurrent TCP server
+
+
+### Misc: Japanese driving test
+
+Practice for the written tests of a Japanese ordinary car licence, kept apart
+from the programming tracks under **Misc**. About 400 true/false questions in
+English with the Japanese underneath, each with the rule behind the answer and
+where it is written.
+
+**Rules of the road** (3) - Signals and officers' signals; Where a car drives, and who goes first; Signs and road markings
+
+**Driving in traffic** (6) - Speed, stopping and braking; Signalling, lane changes and the horn; Overtaking; Intersections; Pedestrians and cyclists; Railway crossings
+
+**Stopping and parking** (2) - Where you may not stop or park; Meters, leaving the car, and automatics
+
+**Full licence topics** (5) - Before you drive; The car, its load, and the forces on it; Hills, bends, night and bad weather; Expressways; Accidents, breakdowns and earthquakes
+
+**Hazard scenarios** (2) - Scenarios in town; Scenarios on the open road
+
+Three ways to use it:
+
+- **Study by topic**: notes, then the topic's questions with the answer and the
+  reason after each one. Getting every question in a topic right marks it done.
+- **Mock exam**, in the real formats: the provisional test (仮免) is 50
+  true/false at 2 points in 30 minutes; the full test (本免) is 90 true/false
+  at 1 point plus 5 scenario questions at 2 points in 50 minutes. Both pass at
+  90 of 100. No feedback until you submit, the clock survives a reload, and
+  running over time is a fail.
+- **Mistakes review**: everything you got wrong, anywhere, until you answer it
+  right twice in a row.
+
+The questions are written for this project from the National Police Agency's
+Rules of the Road (交通の方法に関する教則, as amended 2024-11-13), not copied
+from any question bank. The real test shows pictures of signs and scenes; here
+they are described in words. Treat it as practice, not as legal advice: check
+anything that matters against the 教則 itself.
 
 
 ## How it works
@@ -452,6 +490,40 @@ with status 0. A failure names the lesson.md line.
 
 Blocks without one of these formats are not run: many are fragments that only
 make sense in context. None of this happens in a learner's **Check**.
+
+### Quiz tracks
+
+A track with `group: misc` in its `track.yaml` is listed under **Misc** instead
+of with the programming tracks. A lesson with `kind: quiz` has no workspace:
+`lesson.md` is the topic's study notes and `questions.yaml` beside it holds the
+questions.
+
+```yaml
+- id: pk-crossing-10m          # unique within the track
+  en: "Stopping and parking are forbidden within 5 metres of a railway crossing."
+  ja: "踏切とその端から前後5メートル以内の場所では、駐車も停車もしてはならない。"
+  answer: false                # true is ○, false is ×
+  why: "For a railway crossing the distance is 10 metres, not 5."
+  ref: "教則 第5章第8節2(2)ク"   # where the rule is written
+  exams: [kari, hon]           # which mock exams may draw it
+
+- id: sc-bus-stop
+  kind: scenario               # full-licence only: exams must be [hon]
+  en: "A bus has stopped at a bus stop ahead ..."
+  ja: "..."
+  ref: "教則 第5章第2節6(1)"
+  exams: [hon]
+  statements:                  # exactly three; all three right to score
+    - { en: "...", ja: "...", answer: true, why: "..." }
+    - { en: "...", ja: "...", answer: false, why: "..." }
+    - { en: "...", ja: "...", answer: true, why: "..." }
+```
+
+Answers, reasons and references never leave the server until a question has
+been answered. `learnbox verify <track>` checks every bank and fails if a mock
+exam cannot be drawn from it. The exam formats live in `internal/quiz`
+(`Specs`). Each profile's answers, mistakes and exam history are in
+`quiz.json` (`quiz-<id>.json` for added profiles) in the data directory.
 
 ## Development
 
