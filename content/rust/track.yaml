@@ -23,3 +23,7 @@ sections:
   - id: practice
     title: Practice
     description: Exercises from the Exercism Rust track (MIT). Same editor, same tests, less hand-holding.
+  - id: arena
+    title: Arena
+    arena: true
+    description: "Timed challenges against the clock. Rounds, then the boss."

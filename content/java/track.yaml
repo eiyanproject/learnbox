@@ -28,3 +28,7 @@ sections:
     xp: 150
     title: Applied
     description: Building things rather than covering objectives - modelling a domain, a service behind an interface, tests you can refactor under, and a command line tool.
+  - id: arena
+    title: Arena
+    arena: true
+    description: "Timed challenges against the clock. Rounds, then the boss."
