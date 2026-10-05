@@ -1,4 +1,4 @@
-import { api, ApiError, type CheckResponse, type Lesson } from "../api";
+import { api, ApiError, quizHref, type CheckResponse, type Lesson } from "../api";
 import { CodeEditor } from "../components/editor";
 import { keyBar } from "../components/keybar";
 import { TermView } from "../components/terminal";
@@ -41,6 +41,10 @@ export async function lessonPage(shell: Shell, id: string): Promise<Page> {
         h("p", null, String(e instanceof Error ? e.message : e)),
       ),
     );
+    return {};
+  }
+  if (lesson.kind === "quiz") {
+    navigate(quizHref(lesson.id), { replace: true });
     return {};
   }
   return new LessonView(shell, lesson).page();

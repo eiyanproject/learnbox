@@ -1678,3 +1678,335 @@ details.raw summary::-webkit-details-marker {
     padding: 0 9px;
   }
 }
+
+/* ---------- quiz ---------- */
+
+.quiz-top {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.exam-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 16px 18px;
+  background: var(--surf);
+  border: 1px solid var(--line);
+}
+
+.exam-card h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.exam-card .sub {
+  margin: 0;
+  font-size: 13px;
+}
+
+.exam-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.exam-dots i {
+  width: 10px;
+  height: 10px;
+  background: var(--aml);
+}
+
+.exam-dots i.p {
+  background: var(--mg);
+}
+
+.notes {
+  margin-bottom: 18px;
+}
+
+.notes > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.notes > summary::-webkit-details-marker {
+  display: none;
+}
+
+.q-card {
+  max-width: 820px;
+}
+
+.q-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.q-body {
+  padding: 18px;
+}
+
+.q-text .q-en {
+  margin: 0 0 6px;
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+.q-text .q-ja {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--mut);
+  font-family: "Hiragino Sans", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
+}
+
+.q-text.small .q-en {
+  font-size: 15px;
+}
+
+.q-text.small .q-ja {
+  font-size: 13px;
+}
+
+.tf-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.tf {
+  flex: 1;
+  max-width: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: var(--surf2);
+  color: var(--fg);
+  cursor: pointer;
+  font: inherit;
+}
+
+.tf .mark {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.tf .word {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.tf.maru:hover:not(:disabled),
+.tf.maru.on {
+  border-color: var(--cyl);
+  color: var(--cy);
+}
+
+.tf.batsu:hover:not(:disabled),
+.tf.batsu.on {
+  border-color: var(--aml);
+  color: var(--am);
+}
+
+.tf.on {
+  background: var(--surf);
+}
+
+.tf:disabled {
+  cursor: default;
+}
+
+.tf:disabled:not(.on) {
+  opacity: 0.45;
+}
+
+.stmt {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 4px 10px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.stmt .tf-row {
+  grid-column: 2;
+  margin-top: 8px;
+}
+
+.stmt-n {
+  font-family: "IBM Plex Mono", monospace;
+  color: var(--cy);
+}
+
+.q-after:empty {
+  display: none;
+}
+
+.q-feedback {
+  margin: 0 18px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-left-width: 3px;
+}
+
+.q-feedback.ok {
+  border-left-color: var(--cy);
+}
+
+.q-feedback.bad {
+  border-left-color: var(--am);
+}
+
+.q-feedback p {
+  margin: 0 0 8px;
+}
+
+.q-feedback .verdict {
+  font-weight: 600;
+}
+
+.q-feedback.ok .verdict {
+  color: var(--cy);
+}
+
+.q-feedback.bad .verdict {
+  color: var(--am);
+}
+
+.q-feedback .why {
+  color: var(--mut);
+}
+
+.q-feedback .ref {
+  margin: 4px 0 0;
+}
+
+.stmt-why .you {
+  color: var(--am);
+}
+
+.q-next {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.q-after .q-next {
+  padding: 0 18px 18px;
+}
+
+.exam-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 18px;
+  margin-bottom: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.exam-clock {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.exam-clock.low {
+  color: var(--am);
+}
+
+.exam-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.exam-grid .cell {
+  width: 34px;
+  height: 30px;
+  border: 1px solid var(--line);
+  background: var(--surf);
+  color: var(--mut);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.exam-grid .cell.done {
+  color: var(--fg);
+  background: var(--cyw);
+}
+
+.exam-grid .cell.sc {
+  border-style: dashed;
+}
+
+.exam-grid .cell.at {
+  border-color: var(--cy);
+  color: var(--cy);
+}
+
+.exam-result {
+  text-align: center;
+  padding: 26px 18px;
+}
+
+.exam-result .big {
+  margin: 0;
+  font-size: 44px;
+  font-weight: 600;
+}
+
+.exam-result .verdict {
+  margin: 4px 0 8px;
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.3em;
+  font-size: 18px;
+}
+
+.exam-result.pass .verdict {
+  color: var(--mg);
+}
+
+.exam-result.fail .verdict {
+  color: var(--am);
+}
+
+.review-item {
+  padding: 16px 0 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.review-item .q-text {
+  padding: 0 18px 10px;
+}
+
+@media (max-width: 860px) {
+  .tf {
+    max-width: none;
+  }
+
+  .exam-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .exam-clock {
+    font-size: 22px;
+  }
+}

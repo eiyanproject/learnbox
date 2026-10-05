@@ -1,4 +1,4 @@
-import { api, type ServerStatus, type Track, type TracksResponse } from "../api";
+import { api, quizHref, type ServerStatus, type Track, type TracksResponse } from "../api";
 import { clear, h } from "../dom";
 import { navigate, type Page } from "../router";
 import type { Shell } from "../shell";
@@ -71,6 +71,10 @@ export async function homePage(shell: Shell): Promise<Page> {
     return {};
   }
 
+  // Misc tracks (a driving test, say) get their own panel, apart from the
+  // programming tracks and their totals.
+  const misc = data.tracks.filter((t) => t.group === "misc");
+  data = { ...data, tracks: data.tracks.filter((t) => t.group !== "misc") };
   const passed = data.tracks.reduce((n, t) => n + t.passed, 0);
   const total = data.tracks.reduce((n, t) => n + t.total, 0);
   const byLang = (lang: string) => data.tracks.find((t) => t.lang === lang);
@@ -89,7 +93,7 @@ export async function homePage(shell: Shell): Promise<Page> {
         h("p", { class: "sub" }, "Read a lesson, write the code, run it in a real shell. Every check runs on this machine."),
       ),
       data.last_lesson
-        ? link(`/learn/${data.last_lesson.id}`, "btn primary", `Resume: ${data.last_lesson.title}`)
+        ? link(lessonHref(data.last_lesson.id, misc), "btn primary", `Resume: ${data.last_lesson.title}`)
         : py
           ? link(`/learn/${py.sections[0]?.lessons[0]?.id ?? ""}`, "btn primary", "Start with Python")
           : null,
@@ -110,6 +114,15 @@ export async function homePage(shell: Shell): Promise<Page> {
         { class: "panel" },
         h("div", { class: "phead" }, h("h2", null, "Tracks"), h("span", { class: "lbl" }, `${total} lessons`)),
         ...data.tracks.map(trackCard),
+        misc.length ? h("div", { class: "phead", style: "border-top:1px solid var(--line)" }, h("h2", null, "Misc"), h("span", { class: "lbl" }, "not programming")) : null,
+        ...misc.map((t) =>
+          link(
+            `/quiz/${t.lang}`,
+            "track-card",
+            h("div", null, h("h3", null, t.title), h("p", null, t.description)),
+            h("span", { class: "num", style: "font-size:22px;font-weight:600" }, `${pct(t.passed, t.total)}%`),
+          ),
+        ),
       ),
       h(
         "aside",
@@ -132,6 +145,12 @@ export async function homePage(shell: Shell): Promise<Page> {
     ),
   );
   return {};
+}
+
+/** A lesson's page: quiz topics are studied on the quiz page. */
+function lessonHref(id: string, misc: Track[]) {
+  const quizTrack = misc.some((t) => id.startsWith(`${t.lang}/`));
+  return quizTrack ? quizHref(id) : `/learn/${id}`;
 }
 
 function kv(k: string, v: string, off = false) {

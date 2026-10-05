@@ -16,4 +16,5 @@ export const icons = {
   code: svg(`<path d="M8.5 8.5 4 12l4.5 3.5"/><path d="M15.5 8.5 20 12l-4.5 3.5"/><path d="M13.5 5l-3 14"/>`),
   left: svg(`<path d="M15 5l-7 7 7 7"/>`, 14, 2),
   right: svg(`<path d="M9 5l7 7-7 7"/>`, 14, 2),
+  misc: svg(`<circle cx="7" cy="7" r="3"/><rect x="14" y="4" width="6" height="6"/><path d="M7 14l3.5 6h-7z"/><path d="M14 14l6 6M20 14l-6 6"/>`),
 };

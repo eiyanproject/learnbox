@@ -33,6 +33,11 @@ export async function trackPage(shell: Shell, lang: string): Promise<Page> {
     root.append(h("div", { class: "empty" }, h("h2", null, "Cannot reach the server"), h("p", null, String(e))));
     return {};
   }
+  if (track?.group === "misc") {
+    // Quiz tracks have their own overview, with exams and the mistakes review.
+    navigate(`/quiz/${lang}`, { replace: true });
+    return {};
+  }
   if (!track) {
     clear(root);
     root.append(h("div", { class: "empty" }, h("h2", null, "No such track"), h("p", null, `Nothing is installed for "${lang}".`)));
