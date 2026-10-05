@@ -1,16 +1,22 @@
 title: "C++"
 order: 7
 description: "C++ as it is written now: RAII, the standard library, references and templates rather than manual memory."
+badge: "Template Tamer"
 sections:
   - id: environment
+    xp: 50
     title: Environment
     description: "The toolchain, the build, and what C++ adds to C."
   - id: learn
+    xp: 50
+    beginner: true
     title: Beginner
     description: "Containers and the range-for, classes and RAII, copies against moves, templates and lambdas, and smart pointers."
   - id: intermediate
+    xp: 75
     title: Intermediate
     description: "Operator overloading, runtime polymorphism, exceptions against std::optional, and the iterator model behind every algorithm."
   - id: advanced
+    xp: 100
     title: Advanced
     description: "A container the standard algorithms accept, concepts and constraints, compile-time computation, and an expression evaluator capstone."

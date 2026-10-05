@@ -1,17 +1,23 @@
 title: Rust
 order: 2
 description: From cargo run to threads, macros, unsafe and a hand-written async executor. Built with cargo on the real toolchain.
+badge: "Borrow Checker Whisperer"
 sections:
   - id: learn
+    xp: 50
+    beginner: true
     title: Beginner
     description: Ownership, borrowing, structs, enums, collections, traits and lifetimes.
   - id: intermediate
+    xp: 75
     title: Intermediate
     description: Modules, error design, trait tools, iterators, smart pointers and deeper patterns.
   - id: advanced
+    xp: 100
     title: Advanced
     description: Threads, channels, shared state, macros, conversions and I/O.
   - id: pro
+    xp: 150
     title: Pro
     description: Unsafe, futures and executors, atomics, API design, FFI and a concurrent capstone.
   - id: practice

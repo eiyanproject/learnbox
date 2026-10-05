@@ -24,11 +24,13 @@ import (
 )
 
 type Track struct {
-	Lang        string    `yaml:"-" json:"lang"`
-	Title       string    `yaml:"title" json:"title"`
-	Description string    `yaml:"description" json:"description"`
-	Order       int       `yaml:"order" json:"-"`
-	Sections    []Section `yaml:"sections" json:"sections"`
+	Lang        string `yaml:"-" json:"lang"`
+	Title       string `yaml:"title" json:"title"`
+	Description string `yaml:"description" json:"description"`
+	Order       int    `yaml:"order" json:"-"`
+	// Badge names the badge for finishing every guided lesson in the track.
+	Badge    string    `yaml:"badge" json:"-"`
+	Sections []Section `yaml:"sections" json:"sections"`
 }
 
 type Section struct {
@@ -37,8 +39,14 @@ type Section struct {
 	Description string `yaml:"description" json:"description"`
 	// Arena marks the track's challenge ladder. Its lessons are timed
 	// challenges, listed on the Arena page rather than in the track.
-	Arena   bool      `yaml:"arena" json:"arena,omitempty"`
-	Lessons []*Lesson `yaml:"-" json:"lessons"`
+	Arena bool `yaml:"arena" json:"arena,omitempty"`
+	// XP is what each lesson in the section is worth before hint costs; see
+	// internal/game for the default and for how rated practice exercises differ.
+	XP int `yaml:"xp" json:"xp,omitempty"`
+	// Beginner marks the track's entry-level section, for the badges about
+	// leaving it behind.
+	Beginner bool      `yaml:"beginner" json:"-"`
+	Lessons  []*Lesson `yaml:"-" json:"lessons"`
 }
 
 // Challenge is the front matter of an arena lesson.

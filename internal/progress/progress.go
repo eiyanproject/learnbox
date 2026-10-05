@@ -25,6 +25,11 @@ type Entry struct {
 	FirstOpened   time.Time `json:"first_opened,omitzero"`
 	LastOpened    time.Time `json:"last_opened,omitzero"`
 	PassedAt      time.Time `json:"passed_at,omitzero"`
+	// PassAttempts is the attempt the lesson was first passed on; zero for a
+	// lesson passed before this was recorded.
+	PassAttempts int `json:"pass_attempts,omitempty"`
+	// FreeHints counts the hints revealed after the pass. They cost no XP.
+	FreeHints int `json:"free_hints,omitempty"`
 }
 
 // Challenge is the record of one arena challenge: the attempt in progress,

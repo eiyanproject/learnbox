@@ -1,31 +1,42 @@
 title: "Security"
 order: 10
 description: "Cybersecurity from the command line up: how attacks work, how to detect and fix them, and a run of unguided challenges. Every lab runs inside this container and touches nothing outside it."
+badge: "White Hat"
 sections:
   - id: environment
+    xp: 50
     title: Environment
     description: "The lab, the one rule that governs all of it, and the way a security person reads bytes."
   - id: foundations
+    xp: 50
+    beginner: true
     title: Foundations
     description: "Encoding against encryption, hashing and integrity, how passwords are stored and attacked, and file permissions."
   - id: crypto
+    xp: 75
     title: Cryptography
     description: "Trustworthy randomness, stream ciphers and nonce reuse, block modes, public-key RSA and Diffie-Hellman built by hand, and the certificate chain of trust."
   - id: web
+    xp: 75
     title: Web security
     description: "The HTTP request, SQL injection, cross-site scripting, broken access control, path traversal and command injection - each attacked against a local target, then fixed, ending in a vulnerable app to harden."
   - id: network
+    xp: 75
     title: Network security
     description: "Packets and ports by their bytes, reading a real capture, port scanning from both sides, and detecting ARP and DNS spoofing - ending in a firewall rule engine."
   - id: forensics
+    xp: 75
     title: Forensics
     description: "Reading the logs, identifying files by their magic bytes, metadata that leaks, hidden and appended data, carving a file from a blob, and reconstructing an incident timeline."
   - id: reversing
+    xp: 100
     title: Reading binaries
     description: "What an ELF binary is, the strings and symbols that triage it, reading disassembly, recognising a dangerous call, and the stack layout that explains why an overflow matters."
   - id: defence
+    xp: 100
     title: Defence and detection
     description: "Hardening a config, writing detection rules, triaging the alert flood, file integrity monitoring, least-privilege review, and an incident-response capstone."
   - id: challenges
+    xp: 150
     title: Challenges
     description: "Unguided, mixed-topic problems that pull the whole track together: a layered secret, a predictable token, a broken password check, an exfil capture, a swapped file, and a full intrusion to work."

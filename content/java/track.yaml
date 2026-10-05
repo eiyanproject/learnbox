@@ -1,22 +1,30 @@
 title: Java
 order: 4
 description: Java from the command line to the Oracle certifications and back to building things. Silver and Gold follow the exam objectives; Applied is the practical progression.
+badge: "Fully Caffeinated"
 sections:
   - id: environment
+    xp: 50
     title: Environment
     description: The JDK, javac and java, the classpath, packages, and what actually happens between source and running code.
   - id: silver
+    xp: 75
+    beginner: true
     title: Silver
     description: Programmer I - types, control flow, arrays, methods, encapsulation, inheritance, exceptions and the core APIs.
   - id: silver-exam
+    xp: 100
     title: Silver - Practice exam
     description: Four cumulative papers over the Silver objectives, built around the traps the real paper uses.
   - id: gold
+    xp: 100
     title: Gold
     description: Programmer II - generics, collections, lambdas, streams, Optional, concurrency, I/O, modules and reflection.
   - id: gold-exam
+    xp: 150
     title: Gold - Practice exam
     description: Three cumulative papers over the Gold objectives.
   - id: applied
+    xp: 150
     title: Applied
     description: Building things rather than covering objectives - modelling a domain, a service behind an interface, tests you can refactor under, and a command line tool.

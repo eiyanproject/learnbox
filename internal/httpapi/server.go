@@ -23,6 +23,7 @@ import (
 
 	"github.com/eiyanproject/learnbox/internal/access"
 	"github.com/eiyanproject/learnbox/internal/content"
+	"github.com/eiyanproject/learnbox/internal/game"
 	"github.com/eiyanproject/learnbox/internal/profiles"
 	"github.com/eiyanproject/learnbox/internal/progress"
 	"github.com/eiyanproject/learnbox/internal/runner"
@@ -51,6 +52,10 @@ type Deps struct {
 	// A nil Access with AccessHosts set refuses those hosts (fail closed).
 	AccessHosts []string
 	Access      *access.Verifier
+
+	// Location is the timezone a learner's day is counted in; nil means the
+	// machine's own.
+	Location *time.Location
 }
 
 type Server struct {
@@ -128,6 +133,7 @@ func (s *Server) routes() {
 
 	m.HandleFunc("GET /api/status", s.status)
 	m.HandleFunc("GET /api/tracks", s.tracks)
+	m.HandleFunc("GET /api/summary", s.summary)
 	m.HandleFunc("GET /api/profiles", s.listProfiles)
 	m.HandleFunc("POST /api/profiles", s.createProfile)
 	m.HandleFunc("POST /api/profiles/{id}/select", s.selectProfile)
@@ -460,6 +466,7 @@ func (s *Server) lesson(w http.ResponseWriter, r *http.Request) {
 		return map[string]string{"id": x.ID(), "title": x.Title}
 	}
 	prev, next := s.Lib.Neighbours(l.ID())
+	xpFull, xpNow, _ := game.Worth(s.Lib, l, e)
 	writeJSON(w, http.StatusOK, map[string]any{
 		"id": l.ID(), "lang": l.Lang, "section": l.Section, "slug": l.Slug,
 		"title": l.Title, "summary": l.Summary, "html": html, "source_html": source,
@@ -467,6 +474,7 @@ func (s *Server) lesson(w http.ResponseWriter, r *http.Request) {
 		"files": l.Files, "run": l.Run, "has_tests": l.HasTest,
 		"hints_total": len(l.Hints), "hints": renderHints(l.Hints, e.HintsRevealed),
 		"status": e.Status, "attempts": e.Attempts,
+		"xp_full": xpFull, "xp": xpNow,
 		"workspace": "~/" + v.WS.Rel(l),
 		"prev":      link(prev), "next": link(next),
 	})
@@ -563,18 +571,34 @@ func (s *Server) check(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.checks.WithLabelValues(l.Lang, res.Status).Inc()
+	// Settle up first, so the reward is what this check earned and not a
+	// backlog of badges nobody had asked about yet.
+	before, _, err := s.standings(v)
+	if err != nil {
+		s.fail(w, "progress", err)
+		return
+	}
 	e, err := v.Progress.Update(l.ID(), func(e *progress.Entry) {
 		e.Attempts++
 		if res.Passed && e.Status != progress.Passed {
 			e.Status = progress.Passed
 			e.PassedAt = time.Now().UTC()
+			e.PassAttempts = e.Attempts
 		}
 	})
 	if err != nil {
 		s.fail(w, "progress", err)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"result": res, "status": e.Status, "attempts": e.Attempts})
+	after, fresh, err := s.standings(v)
+	if err != nil {
+		s.fail(w, "progress", err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"result": res, "status": e.Status, "attempts": e.Attempts,
+		"reward": game.Diff(before, after, fresh),
+	})
 }
 
 func (s *Server) hint(w http.ResponseWriter, r *http.Request) {
@@ -589,13 +613,17 @@ func (s *Server) hint(w http.ResponseWriter, r *http.Request) {
 	e, err := v.Progress.Update(l.ID(), func(e *progress.Entry) {
 		if e.HintsRevealed < len(l.Hints) {
 			e.HintsRevealed++
+			if e.Status == progress.Passed {
+				e.FreeHints++ // already paid for in full: reading on costs nothing
+			}
 		}
 	})
 	if err != nil {
 		s.fail(w, "progress", err)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"hints": renderHints(l.Hints, e.HintsRevealed), "hints_total": len(l.Hints)})
+	_, xpNow, _ := game.Worth(s.Lib, l, e)
+	writeJSON(w, http.StatusOK, map[string]any{"hints": renderHints(l.Hints, e.HintsRevealed), "hints_total": len(l.Hints), "xp": xpNow})
 }
 
 func (s *Server) reset(w http.ResponseWriter, r *http.Request) {

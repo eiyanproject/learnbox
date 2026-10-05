@@ -61,6 +61,7 @@ type cfg struct {
 	AccessHosts  []string
 	AccessTeam   string
 	AccessAUD    string
+	TZ           string
 }
 
 // intEnv and durEnv fall back to the default on anything unparseable. Unlike
@@ -126,6 +127,7 @@ func config() cfg {
 		AccessHosts:  strings.Split(env("LEARNBOX_ACCESS_HOSTS", ""), ","),
 		AccessTeam:   env("LEARNBOX_ACCESS_TEAM_DOMAIN", ""),
 		AccessAUD:    env("LEARNBOX_ACCESS_AUD", ""),
+		TZ:           env("LEARNBOX_TZ", ""),
 	}
 }
 
@@ -227,12 +229,24 @@ func serve(log *slog.Logger, c cfg) error {
 		log.Warn("LEARNBOX_ACCESS_HOSTS set without LEARNBOX_ACCESS_TEAM_DOMAIN and LEARNBOX_ACCESS_AUD: those hosts will be refused", "hosts", c.AccessHosts)
 	}
 
+	// Streaks and the time-of-day badges count days where the learner is, not
+	// where the container's clock happens to be set.
+	loc := time.Local
+	if c.TZ != "" {
+		if l, err := time.LoadLocation(c.TZ); err != nil {
+			log.Warn("LEARNBOX_TZ not understood; using the machine's timezone", "tz", c.TZ, "err", err.Error())
+		} else {
+			loc = l
+		}
+	}
+
 	api := httpapi.New(httpapi.Deps{
 		Version: version, Commit: commit, Log: log, Lib: lib,
 		Sandbox: sb, Workspace: ws, Runner: newRunner(sb, ws, c),
 		Profiles: profs, Terms: terms, WebDir: c.WebDir, AllowedHosts: c.AllowedHosts,
 		MinFreeDisk: c.MinFreeDisk,
 		AccessHosts: c.AccessHosts, Access: verifier,
+		Location: loc,
 	})
 	srv := &http.Server{Addr: c.Addr, Handler: api.Handler(), ReadHeaderTimeout: 10 * time.Second}
 

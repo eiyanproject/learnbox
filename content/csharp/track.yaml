@@ -1,16 +1,22 @@
 title: "C#"
 order: 8
 description: "C# on .NET: the type system, LINQ, and the patterns the framework is built from."
+badge: "Seeing Sharp"
 sections:
   - id: environment
+    xp: 50
     title: Environment
     description: "The SDK, a project, the CLR, and what dotnet build produces."
   - id: learn
+    xp: 50
+    beginner: true
     title: Beginner
     description: "Classes and properties, records, the collections, and LINQ."
   - id: intermediate
+    xp: 75
     title: Intermediate
     description: "Interfaces and generic constraints, records and pattern matching, nullable reference types and when to throw, and delegates and events."
   - id: advanced
+    xp: 100
     title: Advanced
     description: "Iterators and deferred execution, async and Task, structs and Span<T>, and a log report capstone."

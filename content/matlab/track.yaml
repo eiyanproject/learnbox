@@ -1,19 +1,26 @@
 title: "MATLAB"
 order: 9
 description: "MATLAB for the MathWorks Associate exam: arrays first, tables and datetimes for real data, and the vectorised way of writing things."
+badge: "Matrix Reloaded"
 sections:
   - id: environment
+    xp: 50
     title: Environment
     description: "What MATLAB is, the engine these lessons run on, and how a script differs from a function."
   - id: learn
+    xp: 50
+    beginner: true
     title: Beginner
     description: "Arrays and indexing, matrix against element-wise operators, logical indexing, control flow, functions and handles, and plotting."
   - id: intermediate
+    xp: 75
     title: Intermediate
     description: "Cell arrays and structs, tables, datetime and duration, categorical, and importing and cleaning real data."
   - id: advanced
+    xp: 100
     title: Advanced
     description: "Vectorisation, errors and debugging, text processing, and a readings report capstone."
   - id: exam
+    xp: 100
     title: "Associate - practice exam"
     description: "Four cumulative papers, one per exam domain. Fewer hints than a lesson, on purpose."
