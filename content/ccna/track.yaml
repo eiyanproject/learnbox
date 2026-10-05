@@ -32,3 +32,7 @@ sections:
     xp: 150
     title: Labs on real Linux
     description: The same concepts on the actual kernel - veth pairs, namespaces and bridges inside an unprivileged sandbox. Real interfaces, real ARP, real ICMP.
+  - id: arena
+    title: Arena
+    arena: true
+    description: "Timed challenges against the clock. Rounds, then the boss."

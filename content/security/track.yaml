@@ -40,3 +40,7 @@ sections:
     xp: 150
     title: Challenges
     description: "Unguided, mixed-topic problems that pull the whole track together: a layered secret, a predictable token, a broken password check, an exfil capture, a swapped file, and a full intrusion to work."
+  - id: arena
+    title: Arena
+    arena: true
+    description: "Timed challenges against the clock. Rounds, then the boss."

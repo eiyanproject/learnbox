@@ -1,0 +1,2 @@
+def humanize(seconds):
+    pass

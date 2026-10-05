@@ -16,3 +16,7 @@ sections:
     xp: 75
     title: Craft
     description: Naming, small functions, dead code, comments that earn their place, and knowing when to stop.
+  - id: arena
+    title: Arena
+    arena: true
+    description: "Timed challenges against the clock. Rounds, then the boss."
