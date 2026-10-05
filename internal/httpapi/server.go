@@ -597,11 +597,7 @@ func (s *Server) check(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if l.Challenge != nil {
-		received := time.Now()
-		if !s.challengeOpen(w, v, l) {
-			return
-		}
-		s.checkChallenge(w, r, v, l, received)
+		s.checkChallenge(w, r, v, l, time.Now())
 		return
 	}
 	if _, err := v.WS.Ensure(l); err != nil {

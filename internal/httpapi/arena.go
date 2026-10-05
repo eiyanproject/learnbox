@@ -224,12 +224,14 @@ func (s *Server) checkChallenge(w http.ResponseWriter, r *http.Request, v *viewe
 	}
 	if cv.State != game.Active {
 		if cv.Wins == 0 {
-			// Time ran out (settle just recorded it), or it was never started.
-			outcome := ""
-			if cv.State == game.Cooldown {
-				outcome = "lost"
+			if cv.State != game.Cooldown {
+				writeJSON(w, http.StatusConflict, map[string]any{
+					"error": "start this challenge from the arena first", "code": "challenge_not_started", "challenge": cv,
+				})
+				return
 			}
-			respond(nil, outcome, game.Diff(before, before, nil), 0)
+			// Time ran out, and settling it just now recorded the loss.
+			respond(nil, "lost", game.Diff(before, before, nil), 0)
 			return
 		}
 		// Won already and no clock running: a practice run, for nothing.
