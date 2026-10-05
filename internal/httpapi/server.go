@@ -25,6 +25,7 @@ import (
 	"github.com/eiyanproject/learnbox/internal/content"
 	"github.com/eiyanproject/learnbox/internal/profiles"
 	"github.com/eiyanproject/learnbox/internal/progress"
+	"github.com/eiyanproject/learnbox/internal/quiz"
 	"github.com/eiyanproject/learnbox/internal/runner"
 	"github.com/eiyanproject/learnbox/internal/sandbox"
 	"github.com/eiyanproject/learnbox/internal/term"
@@ -40,7 +41,9 @@ type Deps struct {
 	Workspace *workspace.Manager
 	Runner    *runner.Runner
 	// Profiles holds each profile's progress; requests pick one by cookie.
-	Profiles     *profiles.Registry
+	Profiles *profiles.Registry
+	// Quiz holds the question banks of quiz tracks, by track.
+	Quiz         map[string]*quiz.Bank
 	Terms        *term.Manager
 	WebDir       string   // built frontend; empty disables static serving
 	AllowedHosts []string // besides IP literals and localhost
@@ -68,6 +71,9 @@ type Server struct {
 	toolsMu   sync.Mutex
 	tools     map[string]string
 	toolsTime time.Time
+
+	quizMu     sync.Mutex
+	quizStores map[string]*quiz.Store // by profile
 }
 
 func New(d Deps) *Server {
@@ -142,6 +148,7 @@ func (s *Server) routes() {
 	m.HandleFunc("POST "+L+"/hint", s.hint)
 	m.HandleFunc("POST "+L+"/reset", s.reset)
 	m.HandleFunc("GET /api/term", s.terminal)
+	s.quizRoutes(m)
 	m.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusNotFound, "no such endpoint")
 	})
@@ -353,6 +360,7 @@ type lessonSummary struct {
 	Difficulty int    `json:"difficulty,omitempty"`
 	HasTests   bool   `json:"has_tests"`
 	Status     string `json:"status"`
+	Kind       string `json:"kind,omitempty"`
 }
 
 func (s *Server) tracks(w http.ResponseWriter, r *http.Request) {
@@ -372,13 +380,14 @@ func (s *Server) tracks(w http.ResponseWriter, r *http.Request) {
 		Lang        string       `json:"lang"`
 		Title       string       `json:"title"`
 		Description string       `json:"description"`
+		Group       string       `json:"group,omitempty"`
 		Sections    []sectionOut `json:"sections"`
 		Total       int          `json:"total"`
 		Passed      int          `json:"passed"`
 	}
 	out := []trackOut{}
 	for _, t := range s.Lib.Tracks {
-		to := trackOut{Lang: t.Lang, Title: t.Title, Description: t.Description}
+		to := trackOut{Lang: t.Lang, Title: t.Title, Description: t.Description, Group: t.Group}
 		for _, sec := range t.Sections {
 			so := sectionOut{ID: sec.ID, Title: sec.Title, Description: sec.Description, Lessons: []lessonSummary{}}
 			for _, l := range sec.Lessons {
@@ -386,6 +395,7 @@ func (s *Server) tracks(w http.ResponseWriter, r *http.Request) {
 				so.Lessons = append(so.Lessons, lessonSummary{
 					ID: l.ID(), Slug: l.Slug, Title: l.Title, Summary: l.Summary,
 					Difficulty: l.Difficulty, HasTests: l.HasTest, Status: string(e.Status),
+					Kind: l.Kind,
 				})
 				if e.Status == progress.Passed {
 					so.Passed++
@@ -461,7 +471,7 @@ func (s *Server) lesson(w http.ResponseWriter, r *http.Request) {
 	}
 	prev, next := s.Lib.Neighbours(l.ID())
 	writeJSON(w, http.StatusOK, map[string]any{
-		"id": l.ID(), "lang": l.Lang, "section": l.Section, "slug": l.Slug,
+		"id": l.ID(), "lang": l.Lang, "section": l.Section, "slug": l.Slug, "kind": l.Kind,
 		"title": l.Title, "summary": l.Summary, "html": html, "source_html": source,
 		"track_title": trackTitle, "section_title": sectionTitle,
 		"files": l.Files, "run": l.Run, "has_tests": l.HasTest,

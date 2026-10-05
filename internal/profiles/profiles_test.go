@@ -110,3 +110,26 @@ func TestProfilesSurviveReopen(t *testing.T) {
 		t.Fatalf("got %+v", ps)
 	}
 }
+
+func TestDataFilesFollowTheProfile(t *testing.T) {
+	dir := t.TempDir()
+	r, _ := Open(dir)
+	r.AlsoDelete("quiz")
+	if r.DataFile(DefaultID, "quiz") != filepath.Join(dir, "quiz.json") {
+		t.Fatal("default data file")
+	}
+	p, _ := r.Create("Cy")
+	f := r.DataFile(p.ID, "quiz")
+	if f != filepath.Join(dir, "quiz-cy.json") {
+		t.Fatalf("got %s", f)
+	}
+	if err := os.WriteFile(f, []byte("{}"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.Delete(p.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(f); !os.IsNotExist(err) {
+		t.Fatal("quiz file left behind")
+	}
+}

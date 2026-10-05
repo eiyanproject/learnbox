@@ -24,11 +24,14 @@ import (
 )
 
 type Track struct {
-	Lang        string    `yaml:"-" json:"lang"`
-	Title       string    `yaml:"title" json:"title"`
-	Description string    `yaml:"description" json:"description"`
-	Order       int       `yaml:"order" json:"-"`
-	Sections    []Section `yaml:"sections" json:"sections"`
+	Lang        string `yaml:"-" json:"lang"`
+	Title       string `yaml:"title" json:"title"`
+	Description string `yaml:"description" json:"description"`
+	Order       int    `yaml:"order" json:"-"`
+	// Group "misc" lists the track in the Misc area, apart from the
+	// programming tracks.
+	Group    string    `yaml:"group" json:"group,omitempty"`
+	Sections []Section `yaml:"sections" json:"sections"`
 }
 
 type Section struct {
@@ -64,14 +67,17 @@ type Lesson struct {
 	Section string `yaml:"-" json:"section"`
 	Slug    string `yaml:"-" json:"slug"`
 
-	Title      string   `yaml:"title" json:"title"`
-	Summary    string   `yaml:"summary" json:"summary"`
-	Order      int      `yaml:"order" json:"-"`
-	Difficulty int      `yaml:"difficulty" json:"difficulty,omitempty"`
-	Files      []string `yaml:"files" json:"files"`
-	Run        string   `yaml:"run" json:"run,omitempty"`
-	Hints      []string `yaml:"hints" json:"-"`
-	Source     string   `yaml:"source" json:"source,omitempty"` // attribution, Markdown
+	Title      string `yaml:"title" json:"title"`
+	Summary    string `yaml:"summary" json:"summary"`
+	Order      int    `yaml:"order" json:"-"`
+	Difficulty int    `yaml:"difficulty" json:"difficulty,omitempty"`
+	// Kind "quiz" is a set of questions (questions.yaml, see internal/quiz)
+	// instead of code with tests.
+	Kind   string   `yaml:"kind" json:"kind,omitempty"`
+	Files  []string `yaml:"files" json:"files"`
+	Run    string   `yaml:"run" json:"run,omitempty"`
+	Hints  []string `yaml:"hints" json:"-"`
+	Source string   `yaml:"source" json:"source,omitempty"` // attribution, Markdown
 	// Challenge is set for lessons in an arena section.
 	Challenge *Challenge `yaml:"challenge" json:"challenge,omitempty"`
 
