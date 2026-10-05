@@ -31,7 +31,7 @@ deploys themselves (`bash update-lxc.sh --ctid 116 --yes`, then
 The first attempt tried to build everything in one pass and stalled. Split
 into pieces that each work and ship by themselves:
 
-1. **Profiles** - DONE on this branch (see below). Can be merged now.
+1. **Profiles** - DONE, merged to main and deployed (c6d5661).
 2. **XP, levels and badges** - the scoring engine (a pure package, computed
    from a progress snapshot, unit-tested), a profile summary endpoint, rewards
    returned with each check, an XP/level indicator in the top bar, a badges
@@ -51,6 +51,51 @@ stopped by a safety filter, the second while writing the scoring engine.
 That session carried a great deal of security-course material (attack
 walkthroughs); a session without it is the better place for this work. Keep
 any security-track challenges defensive (detect, decode, fix, harden).
+
+## After gamification: a Japanese driving test practice track
+
+The owner asked (2026-10-05) for a Japanese driving licence written-test
+practice, in a **Misc** area kept separate from the programming tracks. They
+said to do gamification **first**; this comes after. Decisions already made
+(do not re-ask):
+
+| Question | Answer |
+|---|---|
+| Which test | **Both**, the provisional licence test (仮免) first, then the full licence test (本免) |
+| Language | **English with the Japanese underneath**, so the real test's terms are learned |
+| Practice modes | **All three**: study by topic (each answer explained with its rule), timed mock exam at the real pass mark, and a mistakes review that drills previously wrong questions |
+
+Exam formats (checked 2026-10-05):
+
+- 仮免 written test: 50 true/false questions, 30 minutes, 2 points each, pass
+  at 90 of 100 (at most 5 wrong).
+- 本免 written test: 90 true/false questions (1 point each) and 5 illustration
+  questions (2 points each, every illustration has 3 statements and scores
+  only if all 3 are right), 50 minutes, pass at 90 of 100.
+
+Sources: [Fine Motor School on the 仮免 test](https://www.fine-motorschool.co.jp/news/column/20240226/),
+[Kanagawa Prefectural Police licence procedure](https://www.police.pref.kanagawa.jp/tetsuzuki/menkyo/mes83012.html),
+[日本合宿免許予約センター on the 本免 test](https://www.gasshukuhikaku.com/blog_car/post_6378/).
+
+How it was going to be built - a starting point, not a decision:
+
+- **Questions are original**, written from the National Police Agency's
+  交通の方法に関する教則 (a National Public Safety Commission notice; Japanese
+  copyright law excludes official notices, Art. 13). Commercial question
+  banks and driving-school books are copyrighted: do not copy them. Each
+  question records which rule it rests on, and every numeric fact (distances,
+  speeds, times) is checked against the official text - a wrong "fact" here
+  is worse than none.
+- This is a **new lesson type**: true/false and illustration questions, not
+  code plus tests, so it needs a quiz format (questions with answers, English
+  and Japanese text, explanations, which exam each can appear in), validated
+  when content loads, and its own pages: topic study, timed mock exam,
+  mistakes review. Per-profile records of answers and exam results.
+- A track-level flag to show it under **Misc** instead of with the
+  programming tracks, on the home page and in the rail.
+- Illustration questions need pictures; plain SVG scene diagrams, or text
+  scenarios to start with, are the options.
+- Once XP exists, quiz topics and passed mock exams can award it.
 
 ## Done on this branch
 
