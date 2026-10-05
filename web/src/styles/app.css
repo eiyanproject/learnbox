@@ -1678,3 +1678,215 @@ details.raw summary::-webkit-details-marker {
     padding: 0 9px;
   }
 }
+
+/* ---------- XP, levels and badges ---------- */
+
+.tog.xp {
+  gap: 9px;
+  color: var(--fg);
+}
+
+.tog.xp .xp-lv {
+  color: var(--cy);
+  font-weight: 600;
+}
+
+.tog.xp .meter {
+  width: 54px;
+}
+
+.tog.xp .xp-n {
+  color: var(--mut);
+  letter-spacing: 0.04em;
+}
+
+.badge.xp {
+  color: var(--cy);
+  border-color: var(--cyl);
+  background: var(--cyw);
+}
+
+/* Hints took something off: a shortfall, so amber. */
+.badge.xp.cut {
+  color: var(--am);
+  border-color: var(--aml);
+  background: var(--amw);
+}
+
+.meter.tall {
+  height: 8px;
+}
+
+.bfams {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.bgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1px;
+  background: var(--line);
+}
+
+.btile {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--surf);
+  min-width: 0;
+}
+
+.btile-mark {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  color: var(--dim);
+  background: var(--surf2);
+}
+
+.btile.on .btile-mark {
+  color: var(--mg);
+  border-color: var(--mgl);
+  background: var(--mgw);
+}
+
+.btile-body {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.btile-body .rt,
+.btile-body .rd {
+  margin: 0;
+  white-space: normal;
+}
+
+.btile:not(.on) .rt {
+  color: var(--mut);
+}
+
+.btile.on .lbl {
+  color: var(--mg);
+}
+
+.btile-prog {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btile-prog .meter {
+  flex: 1;
+}
+
+a.secbar {
+  color: inherit;
+  text-decoration: none;
+  margin-bottom: 12px;
+}
+
+a.secbar:hover .lbl {
+  color: var(--cy);
+}
+
+/* Reward cards sit under the top bar, clear of the toast in the corner. */
+.rewards {
+  position: fixed;
+  top: 76px;
+  right: 18px;
+  z-index: 95;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(340px, calc(100vw - 36px));
+}
+
+.reward {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  text-align: left;
+  color: var(--fg);
+  background: var(--surf);
+  border: 1px solid var(--cyl);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  font: inherit;
+  animation: reward-in 0.25s ease-out;
+}
+
+.reward.level,
+.reward.badge-won {
+  border-color: var(--mgl);
+}
+
+.reward-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: var(--cy);
+}
+
+.reward.level .reward-mark,
+.reward.badge-won .reward-mark {
+  color: var(--mg);
+}
+
+.reward-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--mut);
+}
+
+.reward-text b {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+@keyframes reward-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reward {
+    animation: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .tog.xp {
+    padding: 0 9px;
+  }
+
+  .tog.xp .meter,
+  .tog.xp .xp-n {
+    display: none;
+  }
+
+  .rewards {
+    top: 64px;
+    right: 10px;
+  }
+}
+
+.tog.xp[hidden],
+.badge.xp[hidden] {
+  display: none;
+}

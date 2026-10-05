@@ -241,6 +241,28 @@ of friends you trust. Strangers need real accounts - and, since the box hands
 out a shell, separate system users or containers too - which this does not
 attempt. Deleting a profile removes its progress and keeps its files.
 
+### XP, levels and badges
+
+Passing a lesson pays XP. The top bar shows your level; the medal in the rail
+opens the badges page.
+
+- **A lesson** is worth its section's `xp` in `track.yaml`: 50 for an opening
+  section, rising to 150 for the hardest. Imported practice exercises pay 10 XP
+  per point of Exercism's 1-10 difficulty rating instead.
+- **Each hint** you reveal before passing takes 10% off that lesson, and a
+  lesson never pays less than half. The hint button says what the next one
+  costs. Hints read after the pass are free.
+- **Level** *n* starts at 50·n·(n-1) XP - 100 XP to level 2, and each level
+  100 XP longer than the last.
+- **Badges** come in five families: milestones, completion (sections, tracks,
+  one named badge per track), style (no hints, first try, tenth try),
+  calendar (streaks, late nights, weekends) and a few secret ones that show as
+  `???` until earned. A badge stays earned once it is.
+
+Everything is computed from the progress file (`internal/game`, a pure
+package), so lessons passed before this existed count in full. Calendar
+badges count days in `LEARNBOX_TZ`.
+
 ### Safety model
 
 One trusted user on a private network, so the goal is protecting the machine
@@ -326,6 +348,7 @@ refreshes the Exercism import and restarts the service. It never touches
 | `LEARNBOX_IDLE_TIMEOUT` | `4h` | detached sessions are killed after this |
 | `LEARNBOX_MIN_FREE_MB` | `512` | refuse new shells and checks below this much free space |
 | `LEARNBOX_CHECK_TIMEOUT` | `120s` | per check; the first Rust build of a lesson is the slow one |
+| `LEARNBOX_TZ` | the container's | timezone a day is counted in for streaks and time-of-day badges, e.g. `Asia/Tokyo` |
 | `LEARNBOX_ACCESS_HOSTS` | | public hostnames that must present a Cloudflare Access token |
 | `LEARNBOX_ACCESS_TEAM_DOMAIN` | | `<team>.cloudflareaccess.com` |
 | `LEARNBOX_ACCESS_AUD` | | the Access application's audience tag |
@@ -405,6 +428,10 @@ hints:
   - "Second hint."
 ---
 ```
+
+A section in `track.yaml` takes `xp:` (what each of its lessons pays, default
+100) and `beginner: true` on the track's entry-level section; the track itself
+takes `badge:`, the name of the badge for finishing every guided lesson in it.
 
 Check that every reference solution passes (inside the CT):
 

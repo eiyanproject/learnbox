@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/eiyanproject/learnbox/internal/content"
 	"github.com/eiyanproject/learnbox/internal/game"
+	"github.com/eiyanproject/learnbox/internal/progress"
 )
 
 // location is the timezone days are counted in, for streaks and the badges
@@ -41,4 +43,14 @@ func (s *Server) summary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, sum)
+}
+
+// worth is what a lesson pays in full, what it pays this learner now, and
+// what revealing one more hint would take off that.
+func (s *Server) worth(l *content.Lesson, e progress.Entry) (full, now, hintCost int) {
+	full, now, ok := game.Worth(s.Lib, l, e)
+	if ok && e.Status != progress.Passed && e.HintsRevealed < len(l.Hints) {
+		hintCost = now - game.AfterHints(full, game.PaidHints(e)+1)
+	}
+	return full, now, hintCost
 }

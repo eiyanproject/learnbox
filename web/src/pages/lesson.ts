@@ -3,6 +3,7 @@ import { CodeEditor } from "../components/editor";
 import { keyBar } from "../components/keybar";
 import { TermView } from "../components/terminal";
 import { clear, h, html, icon, toast } from "../dom";
+import { showReward } from "../game";
 import { icons } from "../icons";
 import { navigate, type Page } from "../router";
 import type { Shell } from "../shell";
@@ -59,6 +60,7 @@ class LessonView {
   private disposed = false;
 
   private statusBadge = h("span", { class: "badge" });
+  private xpBadge = h("span", { class: "badge xp" });
   private saveState = h("span", { class: "save-state" }, "saved");
   private hintsBox = h("div", { class: "hints" });
   private resultsBox = h("div", { class: "results" });
@@ -111,6 +113,7 @@ class LessonView {
         ),
         h("h1", { title: l.title }, l.title),
       ),
+      this.xpBadge,
       this.statusBadge,
       h(
         "div",
@@ -329,7 +332,12 @@ class LessonView {
       this.lesson.attempts = r.attempts;
       this.paintStatus();
       this.paintResults(r);
-      if (r.result.passed && !wasPassed) this.shell.invalidateTracks();
+      showReward(r.reward);
+      if (r.result.passed && !wasPassed) {
+        this.shell.invalidateTracks();
+        this.lesson.hint_cost = 0; // hints read from here on are free
+        this.paintHints(this.lesson.hints);
+      }
     } catch (e) {
       clear(this.resultsBox);
       this.resultsBox.append(h("div", { class: "empty" }, h("h2", null, "Check failed to run"), h("p", null, e instanceof Error ? e.message : String(e))));
@@ -343,6 +351,9 @@ class LessonView {
     try {
       const r = await api.hint(this.lesson.id);
       this.lesson.hints = r.hints;
+      this.lesson.xp = r.xp;
+      this.lesson.hint_cost = r.hint_cost;
+      this.paintStatus();
       this.paintHints(r.hints);
       this.hintsBox.lastElementChild?.scrollIntoView({ behavior: "smooth", block: "nearest" });
     } catch (e) {
@@ -377,6 +388,11 @@ class LessonView {
     const s = this.lesson.status;
     this.statusBadge.className = `badge ${s === "passed" ? "passed" : s === "started" ? "started" : ""}`;
     this.statusBadge.textContent = s === "passed" ? "passed" : this.lesson.attempts ? `${this.lesson.attempts} attempt${this.lesson.attempts === 1 ? "" : "s"}` : "in progress";
+    const { xp, xp_full } = this.lesson;
+    this.xpBadge.hidden = !xp_full;
+    this.xpBadge.textContent = s === "passed" ? `${xp} XP earned` : `worth ${xp} XP`;
+    this.xpBadge.classList.toggle("cut", xp < xp_full);
+    this.xpBadge.title = xp < xp_full ? `${xp_full} XP less ${xp_full - xp} for hints` : "";
   }
 
   private paintHints(hints: string[]) {
@@ -389,7 +405,13 @@ class LessonView {
         h("h2", null, "Hints"),
         h("span", { class: "lbl" }, `${hints.length} / ${total}`),
         hints.length < total
-          ? h("button", { class: "btn am", onclick: () => void this.hint() }, icon(icons.bulb), hints.length ? "Another hint" : "Show a hint")
+          ? h(
+              "button",
+              { class: "btn am", title: this.lesson.hint_cost ? `Costs ${this.lesson.hint_cost} XP on this lesson` : "", onclick: () => void this.hint() },
+              icon(icons.bulb),
+              hints.length ? "Another hint" : "Show a hint",
+              this.lesson.hint_cost ? ` · −${this.lesson.hint_cost} XP` : "",
+            )
           : null,
       ),
       ...hints.map((hint) => html("div", "hint", hint)),

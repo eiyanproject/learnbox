@@ -21,6 +21,15 @@ Branch `gamification`. Not merged, not deployed. `main` is untouched.
 | Lessons passed before this ships | **Count them** for XP and badges |
 | Hints | **Each hint revealed costs a little XP**, with a floor |
 
+Scoring decisions, made 2026-10-05:
+
+| Question | Answer |
+|---|---|
+| Lesson XP | **Scaled by section**: an `xp:` per section in `track.yaml` (50 / 75 / 100 / 150) |
+| Practice exercises | **10 XP x Exercism difficulty** (10-100) |
+| Hint cost | **10% of the lesson each, floor 50%**; hints read after the pass are free |
+| Badge families | **All four offered**: milestones and completion, style, calendar, secret |
+
 Keep these in mind too, from the owner's standing preferences: ask before
 settling a genuine judgement call; do only what was asked; the owner runs
 deploys themselves (`bash update-lxc.sh --ctid 116 --yes`, then
@@ -32,7 +41,7 @@ The first attempt tried to build everything in one pass and stalled. Split
 into pieces that each work and ship by themselves:
 
 1. **Profiles** - DONE, merged to main and deployed (c6d5661).
-2. **XP, levels and badges** - the scoring engine (a pure package, computed
+2. **XP, levels and badges** - DONE on this branch. The scoring engine (a pure package, computed
    from a progress snapshot, unit-tested), a profile summary endpoint, rewards
    returned with each check, an XP/level indicator in the top bar, a badges
    page, toasts. No timed challenges yet.
@@ -98,6 +107,17 @@ How it was going to be built - a starting point, not a decision:
 - Once XP exists, quiz topics and passed mock exams can award it.
 
 ## Done on this branch
+
+- **Milestone 2.** `internal/game`: XP, hint cost, levels and badges as pure
+  functions of the library and a progress snapshot, with tests. `GET
+  /api/summary`; `reward` in every check response; `xp`, `xp_full` and
+  `hint_cost` on a lesson. The progress entry gained `pass_attempts` and
+  `free_hints`, recorded from now on (older passes fall back to the totals).
+  Frontend: level chip in the top bar, `/badges`, reward cards after a check,
+  the hint button shows its cost. `LEARNBOX_TZ` sets whose day it is.
+  Calls made without asking: the level curve (level n at 50n(n-1) XP), rank
+  titles every five levels, the badge names and thresholds, and that
+  "guided" (for track badges) means a lesson with no difficulty rating.
 
 - `internal/profiles` - the profile registry (`profiles.json` in the data
   dir). The first start creates profile `default` ("Learner"), which keeps the

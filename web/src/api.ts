@@ -55,6 +55,11 @@ export interface Lesson {
   hints: string[];
   status: Status;
   attempts: number;
+  /** What passing pays with no hints, and what it pays (or paid) this learner. */
+  xp_full: number;
+  xp: number;
+  /** XP the next hint would take off; 0 once passed or out of hints. */
+  hint_cost: number;
   workspace: string;
   prev: LessonLink | null;
   next: LessonLink | null;
@@ -85,6 +90,50 @@ export interface CheckResponse {
   result: CheckResult;
   status: Status;
   attempts: number;
+  reward: Reward;
+}
+
+export interface Standing {
+  xp: number;
+  level: number;
+  title: string;
+  /** XP totals at which this level and the next one start. */
+  level_floor: number;
+  next_level: number;
+}
+
+export type BadgeFamily = "milestone" | "completion" | "style" | "calendar" | "secret";
+
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  family: BadgeFamily;
+  earned: boolean;
+  earned_at?: string;
+  have: number;
+  want: number;
+}
+
+export interface TrackXP {
+  lang: string;
+  title: string;
+  xp: number;
+  possible: number;
+}
+
+export interface Summary extends Standing {
+  passed: number;
+  tracks: TrackXP[];
+  badges: Badge[];
+}
+
+/** What one check earned. */
+export interface Reward {
+  xp: number;
+  level_up: boolean;
+  badges: Badge[];
+  standing: Standing;
 }
 
 export interface ServerStatus {
@@ -151,12 +200,13 @@ const F = (id: string, name: string) => `${L(id)}/files/${name.split("/").map(en
 export const api = {
   status: () => call<ServerStatus>("GET", "/api/status"),
   tracks: () => call<TracksResponse>("GET", "/api/tracks"),
+  summary: () => call<Summary>("GET", "/api/summary"),
   lesson: (id: string) => call<Lesson>("GET", L(id)),
   readFile: (id: string, name: string) => call<FileBody>("GET", F(id, name)),
   writeFile: (id: string, name: string, content: string) => call<{ mtime: number }>("PUT", F(id, name), { content }),
   mtimes: (id: string) => call<Record<string, number>>("GET", `${L(id)}/mtimes`),
   check: (id: string) => call<CheckResponse>("POST", `${L(id)}/check`),
-  hint: (id: string) => call<{ hints: string[]; hints_total: number }>("POST", `${L(id)}/hint`),
+  hint: (id: string) => call<{ hints: string[]; hints_total: number; xp: number; hint_cost: number }>("POST", `${L(id)}/hint`),
   reset: (id: string) => call<{ status: string; backup?: string }>("POST", `${L(id)}/reset`),
   profiles: () => call<ProfilesResponse>("GET", "/api/profiles"),
   createProfile: (name: string) => call<Profile>("POST", "/api/profiles", { name }),

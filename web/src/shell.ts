@@ -1,6 +1,7 @@
 import { api, CHOOSE_PROFILE, type ServerStatus, type TracksResponse } from "./api";
 import { openProfilePicker } from "./components/profiles";
 import { clear, h, icon } from "./dom";
+import { levelPct, onStanding, refreshStanding, xpText } from "./game";
 import { icons } from "./icons";
 import { navigate } from "./router";
 import { onTheme, theme, toggleTheme } from "./theme";
@@ -46,6 +47,7 @@ export class Shell {
       nav("python", "Python", "/track/python", "py"),
       nav("rust", "Rust", "/track/rust", "rs"),
       nav("terminal", "Terminal", "/terminal", icon(icons.terminal)),
+      nav("badges", "Badges", "/badges", icon(icons.medal)),
       h("div", { class: "spacer" }),
       railTheme,
     );
@@ -55,7 +57,7 @@ export class Shell {
     this.profileBtn = h("button", { class: "tog prof", title: "Switch profile", onclick: () => void openProfilePicker(false) }, "Profile");
     this.content = h("main", { class: "content" });
 
-    const top = h("header", { class: "top" }, this.jumpBox(), this.statusEl, this.profileBtn, this.themeBtn);
+    const top = h("header", { class: "top" }, this.jumpBox(), this.statusEl, this.xpChip(), this.profileBtn, this.themeBtn);
     root.append(h("div", { class: "shell" }, rail, h("div", { class: "col" }, top, this.content)));
 
     const paintTheme = () => {
@@ -83,6 +85,23 @@ export class Shell {
     } catch {
       /* the status line already says the server is offline */
     }
+  }
+
+  /** Level and XP in the top bar; opens the badges page. */
+  private xpChip(): HTMLElement {
+    const level = h("span", { class: "xp-lv" });
+    const bar = h("i");
+    const total = h("span", { class: "xp-n" });
+    const chip = h("button", { class: "tog xp", hidden: true, onclick: () => navigate("/badges") }, level, h("span", { class: "meter cy" }, bar), total);
+    onStanding((s) => {
+      chip.hidden = false;
+      chip.title = `Level ${s.level} · ${s.title} · ${xpText(s.next_level - s.xp)} to level ${s.level + 1}`;
+      level.textContent = `LV ${s.level}`;
+      bar.style.width = `${levelPct(s)}%`;
+      total.textContent = xpText(s.xp);
+    });
+    void refreshStanding();
+    return chip;
   }
 
   setActive(key: string) {

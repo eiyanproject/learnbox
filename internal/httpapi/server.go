@@ -466,7 +466,7 @@ func (s *Server) lesson(w http.ResponseWriter, r *http.Request) {
 		return map[string]string{"id": x.ID(), "title": x.Title}
 	}
 	prev, next := s.Lib.Neighbours(l.ID())
-	xpFull, xpNow, _ := game.Worth(s.Lib, l, e)
+	xpFull, xpNow, hintCost := s.worth(l, e)
 	writeJSON(w, http.StatusOK, map[string]any{
 		"id": l.ID(), "lang": l.Lang, "section": l.Section, "slug": l.Slug,
 		"title": l.Title, "summary": l.Summary, "html": html, "source_html": source,
@@ -474,7 +474,7 @@ func (s *Server) lesson(w http.ResponseWriter, r *http.Request) {
 		"files": l.Files, "run": l.Run, "has_tests": l.HasTest,
 		"hints_total": len(l.Hints), "hints": renderHints(l.Hints, e.HintsRevealed),
 		"status": e.Status, "attempts": e.Attempts,
-		"xp_full": xpFull, "xp": xpNow,
+		"xp_full": xpFull, "xp": xpNow, "hint_cost": hintCost,
 		"workspace": "~/" + v.WS.Rel(l),
 		"prev":      link(prev), "next": link(next),
 	})
@@ -622,8 +622,11 @@ func (s *Server) hint(w http.ResponseWriter, r *http.Request) {
 		s.fail(w, "progress", err)
 		return
 	}
-	_, xpNow, _ := game.Worth(s.Lib, l, e)
-	writeJSON(w, http.StatusOK, map[string]any{"hints": renderHints(l.Hints, e.HintsRevealed), "hints_total": len(l.Hints), "xp": xpNow})
+	_, xpNow, hintCost := s.worth(l, e)
+	writeJSON(w, http.StatusOK, map[string]any{
+		"hints": renderHints(l.Hints, e.HintsRevealed), "hints_total": len(l.Hints),
+		"xp": xpNow, "hint_cost": hintCost,
+	})
 }
 
 func (s *Server) reset(w http.ResponseWriter, r *http.Request) {
