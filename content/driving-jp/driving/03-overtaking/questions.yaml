@@ -1,0 +1,143 @@
+- id: ovt-double
+  en: "When the car ahead is overtaking another car, you may overtake both at once if the road ahead is clear."
+  ja: "前の車が自動車を追い越そうとしているときでも、前方が安全であれば、その車を追い越してよい。"
+  answer: false
+  why: "That is a double overtake (二重追越し) and is forbidden."
+  ref: "教則 第5章第6節1(2)ア"
+  exams: [kari, hon]
+
+- id: ovt-ahead-turning-right
+  en: "You must not overtake a car ahead that is moving to the right in order to turn right."
+  ja: "前の車が右折などのため右側に進路を変えようとしているときは、追越しをしてはならない。"
+  answer: true
+  why: "Overtaking a car moving right to turn is forbidden."
+  ref: "教則 第5章第6節1(2)イ"
+  exams: [kari, hon]
+
+- id: ovt-being-overtaken
+  en: "If the car behind has started to overtake you, you must not start overtaking the car ahead."
+  ja: "後ろの車が自分の車を追い越そうとしているときは、前の車を追い越してはならない。"
+  answer: true
+  why: "That is one of the situations where overtaking is forbidden."
+  ref: "教則 第5章第6節1(2)エ"
+  exams: [kari, hon]
+
+- id: ovt-intersection-30m
+  en: "You must not overtake in an intersection or within 30 metres before it, unless you are on the priority road."
+  ja: "交差点とその手前から30メートル以内の場所では、優先道路を通行している場合を除き、追越しをしてはならない。"
+  answer: true
+  why: "Intersections and the 30 m before them are no-overtaking places, except on the priority road."
+  ref: "教則 第5章第6節1(3)オ"
+  exams: [kari, hon]
+
+- id: ovt-crossing-30m
+  en: "Within 30 metres before a railway crossing, you may overtake if the crossing gate is up."
+  ja: "踏切の手前30メートル以内の場所でも、遮断機が上がっていれば追越しをしてよい。"
+  answer: false
+  why: "A railway crossing and the 30 m before it are a no-overtaking place, whatever the gate is doing."
+  ref: "教則 第5章第6節1(3)カ"
+  exams: [kari, hon]
+
+- id: ovt-crosswalk-30m-pass
+  en: "Within 30 metres before a crosswalk, you must neither overtake nor pass alongside another vehicle."
+  ja: "横断歩道とその手前から30メートル以内の場所では、ほかの車を追い越したり追い抜いたりしてはならない。"
+  answer: true
+  why: "Near a crosswalk both overtaking (追越し) and passing (追い抜き) are forbidden."
+  ref: "教則 第5章第3節2(4)"
+  exams: [kari, hon]
+
+- id: ovt-tunnel-lanes
+  en: "Overtaking in a tunnel is forbidden, even where the tunnel has marked lanes."
+  ja: "トンネルの中では、車両通行帯がある場合でも追越しをしてはならない。"
+  answer: false
+  why: "The tunnel ban does not apply where the tunnel has lanes (車両通行帯)."
+  ref: "教則 第5章第6節1(3)エ"
+  exams: [kari, hon]
+
+- id: ovt-bend
+  en: "Near a bend in the road you must not overtake."
+  ja: "道路の曲がり角付近では、追越しをしてはならない。"
+  answer: true
+  why: "Bends are on the list of no-overtaking places."
+  ref: "教則 第5章第6節1(3)イ"
+  exams: [kari, hon]
+
+- id: ovt-steep-down
+  en: "On a steep downhill slope you must not overtake."
+  ja: "こう配の急な下り坂では、追越しをしてはならない。"
+  answer: true
+  why: "Near the top of an uphill slope and on a steep downhill slope, overtaking is forbidden."
+  ref: "教則 第5章第6節1(3)ウ"
+  exams: [kari, hon]
+
+- id: ovt-right-side
+  en: "As a rule, you overtake on the right of the vehicle ahead."
+  ja: "ほかの車を追い越すときは、原則としてその右側を通行しなければならない。"
+  answer: true
+  why: "Overtake on the right, except in the two cases where the left is required."
+  ref: "教則 第5章第6節2(1)"
+  exams: [kari, hon]
+
+- id: ovt-left-turning-right
+  en: "A car that has moved to the centre of the road to turn right is overtaken on its left."
+  ja: "右折するため道路の中央に寄って通行している車を追い越すときは、その左側を通行しなければならない。"
+  answer: true
+  why: "That, and trams, are overtaken on the left."
+  ref: "教則 第5章第6節2(1)"
+  exams: [kari, hon]
+
+- id: ovt-tram-right
+  en: "A tram is overtaken on its right, like any other vehicle."
+  ja: "路面電車を追い越すときは、ほかの車と同じくその右側を通行しなければならない。"
+  answer: false
+  why: "Trams are overtaken on the LEFT."
+  ref: "教則 第5章第6節2(1)"
+  exams: [kari, hon]
+
+- id: ovt-speed-up-when-passed
+  en: "When another car is overtaking you, you should speed up a little so it can get past more quickly."
+  ja: "追い越されるときは、相手が早く追い越せるように速度を上げるとよい。"
+  answer: false
+  why: "When being overtaken, you must not speed up until the overtaking is finished."
+  ref: "教則 第5章第6節2(4)"
+  exams: [kari, hon]
+
+- id: ovt-make-room
+  en: "If there isn't enough room for a car to overtake you, keep as far left as you can and let it by."
+  ja: "追越しに十分な余地のない場合は、できるだけ左に寄って進路を譲らなければならない。"
+  answer: true
+  why: "That is the rule for being overtaken on a narrow road."
+  ref: "教則 第5章第6節2(4)"
+  exams: [kari, hon]
+
+- id: ovt-return-mirror
+  en: "After overtaking, move back left once you can see the car you passed in the rear-view mirror."
+  ja: "追い越した車がルームミラーで見えるくらいの距離まで進んでから、進路を緩やかに左にとる。"
+  answer: true
+  why: "That is the recommended distance before moving back in."
+  ref: "教則 第5章第6節3(6)"
+  exams: [kari, hon]
+
+- id: ovt-accelerate-over-limit
+  en: "While overtaking you may briefly go over the speed limit to finish quickly."
+  ja: "追越しをするときは、早く終えるために一時的に最高速度を超えてもよい。"
+  answer: false
+  why: "The steps say to accelerate within the speed limit; there is no overtaking exception."
+  ref: "教則 第5章第6節3(4)"
+  exams: [kari, hon]
+
+- id: ovt-cut-in-crossing
+  en: "When cars are stopped in a queue at a railway crossing, you must not cut in front of them."
+  ja: "前の車が踏切などで停止や徐行しているときは、その前に割り込んではならない。"
+  answer: true
+  why: "Cutting in front of, or crossing in front of, cars stopped or crawling at an intersection or railway crossing is forbidden."
+  ref: "教則 第5章第6節4"
+  exams: [kari, hon]
+
+- id: ovt-obstacle-yield
+  en: "When there is an obstacle on your side of the road ahead, slow down or stop beforehand and let oncoming traffic go first."
+  ja: "進路の前方に障害物があるときは、あらかじめ一時停止か減速をして、反対方向からの車に道を譲る。"
+  answer: true
+  why: "The car on the side with the obstacle gives way."
+  ref: "教則 第5章第6節5(2)"
+  exams: [kari, hon]

@@ -1,0 +1,175 @@
+- id: ped-gap-or-crawl
+  en: "When passing a pedestrian, leave a safe gap or crawl."
+  ja: "歩行者のそばを通るときは、歩行者との間に安全な間隔を空けるか、徐行しなければならない。"
+  answer: true
+  why: "One or the other is required."
+  ref: "教則 第5章第3節1(1)"
+  exams: [kari, hon]
+
+- id: ped-safety-zone-crawl
+  en: "When passing a safety zone with pedestrians in it, you must crawl."
+  ja: "歩行者がいる安全地帯のそばを通るときは、徐行しなければならない。"
+  answer: true
+  why: "A safety zone with people in it must be passed at a crawl."
+  ref: "教則 第5章第3節1(2)"
+  exams: [kari, hon]
+
+- id: ped-tram-stop-wait
+  en: "Behind a tram stopped at a stop with people getting off, you must stop and wait until they are clear."
+  ja: "停留所で止まっている路面電車の後方では、乗り降りする人や道路を横断する人がいなくなるまで停止して待たなければならない。"
+  answer: true
+  why: "Stop and wait for the people getting on, off and across."
+  ref: "教則 第5章第3節1(3)"
+  exams: [kari, hon]
+
+- id: ped-tram-15m
+  en: "Behind a stopped tram with nobody getting on or off, you may crawl past if there is at least 1.5 metres between you and the tram."
+  ja: "停留所で止まっている路面電車に乗り降りする人がいないときで、路面電車との間に1.5メートル以上の間隔がとれるときは、徐行して進むことができる。"
+  answer: true
+  why: "That is one of the two exceptions (the other is a safety zone)."
+  ref: "教則 第5章第3節1(3)"
+  exams: [kari, hon]
+
+- id: ped-puddle
+  en: "Where there are puddles, drive so as not to splash mud or water on people, for example by crawling."
+  ja: "ぬかるみや水たまりのあるところでは、泥や水をはねて他人に迷惑を掛けないように徐行するなど注意しなければならない。"
+  answer: true
+  why: "That is a requirement, not just good manners."
+  ref: "教則 第5章第3節1(4)"
+  exams: [kari, hon]
+
+- id: cw-slow-approach
+  en: "Approaching a crosswalk, unless it is clear that nobody is crossing, slow down enough to be able to stop before it."
+  ja: "横断歩道に近づいたときは、横断する人がいないことが明らかな場合のほかは、その手前で停止できるように速度を落として進まなければならない。"
+  answer: true
+  why: "That is the approach rule."
+  ref: "教則 第5章第3節2(2)"
+  exams: [kari, hon]
+
+- id: cw-about-to-cross
+  en: "If a pedestrian is about to cross at a crosswalk, you may go on if you pass before they step out."
+  ja: "横断歩道を歩行者が横断しようとしているときでも、歩行者が渡り始める前であれば、そのまま通過してよい。"
+  answer: false
+  why: "If someone is crossing OR about to cross, stop before the crosswalk and let them go."
+  ref: "教則 第5章第3節2(2)"
+  exams: [kari, hon]
+
+- id: cw-stop-line
+  en: "Where there is a stop line before the crosswalk, stop before the stop line to let pedestrians cross."
+  ja: "横断歩道の手前に停止線があるときは、その停止線の手前で一時停止をして歩行者に道を譲らなければならない。"
+  answer: true
+  why: "Stop before the stop line where there is one."
+  ref: "教則 第5章第3節2(2)"
+  exams: [kari, hon]
+
+- id: cw-stopped-car
+  en: "If a car is stopped just before a crosswalk, you must stop before going past it."
+  ja: "横断歩道やその手前で止まっている車があるときは、そのそばを通って前方に出る前に一時停止をしなければならない。"
+  answer: true
+  why: "Someone may be crossing in front of the stopped car, out of your sight."
+  ref: "教則 第5章第3節2(3)"
+  exams: [kari, hon]
+
+- id: cw-stopped-car-crawl
+  en: "If a car is stopped before a crosswalk with nobody visible crossing, you may crawl past it without stopping."
+  ja: "横断歩道の手前で止まっている車があっても、横断する人が見えなければ、一時停止せずに徐行して通過してよい。"
+  answer: false
+  why: "You must stop before passing it - the stopped car can hide someone crossing."
+  ref: "教則 第5章第3節2(3)"
+  exams: [kari, hon]
+
+- id: cw-no-crosswalk-intersection
+  en: "At an intersection with no crosswalk, a car may go on even if a pedestrian is crossing, because there is no crosswalk."
+  ja: "横断歩道のない交差点では、歩行者が横断していても、車はその通行を妨げて進んでよい。"
+  answer: false
+  why: "At or near an intersection without a crosswalk, you still must not get in the way of people crossing."
+  ref: "教則 第5章第3節2(1)"
+  exams: [kari, hon]
+
+- id: ped-white-cane
+  en: "When a person with a white cane is walking, stop or crawl so they can pass safely."
+  ja: "白や黄のつえを持った人が歩いている場合には、一時停止か徐行をして、安全に通れるようにしなければならない。"
+  answer: true
+  why: "White or yellow canes, guide dogs and wheelchairs all require this."
+  ref: "教則 第5章第3節3"
+  exams: [kari, hon]
+
+- id: ped-guide-dog-horn
+  en: "When a person with a guide dog is walking ahead, sound the horn to let them know you are there."
+  ja: "盲導犬を連れた人が歩いているときは、警音器を鳴らして車の接近を知らせるとよい。"
+  answer: false
+  why: "Stop or crawl so they can pass safely. Using the horn here is not allowed and could startle them."
+  ref: "教則 第5章第3節3・第5節1(5)"
+  exams: [kari, hon]
+
+- id: ped-child-alone
+  en: "When a child is walking alone, stop or crawl so the child can pass safely."
+  ja: "子供が独りで歩いている場合には、一時停止か徐行をして、安全に通れるようにしなければならない。"
+  answer: true
+  why: "Children may run out suddenly."
+  ref: "教則 第5章第3節4(1)"
+  exams: [kari, hon]
+
+- id: ped-school-bus
+  en: "When passing a stopped school bus, crawl and check it is safe."
+  ja: "止まっている通学通園バスのそばを通るときは、徐行して安全を確かめなければならない。"
+  answer: true
+  why: "That is a requirement."
+  ref: "教則 第5章第3節4(2)"
+  exams: [kari, hon]
+
+- id: ped-elderly
+  en: "When an elderly person walking with a cane is crossing slowly, keep going at the same speed, as they will finish crossing before you arrive."
+  ja: "つえを持って歩いている高齢者が通行しているときは、自分が到着する前に渡り終えるので、そのままの速度で進んでよい。"
+  answer: false
+  why: "Stop or crawl so they can pass safely; elderly pedestrians may walk slowly or unsteadily."
+  ref: "教則 第5章第3節5"
+  exams: [kari, hon]
+
+- id: ped-elderly-just-ahead
+  en: "Accidents involving elderly pedestrians often happen when they cross just in front of or just behind a car."
+  ja: "高齢の歩行者の事故は、高齢者が車の直前又は直後を横断しているときに多く起こっている。"
+  answer: true
+  why: "The Rules of the Road point this out."
+  ref: "教則 第5章第3節5"
+  exams: [kari, hon]
+
+- id: ped-pavement-entry-stop
+  en: "When crossing a pavement to get into a property, stop just before the pavement."
+  ja: "道路に面した場所に出入りするため歩道を横切る場合には、その直前で一時停止しなければならない。"
+  answer: true
+  why: "Stop just before it, and don't get in the way of pedestrians."
+  ref: "教則 第5章第3節6(2)"
+  exams: [kari, hon]
+
+- id: ped-pavement-entry-crawl
+  en: "When crossing a side strip to enter a car park, crawling is enough if no pedestrians are near."
+  ja: "道路に面した駐車場に入るため路側帯を横切るときは、歩行者がいなければ徐行して通過すればよい。"
+  answer: false
+  why: "Crossing a pavement or side strip to enter a property needs a stop just before it."
+  ref: "教則 第5章第3節6(2)"
+  exams: [kari, hon]
+
+- id: ped-pedestrian-road
+  en: "On a pedestrian-only road, a car with special permission must still pay attention to pedestrians and crawl."
+  ja: "歩行者用道路を特に通行を認められた車が通るときは、特に歩行者に注意して徐行しなければならない。"
+  answer: true
+  why: "Permission to drive there comes with a duty to crawl."
+  ref: "教則 第5章第3節6(1)"
+  exams: [kari, hon]
+
+- id: bike-gap
+  en: "When passing a cyclist on the road, leave a safe gap or crawl, expecting the bicycle to wobble."
+  ja: "自転車のそばを通るときは、自転車のふらつきなどを予想し、安全な間隔を空けるか徐行しなければならない。"
+  answer: true
+  why: "Bicycles are unstable and give the rider no protection."
+  ref: "教則 第5章第3節7(2)"
+  exams: [kari, hon]
+
+- id: bike-pavement
+  en: "Bicycles are pedestrians in law, so they normally ride on the pavement."
+  ja: "自転車は歩行者と同じ扱いであり、原則として歩道を通行することとされている。"
+  answer: false
+  why: "Bicycles are a kind of vehicle and normally use the road (車道)."
+  ref: "教則 第5章第3節7(1)"
+  exams: [kari, hon]

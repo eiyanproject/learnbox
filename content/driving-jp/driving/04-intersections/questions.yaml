@@ -1,0 +1,151 @@
+- id: int-left-keep-left
+  en: "When turning left, keep as far to the left of the road as you can beforehand, and crawl along the edge of the intersection."
+  ja: "左折するときは、あらかじめできるだけ道路の左端に寄り、交差点の側端に沿って徐行しながら通行しなければならない。"
+  answer: true
+  why: "That is the method for a left turn."
+  ref: "教則 第5章第7節2(1)"
+  exams: [kari, hon]
+
+- id: int-right-centre
+  en: "When turning right, move as close to the centre of the road as you can beforehand, and crawl just inside the centre of the intersection."
+  ja: "右折するときは、あらかじめできるだけ道路の中央に寄り、交差点の中心のすぐ内側を徐行しながら通行しなければならない。"
+  answer: true
+  why: "That is the method for a right turn (two-stage turns by mopeds aside)."
+  ref: "教則 第5章第7節2(2)"
+  exams: [kari, hon]
+
+- id: int-right-big-arc
+  en: "When turning right, swing wide around the outside of the centre of the intersection so you don't cut the corner."
+  ja: "右折するときは、交差点の中心の外側を大回りして通行しなければならない。"
+  answer: false
+  why: "Turn right just INSIDE the centre of the intersection, crawling."
+  ref: "教則 第5章第7節2(2)"
+  exams: [kari, hon]
+
+- id: int-oneway-right
+  en: "Turning right from a one-way road, move to the right edge of the road beforehand."
+  ja: "一方通行の道路から右折するときは、道路の右端に寄り、交差点の中心の内側を徐行しながら通行しなければならない。"
+  answer: true
+  why: "On a one-way road the right turn is made from the right edge."
+  ref: "教則 第5章第7節2(3)"
+  exams: [kari, hon]
+
+- id: int-right-first-in
+  en: "A car turning right that entered the intersection first may turn ahead of oncoming cars going straight on."
+  ja: "右折しようとする車は、先に交差点に入っていれば、直進する対向車より先に右折することができる。"
+  answer: false
+  why: "Even if you entered first, you must not get in the way of vehicles going straight or turning left."
+  ref: "教則 第5章第7節2(5)"
+  exams: [kari, hon]
+
+- id: int-right-motorcycle
+  en: "Turning right, take special care: a motorcycle coming straight on in the oncoming lane can be hard to see."
+  ja: "右折しようとするときは、対向車線を直進する二輪車が見えにくくなることがあるので、十分注意する。"
+  answer: true
+  why: "The Rules of the Road single this out."
+  ref: "教則 第5章第7節1(1)"
+  exams: [kari, hon]
+
+- id: int-inner-wheel
+  en: "When a car turns, its rear wheels pass outside the path of its front wheels."
+  ja: "車が右左折するときは、後輪が前輪より外側を通る。"
+  answer: false
+  why: "The rear wheels pass INSIDE the front wheels' path - that difference is 内輪差, and it is largest on large vehicles."
+  ref: "教則 第5章第7節1(3)"
+  exams: [kari, hon]
+
+- id: int-green-jammed
+  en: "If the traffic ahead could leave you stopped inside the intersection, blocking crossing traffic, you must not enter it even on green."
+  ja: "前方の交通が混雑していて交差点内で止まってしまうおそれがあるときは、信号が青でも交差点に入ってはならない。"
+  answer: true
+  why: "Don't enter if you could end up stuck in the box."
+  ref: "教則 第5章第7節2(9)"
+  exams: [kari, hon]
+
+- id: int-keep-clear
+  en: "You must not enter a 'keep clear' (停止禁止部分) marking if you could end up stopped on it."
+  ja: "「停止禁止部分」の標示のある場所で動きがとれなくなるおそれがあるときは、その場所に入ってはならない。"
+  answer: true
+  why: "Keep-clear markings, crosswalks and railway crossings follow the same rule as the intersection."
+  ref: "教則 第5章第7節2(9)"
+  exams: [kari, hon]
+
+- id: int-uncontrolled-wider
+  en: "At an intersection without signals, a car on the narrower road must crawl and let traffic on the wider road go first."
+  ja: "交通整理の行われていない交差点で、交差する道路の幅が広いときは、徐行するとともに、交差する道路を通行する車の進行を妨げてはならない。"
+  answer: true
+  why: "Wider road (or priority road) goes first; crawl."
+  ref: "教則 第5章第7節3(1)"
+  exams: [kari, hon]
+
+- id: int-uncontrolled-from-left
+  en: "At an uncontrolled intersection of roads of about the same width, a car must give way to vehicles coming from its left."
+  ja: "交通整理の行われていない道幅が同じような道路の交差点では、左方から来る車の進行を妨げてはならない。"
+  answer: true
+  why: "Same width: left-hand traffic (and trams) first."
+  ref: "教則 第5章第7節3(2)"
+  exams: [kari, hon]
+
+- id: int-uncontrolled-from-right
+  en: "At an uncontrolled intersection of roads of about the same width, vehicles coming from the right go first."
+  ja: "交通整理の行われていない道幅が同じような道路の交差点では、右方から来る車が優先する。"
+  answer: false
+  why: "It is the vehicle from the LEFT that goes first."
+  ref: "教則 第5章第7節3(2)"
+  exams: [kari, hon]
+
+- id: int-tram-first
+  en: "At an uncontrolled intersection of roads of about the same width, trams go first."
+  ja: "交通整理の行われていない道幅が同じような道路の交差点では、路面電車の進行を妨げてはならない。"
+  answer: true
+  why: "Trams, and vehicles from the left, go first."
+  ref: "教則 第5章第7節3(2)"
+  exams: [kari, hon]
+
+- id: int-stop-sign-where
+  en: "At a stop sign with no stop line, stop just before the intersection."
+  ja: "「一時停止」の標識がある交差点で停止線がないときは、交差点の直前で一時停止しなければならない。"
+  answer: true
+  why: "Just before the stop line, or just before the intersection where there is none."
+  ref: "教則 第5章第7節3(3)"
+  exams: [kari, hon]
+
+- id: int-stop-sign-then-go
+  en: "Once you have stopped at a stop sign, you have the right of way over traffic on the crossing road."
+  ja: "「一時停止」の標識に従って一時停止をすれば、交差する道路を通行する車より先に進むことができる。"
+  answer: false
+  why: "After stopping you must still let traffic on the crossing road go first."
+  ref: "教則 第5章第7節3(3)"
+  exams: [kari, hon]
+
+- id: int-flash-red-like-stop
+  en: "A flashing red light at an intersection means the same as a stop sign: stop, and let crossing traffic go first."
+  ja: "進行方向に赤の点滅信号があるときは、「一時停止」の標識がある場合と同じく、一時停止をして交差する道路の車の進行を妨げてはならない。"
+  answer: true
+  why: "The Rules of the Road treat the flashing red the same way."
+  ref: "教則 第5章第7節3(3)"
+  exams: [kari, hon]
+
+- id: rb-give-way-inside
+  en: "Entering a roundabout, crawl and give way to vehicles already in it."
+  ja: "環状交差点に入ろうとするときは、徐行するとともに、環状交差点内を通行する車の進行を妨げてはならない。"
+  answer: true
+  why: "Traffic in the roundabout has priority."
+  ref: "教則 第5章第7節4(3)"
+  exams: [kari, hon]
+
+- id: rb-right-turn-centre
+  en: "To turn right at a roundabout, move to the centre of the road beforehand, as at an ordinary intersection."
+  ja: "環状交差点で右折するときは、通常の交差点と同じく、あらかじめできるだけ道路の中央に寄らなければならない。"
+  answer: false
+  why: "At a roundabout, for every direction, keep to the LEFT edge and crawl along the edge of the roundabout."
+  ref: "教則 第5章第7節4(1)"
+  exams: [kari, hon]
+
+- id: rb-signal-exit
+  en: "Leaving a roundabout, signal left as you pass the exit before the one you will take."
+  ja: "環状交差点を出るときは、出ようとする地点の直前の出口の側方を通過したときに左側の方向指示器で合図を行う。"
+  answer: true
+  why: "That is when the exit signal starts (or on entering, if you leave at the first exit)."
+  ref: "教則 第5章第5節1(2)"
+  exams: [kari, hon]

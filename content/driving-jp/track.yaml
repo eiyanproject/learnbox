@@ -1,0 +1,20 @@
+title: "Japanese driving test"
+group: misc
+order: 100
+description: "Practice for the written tests of a Japanese ordinary car licence: the provisional (仮免) and the full (本免). Questions in English with the Japanese underneath, written from the National Police Agency's Rules of the Road (交通の方法に関する教則)."
+sections:
+  - id: basics
+    title: "Rules of the road"
+    description: "Signals, signs and markings, where a car may drive, and who goes first."
+  - id: driving
+    title: "Driving in traffic"
+    description: "Speed and braking, signalling and changing lanes, overtaking, intersections, pedestrians, railway crossings."
+  - id: parking
+    title: "Stopping and parking"
+    description: "Where you may not stop or park, how to park, and what to do before leaving the car."
+  - id: full
+    title: "Full licence topics"
+    description: "Before you drive, dangerous places and conditions, expressways, and accidents and breakdowns - mostly on the full licence test."
+  - id: scenarios
+    title: "Hazard scenarios"
+    description: "The full licence test's illustration questions: a scene and three statements, all three right to score."

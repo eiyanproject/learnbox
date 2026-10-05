@@ -1,0 +1,175 @@
+- id: sig-green-all-ways
+  en: "At a green light, a car may go straight ahead, turn left or turn right."
+  ja: "青色の灯火の信号では、自動車は直進、左折、右折をすることができる。"
+  answer: true
+  why: "For cars, a green light allows going straight, left and right."
+  ref: "教則 付表1(1) 青色の灯火"
+  exams: [kari, hon]
+
+- id: sig-yellow-must-stop-always
+  en: "When the light turns yellow, a car must stop at the stop position even if it is too close to stop safely."
+  ja: "信号が黄色に変わったときは、停止位置に近づいていて安全に停止できない場合でも、必ず停止位置で停止しなければならない。"
+  answer: false
+  why: "A car may not go past the stop position on yellow - but if it was already so close when the light changed that it cannot stop safely, it may go on."
+  ref: "教則 付表1(1) 黄色の灯火"
+  exams: [kari, hon]
+
+- id: sig-yellow-go-carefully
+  en: "A yellow light means a car may go on, as long as it watches the other traffic."
+  ja: "黄色の灯火の信号は、他の交通に注意して進むことができることを意味する。"
+  answer: false
+  why: "That is a flashing yellow. A steady yellow means do not go past the stop position, unless you cannot stop safely."
+  ref: "教則 付表1(1) 黄色の灯火・黄色の灯火の点滅"
+  exams: [kari, hon]
+
+- id: sig-red-finish-left
+  en: "A car that is already turning left in an intersection when its signal turns red may carry on and finish the turn."
+  ja: "交差点で既に左折している自動車は、左折方向の信号が赤になっても、そのまま進むことができる。"
+  answer: true
+  why: "A car already turning left may go on even though the signal for that direction is red."
+  ref: "教則 付表1(1) 赤色の灯火(3)"
+  exams: [kari, hon]
+
+- id: sig-red-finish-right
+  en: "A car already turning right in an intersection when the signal turns red may finish the turn, but must not get in the way of traffic going on green."
+  ja: "交差点で既に右折している自動車は、右折方向の信号が赤になってもそのまま進むことができるが、青信号で進んで来る車の進行を妨げてはならない。"
+  answer: true
+  why: "It may continue, and must not obstruct the cars and trams that now have a green light."
+  ref: "教則 付表1(1) 赤色の灯火(4)"
+  exams: [kari, hon]
+
+- id: sig-green-arrow-on-red
+  en: "When a green arrow is lit, a car may go in the arrow's direction even though the main light is red."
+  ja: "青色の矢印の信号では、赤色の灯火が同時に表示されていても、車は矢印の方向に進むことができる。"
+  answer: true
+  why: "A car may go the arrow's way even when the light shows yellow or red."
+  ref: "教則 付表1(1) 青色の灯火の矢印"
+  exams: [kari, hon]
+
+- id: sig-right-arrow-uturn
+  en: "A green right-pointing arrow allows a car to make a U-turn as well as to turn right."
+  ja: "右向きの青色の矢印の信号では、自動車は右折のほか転回することもできる。"
+  answer: true
+  why: "For a right-pointing arrow, the table says turning around is also allowed."
+  ref: "教則 付表1(1) 青色の灯火の矢印"
+  exams: [kari, hon]
+
+- id: sig-yellow-arrow-cars
+  en: "A yellow arrow lets cars go in the direction of the arrow."
+  ja: "黄色の矢印の信号では、自動車は矢印の方向に進むことができる。"
+  answer: false
+  why: "A yellow arrow is for trams. Pedestrians and vehicles, cars included, may not go."
+  ref: "教則 付表1(1) 黄色の灯火の矢印"
+  exams: [kari, hon]
+
+- id: sig-flashing-yellow
+  en: "At a flashing yellow light, vehicles may go on while watching the other traffic."
+  ja: "黄色の灯火の点滅信号では、車は他の交通に注意して進むことができる。"
+  answer: true
+  why: "That is exactly what a flashing yellow means."
+  ref: "教則 付表1(1) 黄色の灯火の点滅"
+  exams: [kari, hon]
+
+- id: sig-flashing-red-no-stop
+  en: "At a flashing red light, a car may go on slowly without stopping if no other traffic is in sight."
+  ja: "赤色の灯火の点滅信号では、他の交通がなければ、一時停止しないで徐行して進むことができる。"
+  answer: false
+  why: "At a flashing red, a car must stop at the stop position every time."
+  ref: "教則 付表1(1) 赤色の灯火の点滅"
+  exams: [kari, hon]
+
+- id: sig-stop-before-crosswalk
+  en: "At an intersection with no stop line but a crosswalk right before it, the stop position is just before the crosswalk."
+  ja: "停止線がなく、交差点のすぐ手前に横断歩道がある場合の停止位置は、横断歩道の直前である。"
+  answer: true
+  why: "With no stop line, a car stops just before the intersection - or just before a crosswalk or bicycle crossing right at it."
+  ref: "教則 付表1 備考(1)"
+  exams: [kari, hon]
+
+- id: sig-side-red-means-green
+  en: "If the signal for the crossing road is red, the signal in front of you must be green."
+  ja: "交差する道路の信号が赤であれば、前方の信号は青である。"
+  answer: false
+  why: "Not necessarily: some signals turn red in every direction at once, and some change at different times. Always look at the signal in front of you."
+  ref: "教則 第1章第2節1(2)"
+  exams: [kari, hon]
+
+- id: sig-left-allowed-board
+  en: "Where a white board with a blue left arrow is shown, a car may turn left even on a red or yellow light."
+  ja: "白地に青の左向きの矢印の標示板があるときは、前方の信号が赤や黄であっても、車は左折することができる。"
+  answer: true
+  why: "That is the 'left turn permitted' board. Pedestrians and cyclists crossing on their signal still go first."
+  ref: "教則 第1章第2節1(4)・付表2(2)"
+  exams: [kari, hon]
+
+- id: sig-left-allowed-ignore-peds
+  en: "Turning left under a 'left turn permitted' board, a car goes before pedestrians who are crossing on their own green."
+  ja: "左折可の標示板により左折する車は、信号に従って横断している歩行者より優先する。"
+  answer: false
+  why: "It must not get in the way of pedestrians, or of cyclists, crossing in line with the signal."
+  ref: "教則 第1章第2節1(4)"
+  exams: [kari, hon]
+
+- id: sig-bus-only-signal
+  en: "A signal with a 'bus only' board beneath it applies only to the vehicles the board names."
+  ja: "「バス専用」などの標示板のある信号機の信号は、示されている車を対象としている。"
+  answer: true
+  why: "A signal marked for particular vehicles applies to those vehicles; everyone else follows their own signal."
+  ref: "教則 第1章第2節1(3)・付表2(1)"
+  exams: [kari, hon]
+
+- id: sig-officer-over-light
+  en: "When a police officer's hand signal differs from the traffic light, drivers must follow the traffic light."
+  ja: "警察官の手信号と信号機の信号が異なるときは、信号機の信号に従わなければならない。"
+  answer: false
+  why: "The officer's or traffic warden's signal takes precedence over the traffic light."
+  ref: "教則 第1章第3節1"
+  exams: [kari, hon]
+
+- id: sig-officer-arm-out-facing
+  en: "When an officer holds an arm out sideways, traffic facing the officer's front or back must treat it like a red light."
+  ja: "警察官が腕を横に水平に上げているとき、警察官の身体の正面（背面）に対面する交通は、赤色の灯火の信号と同じ意味である。"
+  answer: true
+  why: "Traffic moving parallel to the officer's front (along the arm) has a green; the traffic crossing it - facing the front or back - has a red."
+  ref: "教則 付表1(3)ア 手信号"
+  exams: [kari, hon]
+
+- id: sig-officer-arm-out-parallel
+  en: "When an officer holds an arm out sideways, traffic moving parallel to the officer's front may go, as on a green light."
+  ja: "警察官が腕を横に水平に上げているとき、警察官の身体の正面に平行する交通は、青色の灯火の信号と同じ意味である。"
+  answer: true
+  why: "That is the meaning of the arm held out horizontally."
+  ref: "教則 付表1(3)ア 手信号"
+  exams: [kari, hon]
+
+- id: sig-officer-arm-lowered
+  en: "If an officer lowers the arm without turning, the signal changes to red for all directions."
+  ja: "警察官が身体の方向を変えないで腕を下ろしたときは、すべての方向の交通に対して赤色の灯火の信号と同じ意味になる。"
+  answer: false
+  why: "Lowering the arm without turning means the same as holding it out sideways: green for traffic parallel to the officer's front, red for the crossing traffic."
+  ref: "教則 付表1(3)ア 手信号"
+  exams: [kari, hon]
+
+- id: sig-officer-arm-up
+  en: "When an officer raises an arm straight up, traffic moving parallel to the officer's front has the same meaning as a yellow light."
+  ja: "警察官が腕を垂直に上げているとき、警察官の身体の正面に平行する交通は、黄色の灯火の信号と同じ意味である。"
+  answer: true
+  why: "Arm raised vertically: yellow for the parallel traffic, red for the crossing traffic."
+  ref: "教則 付表1(3)ア 手信号"
+  exams: [kari, hon]
+
+- id: sig-officer-stop-1m
+  en: "Where an officer gives hand signals away from an intersection, crosswalk, bicycle crossing or railway crossing, cars stop 1 metre before the officer."
+  ja: "交差点以外で、横断歩道も自転車横断帯も踏切もない場所で警察官が手信号をしているときの停止位置は、警察官の1メートル手前である。"
+  answer: true
+  why: "That is the stop position in that case. Elsewhere it is the same as for a traffic light."
+  ref: "教則 付表1(3) 備考"
+  exams: [kari, hon]
+
+- id: sig-light-swung
+  en: "When an officer swings a light from side to side, traffic moving in the direction of the swing may go, as on a green light."
+  ja: "警察官が灯火を横に振っているとき、灯火が振られている方向に進行する交通は、青色の灯火の信号と同じ意味である。"
+  answer: true
+  why: "Light swung sideways: green for traffic in the direction of the swing, red for the crossing traffic."
+  ref: "教則 付表1(3)イ 灯火による信号"
+  exams: [kari, hon]
