@@ -113,10 +113,13 @@ work or could race with something else changing the data.
 In `errors.py`, write:
 
 - `safe_divide(a, b)`: `a / b`, or `None` when `b` is zero
-- `parse_age(text)`: the text as an `int`. Raise `ValueError` if it is not a
-  whole number, or if it is below 0 or above 150.
-- `total_valid_prices(items)`: add up every item that `float()` can convert
-  and skip the rest. Return `(total, skipped_count)`, total rounded to 2 decimals.
-- `withdraw(balance, amount)`: return the new balance. Raise `ValueError` if
-  `amount` is not positive, and the provided `InsufficientFunds` if it is more
-  than the balance.
+- `parse_age(text)`: the text as an `int`, so `parse_age("42")` is `42`. Raise
+  `ValueError` if the text is not a whole number (`"abc"`, `"4.5"`), or if
+  the number is below 0 or above 150 (`"-1"`, `"200"`).
+- `total_valid_prices(items)`: `items` is a list of strings. Add up every one
+  that `float()` can convert and skip the rest. Return two values: the total
+  rounded to 2 decimals, and how many items were skipped.
+  `total_valid_prices(["1.50", "abc", "2", ""])` returns `(3.5, 2)`.
+- `withdraw(balance, amount)`: return the new balance, so `withdraw(100, 30)`
+  is `70`. Raise `ValueError` if `amount` is not positive, and the provided
+  `InsufficientFunds` if it is more than the balance.

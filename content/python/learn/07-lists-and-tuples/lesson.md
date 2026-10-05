@@ -134,10 +134,14 @@ Budi 27
 In `lists.py`, write these without changing the list you are given:
 
 - `second_largest(numbers)`: the second largest **distinct** value, or `None`
-  if there is none: `[4, 9, 9, 2]` gives `4`
+  if there is none. Equal numbers count once: `[4, 9, 9, 2]` gives `4`, not
+  `9`, and `[7, 7]` gives `None`.
 - `chunk(items, size)`: split into lists of `size`; the last may be shorter:
   `chunk([1, 2, 3, 4, 5], 2)` gives `[[1, 2], [3, 4], [5]]`
 - `rotate(items, k)`: move every item `k` places to the right, wrapping round:
   `rotate([1, 2, 3, 4, 5], 2)` gives `[4, 5, 1, 2, 3]`
-- `bounding_box(points)`: given `(x, y)` tuples, return
-  `((min_x, min_y), (max_x, max_y))`
+- `bounding_box(points)`: `points` is a list of `(x, y)` tuples. Return two
+  tuples, `((min_x, min_y), (max_x, max_y))`: the smallest x and smallest y
+  found anywhere in the list, then the largest of each.
+  `bounding_box([(1, 5), (3, 2), (2, 8)])` gives `((1, 2), (3, 8))`. Neither
+  corner has to be one of the points.

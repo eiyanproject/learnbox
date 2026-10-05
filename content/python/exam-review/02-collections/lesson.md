@@ -52,8 +52,11 @@ Other places marks get lost:
 In `collections_review.py`:
 
 - `word_frequency(text)`: a dict of lowercase word to count, splitting on
-  whitespace
+  whitespace: `"The cat the Hat"` gives `{"the": 2, "cat": 1, "hat": 1}`
 - `group_by_length(words)`: a dict of word length to the sorted list of words
-  with that length
-- `transpose(matrix)`: swap rows and columns, returning a list of lists
-- `common_items(a, b)`: a sorted list of the items appearing in both
+  with that length: `["pear", "fig", "kiwi", "plum"]` gives
+  `{4: ["kiwi", "pear", "plum"], 3: ["fig"]}`
+- `transpose(matrix)`: swap rows and columns, returning a list of lists:
+  `[[1, 2, 3], [4, 5, 6]]` gives `[[1, 4], [2, 5], [3, 6]]`
+- `common_items(a, b)`: a sorted list of the items appearing in both, each
+  listed once: `[3, 1, 2, 3]` and `[3, 2, 5]` give `[2, 3]`

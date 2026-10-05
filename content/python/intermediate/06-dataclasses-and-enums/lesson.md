@@ -106,11 +106,22 @@ True
 In `models.py`:
 
 - `Priority`: an `Enum` with `LOW = 1`, `MEDIUM = 2`, `HIGH = 3`
-- `Task`: a dataclass with `title: str`, `priority: Priority = Priority.MEDIUM`,
-  `tags: list[str]` (default empty, never shared between tasks) and `done: bool = False`.
-  Tasks must sort **highest priority first**, then by title. Add a
-  `sort_key` field that is not an `__init__` argument, not shown in `repr`, set
-  in `__post_init__`, and is the only thing compared.
-- `Money`: a frozen dataclass with `amount: int` (cents) and `currency: str`.
-  Negative amounts raise `ValueError`. `a + b` returns a new `Money`, and raises
-  `ValueError` when currencies differ.
+- `Task`: a dataclass with these fields:
+
+  | Field | Type | Default |
+  |---|---|---|
+  | `title` | `str` | none: it is required |
+  | `priority` | `Priority` | `Priority.MEDIUM` |
+  | `tags` | `list[str]` | an empty list, a new one for every task |
+  | `done` | `bool` | `False` |
+
+  A sorted list of tasks must come out **highest priority first**, and by
+  title where the priority is equal. To get that, add one more field,
+  `sort_key`, and make it the only field that is compared. It is not an
+  `__init__` argument and does not appear in the `repr`; `__post_init__`
+  sets it, to a value that sorts the way the tasks should. Every other field
+  is left out of comparisons.
+- `Money`: a frozen dataclass with `amount: int` (in cents) and
+  `currency: str`. Creating one with a negative amount raises `ValueError`.
+  `a + b` returns a new `Money` holding the sum, and raises `ValueError` when
+  the two currencies differ.

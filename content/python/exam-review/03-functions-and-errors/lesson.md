@@ -49,12 +49,17 @@ what the code expects rather than what went wrong.
 
 In `guarded.py`:
 
-- `apply_discount(price, percent)`: the discounted price rounded to 2 decimals.
+- `apply_discount(price, percent)`: the price with `percent` percent taken
+  off, rounded to 2 decimals: `apply_discount(80, 25)` is `60.0`.
   Raise `ValueError("price must not be negative")` for a negative price, and
   `ValueError("percent must be between 0 and 100")` for a percent outside that
   range
 - `average(*numbers)`: the mean of the arguments, and `0.0` when there are none
-- `safe_get(mapping, keys, default=None)`: walk the nested dict following
-  `keys` in order, returning `default` if any step is missing or not a dict
+- `safe_get(mapping, keys, default=None)`: `mapping` is a dict that may hold
+  more dicts, and `keys` is a list. Look up the first key in `mapping`, the
+  second key in what that gave you, and so on, and return what the last key
+  leads to. If a key is missing, or you land on something that is not a dict
+  before the keys run out, return `default`. With `d = {"a": {"b": 1}}`,
+  `safe_get(d, ["a", "b"])` is `1` and `safe_get(d, ["a", "x"], 0)` is `0`.
 - `attempt(func, fallback)`: call `func()` and return its result, or `fallback`
   if it raises an `Exception`

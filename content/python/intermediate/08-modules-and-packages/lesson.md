@@ -99,12 +99,22 @@ into a third module.
 
 The workspace has a `shop` package. Complete it:
 
-- `shop/pricing.py`: `TAX_RATE = 0.11` and `apply_discount(amount, percent)`
-  returning `amount` reduced by `percent`% (0 to 100, otherwise `ValueError`)
-- `shop/cart.py`: `Cart` with `add(name, price, qty=1)` (adding the same name
-  again increases its quantity), `count()` (total items) and
-  `total(discount_percent=0)`: subtotal, then discount, then tax, rounded to 2
-  decimals. Import `apply_discount` and `TAX_RATE` relatively.
+- `shop/pricing.py`: the constant `TAX_RATE = 0.11`, and
+  `apply_discount(amount, percent)`, which returns `amount` with `percent`
+  percent taken off: `apply_discount(200, 25)` is `150.0`. A `percent` below
+  0 or above 100 raises `ValueError`.
+- `shop/cart.py`: a `Cart` class with three methods.
+  - `add(name, price, qty=1)` puts an item in the cart. Adding a name that is
+    already there increases its quantity.
+  - `count()` is the number of items, counting quantities: two pens and one
+    ink is `3`.
+  - `total(discount_percent=0)` is what the cart costs. Work it out in this
+    order: add up price times quantity for every item, take the discount off
+    that, add the tax (`TAX_RATE` of the discounted amount), and round to 2
+    decimals. A cart holding 2 pens at 10 each has `total()` of `22.2` (20
+    plus 11% tax) and `total(10)` of `19.98` (20 less 10% is 18, plus tax).
+
+  Import `apply_discount` and `TAX_RATE` with a relative import.
 - `shop/__init__.py`: expose `Cart`, `apply_discount` and `TAX_RATE`, with `__all__`
 - `main.py`: a `main()` that prints the total of a small cart, run only under
   the `__main__` guard

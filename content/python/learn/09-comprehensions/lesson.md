@@ -100,10 +100,14 @@ clauses is about the limit of readable.
 
 In `comprehensions.py`, write each as a single `return` of a comprehension:
 
-- `evens_squared(numbers)`: squares of the even numbers, in order
-- `lengths(words)`: a dict from each word to its length
+- `evens_squared(numbers)`: squares of the even numbers, in order:
+  `[1, 2, 3, 4]` gives `[4, 16]`
+- `lengths(words)`: a dict from each word to its length: `["hi", "there"]`
+  gives `{"hi": 2, "there": 5}`
 - `flatten(grid)`: a list of lists into one list: `[[1, 2], [3]]` gives `[1, 2, 3]`
 - `multiplication_table(n)`: the hardest one here, and a nested comprehension
-  like the `row + col` example above. An n by n grid where row `i`, column `j`
-  holds `(i + 1) * (j + 1)`, counting rows and columns from 0:
-  `multiplication_table(2)` gives `[[1, 2], [2, 4]]`
+  like the `row + col` example above. It returns the times table as an n by n
+  grid: `multiplication_table(3)` gives `[[1, 2, 3], [2, 4, 6], [3, 6, 9]]`.
+  The first row is 1 to n, the second row is the same numbers doubled, the
+  third tripled. Counting rows and columns from 0, as `range` does, the
+  number at row `i`, column `j` is `(i + 1) * (j + 1)`.

@@ -109,10 +109,23 @@ In `decisions.py`, write:
 
 - `grade(score)`: `"A"` for 90 and up, `"B"` for 80 to 89, `"C"` for 70 to 79,
   `"D"` for 60 to 69, `"F"` below 60
-- `is_leap_year(year)`: divisible by 4, except century years, which must also
-  be divisible by 400 (2000 was a leap year, 1900 was not)
-- `ticket_price(age, weekend)`: under 3 or 65 and over are free (`0`); ages 3
-  to 12 pay `8`; everyone else pays `15`, plus `3` on weekends. Children's
-  and free tickets have no weekend surcharge.
-- `describe_number(n)`: `"zero"` for 0, otherwise `"positive even"`,
-  `"negative odd"` and so on
+- `is_leap_year(year)`: `True` or `False`. A year that divides by 4 is a leap
+  year, with one exception: a year that also divides by 100 is only a leap
+  year if it divides by 400 as well. So 2024 is a leap year, 1900 is not
+  (it divides by 100 but not by 400), and 2000 is.
+- `ticket_price(age, weekend)`: the price of one ticket. `weekend` is `True`
+  or `False`.
+
+  | Age | Price |
+  |---|---|
+  | under 3 | `0` |
+  | 3 to 12 | `8` |
+  | 13 to 64 | `15`, or `18` at the weekend |
+  | 65 and over | `0` |
+
+  Only the 13 to 64 price changes at the weekend: `ticket_price(12, True)` is
+  still `8`.
+- `describe_number(n)`: `"zero"` for 0. For any other whole number, two
+  words: `positive` or `negative`, then `even` or `odd`.
+  `describe_number(4)` is `"positive even"` and `describe_number(-9)` is
+  `"negative odd"`.

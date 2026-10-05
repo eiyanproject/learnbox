@@ -101,8 +101,16 @@ In `algorithms.py`:
 
 - `flatten(nested)`: flatten arbitrarily nested lists: `[1, [2, [3, []]]]` gives `[1, 2, 3]`
 - `binary_search(items, target)`: the index of `target` in the sorted list, or
-  `-1`. Write the loop yourself (no `bisect`, no `.index`).
-- `permutations(items)`: a list of every ordering of the list, as lists, in the
-  order produced by picking each position's item left to right
-- `count_paths(rows, cols)`: how many ways to go from the top-left to the
-  bottom-right of a grid moving only right or down. Must be fast for 30 by 30.
+  `-1` if it is not there: `binary_search([2, 5, 8, 11], 8)` is `2`. Write
+  the loop yourself (no `bisect`, no `.index`).
+- `permutations(items)`: a list of every ordering of the list, each one a
+  list. Build them by choosing the first item, then every ordering of the
+  rest, taking choices from left to right, which gives this order:
+  `permutations([1, 2, 3])` is
+  `[[1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]]`
+- `count_paths(rows, cols)`: picture a grid of `rows` by `cols` squares. You
+  start in the top-left square and want to reach the bottom-right one, and
+  each move goes one square right or one square down. Return how many
+  different routes there are. `count_paths(2, 2)` is `2` (right then down, or
+  down then right), `count_paths(3, 3)` is `6`, and a single row has only one
+  route. It must be fast for 30 by 30.

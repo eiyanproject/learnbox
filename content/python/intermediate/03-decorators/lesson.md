@@ -187,12 +187,16 @@ write several of these patterns yourself in later lessons.
 
 ## Your turn
 
-In `decorators.py`, using `functools.wraps` in each:
+In `decorators.py`, write four decorators, using `functools.wraps` in each:
 
-- `count_calls`: the wrapper has a `.calls` attribute counting calls
+- `count_calls`: the decorated function gains a `.calls` attribute that
+  starts at `0` and goes up by one every time it is called. After two calls
+  of a decorated `add`, `add.calls` is `2`.
 - `retry(times)`: the hard one - a decorator with arguments, so three levels
-  as above. Call the function up to `times` times until it does not raise; if
-  every attempt raises, re-raise the last exception
-- `memoize`: cache results by positional arguments so the function body runs
-  once per distinct argument tuple
+  as above. Call the function, and if it raises, call it again, up to
+  `times` calls in total. Return the first result that comes back. If every
+  call raises, let the last exception through.
+- `memoize`: remember the result for each set of positional arguments. The
+  second time the function is called with the same arguments, return the
+  remembered result without running the function body again.
 - `uppercase_result`: upper-case whatever string the function returns

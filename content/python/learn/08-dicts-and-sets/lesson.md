@@ -119,8 +119,14 @@ which is why it appears above.
 In `lookup.py`, write:
 
 - `word_counts(text)`: a dict of how often each word appears, ignoring case
-  and the punctuation `.,!?;:` at the ends of words
+  and the punctuation `.,!?;:` at the ends of words:
+  `word_counts("The cat. The dog!")` gives `{"the": 2, "cat": 1, "dog": 1}`
 - `invert(d)`: swap keys and values: `{"a": 1, "b": 2}` gives `{1: "a", 2: "b"}`
-- `group_by_first_letter(words)`: a dict from lower-case first letter to the
-  list of words starting with it, in their original order
-- `common_friends(a, b)`: a **sorted list** of names that appear in both lists
+- `group_by_first_letter(words)`: a dict whose keys are lower-case first
+  letters and whose values are lists of the words starting with that letter,
+  in their original order and spelling:
+  `group_by_first_letter(["apple", "Avocado", "banana"])` gives
+  `{"a": ["apple", "Avocado"], "b": ["banana"]}`
+- `common_friends(a, b)`: a **sorted list** of the names that appear in both
+  lists: `common_friends(["Zed", "Ana", "Bo"], ["Bo", "Zed", "Cy"])` gives
+  `["Bo", "Zed"]`

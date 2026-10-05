@@ -158,9 +158,14 @@ can be apart.
 
 In `generators.py`, all as generators unless stated:
 
-- `countdown(n)`: yields `n, n-1, ..., 1`
-- `read_records(lines)`: for each line, skip blank lines and lines starting
-  with `#`, and yield the comma-separated fields as a list (strip the line first)
-- `fibonacci()`: an infinite generator `0, 1, 1, 2, 3, 5, ...`
-- `take(n, iterable)`: a **list** of the first `n` items; must work on infinite generators
-- `chunked(iterable, size)`: yields lists of `size` items; the last may be shorter
+- `countdown(n)`: yields `n, n-1, ..., 1`: `countdown(3)` yields `3`, `2`, `1`
+- `read_records(lines)`: for each line, strip the surrounding spaces first.
+  Skip the line if it is now blank or starts with `#`; otherwise split it at
+  the commas and yield the fields as a list. The lines `"a,b"`, `""`,
+  `" # note"` and `" c,d "` yield `["a", "b"]` and then `["c", "d"]`.
+- `fibonacci()`: an infinite generator `0, 1, 1, 2, 3, 5, ...`, each number
+  the sum of the two before it
+- `take(n, iterable)`: a **list** of the first `n` items. It must work on
+  infinite generators: `take(5, fibonacci())` is `[0, 1, 1, 2, 3]`.
+- `chunked(iterable, size)`: yields lists of `size` items; the last may be
+  shorter: `chunked(range(5), 2)` yields `[0, 1]`, `[2, 3]`, `[4]`

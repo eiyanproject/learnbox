@@ -134,11 +134,25 @@ then at the `>>>` prompt `open("note.txt").read()`.
 
 In `files.py`, each function receives a path (a `str` or a `Path`):
 
-- `count_lines(path)`: the number of lines that are not blank
+- `count_lines(path)`: the number of lines that are not blank. A line holding
+  only spaces counts as blank.
 - `write_report(path, scores)`: `scores` is a dict of name to number. Write
-  one line per name, sorted by name, as `name: score`.
-- `average_score(csv_path)`: the file has a header `name,score`. Return the
-  average score as a float rounded to 1 decimal, or `0.0` if there are no rows.
-- `update_settings(path, changes)`: read a JSON object from the file (or start
-  from `{}` if the file does not exist), apply `changes` over it, write it back
-  as JSON, and return the updated dict
+  one line per name, sorted by name, as `name: score`. For
+  `{"bo": 7, "ana": 9}` the file reads:
+
+  ```text
+  ana: 9
+  bo: 7
+  ```
+
+- `average_score(csv_path)`: the file's first line is the header
+  `name,score`, and every line after it is one row such as `ana,9`. Return
+  the average of the scores as a float rounded to 1 decimal, or `0.0` if
+  there are no rows. Rows scoring 9, 8 and 8 average to `8.3`.
+- `update_settings(path, changes)`: the file holds a JSON object, and
+  `changes` is a dict. Read the object (or start from `{}` if the file does
+  not exist), copy every key of `changes` into it, replacing values already
+  there, write the result back as JSON, and return it. If the file holds
+  `{"theme": "dark", "size": 12}` and `changes` is
+  `{"size": 14, "lang": "en"}`, the result is
+  `{"theme": "dark", "size": 14, "lang": "en"}`.

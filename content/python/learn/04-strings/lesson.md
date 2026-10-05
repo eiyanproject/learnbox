@@ -129,9 +129,14 @@ to go through a string one character at a time.
 
 In `strings.py`, write:
 
-- `initials("ada lovelace")` returns `"AL"`: the first letter of each word, upper-cased
-- `is_palindrome(text)` returns `True` if the text reads the same backwards,
-  **ignoring case, spaces and punctuation**: `"Never odd or even"` is one
-- `mask_card("4111111111111111")` returns `"************1111"`: everything
-  except the last four characters replaced with `*`
-- `slugify("  Hello World  From Python ")` returns `"hello-world-from-python"`
+- `initials(full_name)`: the first letter of each word, upper-cased:
+  `initials("ada lovelace")` returns `"AL"`
+- `is_palindrome(text)`: `True` if the text reads the same backwards,
+  **ignoring case, spaces and punctuation**. `"Never odd or even"` is one:
+  keep only its letters, lower-cased, and you get `neveroddoreven`, which is
+  the same in both directions.
+- `mask_card(number)`: everything except the last four characters replaced
+  with `*`: `mask_card("4111111111111111")` returns `"************1111"`
+- `slugify(title)`: the words in lower case, joined by single hyphens, with
+  no spaces left anywhere: `slugify("  Hello World  From Python ")` returns
+  `"hello-world-from-python"`

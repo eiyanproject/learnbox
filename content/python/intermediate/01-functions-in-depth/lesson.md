@@ -129,12 +129,19 @@ Use `None` and create the list inside: `if bucket is None: bucket = []`.
 
 In `functions.py`:
 
-- `total(*numbers, start=0)`: `start` plus the sum of all numbers
-- `describe(name, **attributes)`: `"cat (age=3, color=grey)"` with attributes
-  sorted by name, or just `"cat"` if there are none
-- `make_tag(tag, text, *, cls=None, id=None)`: `'<p class="note" id="x">hi</p>'`.
-  Leave out attributes that are `None`; class comes before id. `cls` and `id`
-  must be keyword-only.
-- `apply_all(funcs, value)`: a list with each function applied to `value`
-- `sort_people(people)`: `(name, age)` tuples sorted oldest first, and by name
-  for equal ages
+- `total(*numbers, start=0)`: `start` plus the sum of all the numbers:
+  `total(1, 2, 3)` is `6`, `total(1, 2, start=10)` is `13`, and `total()` is `0`
+- `describe(name, **attributes)`: the name, then the attributes in brackets
+  as `key=value`, sorted by key: `describe("cat", color="grey", age=3)` is
+  `"cat (age=3, color=grey)"`. With no attributes it is just `"cat"`.
+- `make_tag(tag, text, *, cls=None, id=None)`: an HTML element as a string.
+  `make_tag("p", "hi")` is `'<p>hi</p>'`, and
+  `make_tag("p", "hi", cls="note", id="x")` is
+  `'<p class="note" id="x">hi</p>'`. An attribute that is `None` is left out,
+  and `class` always comes before `id`. `cls` and `id` must be keyword-only.
+- `apply_all(funcs, value)`: call every function in the list with `value` and
+  return the results as a list: `apply_all([abs, str], -3)` is `[3, "-3"]`
+- `sort_people(people)`: `people` is a list of `(name, age)` tuples. Return
+  them oldest first; people of the same age go in name order.
+  `[("Bo", 30), ("Ana", 41), ("Al", 30)]` gives
+  `[("Ana", 41), ("Al", 30), ("Bo", 30)]`.

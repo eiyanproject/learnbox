@@ -54,10 +54,13 @@ before it can be added to anything.
 
 In `ledger.py`, a `Ledger` class with:
 
-- `__init__()`: an empty ledger, each with its own entry list
+- `__init__()`: an empty ledger. Each ledger keeps its own list of entries,
+  not one shared between them.
 - `add(name, amount)`: record one entry
 - `total()`: the sum of every amount, `0` when empty
-- `top_spender()`: the name with the highest total, ties broken alphabetically,
-  and `None` when the ledger is empty
-- `save(path)`: one `name,amount` line per entry
-- `load(path)`: a **classmethod** returning a new `Ledger` built from that file
+- `top_spender()`: the name whose entries add up to the most. If two names
+  are level, the one that comes first alphabetically wins. `None` when the
+  ledger is empty.
+- `save(path)`: write the entries to a file, one `name,amount` line each
+- `load(path)`: a **classmethod** that reads a file written by `save` and
+  returns a new `Ledger` holding the same entries

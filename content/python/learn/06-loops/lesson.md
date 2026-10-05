@@ -140,13 +140,17 @@ function.
 
 In `loops.py`, write:
 
-- `sum_to(n)`: the sum 1 + 2 + ... + n (`sum_to(0)` is 0). Use a loop, even
-  though `sum(range(...))` exists.
+- `sum_to(n)`: the sum 1 + 2 + ... + n, so `sum_to(4)` is 10 and `sum_to(0)`
+  is 0. Use a loop, even though `sum(range(...))` exists.
 - `fizzbuzz(n)`: a list of strings for 1 to n. Multiples of 3 become `"Fizz"`,
   of 5 `"Buzz"`, of both `"FizzBuzz"`, and anything else its number as text:
   `fizzbuzz(5)` is `["1", "2", "Fizz", "4", "Buzz"]`
-- `collatz_steps(n)`: how many steps it takes to reach 1 if you repeatedly
-  halve even numbers and turn odd numbers into `3 * n + 1`. `collatz_steps(1)`
-  is 0, `collatz_steps(6)` is 8.
-- `first_repeated(words)`: the first word that appears for a second time,
-  or `None` if no word repeats
+- `collatz_steps(n)`: start from `n` and apply one rule over and over until
+  you reach 1. If the number is even, halve it; if it is odd, replace it with
+  `3 * n + 1`. Return how many times you applied the rule. From 6 the numbers
+  go 3, 10, 5, 16, 8, 4, 2, 1, which is eight steps, so `collatz_steps(6)` is
+  8. `collatz_steps(1)` is 0: it is already there.
+- `first_repeated(words)`: go through the list in order and return the first
+  word you have already seen, or `None` if no word repeats.
+  `first_repeated(["a", "b", "c", "b", "a"])` is `"b"`: `b` is the first to
+  turn up a second time, even though `a` appeared earlier.

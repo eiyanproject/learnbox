@@ -106,9 +106,20 @@ def area(width, height):
 Write the four functions in `functions.py`. `pass` means "do nothing yet";
 replace it.
 
-- `square(n)` returns `n` times `n`
-- `greet(name, greeting="Hello")` returns text like `"Hello, Ana!"`
-- `bmi(weight_kg, height_m)` returns weight divided by height squared, **rounded to 1 decimal place**
-- `split_bill(total, people)` returns two values: each person's share rounded
-  to 2 decimals, and the amount left over after that rounding,
-  `round(total - share * people, 2)`
+- `square(n)` returns `n` times `n`: `square(4)` is `16`
+- `greet(name, greeting="Hello")` returns text like `"Hello, Ana!"`. A second
+  argument replaces the word Hello: `greet("Ana", "Welcome")` is
+  `"Welcome, Ana!"`
+- `bmi(weight_kg, height_m)` returns weight divided by height squared,
+  **rounded to 1 decimal place**: `bmi(70, 1.75)` is `22.9`
+- `split_bill(total, people)` splits a bill evenly and returns **two values**:
+
+  1. the **share**: what each person pays, which is `total / people` rounded
+     to 2 decimals
+  2. the **leftover**: what is still unpaid after everyone has paid that
+     share, which is `total - share * people`, also rounded to 2 decimals
+
+  The leftover exists because the share was rounded. Split 100 between 3
+  people and each pays `33.33`. Three of those come to 99.99, so 0.01 of the
+  bill is left: `split_bill(100, 3)` returns `(33.33, 0.01)`. When the bill
+  divides exactly, nothing is left: `split_bill(90, 3)` returns `(30.0, 0.0)`.

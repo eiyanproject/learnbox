@@ -115,12 +115,17 @@ has finished with `i == 2`. Capture the current value with a default argument:
 
 ## Your turn
 
-In `closures.py`:
+In `closures.py`, every function returns a function (or a list of them):
 
-- `make_counter(start=0)`: returns a function; each call returns the next
-  number, starting at `start + 1`
-- `make_multiplier(n)`: returns a function that multiplies its argument by `n`
-- `make_accumulator()`: returns a function `add(x)` that remembers every value
-  it was given and returns the running average
-- `make_adders(n)`: a list of `n` functions where the one at index `i` adds `i`
-  to its argument
+- `make_counter(start=0)`: each call of the returned function gives the next
+  number after `start`. With `count = make_counter(5)`, the first `count()`
+  is `6` and the second is `7`.
+- `make_multiplier(n)`: the returned function multiplies its argument by `n`:
+  `make_multiplier(3)(5)` is `15`
+- `make_accumulator()`: the returned function `add(x)` remembers every value
+  it has been given and returns their average so far. With
+  `add = make_accumulator()`, `add(10)` is `10.0`, then `add(20)` is `15.0`,
+  then `add(60)` is `30.0`.
+- `make_adders(n)`: a list of `n` functions, where the one at index `i` adds
+  `i` to its argument. Calling each function of `make_adders(3)` with `10`
+  gives `10`, `11` and `12`.

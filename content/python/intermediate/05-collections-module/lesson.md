@@ -135,11 +135,21 @@ Push `(priority, item)` tuples to build a priority queue.
 
 In `toolbox.py`:
 
-- `top_words(text, n)`: the `n` most common lower-cased words as `(word, count)` pairs
-- `index_by_tag(items)`: `items` are `(name, [tags])`; return a plain `dict`
-  from tag to the names that have it, in order
-- `moving_average(values, window)`: a generator of the average of each full
-  window of consecutive values
-- `k_smallest(items, k)`: the `k` smallest items, sorted
+- `top_words(text, n)`: the `n` most common words, lower-cased, as
+  `(word, count)` pairs, most common first:
+  `top_words("The cat and the hat and the bat", 2)` is
+  `[("the", 3), ("and", 2)]`
+- `index_by_tag(items)`: each item is a `(name, tags)` pair, where `tags` is
+  a list. Return a plain `dict` from each tag to the names that carry it, in
+  the order they appear:
+  `[("pen", ["blue", "small"]), ("sky", ["blue"])]` gives
+  `{"blue": ["pen", "sky"], "small": ["pen"]}`
+- `moving_average(values, window)`: a generator. Slide a window of `window`
+  consecutive values along the list and yield the average of each position:
+  `moving_average([1, 2, 3, 4], 2)` yields `1.5`, `2.5`, `3.5` (the averages
+  of 1 and 2, of 2 and 3, of 3 and 4). A list shorter than the window yields
+  nothing.
+- `k_smallest(items, k)`: the `k` smallest items, sorted:
+  `k_smallest([5, 1, 4, 2], 2)` is `[1, 2]`
 - `grade_for(score)`: `"F"` below 60, `"D"` from 60, `"C"` from 70, `"B"` from 80,
-  `"A"` from 90, using `bisect`
+  `"A"` from 90, using `bisect`. So 69 is a `"D"` and 70 is a `"C"`.

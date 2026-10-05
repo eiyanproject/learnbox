@@ -117,8 +117,10 @@ In `patterns.py`:
 - `parse_log_line(line)`: for `"2026-09-18 ERROR disk full"` return
   `{"date": "2026-09-18", "level": "ERROR", "message": "disk full"}`; return `None`
   for lines that do not have that shape
-- `is_valid_username(name)`: 3 to 16 characters, lower-case letters, digits and
-  `_`, starting with a letter
+- `is_valid_username(name)`: `True` when the name is 3 to 16 characters long,
+  uses only lower-case letters, digits and `_`, and starts with a letter.
+  `"ana_99"` is valid; `"9lives"` (starts with a digit), `"Al"` (upper case,
+  and too short) and `"ana-b"` (a hyphen) are not.
 - `normalize_phone(s)`: keep only digits, and replace a leading `0` with `62`:
   `"0812-3456 789"` gives `"628123456789"`
 - `mask_emails(text)`: replace the part before `@` of every email with `***`:
