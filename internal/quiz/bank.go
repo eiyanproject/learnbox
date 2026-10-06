@@ -12,6 +12,7 @@
 //     why: "..."                 # the rule behind the answer
 //     ref: "教則 第5章第3節2"     # where the rule is written
 //     exams: [kari, hon]         # which mock exams may draw it
+//     image: "https://..."       # optional: a picture shown with the question
 //
 // A scenario question - the illustration questions of the full licence test -
 // has `kind: scenario`, a scene in en/ja, and exactly three statements, each
@@ -21,6 +22,7 @@ package quiz
 import (
 	"fmt"
 	"math/rand/v2"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -39,13 +41,17 @@ type Statement struct {
 }
 
 type Question struct {
-	ID         string      `yaml:"id" json:"id"`
-	Kind       string      `yaml:"kind" json:"kind,omitempty"` // "" or "scenario"
-	EN         string      `yaml:"en" json:"en"`
-	JA         string      `yaml:"ja" json:"ja"`
-	Answer     *bool       `yaml:"answer" json:"-"`
-	Why        string      `yaml:"why" json:"-"`
-	Ref        string      `yaml:"ref" json:"-"`
+	ID     string `yaml:"id" json:"id"`
+	Kind   string `yaml:"kind" json:"kind,omitempty"` // "" or "scenario"
+	EN     string `yaml:"en" json:"en"`
+	JA     string `yaml:"ja" json:"ja"`
+	Answer *bool  `yaml:"answer" json:"-"`
+	Why    string `yaml:"why" json:"-"`
+	Ref    string `yaml:"ref" json:"-"`
+	// Image is the address of a picture shown with the question - a road sign,
+	// say. It is linked, never copied: the browser fetches it, so a question
+	// must still make sense when the picture does not load.
+	Image      string      `yaml:"image" json:"image,omitempty"`
 	Exams      []string    `yaml:"exams" json:"-"`
 	Statements []Statement `yaml:"statements" json:"statements,omitempty"`
 
@@ -225,6 +231,12 @@ func check(q *Question) error {
 	for _, e := range q.Exams {
 		if _, ok := Specs[e]; !ok {
 			return fmt.Errorf("%s: unknown exam %q", where, e)
+		}
+	}
+	if q.Image != "" {
+		u, err := url.Parse(q.Image)
+		if err != nil || u.Scheme != "https" || u.Host == "" {
+			return fmt.Errorf("%s: image must be an https address", where)
 		}
 	}
 	switch q.Kind {

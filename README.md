@@ -234,7 +234,8 @@ Three ways to use it:
 The questions are written for this project from the National Police Agency's
 Rules of the Road (交通の方法に関する教則, as amended 2024-11-13), not copied
 from any question bank. The real test shows pictures of signs and scenes; here
-they are described in words. Treat it as practice, not as legal advice: check
+the common signs are shown (linked from Wikimedia Commons, so they need an
+internet connection) and the scenes are described in words. Treat it as practice, not as legal advice: check
 anything that matters against the 教則 itself.
 
 
@@ -586,6 +587,7 @@ questions.
   why: "For a railway crossing the distance is 10 metres, not 5."
   ref: "教則 第5章第8節2(2)ク"   # where the rule is written
   exams: [kari, hon]           # which mock exams may draw it
+  image: "https://upload.wikimedia.org/..."   # optional picture, see below
 
 - id: sc-bus-stop
   kind: scenario               # full-licence only: exams must be [hon]
@@ -598,6 +600,14 @@ questions.
     - { en: "...", ja: "...", answer: false, why: "..." }
     - { en: "...", ja: "...", answer: true, why: "..." }
 ```
+
+`image:` is the https address of a picture shown beside the question, and
+`lesson.md` can use ordinary Markdown images. Pictures are linked, never
+copied into the repository: the learner's browser fetches them from the host
+(the page sends no referrer), so they need an internet connection and a
+question must still make sense without its picture. Link only what may be
+used freely - the road signs here are public-domain files on Wikimedia
+Commons.
 
 Answers, reasons and references never leave the server until a question has
 been answered. `learnbox verify <track>` checks every bank and fails if a mock

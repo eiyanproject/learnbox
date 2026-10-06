@@ -37,6 +37,7 @@
   why: "It closes the road to pedestrians as well. 'Closed to vehicles' (車両通行止め) is the vehicles-only sign."
   ref: "教則 付表3(1)ア1・2"
   exams: [kari, hon]
+  image: "https://upload.wikimedia.org/wikipedia/commons/2/2d/Japan_road_sign_301.svg"
 
 - id: sign-no-entry
   en: "The 'no entry' sign (車両進入禁止), a red disc with a white bar, stands at the exit of a one-way street and forbids vehicles from entering there."
@@ -45,6 +46,7 @@
   why: "It forbids entering against the one-way direction."
   ref: "教則 付表3(1)ア3"
   exams: [kari, hon]
+  image: "https://upload.wikimedia.org/wikipedia/commons/6/69/Japan_road_sign_303.svg"
 
 - id: sign-no-parking-vs-stopping
   en: "The 'no parking' sign (駐車禁止) also forbids stopping to let a passenger out."
@@ -53,6 +55,7 @@
   why: "It forbids parking only. The 'no stopping or parking' sign (駐停車禁止) is the one that forbids both."
   ref: "教則 付表3(1)ア17・18"
   exams: [kari, hon]
+  image: "https://upload.wikimedia.org/wikipedia/commons/3/35/Japan_road_sign_316.svg"
 
 - id: sign-parking-hours
   en: "The figures '8-20' on a no-parking sign mean the rule applies from 8:00 to 20:00."
@@ -69,6 +72,7 @@
   why: "That sign bans crossing over, not overtaking itself."
   ref: "教則 付表3(1)ア15"
   exams: [kari, hon]
+  image: "https://upload.wikimedia.org/wikipedia/commons/7/78/Japan_road_sign_314.svg"
 
 - id: sign-no-overtaking
   en: "Where the 'no overtaking' sign stands (with the auxiliary plate 追越し禁止), you may overtake as long as you stay on the left half of the road."
@@ -85,6 +89,7 @@
   why: "For mopeds the sign only ever sets a limit of 30 km/h or lower; their 30 km/h ceiling stays."
   ref: "教則 付表3(1)ア25"
   exams: [kari, hon]
+  image: "https://upload.wikimedia.org/wikipedia/commons/7/74/Japan_road_sign_323_%2850%29.svg"
 
 - id: sign-min-speed
   en: "A minimum speed sign means cars must not travel below the speed shown."
@@ -93,6 +98,7 @@
   why: "On the sign the figure is underlined, which is how to tell it from a maximum."
   ref: "教則 付表3(1)ア26"
   exams: [kari, hon]
+  image: "https://upload.wikimedia.org/wikipedia/commons/5/50/Japan_road_sign_324_%2830%29.svg"
 
 - id: sign-height-load
   en: "The height limit sign counts the height of the vehicle alone, not the load on it."
@@ -101,6 +107,7 @@
   why: "The height includes the load."
   ref: "教則 付表3(1)ア23"
   exams: [kari, hon]
+  image: "https://upload.wikimedia.org/wikipedia/commons/1/11/Japan_road_sign_321.svg"
 
 - id: sign-weight-gross
   en: "The weight limit sign bars vehicles whose gross weight is more than the figure shown."
@@ -109,6 +116,7 @@
   why: "Gross weight: the vehicle with its people and load."
   ref: "教則 付表3(1)ア22"
   exams: [kari, hon]
+  image: "https://upload.wikimedia.org/wikipedia/commons/b/b5/Japan_road_sign_320.svg"
 
 - id: sign-one-way
   en: "The one-way sign forbids vehicles from travelling in the direction opposite to the arrow."
@@ -117,6 +125,7 @@
   why: "White arrow on blue."
   ref: "教則 付表3(1)ア31"
   exams: [kari, hon]
+  image: "https://upload.wikimedia.org/wikipedia/commons/9/91/Japan_road_sign_326-A-L.svg"
 
 - id: sign-designated-direction
   en: "The 'designated directions only' sign (指定方向外進行禁止) forbids vehicles from going any way other than the directions of the arrows."
@@ -125,6 +134,7 @@
   why: "Arrows straight and left, for example, mean no right turn."
   ref: "教則 付表3(1)ア12"
   exams: [kari, hon]
+  image: "https://upload.wikimedia.org/wikipedia/commons/d/d1/Japan_road_sign_311-E.svg"
 
 - id: sign-no-crossing-left-turn
   en: "Where the 'no crossing' sign for vehicles (車両横断禁止) stands, you may not turn left into a petrol station beside the road."
@@ -133,6 +143,7 @@
   why: "Crossing that involves a left turn to enter a place off the road is excepted. It is crossing to the right that is banned."
   ref: "教則 付表3(1)ア13"
   exams: [kari, hon]
+  image: "https://upload.wikimedia.org/wikipedia/commons/1/1e/Japan_road_sign_312.svg"
 
 - id: sign-stop
   en: "At a 'stop' sign (一時停止) you may go through slowly without stopping if you can see that nothing is coming."
@@ -141,6 +152,7 @@
   why: "The sign orders a stop just before the junction, whatever you can see."
   ref: "教則 付表3(1)ア40"
   exams: [kari, hon]
+  image: "https://upload.wikimedia.org/wikipedia/commons/6/60/Japan_road_sign_330-A.svg"
 
 - id: sign-horn-zone
   en: "Inside a horn zone (警笛区間), you must sound the horn at junctions with no view to the sides, blind bends and blind hill tops."
@@ -149,6 +161,7 @@
   why: "Those three places, within the zone."
   ref: "教則 付表3(1)ア37"
   exams: [kari, hon]
+  image: "https://upload.wikimedia.org/wikipedia/commons/3/39/Japan_road_sign_328.svg"
 
 - id: sign-horn-zone-everywhere
   en: "Inside a horn zone, you must keep sounding the horn the whole way along."
@@ -157,6 +170,7 @@
   why: "Only at the blind junctions, bends and hill tops inside it."
   ref: "教則 付表3(1)ア37"
   exams: [kari, hon]
+  image: "https://upload.wikimedia.org/wikipedia/commons/3/39/Japan_road_sign_328.svg"
 
 - id: sign-priority-ahead
   en: "The sign 'priority road ahead' (前方優先道路) means the road you are driving on is the priority road."
@@ -165,6 +179,7 @@
   why: "It means the road you are about to cross has priority. 'Priority road' (優先道路) is the sign for the road you are on."
   ref: "教則 付表3(1)ア39・イ55"
   exams: [kari, hon]
+  image: "https://upload.wikimedia.org/wikipedia/commons/5/57/Japan_road_sign_329-2.svg"
 
 - id: sign-motor-only
   en: "The 'motor vehicles only' sign (自動車専用) marks national expressways and motorways."
@@ -173,6 +188,7 @@
   why: "White car symbol on blue."
   ref: "教則 付表3(1)ア27"
   exams: [kari, hon]
+  image: "https://upload.wikimedia.org/wikipedia/commons/f/f3/Japan_road_sign_325.svg"
 
 - id: sign-tram-track
   en: "Where the sign 'driving on the tram track permitted' (軌道敷内通行可) stands, cars may drive on the track."
@@ -181,6 +197,7 @@
   why: "An indication sign: it allows something."
   ref: "教則 付表3(1)イ52"
   exams: [kari, hon]
+  image: "https://upload.wikimedia.org/wikipedia/commons/a/a4/Japan_road_sign_402.svg"
 
 - id: sign-warning-colour
   en: "Warning signs are yellow with black symbols."
@@ -189,6 +206,7 @@
   why: "Yellow ground, black edging line and symbol."
   ref: "教則 付表3(1)オ"
   exams: [kari, hon]
+  image: "https://upload.wikimedia.org/wikipedia/commons/f/f9/Japan_road_sign_215.svg"
 
 - id: sign-school
   en: "The warning sign showing two walking children means a pedestrian-only road for school children."
@@ -197,6 +215,7 @@
   why: "It warns that a school, kindergarten or nursery is near. It does not close the road to cars."
   ref: "教則 付表3(1)オ182"
   exams: [kari, hon]
+  image: "https://upload.wikimedia.org/wikipedia/commons/8/84/Japan_road_sign_208.svg"
 
 - id: mark-two-kinds
   en: "Road markings are of two kinds: regulatory markings and indication markings."
