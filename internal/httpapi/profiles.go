@@ -181,6 +181,7 @@ func (s *Server) deleteProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.Terms.KillPrefix("profile/" + id + "/")
+	s.forgetQuizStore(id)
 	if c, err := r.Cookie(profileCookie); err == nil && c.Value == id {
 		s.setProfileCookie(w, r, "")
 	}

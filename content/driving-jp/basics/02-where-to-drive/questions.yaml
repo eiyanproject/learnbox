@@ -1,0 +1,183 @@
+- id: lane-keep-left-of-centre
+  en: "A car must drive on the part of the road to the left of the centre (or of the centre line)."
+  ja: "車は、道路の中央（中央線があるときはその中央線）から左の部分を通行しなければならない。"
+  answer: true
+  why: "That is the basic rule of keeping left."
+  ref: "教則 第5章第2節1"
+  exams: [kari, hon]
+
+- id: lane-oneway-right
+  en: "On a one-way road, a car may drive on the part to the right of the centre."
+  ja: "一方通行の道路では、道路の中央から右の部分にはみ出して通行することができる。"
+  answer: true
+  why: "One-way roads are the first exception to keeping left of the centre."
+  ref: "教則 第5章第2節1(1)"
+  exams: [kari, hon]
+
+- id: lane-overtake-6m
+  en: "To overtake on a clear road whose left side is 6 metres wide or more, a car may cross to the right side of the road."
+  ja: "左側部分の幅が6メートル以上の見通しのよい道路では、追い越しのため道路の右側部分にはみ出して通行することができる。"
+  answer: false
+  why: "The exception is for a left side LESS than 6 metres wide, on a road with a good view, and only where no sign or marking forbids it."
+  ref: "教則 第5章第2節1(3)"
+  exams: [kari, hon]
+
+- id: lane-roadworks-minimal
+  en: "When roadworks leave the left side too narrow, a car may cross to the right side, keeping the crossing as small as possible."
+  ja: "工事などのため左側部分だけでは通行するのに十分な幅がないときは、右側部分にはみ出して通行できるが、はみ出し方はできるだけ少なくしなければならない。"
+  answer: true
+  why: "Roadworks are one of the exceptions, and the crossing over must be kept to a minimum."
+  ref: "教則 第5章第2節1(2)"
+  exams: [kari, hon]
+
+- id: lane-two-use-left
+  en: "Where there are two lanes in your direction, you should normally drive in the left lane."
+  ja: "同一の方向に二つの車両通行帯があるときは、左側の車両通行帯を通行しなければならない。"
+  answer: true
+  why: "With two lanes, use the left one; the right is for overtaking."
+  ref: "教則 第5章第2節2(2)"
+  exams: [kari, hon]
+
+- id: lane-three-rightmost
+  en: "On a road with three lanes in one direction, the rightmost lane should be left free for overtaking."
+  ja: "同一方向に三つ以上の車両通行帯があるときは、最も右側の車両通行帯は追越しのために空けておく。"
+  answer: true
+  why: "With three or more lanes, the rightmost is kept for overtaking; slower traffic keeps further left."
+  ref: "教則 第5章第2節2(2)"
+  exams: [kari, hon]
+
+- id: lane-stay-right-after-pass
+  en: "Having overtaken using the rightmost lane, a car may stay in that lane as long as it keeps to the speed limit."
+  ja: "最も右側の車両通行帯を通行して追越しをした車は、最高速度を守っていれば、そのまま最も右側の車両通行帯を通行し続けてよい。"
+  answer: false
+  why: "Once the overtaking is done, the car must promptly move back out of the rightmost lane."
+  ref: "教則 第5章第2節2(3)"
+  exams: [kari, hon]
+
+- id: lane-straddle
+  en: "On a road with lanes, a car should not straddle two lanes except when it has to, such as when overtaking."
+  ja: "車両通行帯のある道路では、追越しなどでやむを得ない場合のほかは、二つの車両通行帯にまたがって通行してはならない。"
+  answer: true
+  why: "Straddling lanes or changing them without need is forbidden; it endangers the cars behind."
+  ref: "教則 第5章第2節3"
+  exams: [kari, hon]
+
+- id: lane-shoulder
+  en: "On a road with no pavement or side strip, a car may use the road shoulder - the 0.5 m from the edge - when the road is narrow."
+  ja: "歩道や路側帯のない道路で道幅が狭いときは、路肩（路端から0.5メートルの部分）にはみ出して通行してもよい。"
+  answer: false
+  why: "On a road with no pavement or side strip, a car must not run onto the shoulder at all."
+  ref: "教則 第5章第2節7(4)"
+  exams: [kari, hon]
+
+- id: lane-cross-pavement-entry
+  en: "A car may cross a pavement or side strip to get into a property beside the road."
+  ja: "道路に面した場所に出入りするためであれば、歩道や路側帯を横切ることができる。"
+  answer: true
+  why: "Driving on pavements and side strips is forbidden, except to cross them to enter or leave a place beside the road."
+  ref: "教則 第5章第2節7(2)"
+  exams: [kari, hon]
+
+- id: lane-safety-zone
+  en: "A car may drive through a safety zone when there are no pedestrians in it."
+  ja: "安全地帯に歩行者がいなければ、車は安全地帯に入って通行することができる。"
+  answer: false
+  why: "Cars must not enter a safety zone at all, people or no people."
+  ref: "教則 第5章第2節7(3)"
+  exams: [kari, hon]
+
+- id: lane-tram-tracks-turn
+  en: "A car may not drive on tram tracks, except where a sign allows it or when turning right."
+  ja: "車は軌道敷内を通行してはならないが、標識により認められた場合や右折する場合などは別である。"
+  answer: true
+  why: "Tram tracks are off limits except in those cases."
+  ref: "教則 第5章第2節7(5)"
+  exams: [kari, hon]
+
+- id: emerg-near-intersection
+  en: "When an emergency vehicle approaches near an intersection, a car should get out of the intersection, pull to the left and stop."
+  ja: "交差点付近で緊急自動車が近づいてきたときは、交差点を避けて道路の左側に寄り、一時停止しなければならない。"
+  answer: true
+  why: "Near an intersection: avoid it, keep left and stop."
+  ref: "教則 第5章第2節5"
+  exams: [kari, hon]
+
+- id: emerg-stop-in-intersection
+  en: "If an emergency vehicle approaches while you are in an intersection, stop right where you are."
+  ja: "交差点内を通行中に緊急自動車が近づいてきたときは、その場で直ちに停止しなければならない。"
+  answer: false
+  why: "Stopping inside the intersection blocks it. Get clear of the intersection, keep left and then stop."
+  ref: "教則 第5章第2節5"
+  exams: [kari, hon]
+
+- id: emerg-elsewhere
+  en: "Away from intersections, a car makes way for an emergency vehicle by pulling to the left; it does not have to stop."
+  ja: "交差点付近以外のところで緊急自動車が近づいてきたときは、道路の左側に寄って進路を譲ればよく、必ずしも停止する必要はない。"
+  answer: true
+  why: "Elsewhere the rule is to pull left and give way; the stop is required near intersections."
+  ref: "教則 第5章第2節5"
+  exams: [kari, hon]
+
+- id: emerg-oneway-right
+  en: "On a one-way road where keeping left would get in the emergency vehicle's way, pull to the right instead."
+  ja: "一方通行の道路で、左側に寄るとかえって緊急自動車の妨げとなるときは、右側に寄らなければならない。"
+  answer: true
+  why: "The aim is to clear its path; on a one-way road that can mean pulling right."
+  ref: "教則 第5章第2節5"
+  exams: [kari, hon]
+
+- id: bus-leaving-stop
+  en: "When a route bus at a stop signals that it is pulling out, the car behind must not block it - unless that would take sudden braking or swerving."
+  ja: "停留所で止まっている路線バスが発進の合図をしたときは、後方の車はその発進を妨げてはならない。ただし、急ブレーキや急ハンドルで避けなければならないような場合は別である。"
+  answer: true
+  why: "Let the bus out, except where doing so would need sudden braking or steering."
+  ref: "教則 第5章第2節6(1)"
+  exams: [kari, hon]
+
+- id: bus-only-lane-car
+  en: "An ordinary car may drive in a bus-only lane as long as no bus is coming."
+  ja: "路線バス等の専用通行帯は、バスが来ていなければ普通自動車も通行することができる。"
+  answer: false
+  why: "Apart from small special vehicles, mopeds and light vehicles, cars may not use a bus-only lane at all - except when moving over to turn, or for roadworks."
+  ref: "教則 第5章第2節6(2)"
+  exams: [kari, hon]
+
+- id: bus-priority-lane
+  en: "A car may use a bus-priority lane, but must leave it promptly when a route bus comes up behind."
+  ja: "路線バス等の優先通行帯を通行している自動車は、路線バスなどが近づいてきたときは、速やかにそこから出なければならない。"
+  answer: true
+  why: "A priority lane may be used, but you must get out of it promptly for a bus."
+  ref: "教則 第5章第2節6(3)"
+  exams: [kari, hon]
+
+- id: bus-priority-congested
+  en: "If traffic is so heavy that you could not get out of a bus-priority lane when a bus came, you should not enter it in the first place."
+  ja: "交通が混雑していて、路線バスなどが近づいてきても優先通行帯から出られなくなるおそれがあるときは、はじめからその通行帯を通行してはならない。"
+  answer: true
+  why: "If you couldn't leave it for the bus, don't enter it."
+  ref: "教則 第5章第2節6(3)"
+  exams: [kari, hon]
+
+- id: mark-beginner-cut-in
+  en: "You may cut in front of a car showing the beginner mark if you signal first."
+  ja: "初心者マークを付けた普通自動車の前方には、合図をすれば割り込んでもよい。"
+  answer: false
+  why: "Unless avoiding danger, you must not squeeze alongside or force your way in front of a car with the beginner mark - signal or not."
+  ref: "教則 第5章第3節8(1)"
+  exams: [kari, hon]
+
+- id: mark-senior-70
+  en: "The senior driver's mark is shown by drivers aged 70 or over, and other drivers must not squeeze alongside or cut in front of them."
+  ja: "高齢者マークは70歳以上の高齢者が表示するもので、他の車は危険防止のためやむを得ない場合のほか、その車に幅寄せや割込みをしてはならない。"
+  answer: true
+  why: "Cars showing the senior mark (driver 70 or over) are protected from 幅寄せ and 割込み."
+  ref: "教則 第5章第3節8(1)ウ"
+  exams: [kari, hon]
+
+- id: mark-learner-protected
+  en: "A car driven by someone practising on a provisional licence is also protected: other drivers must not squeeze alongside or cut in front of it."
+  ja: "仮免許で練習中の者が運転している自動車に対しても、危険防止のためやむを得ない場合のほか、幅寄せや割込みをしてはならない。"
+  answer: true
+  why: "Provisional-licence learners are on the same protected list."
+  ref: "教則 第5章第3節8(1)カ"
+  exams: [kari, hon]

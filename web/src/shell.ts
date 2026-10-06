@@ -1,4 +1,4 @@
-import { api, CHOOSE_PROFILE, type ServerStatus, type TracksResponse } from "./api";
+import { api, CHOOSE_PROFILE, quizHref, type ServerStatus, type TracksResponse } from "./api";
 import { openProfilePicker } from "./components/profiles";
 import { clear, h, icon } from "./dom";
 import { levelPct, onStanding, refreshStanding, xpText } from "./game";
@@ -49,6 +49,7 @@ export class Shell {
       nav("terminal", "Terminal", "/terminal", icon(icons.terminal)),
       nav("arena", "Arena", "/arena", icon(icons.swords)),
       nav("badges", "Badges", "/badges", icon(icons.medal)),
+      nav("misc", "Misc", "/misc", icon(icons.misc)),
       h("div", { class: "spacer" }),
       railTheme,
     );
@@ -142,7 +143,7 @@ export class Shell {
     const input = h("input", { type: "search", placeholder: "Jump to a lesson", "aria-label": "Jump to a lesson", autocomplete: "off", spellcheck: "false" });
     const list = h("div", { class: "jump", hidden: true, role: "listbox" });
     let hi = 0;
-    let results: { id: string; title: string; where: string; status: string }[] = [];
+    let results: { id: string; href: string; title: string; where: string; status: string }[] = [];
 
     const render = () => {
       clear(list);
@@ -155,11 +156,11 @@ export class Shell {
           h(
             "a",
             {
-              href: `/learn/${r.id}`,
+              href: r.href,
               class: i === hi ? "hi" : "",
               onmousedown: (e: Event) => {
                 e.preventDefault();
-                go(r.id);
+                go(r.href);
               },
             },
             h("span", { class: "lbl" }, r.where),
@@ -187,18 +188,24 @@ export class Shell {
       for (const t of this.tracks.tracks)
         for (const s of t.sections)
           for (const l of s.lessons)
-            all.push({ id: l.id, title: l.title, where: `${t.lang === "python" ? "py" : t.lang === "rust" ? "rs" : t.lang} ${s.id}`, status: l.status });
+            all.push({
+              id: l.id,
+              href: l.kind === "quiz" ? quizHref(l.id) : `/learn/${l.id}`,
+              title: l.title,
+              where: `${t.lang === "python" ? "py" : t.lang === "rust" ? "rs" : t.lang} ${s.id}`,
+              status: l.status,
+            });
       results = all.filter((r) => r.title.toLowerCase().includes(q) || r.id.includes(q)).slice(0, 30);
       hi = 0;
       list.hidden = false;
       render();
     };
 
-    const go = (id: string) => {
+    const go = (href: string) => {
       input.value = "";
       list.hidden = true;
       input.blur();
-      navigate(`/learn/${id}`);
+      navigate(href);
     };
 
     input.addEventListener("input", search);
@@ -214,7 +221,7 @@ export class Shell {
         render();
         e.preventDefault();
       } else if (e.key === "Enter" && results[hi]) {
-        go(results[hi].id);
+        go(results[hi].href);
       } else if (e.key === "Escape") {
         input.value = "";
         list.hidden = true;

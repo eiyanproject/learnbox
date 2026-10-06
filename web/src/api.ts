@@ -8,6 +8,7 @@ export interface LessonSummary {
   difficulty?: number;
   has_tests: boolean;
   status: Status;
+  kind?: string;
 }
 
 export interface Section {
@@ -22,6 +23,8 @@ export interface Track {
   lang: string;
   title: string;
   description: string;
+  /** "misc" for tracks shown apart from the programming ones. */
+  group?: string;
   sections: Section[];
   total: number;
   passed: number;
@@ -39,6 +42,7 @@ export interface LessonLink {
 
 export interface Lesson {
   id: string;
+  kind?: string;
   lang: string;
   section: string;
   slug: string;
@@ -202,6 +206,111 @@ export interface ProfilesResponse {
   current: string;
 }
 
+// ---------- quiz ----------
+
+export interface QuizStatement {
+  en: string;
+  ja: string;
+}
+
+export interface QuizQuestion {
+  id: string;
+  kind?: "scenario";
+  en: string;
+  ja: string;
+  topic: string;
+  statements?: QuizStatement[];
+}
+
+export interface QuizGiven {
+  answer?: boolean;
+  answers?: boolean[];
+}
+
+export interface QuizExplanation {
+  id: string;
+  correct: boolean;
+  answer?: boolean;
+  why?: string;
+  ref: string;
+  statements?: (QuizStatement & { answer: boolean; why: string })[];
+  given?: QuizGiven;
+  question?: QuizQuestion;
+}
+
+export interface ExamSpec {
+  id: string;
+  title: string;
+  tf: number;
+  scenarios: number;
+  minutes: number;
+  tf_points: number;
+  scenario_points: number;
+  pass: number;
+  max: number;
+}
+
+export interface ExamResult {
+  exam: string;
+  at: string;
+  score: number;
+  max: number;
+  passed: boolean;
+  seconds: number;
+  overtime?: boolean;
+  wrong?: string[];
+}
+
+export interface QuizOverview {
+  track: string;
+  title: string;
+  description: string;
+  total: number;
+  mistakes: number;
+  clear_after: number;
+  sections: {
+    id: string;
+    title: string;
+    topics: { id: string; title: string; summary: string; total: number; mastered: number; mistakes: number }[];
+  }[];
+  exams: (ExamSpec & {
+    pool: number;
+    scenario_pool: number;
+    ready: boolean;
+    deadline?: string;
+    best?: ExamResult;
+    recent: ExamResult[];
+    attempts: number;
+    pass_streak: number;
+  })[];
+}
+
+export interface QuizTopic {
+  id: string;
+  title: string;
+  summary: string;
+  notes_html: string;
+  track: string;
+  track_title: string;
+  questions: (QuizQuestion & { mistake: boolean; right_before: boolean })[];
+  prev: LessonLink | null;
+  next: LessonLink | null;
+}
+
+export interface ExamStart {
+  spec: ExamSpec;
+  started: string;
+  deadline: string;
+  now: string;
+  questions: QuizQuestion[];
+}
+
+/** Where a quiz lesson (lang/section/slug) is studied. */
+export function quizHref(lessonID: string) {
+  const [track, section, slug] = lessonID.split("/");
+  return `/quiz/${track}/topic/${section}/${slug}`;
+}
+
 /** Fired when the server needs a profile picked before it can answer. */
 export const CHOOSE_PROFILE = "learnbox:choose-profile";
 
@@ -259,6 +368,15 @@ export const api = {
   check: (id: string) => call<CheckResponse>("POST", `${L(id)}/check`),
   hint: (id: string) => call<{ hints: string[]; hints_total: number; xp: number; hint_cost: number }>("POST", `${L(id)}/hint`),
   reset: (id: string) => call<{ status: string; backup?: string }>("POST", `${L(id)}/reset`),
+  quiz: (track: string) => call<QuizOverview>("GET", `/api/quiz/${track}`),
+  quizTopic: (track: string, section: string, slug: string) => call<QuizTopic>("GET", `/api/quiz/${track}/topic/${section}/${slug}`),
+  quizAnswer: (track: string, id: string, given: QuizGiven) =>
+    call<{ result: QuizExplanation; topic_mastered: boolean }>("POST", `/api/quiz/${track}/answer`, { id, ...given }),
+  quizMistakes: (track: string) => call<{ questions: QuizQuestion[]; clear_after: number }>("GET", `/api/quiz/${track}/mistakes`),
+  examStart: (track: string, exam: string) => call<ExamStart>("POST", `/api/quiz/${track}/exam/${exam}`),
+  examSubmit: (track: string, exam: string, answers: Record<string, QuizGiven>) =>
+    call<{ result: ExamResult; review: QuizExplanation[] }>("POST", `/api/quiz/${track}/exam/${exam}/submit`, { answers }),
+  examAbandon: (track: string, exam: string) => call<{ status: string }>("DELETE", `/api/quiz/${track}/exam/${exam}`),
   profiles: () => call<ProfilesResponse>("GET", "/api/profiles"),
   createProfile: (name: string) => call<Profile>("POST", "/api/profiles", { name }),
   selectProfile: (id: string) => call<Profile>("POST", `/api/profiles/${encodeURIComponent(id)}/select`),

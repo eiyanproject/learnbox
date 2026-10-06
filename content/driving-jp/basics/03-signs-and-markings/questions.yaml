@@ -1,0 +1,287 @@
+- id: sign-four-kinds
+  en: "Main signs come in four kinds: regulatory, indication, warning and guide signs."
+  ja: "本標識には、規制標識、指示標識、警戒標識、案内標識の4種類がある。"
+  answer: true
+  why: "Auxiliary signs are a separate group that add detail to a main sign."
+  ref: "教則 第1章第2節2(1)"
+  exams: [kari, hon]
+
+- id: sign-warning-purpose
+  en: "A warning sign forbids a particular way of driving."
+  ja: "警戒標識は、特定の交通方法を禁止するものである。"
+  answer: false
+  why: "Warning signs tell you in advance of a danger or something to watch for. Forbidding and ordering is the job of regulatory signs."
+  ref: "教則 第1章第2節2(2)・(4)"
+  exams: [kari, hon]
+
+- id: sign-indication-purpose
+  en: "An indication sign shows that a particular way of using the road is allowed, or marks a set place such as a crosswalk."
+  ja: "指示標識は、特定の交通方法ができることや、道路交通上決められた場所などを指示するものである。"
+  answer: true
+  why: "'Parking permitted', 'crosswalk' and 'safety zone' are examples."
+  ref: "教則 第1章第2節2(3)"
+  exams: [kari, hon]
+
+- id: sign-auxiliary
+  en: "An auxiliary sign is usually fixed below a main sign and specifies things such as the hours, the days or the kinds of vehicle the rule applies to."
+  ja: "補助標識は、普通、本標識の下に取り付けられており、規制が適用される時間、曜日、自動車の種類などを特定している。"
+  answer: true
+  why: "It can also give the reason for the rule."
+  ref: "教則 第1章第2節2(6)"
+  exams: [kari, hon]
+
+- id: sign-road-closed
+  en: "The 'road closed' sign (通行止め) closes the road to vehicles and trams, but pedestrians may go through."
+  ja: "「通行止め」の標識のある道路は、車や路面電車は通行できないが、歩行者は通行できる。"
+  answer: false
+  why: "It closes the road to pedestrians as well. 'Closed to vehicles' (車両通行止め) is the vehicles-only sign."
+  ref: "教則 付表3(1)ア1・2"
+  exams: [kari, hon]
+
+- id: sign-no-entry
+  en: "The 'no entry' sign (車両進入禁止), a red disc with a white bar, stands at the exit of a one-way street and forbids vehicles from entering there."
+  ja: "「車両進入禁止」の標識は、一方通行路の出口などに設けられ、車がその方向から進入することを禁止している。"
+  answer: true
+  why: "It forbids entering against the one-way direction."
+  ref: "教則 付表3(1)ア3"
+  exams: [kari, hon]
+
+- id: sign-no-parking-vs-stopping
+  en: "The 'no parking' sign (駐車禁止) also forbids stopping to let a passenger out."
+  ja: "「駐車禁止」の標識のある場所では、人の乗り降りのための停車もできない。"
+  answer: false
+  why: "It forbids parking only. The 'no stopping or parking' sign (駐停車禁止) is the one that forbids both."
+  ref: "教則 付表3(1)ア17・18"
+  exams: [kari, hon]
+
+- id: sign-parking-hours
+  en: "The figures '8-20' on a no-parking sign mean the rule applies from 8:00 to 20:00."
+  ja: "駐車禁止の標識に「8－20」とあるときは、8時から20時まで駐車が禁止されていることを示す。"
+  answer: true
+  why: "The figures give the hours during which the rule is in force."
+  ref: "教則 付表3(1)ア備考"
+  exams: [kari, hon]
+
+- id: sign-no-right-side-overtake
+  en: "Where the sign 'no crossing to the right-hand side to overtake' stands, you may still overtake if you can do it without crossing into the right-hand half of the road."
+  ja: "「追越しのための右側部分はみ出し通行禁止」の標識のある場所でも、道路の右側部分にはみ出さなければ、追越しをすることができる。"
+  answer: true
+  why: "That sign bans crossing over, not overtaking itself."
+  ref: "教則 付表3(1)ア15"
+  exams: [kari, hon]
+
+- id: sign-no-overtaking
+  en: "Where the 'no overtaking' sign stands (with the auxiliary plate 追越し禁止), you may overtake as long as you stay on the left half of the road."
+  ja: "「追越し禁止」の標識（補助標識「追越し禁止」付き）のある場所でも、道路の左側部分だけを使えば追越しをすることができる。"
+  answer: false
+  why: "With that auxiliary plate the sign forbids overtaking altogether."
+  ref: "教則 付表3(1)ア16・ウ80"
+  exams: [kari, hon]
+
+- id: sign-max-speed-moped
+  en: "Where a sign sets a maximum speed of 50 km/h, an ordinary moped may also travel at 50 km/h."
+  ja: "最高速度が時速50キロメートルと指定されている道路では、一般原動機付自転車も時速50キロメートルで走行できる。"
+  answer: false
+  why: "For mopeds the sign only ever sets a limit of 30 km/h or lower; their 30 km/h ceiling stays."
+  ref: "教則 付表3(1)ア25"
+  exams: [kari, hon]
+
+- id: sign-min-speed
+  en: "A minimum speed sign means cars must not travel below the speed shown."
+  ja: "「最低速度」の標識は、自動車がその速度に達しない速度で運転してはならないことを示している。"
+  answer: true
+  why: "On the sign the figure is underlined, which is how to tell it from a maximum."
+  ref: "教則 付表3(1)ア26"
+  exams: [kari, hon]
+
+- id: sign-height-load
+  en: "The height limit sign counts the height of the vehicle alone, not the load on it."
+  ja: "「高さ制限」の標識は、車体の高さだけを対象とし、積載した荷物の高さは含まない。"
+  answer: false
+  why: "The height includes the load."
+  ref: "教則 付表3(1)ア23"
+  exams: [kari, hon]
+
+- id: sign-weight-gross
+  en: "The weight limit sign bars vehicles whose gross weight is more than the figure shown."
+  ja: "「重量制限」の標識は、総重量が標示板に表示されている重量より重い車の通行止めを示している。"
+  answer: true
+  why: "Gross weight: the vehicle with its people and load."
+  ref: "教則 付表3(1)ア22"
+  exams: [kari, hon]
+
+- id: sign-one-way
+  en: "The one-way sign forbids vehicles from travelling in the direction opposite to the arrow."
+  ja: "「一方通行」の標識は、矢印の示す方向の反対方向に車が通行することを禁止している。"
+  answer: true
+  why: "White arrow on blue."
+  ref: "教則 付表3(1)ア31"
+  exams: [kari, hon]
+
+- id: sign-designated-direction
+  en: "The 'designated directions only' sign (指定方向外進行禁止) forbids vehicles from going any way other than the directions of the arrows."
+  ja: "「指定方向外進行禁止」の標識は、矢印の方向以外への車の進行を禁止している。"
+  answer: true
+  why: "Arrows straight and left, for example, mean no right turn."
+  ref: "教則 付表3(1)ア12"
+  exams: [kari, hon]
+
+- id: sign-no-crossing-left-turn
+  en: "Where the 'no crossing' sign for vehicles (車両横断禁止) stands, you may not turn left into a petrol station beside the road."
+  ja: "「車両横断禁止」の標識のある場所では、左折して道路沿いのガソリンスタンドに入ることもできない。"
+  answer: false
+  why: "Crossing that involves a left turn to enter a place off the road is excepted. It is crossing to the right that is banned."
+  ref: "教則 付表3(1)ア13"
+  exams: [kari, hon]
+
+- id: sign-stop
+  en: "At a 'stop' sign (一時停止) you may go through slowly without stopping if you can see that nothing is coming."
+  ja: "「一時停止」の標識のある交差点でも、他の車が来ないことが明らかなときは、徐行して通過してよい。"
+  answer: false
+  why: "The sign orders a stop just before the junction, whatever you can see."
+  ref: "教則 付表3(1)ア40"
+  exams: [kari, hon]
+
+- id: sign-horn-zone
+  en: "Inside a horn zone (警笛区間), you must sound the horn at junctions with no view to the sides, blind bends and blind hill tops."
+  ja: "「警笛区間」の標識のある区間内では、左右の見通しのきかない交差点、見通しのきかない道路の曲がり角、見通しのきかない上り坂の頂上で警音器を鳴らさなければならない。"
+  answer: true
+  why: "Those three places, within the zone."
+  ref: "教則 付表3(1)ア37"
+  exams: [kari, hon]
+
+- id: sign-horn-zone-everywhere
+  en: "Inside a horn zone, you must keep sounding the horn the whole way along."
+  ja: "「警笛区間」の標識のある区間内では、区間を通じて常に警音器を鳴らし続けなければならない。"
+  answer: false
+  why: "Only at the blind junctions, bends and hill tops inside it."
+  ref: "教則 付表3(1)ア37"
+  exams: [kari, hon]
+
+- id: sign-priority-ahead
+  en: "The sign 'priority road ahead' (前方優先道路) means the road you are driving on is the priority road."
+  ja: "「前方優先道路」の標識は、自分の通行している道路が優先道路であることを示している。"
+  answer: false
+  why: "It means the road you are about to cross has priority. 'Priority road' (優先道路) is the sign for the road you are on."
+  ref: "教則 付表3(1)ア39・イ55"
+  exams: [kari, hon]
+
+- id: sign-motor-only
+  en: "The 'motor vehicles only' sign (自動車専用) marks national expressways and motorways."
+  ja: "「自動車専用」の標識は、高速自動車国道と自動車専用道路を示している。"
+  answer: true
+  why: "White car symbol on blue."
+  ref: "教則 付表3(1)ア27"
+  exams: [kari, hon]
+
+- id: sign-tram-track
+  en: "Where the sign 'driving on the tram track permitted' (軌道敷内通行可) stands, cars may drive on the track."
+  ja: "「軌道敷内通行可」の標識のある場所では、自動車は軌道敷内を通行することができる。"
+  answer: true
+  why: "An indication sign: it allows something."
+  ref: "教則 付表3(1)イ52"
+  exams: [kari, hon]
+
+- id: sign-warning-colour
+  en: "Warning signs are yellow with black symbols."
+  ja: "警戒標識は、地が黄色で、記号は黒である。"
+  answer: true
+  why: "Yellow ground, black edging line and symbol."
+  ref: "教則 付表3(1)オ"
+  exams: [kari, hon]
+
+- id: sign-school
+  en: "The warning sign showing two walking children means a pedestrian-only road for school children."
+  ja: "子供2人が歩いている図柄の警戒標識は、通学のための歩行者専用道路であることを示している。"
+  answer: false
+  why: "It warns that a school, kindergarten or nursery is near. It does not close the road to cars."
+  ref: "教則 付表3(1)オ182"
+  exams: [kari, hon]
+
+- id: mark-two-kinds
+  en: "Road markings are of two kinds: regulatory markings and indication markings."
+  ja: "標示には、規制標示と指示標示の2種類がある。"
+  answer: true
+  why: "Lines, symbols and letters on the road surface, in paint or road studs."
+  ref: "教則 第1章第2節3(1)"
+  exams: [kari, hon]
+
+- id: mark-yellow-centre
+  en: "Where the centre line is a solid yellow line, you must not cross into the right-hand half of the road to overtake."
+  ja: "中央線が黄色の実線のところでは、追越しのために道路の右側部分にはみ出して通行してはならない。"
+  answer: true
+  why: "The yellow line is the marking for 'no crossing to the right-hand side to overtake'."
+  ref: "教則 付表3(2)ア2"
+  exams: [kari, hon]
+
+- id: mark-yellow-lane
+  en: "Where the line between two lanes is yellow, you must not change lanes across it."
+  ja: "車両通行帯が黄色の線で区画されているところでは、その線を越えて進路を変更してはならない。"
+  answer: true
+  why: "Yellow between lanes is the 'no lane change' marking."
+  ref: "教則 付表3(2)ア3"
+  exams: [kari, hon]
+
+- id: mark-yellow-white-lane
+  en: "Where a white line and a yellow line run side by side between two lanes, a car in the lane on the white side may change into the other lane."
+  ja: "車両通行帯の境に白の線と黄の線が並んで引かれているとき、白の線の側の車両通行帯を通行している車は、進路を変更することができる。"
+  answer: true
+  why: "The ban applies to the lane on the yellow side only."
+  ref: "教則 付表3(2)ア3(2)"
+  exams: [kari, hon]
+
+- id: mark-kerb-solid
+  en: "A solid yellow line on the kerb means no parking, but stopping is allowed."
+  ja: "縁石に黄色の実線のペイントがあるところは、駐車は禁止されているが、停車はできる。"
+  answer: false
+  why: "Solid yellow: no stopping and no parking. The broken yellow line is the one that bans parking only."
+  ref: "教則 付表3(2)ア4・5"
+  exams: [kari, hon]
+
+- id: mark-no-entry-area
+  en: "A part of the road outlined in yellow and filled with white diagonal lines (立入り禁止部分) must not be driven into."
+  ja: "黄色の枠の中に白の斜線が引かれている「立入り禁止部分」には、車は入ってはならない。"
+  answer: true
+  why: "It marks a part of the road where vehicles may not go."
+  ref: "教則 付表3(2)ア7"
+  exams: [kari, hon]
+
+- id: mark-keep-clear
+  en: "A 'keep clear' box (停止禁止部分) may never be entered, even when the road beyond it is clear."
+  ja: "「停止禁止部分」の標示のある部分には、前方が空いていても、車は入ってはならない。"
+  answer: false
+  why: "The rule is not to enter when traffic is congested and you would end up stopped inside it. Driving through is fine."
+  ref: "教則 付表3(2)ア8"
+  exams: [kari, hon]
+
+- id: mark-diamond
+  en: "A white diamond painted on the road warns of a crosswalk or bicycle crossing ahead."
+  ja: "路面の白のひし形の標示は、前方に横断歩道や自転車横断帯があることを予告している。"
+  answer: true
+  why: "Be ready to stop."
+  ref: "教則 付表3(2)イ38"
+  exams: [kari, hon]
+
+- id: mark-two-stage-stop
+  en: "At a two-stage stop line, cars stop at the front line and motorcycles at the rear line."
+  ja: "二段停止線では、四輪車が前方の停止線で、二輪車が後方の停止線で停止する。"
+  answer: false
+  why: "The other way round: motorcycles in front, cars behind."
+  ref: "教則 付表3(2)イ30"
+  exams: [kari, hon]
+
+- id: mark-channelling
+  en: "A channelling strip (導流帯) is a part of the road that vehicles are kept out of in order to guide traffic safely and smoothly."
+  ja: "導流帯は、車の通行を安全で円滑に誘導するため、車が通らないようにしている道路の部分である。"
+  answer: true
+  why: "White stripes, often before a right-turn lane."
+  ref: "教則 付表3(2)イ36"
+  exams: [kari, hon]
+
+- id: mark-safety-zone
+  en: "A safety zone marked on the road has a yellow outer frame and a white inner frame."
+  ja: "標示による安全地帯は、外わくが黄色、内わくが白である。"
+  answer: true
+  why: "Vehicles must not enter a safety zone."
+  ref: "教則 付表3(2)イ34"
+  exams: [kari, hon]

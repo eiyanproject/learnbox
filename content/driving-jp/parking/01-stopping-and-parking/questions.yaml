@@ -1,0 +1,223 @@
+- id: pk-def-driver-away
+  en: "If the driver has left the car and cannot drive it off at once, the car is parked, however short the time."
+  ja: "運転者が車から離れていてすぐに運転できない状態で停止することは、時間の長さにかかわらず駐車になる。"
+  answer: true
+  why: "Parking is a continuing stop, or a stop where the driver is away and cannot drive off at once."
+  ref: "教則 第5章第8節1"
+  exams: [hon]
+
+- id: pk-def-load-5min
+  en: "Stopping to load or unload goods for 5 minutes or less does not count as parking."
+  ja: "5分以内の荷物の積卸しのための停止は、駐車にはならない。"
+  answer: true
+  why: "Letting people in or out, and loading for up to 5 minutes, are stopping, not parking."
+  ref: "教則 第5章第8節1"
+  exams: [hon]
+
+- id: pk-def-load-10min
+  en: "Stopping for 10 minutes to unload goods counts as stopping, not parking, as long as the driver stays with the car."
+  ja: "荷物の積卸しのための停止は、運転者が車のそばにいれば、10分間であっても停車である。"
+  answer: false
+  why: "Only loading or unloading of 5 minutes or less is excluded from parking."
+  ref: "教則 第5章第8節1"
+  exams: [hon]
+
+- id: pk-def-passenger
+  en: "Stopping to let a passenger get out is not parking."
+  ja: "人の乗り降りのための停止は、駐車にはならない。"
+  answer: true
+  why: "Letting people get in or out is a stop, not parking."
+  ref: "教則 第5章第8節1"
+  exams: [hon]
+
+- id: pk-intersection-5m
+  en: "Stopping and parking are both forbidden in an intersection and within 5 metres of its edge."
+  ja: "交差点とその端から5メートル以内の場所では、駐車も停車もしてはならない。"
+  answer: true
+  why: "5 m from the edge of an intersection is a no-stopping, no-parking place."
+  ref: "教則 第5章第8節2(2)オ"
+  exams: [hon]
+
+- id: pk-crosswalk-5m
+  en: "Within 5 metres before or after a crosswalk, stopping to let a passenger out is allowed, though parking is not."
+  ja: "横断歩道の端から前後5メートル以内の場所は、駐車はできないが、人の乗り降りのための停車はできる。"
+  answer: false
+  why: "A crosswalk and the 5 m before and after it are forbidden for stopping as well as parking."
+  ref: "教則 第5章第8節2(2)キ"
+  exams: [hon]
+
+- id: pk-bend-5m
+  en: "Stopping and parking are forbidden within 5 metres of a bend in the road."
+  ja: "道路の曲がり角から5メートル以内の場所では、駐車も停車もしてはならない。"
+  answer: true
+  why: "Bends: 5 m."
+  ref: "教則 第5章第8節2(2)カ"
+  exams: [hon]
+
+- id: pk-crossing-10m
+  en: "Stopping and parking are forbidden within 5 metres before or after a railway crossing."
+  ja: "踏切とその端から前後5メートル以内の場所では、駐車も停車もしてはならない。"
+  answer: false
+  why: "For a railway crossing the distance is 10 metres before and after, not 5."
+  ref: "教則 第5章第8節2(2)ク"
+  exams: [hon]
+
+- id: pk-safety-zone-10m
+  en: "Stopping and parking are forbidden on the left side of a safety zone and within 10 metres before or after it."
+  ja: "安全地帯の左側とその前後10メートル以内の場所では、駐車も停車もしてはならない。"
+  answer: true
+  why: "Safety zones: the left side, and 10 m before and after."
+  ref: "教則 第5章第8節2(2)ケ"
+  exams: [hon]
+
+- id: pk-bus-stop-hours
+  en: "Within 10 metres of a bus stop sign, stopping and parking are forbidden at any hour of the day or night."
+  ja: "バスの停留所の標示板から10メートル以内の場所では、時間に関係なく、駐車も停車もしてはならない。"
+  answer: false
+  why: "The ban within 10 m of a bus or tram stop sign applies only during operating hours."
+  ref: "教則 第5章第8節2(2)コ"
+  exams: [hon]
+
+- id: pk-tunnel
+  en: "Stopping and parking are forbidden in a tunnel."
+  ja: "トンネルの中では、駐車も停車もしてはならない。"
+  answer: true
+  why: "Tunnels are on the no-stopping list, lanes or no lanes."
+  ref: "教則 第5章第8節2(2)エ"
+  exams: [hon]
+
+- id: pk-steep-uphill
+  en: "On a steep uphill slope you may stop briefly, because the stopping ban only covers steep downhill slopes."
+  ja: "こう配の急な上り坂では、駐停車が禁止されているのは下り坂だけなので、停車することができる。"
+  answer: false
+  why: "The ban covers the top of a slope and steep slopes - up as well as down. (Crawling and overtaking are the rules that single out the downhill.)"
+  ref: "教則 第5章第8節2(2)ウ"
+  exams: [hon]
+
+- id: pk-red-light-in-zone
+  en: "Stopping for a red light inside a no-stopping place does not break the rule."
+  ja: "駐停車が禁止されている場所でも、赤信号や危険防止のために一時停止することは違反にならない。"
+  answer: true
+  why: "Stops for a red light or to avoid danger are excepted."
+  ref: "教則 第5章第8節2(2)"
+  exams: [hon]
+
+- id: pk-fire-alarm-1m
+  en: "Parking is forbidden within 1 metre of a fire alarm."
+  ja: "火災報知機から1メートル以内の場所では、駐車してはならない。"
+  answer: true
+  why: "Fire alarms: 1 m, parking only."
+  ref: "教則 第5章第8節2(3)イ"
+  exams: [hon]
+
+- id: pk-garage-3m
+  en: "Parking is forbidden within 5 metres of the entrance to a car park or garage."
+  ja: "駐車場や車庫などの自動車用の出入口から5メートル以内の場所では、駐車してはならない。"
+  answer: false
+  why: "For a car park or garage entrance the distance is 3 metres."
+  ref: "教則 第5章第8節2(3)ウ"
+  exams: [hon]
+
+- id: pk-garage-own
+  en: "Within 3 metres of your own garage entrance, stopping to let someone out is allowed."
+  ja: "自宅の車庫の出入口から3メートル以内の場所でも、人を降ろすための停車はできる。"
+  answer: true
+  why: "That 3 m is a no-PARKING place; a stop that is not parking is allowed."
+  ref: "教則 第5章第8節1・2(3)ウ"
+  exams: [hon]
+
+- id: pk-roadworks-5m
+  en: "Parking is forbidden within 5 metres of the edge of a roadworks area."
+  ja: "道路工事の区域の端から5メートル以内の場所では、駐車してはならない。"
+  answer: true
+  why: "Roadworks: 5 m, parking only."
+  ref: "教則 第5章第8節2(3)エ"
+  exams: [hon]
+
+- id: pk-hydrant-5m
+  en: "Parking is forbidden within 5 metres of a fire hydrant."
+  ja: "消火栓から5メートル以内の場所では、駐車してはならない。"
+  answer: true
+  why: "Hydrants, fire-water signs and water tank intakes: 5 m, parking only."
+  ref: "教則 第5章第8節2(3)カ"
+  exams: [hon]
+
+- id: pk-hydrant-3m
+  en: "You may park 3 metres from a fire hydrant."
+  ja: "消火栓から3メートル離れた場所には、駐車することができる。"
+  answer: false
+  why: "3 m is inside the 5 m no-parking distance."
+  ref: "教則 第5章第8節2(3)カ"
+  exams: [hon]
+
+- id: pk-right-35m
+  en: "You must not park where less than 3.5 metres of road would be left on the right of your car."
+  ja: "駐車した場合に、車の右側の道路上に3.5メートル以上の余地がなくなる場所では、駐車してはならない。"
+  answer: true
+  why: "3.5 m must remain, unless a sign sets another figure."
+  ref: "教則 第5章第8節2(4)"
+  exams: [hon]
+
+- id: pk-right-35m-loading
+  en: "Where less than 3.5 metres would be left, you may still park to load goods as long as the driver can drive off at once."
+  ja: "右側に3.5メートル以上の余地がとれない場所でも、荷物の積卸しで運転者がすぐ運転できるときは、駐車できる。"
+  answer: true
+  why: "Loading with the driver ready to move, and helping an injured person, are the exceptions."
+  ref: "教則 第5章第8節2(4)"
+  exams: [hon]
+
+- id: pk-method-left-edge
+  en: "On a road with no pavement or side strip, park along the left edge of the road."
+  ja: "歩道や路側帯のない道路では、道路の左端に沿って駐車しなければならない。"
+  answer: true
+  why: "Along the left edge."
+  ref: "教則 第5章第8節3(1)"
+  exams: [hon]
+
+- id: pk-side-strip-075
+  en: "When parking in a wide side strip, you must leave at least 0.75 metres clear."
+  ja: "幅の広い路側帯に入って駐車するときは、0.75メートル以上の余地を空けておかなければならない。"
+  answer: true
+  why: "0.75 m is left for pedestrians."
+  ref: "教則 第5章第8節3(3)"
+  exams: [hon]
+
+- id: pk-side-strip-double-line
+  en: "A wide side strip marked with two white lines may be entered for parking if 0.75 metres is left."
+  ja: "白の2本線の標示のある路側帯でも、幅が広ければ、0.75メートルの余地を残して中に入って駐車できる。"
+  answer: false
+  why: "A side strip marked with a solid-and-broken white line, or with two white lines, may not be entered however wide it is."
+  ref: "教則 第5章第8節3(3)"
+  exams: [hon]
+
+- id: pk-double-park
+  en: "Parking alongside a car that is already parked parallel to the road is forbidden."
+  ja: "道路に平行して駐停車している車と並んで駐停車してはならない。"
+  answer: true
+  why: "No double parking."
+  ref: "教則 第5章第8節3(5)"
+  exams: [hon]
+
+- id: pk-storage-2km
+  en: "A car's storage place must be off the road, within 2 kilometres of the place where the car is based."
+  ja: "自動車の保管場所は、使用の本拠の位置から2キロメートル以内の、道路以外の場所に確保しなければならない。"
+  answer: true
+  why: "That is the storage-place rule."
+  ref: "教則 第5章第8節9(1)"
+  exams: [hon]
+
+- id: pk-road-12h
+  en: "A car may be left parked in the same place on a road for up to 24 hours."
+  ja: "道路上の同じ場所に、引き続き24時間まで駐車することができる。"
+  answer: false
+  why: "Not 12 hours or more in the same place - or 8 hours or more at night."
+  ref: "教則 第5章第8節9(2)"
+  exams: [hon]
+
+- id: pk-road-night-8h
+  en: "At night, a car must not be left parked in the same place on a road for 8 hours or more."
+  ja: "夜間は、道路上の同じ場所に引き続き8時間以上駐車してはならない。"
+  answer: true
+  why: "12 hours by day, 8 hours at night."
+  ref: "教則 第5章第8節9(2)"
+  exams: [hon]

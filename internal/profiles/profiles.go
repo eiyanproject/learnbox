@@ -52,6 +52,9 @@ type Profile struct {
 
 type Registry struct {
 	dir string
+	// extra names other per-profile files (see DataFile) that go when the
+	// profile does.
+	extra []string
 
 	mu     sync.Mutex
 	list   []Profile
@@ -170,10 +173,38 @@ func (r *Registry) Delete(id string) error {
 		return err
 	}
 	delete(r.stores, id)
-	if err := os.Remove(r.progressPath(id)); err != nil && !os.IsNotExist(err) {
-		return err
+	for _, f := range append([]string{r.progressPath(id)}, r.extraPaths(id)...) {
+		if err := os.Remove(f); err != nil && !os.IsNotExist(err) {
+			return err
+		}
 	}
 	return nil
+}
+
+// DataFile is where a profile keeps a file of its own beside its progress,
+// such as its quiz record: <name>.json for the default profile, and
+// <name>-<id>.json for the others. Register the name with AlsoDelete so it
+// goes when the profile does.
+func (r *Registry) DataFile(id, name string) string {
+	if id == DefaultID {
+		return filepath.Join(r.dir, name+".json")
+	}
+	return filepath.Join(r.dir, name+"-"+id+".json")
+}
+
+// AlsoDelete registers per-profile data files removed with the profile.
+func (r *Registry) AlsoDelete(names ...string) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.extra = append(r.extra, names...)
+}
+
+func (r *Registry) extraPaths(id string) []string {
+	var out []string
+	for _, n := range r.extra {
+		out = append(out, r.DataFile(id, n))
+	}
+	return out
 }
 
 // Progress returns the profile's progress store, opening it on first use.

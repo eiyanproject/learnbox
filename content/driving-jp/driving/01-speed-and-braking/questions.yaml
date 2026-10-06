@@ -1,0 +1,159 @@
+- id: spd-general-60
+  en: "On an ordinary road with no speed limit sign or marking, the maximum speed for a car is 60 km/h."
+  ja: "標識や標示で最高速度が指定されていない一般道路では、自動車の最高速度は時速60キロメートルである。"
+  answer: true
+  why: "Without a sign or marking, a car may not exceed 60 km/h (expressways have their own rules)."
+  ref: "教則 第5章第4節1(1)"
+  exams: [kari, hon]
+
+- id: spd-general-80
+  en: "On a wide ordinary road with no speed limit shown, a car may drive at up to 80 km/h."
+  ja: "最高速度の指定のない幅の広い一般道路では、自動車は時速80キロメートルまで出すことができる。"
+  answer: false
+  why: "However wide the road, the limit with no sign or marking is 60 km/h on ordinary roads."
+  ref: "教則 第5章第4節1(1)"
+  exams: [kari, hon]
+
+- id: spd-moped-30
+  en: "A moped may not go faster than 30 km/h, even on a road whose sign allows 50 km/h."
+  ja: "一般原動機付自転車は、最高速度50キロメートルの標識がある道路でも、時速30キロメートルを超えて運転してはならない。"
+  answer: true
+  why: "A moped's maximum is 30 km/h; only a lower limit shown by sign or marking changes it."
+  ref: "教則 第5章第4節1(2)"
+  exams: [kari, hon]
+
+- id: spd-within-limit-safe
+  en: "As long as you stay within the speed limit, you have done everything the rules ask about speed."
+  ja: "最高速度の範囲内であれば、道路や交通の状況にかかわらず、どのような速度で走ってもよい。"
+  answer: false
+  why: "Even within the limit you must choose a safe speed for the road, the traffic, the weather and how far you can see."
+  ref: "教則 第5章第4節1(3)"
+  exams: [kari, hon]
+
+- id: stop-distance-sum
+  en: "Stopping distance is the reaction distance plus the braking distance."
+  ja: "停止距離とは、空走距離と制動距離とを合わせた距離のことである。"
+  answer: true
+  why: "Reaction distance (until the brakes start to work) plus braking distance (until the car stops)."
+  ref: "教則 第5章第4節2(1)"
+  exams: [kari, hon]
+
+- id: stop-reaction-def
+  en: "The braking distance is the distance a car covers between the driver sensing danger and the brakes starting to work."
+  ja: "運転者が危険を感じてからブレーキを踏み、ブレーキが実際に効き始めるまでの間に車が走る距離を制動距離という。"
+  answer: false
+  why: "That is the reaction distance (空走距離). The braking distance (制動距離) runs from the brakes starting to work until the car stops."
+  ref: "教則 第5章第4節2(1)"
+  exams: [kari, hon]
+
+- id: stop-tired-reaction
+  en: "When a driver is tired, the reaction distance gets longer."
+  ja: "運転者が疲れているときは、危険を認知して判断するまでに時間がかかるので、空走距離が長くなる。"
+  answer: true
+  why: "Fatigue slows recognising and judging danger, so the car travels further before braking starts."
+  ref: "教則 第5章第4節2(2)"
+  exams: [kari, hon]
+
+- id: stop-load-shorter
+  en: "A heavily loaded car stops in a shorter distance because its weight presses the tyres onto the road."
+  ja: "重い荷物を積んでいる場合は、タイヤが路面に押し付けられるので制動距離が短くなる。"
+  answer: false
+  why: "A heavy load makes the braking distance longer, as does a wet road."
+  ref: "教則 第5章第4節2(2)"
+  exams: [kari, hon]
+
+- id: stop-wet-worn-double
+  en: "On a wet road with worn tyres, the stopping distance can be about twice that on a dry road with good tyres."
+  ja: "路面が雨にぬれ、タイヤがすり減っている場合の停止距離は、乾燥した路面でタイヤの状態が良い場合に比べて2倍程度に延びることがある。"
+  answer: true
+  why: "That is the comparison the Rules of the Road give."
+  ref: "教則 第5章第4節2(3)"
+  exams: [kari, hon]
+
+- id: stop-following-distance
+  en: "The following distance should allow you to avoid hitting the car ahead even if it stops suddenly."
+  ja: "前の車が急に止まっても追突しないような安全な車間距離をとらなければならない。"
+  answer: true
+  why: "Allow for the weather, the road, the tyres and the load."
+  ref: "教則 第5章第4節2(4)"
+  exams: [kari, hon]
+
+- id: brake-gentle-first
+  en: "When braking, press gently at first and then gradually harder as needed."
+  ja: "ブレーキは、最初はできるだけ軽く踏み込み、それから必要な強さまで徐々に踏み込んでいく。"
+  answer: true
+  why: "That is the recommended way to brake."
+  ref: "教則 第5章第4節3(1)"
+  exams: [kari, hon]
+
+- id: brake-several-times
+  en: "Braking in several presses is especially effective on a slippery road, and it also warns the car behind."
+  ja: "ブレーキを数回に分けて使う方法は、道路が滑りやすいときに特に効果的であり、ブレーキ灯が点滅して後車への合図にもなる。"
+  answer: true
+  why: "Several presses work well on slippery roads and flash the brake lights as a warning."
+  ref: "教則 第5章第4節3(2)"
+  exams: [kari, hon]
+
+- id: brake-abs-pump
+  en: "In an emergency stop with ABS, pump the brake pedal on and off so the wheels do not lock."
+  ja: "アンチロックブレーキシステムを備えた自動車で急ブレーキを掛けるときは、車輪がロックしないようにブレーキを断続的に踏む。"
+  answer: false
+  why: "With ABS, press hard at once and keep pressing - the system does the rest."
+  ref: "教則 第5章第4節3(3)"
+  exams: [kari, hon]
+
+- id: brake-sudden
+  en: "Sudden braking is not allowed except when it is needed to avoid danger."
+  ja: "危険を避けるためやむを得ない場合のほかは、急ブレーキを掛けてはならない。"
+  answer: true
+  why: "That is the rule; it protects the car behind."
+  ref: "教則 第5章第4節3(3)"
+  exams: [kari, hon]
+
+- id: crawl-def
+  en: "To crawl (徐行) means to go at a speed at which the car can stop at once."
+  ja: "徐行とは、車がすぐ停止できるような速度で進むことをいう。"
+  answer: true
+  why: "That is the definition."
+  ref: "教則 第5章第4節4"
+  exams: [kari, hon]
+
+- id: crawl-blind-intersection
+  en: "At an intersection where you cannot see left and right, you must crawl - even when the intersection has traffic lights."
+  ja: "左右の見通しのきかない交差点では、信号機などによる交通整理が行われている場合でも徐行しなければならない。"
+  answer: false
+  why: "The rule to crawl at a blind intersection does not apply where traffic is controlled by signals, or when you are on the priority road."
+  ref: "教則 第5章第4節4(2)"
+  exams: [kari, hon]
+
+- id: crawl-priority-road
+  en: "A car on a priority road need not crawl at an intersection with poor visibility to the sides."
+  ja: "優先道路を通行している場合は、左右の見通しのきかない交差点でも徐行しなくてよい。"
+  answer: true
+  why: "Being on the priority road is one of the two exceptions."
+  ref: "教則 第5章第4節4(2)"
+  exams: [kari, hon]
+
+- id: crawl-uphill-top
+  en: "You must crawl near the top of an uphill slope."
+  ja: "上り坂の頂上付近では徐行しなければならない。"
+  answer: true
+  why: "Near the top of an uphill slope, and on a steep downhill slope, you must crawl."
+  ref: "教則 第5章第4節4(4)"
+  exams: [kari, hon]
+
+- id: crawl-steep-uphill
+  en: "You must crawl on a steep uphill slope."
+  ja: "こう配の急な上り坂では徐行しなければならない。"
+  answer: false
+  why: "The crawl rule covers a steep DOWNHILL slope and the top of an uphill one - not a steep uphill slope itself."
+  ref: "教則 第5章第4節4(4)"
+  exams: [kari, hon]
+
+- id: crawl-bend
+  en: "You must crawl near a bend in the road."
+  ja: "道路の曲がり角付近では徐行しなければならない。"
+  answer: true
+  why: "Near a bend is one of the places to crawl."
+  ref: "教則 第5章第4節4(3)"
+  exams: [kari, hon]

@@ -1,0 +1,239 @@
+- id: exp-moped
+  en: "An ordinary moped may not be ridden on an expressway."
+  ja: "一般原動機付自転車は、高速道路を通行することができない。"
+  answer: true
+  why: "Mini-cars, small motorcycles (125 cc or less) and ordinary mopeds are all excluded."
+  ref: "教則 第7章"
+  exams: [hon]
+
+- id: exp-small-motorcycle
+  en: "A motorcycle with a 125 cc engine may use an expressway."
+  ja: "総排気量125ccの普通自動二輪車は、高速道路を通行することができる。"
+  answer: false
+  why: "Small motorcycles - 125 cc or less - may not."
+  ref: "教則 第7章・注9"
+  exams: [hon]
+
+- id: exp-50kmh-construction
+  en: "A vehicle that by its construction cannot reach 50 km/h may not use a national expressway."
+  ja: "構造上毎時50キロメートル以上の速度の出ない自動車は、高速自動車国道を通行することができない。"
+  answer: true
+  why: "The same for a vehicle that cannot do 50 km/h because of what it is towing."
+  ref: "教則 第7章"
+  exams: [hon]
+
+- id: exp-tyre-pressure
+  en: "Before driving on an expressway, set the tyre pressure a little lower than usual."
+  ja: "高速道路を走行するときは、タイヤの空気圧をやや低めにする。"
+  answer: false
+  why: "A little higher, not lower."
+  ref: "教則 第7章第1節(1)カ"
+  exams: [hon]
+
+- id: exp-check-fuel
+  en: "Before entering an expressway you must check, among other things, fuel, coolant and engine oil."
+  ja: "高速道路を通行するときは、燃料、冷却水、エンジンオイルの量などを点検しなければならない。"
+  answer: true
+  why: "You must not end up stopped on an expressway for lack of any of them."
+  ref: "教則 第7章第1節(1)"
+  exams: [hon]
+
+- id: exp-acceleration-lane
+  en: "When joining the main carriageway where there is an acceleration lane, use it and build up enough speed."
+  ja: "本線車道へ入ろうとする場合で、加速車線があるときは、加速車線を通行して、十分加速しなければならない。"
+  answer: true
+  why: "Joining slowly is dangerous."
+  ref: "教則 第7章第2節1(1)"
+  exams: [hon]
+
+- id: exp-join-priority
+  en: "A car joining from the acceleration lane has priority over cars on the main carriageway."
+  ja: "加速車線から本線車道へ入ろうとする車は、本線車道を通行している車より優先する。"
+  answer: false
+  why: "The joining car must not hinder traffic on the main carriageway."
+  ref: "教則 第7章第2節1(2)"
+  exams: [hon]
+
+- id: exp-main-carriageway-def
+  en: "The acceleration lane and the climbing lane are part of the main carriageway."
+  ja: "加速車線や登坂車線は、本線車道に含まれる。"
+  answer: false
+  why: "The main carriageway excludes the acceleration, deceleration and climbing lanes, the side strip and the shoulder."
+  ref: "教則 第7章第2節1"
+  exams: [hon]
+
+- id: exp-max-100
+  en: "Where no sign sets a limit, the maximum speed for an ordinary car on a national expressway main carriageway is 100 km/h."
+  ja: "標識や標示で最高速度が指定されていない高速自動車国道の本線車道では、普通自動車の最高速度は毎時100キロメートルである。"
+  answer: true
+  why: "100 km/h for ordinary cars (three-wheelers excepted), large passenger vehicles and motorcycles."
+  ref: "教則 第7章第2節2(3)"
+  exams: [hon]
+
+- id: exp-min-50
+  en: "Where no sign sets a limit, the minimum speed on a national expressway main carriageway is 60 km/h."
+  ja: "標識や標示で最低速度が指定されていない高速自動車国道の本線車道では、最低速度は毎時60キロメートルである。"
+  answer: false
+  why: "The minimum is 50 km/h."
+  ref: "教則 第7章第2節2(3)"
+  exams: [hon]
+
+- id: exp-towing-80
+  en: "A car towing another vehicle on a national expressway has a maximum speed of 80 km/h where no sign sets a limit."
+  ja: "標識や標示で指定されていない高速自動車国道の本線車道では、他の車をけん引している自動車の最高速度は毎時80キロメートルである。"
+  answer: true
+  why: "80 km/h when towing."
+  ref: "教則 第7章第2節2(3)"
+  exams: [hon]
+
+- id: exp-undivided
+  en: "On a stretch of national expressway where the two directions are not physically separated, the 100 km/h and 50 km/h limits do not apply and ordinary-road limits do."
+  ja: "高速自動車国道の本線車道が往復の方向別に分離されていない区間では、最高速度や最低速度は一般道路と同じである。"
+  answer: true
+  why: "The expressway speed table covers only divided carriageways."
+  ref: "教則 第7章第2節2(3)備考1"
+  exams: [hon]
+
+- id: exp-gap-100
+  en: "On a dry road with new tyres, you need a following distance of about 100 metres at 100 km/h."
+  ja: "路面が乾燥していてタイヤが新しい場合、時速100キロメートルでは約100メートルの車間距離をとる必要がある。"
+  answer: true
+  why: "About 100 m at 100 km/h, about 80 m at 80 km/h."
+  ref: "教則 第7章第2節2(4)"
+  exams: [hon]
+
+- id: exp-gap-wet
+  en: "On a wet road with worn tyres, the following distance at 100 km/h can stay at about 100 metres."
+  ja: "路面が雨にぬれ、タイヤが減っている場合でも、時速100キロメートルでは約100メートルの車間距離をとれば十分である。"
+  answer: false
+  why: "About double may be needed - some 200 m."
+  ref: "教則 第7章第2節2(4)"
+  exams: [hon]
+
+- id: exp-hydroplaning
+  en: "Driving fast in rain, the tyres can lift off the road surface so that steering and brakes stop working."
+  ja: "雨の中を高速で走行すると、タイヤが浮いて、ハンドルやブレーキが効かなくなることがある。"
+  answer: true
+  why: "That is hydroplaning (ハイドロプレーニング現象)."
+  ref: "教則 第7章第2節2(5)"
+  exams: [hon]
+
+- id: exp-shoulder
+  en: "In a traffic jam on an expressway, you may drive along the shoulder to reach the next exit."
+  ja: "高速道路が渋滞しているときは、次の出口まで路肩を通行してよい。"
+  answer: false
+  why: "Driving on the side strip or shoulder of an expressway is forbidden."
+  ref: "教則 第7章第2節3(2)"
+  exams: [hon]
+
+- id: exp-reverse
+  en: "If you miss your exit on an expressway, you may reverse a short way along the main carriageway when no traffic is coming."
+  ja: "高速道路で出口を通り過ぎたときは、後続車がなければ、本線車道を少し後退してもよい。"
+  answer: false
+  why: "No U-turns, no reversing, no crossing the central reservation on the main carriageway."
+  ref: "教則 第7章第2節3(4)"
+  exams: [hon]
+
+- id: exp-lane-position
+  en: "On an expressway, drive a little to the left within your lane, using the white line on the left as a guide."
+  ja: "高速道路を走行中は、左側の白の線を目安にして車両通行帯のやや左寄りを通行するようにする。"
+  answer: true
+  why: "It leaves room for cars overtaking you."
+  ref: "教則 第7章第2節3(1)"
+  exams: [hon]
+
+- id: exp-overtake-return
+  en: "After overtaking on an expressway, move back once the whole of the overtaken car can be seen in the interior mirror."
+  ja: "高速道路で追越しをして進路を戻すときは、追い越した車全体がルームミラーに映ったことを確認してから行う。"
+  answer: true
+  why: "That is the check for enough clearance."
+  ref: "教則 第7章第2節3(5)"
+  exams: [hon]
+
+- id: exp-braking
+  en: "To slow down at high speed, change down a gear for engine braking and press the foot brake in several stages."
+  ja: "高速走行中にブレーキを掛けるときは、一段低いギアに落としエンジンブレーキを使うとともに、フットブレーキを数回に分けて踏むようにする。"
+  answer: true
+  why: "Sudden braking at high speed is very dangerous."
+  ref: "教則 第7章第2節3(8)"
+  exams: [hon]
+
+- id: exp-wind-tunnel-exit
+  en: "At tunnel exits and cuttings, a crosswind may pull at the steering, so take care."
+  ja: "トンネルや切り通しの出口などでは、横風のためにハンドルを取られることがあるので注意する。"
+  answer: true
+  why: "Slow down in strong wind."
+  ref: "教則 第7章第2節3(10)"
+  exams: [hon]
+
+- id: exp-night-main-beam
+  en: "On an expressway at night, keep the headlights dipped at all times so as not to dazzle others."
+  ja: "夜間、高速道路を走行するときは、他の車がまぶしくないように、常に前照灯を下向きにしておく。"
+  answer: false
+  why: "Main beam, to spot fallen objects and stopped cars early - except when meeting an oncoming car or driving right behind another."
+  ref: "教則 第7章第2節3(12)"
+  exams: [hon]
+
+- id: exp-stop-rest
+  en: "When tired on an expressway, you may stop on the shoulder for a short rest."
+  ja: "高速道路で疲れたときは、路肩に止めて短時間休息してよい。"
+  answer: false
+  why: "Stopping is allowed only to avoid danger, for a breakdown on a wide enough shoulder or side strip, and in parking areas or at toll booths."
+  ref: "教則 第7章第2節4(1)"
+  exams: [hon]
+
+- id: exp-breakdown-triangle
+  en: "If your car breaks down on an expressway, you must set a warning triangle or warning light on the road behind it."
+  ja: "高速道路で故障などにより運転することができなくなったときは、自動車の後方の路上に停止表示器材を置かなければならない。"
+  answer: true
+  why: "So that following drivers can tell the car is stopped."
+  ref: "教則 第7章第2節4(2)"
+  exams: [hon]
+
+- id: exp-breakdown-night
+  en: "Broken down on an expressway at night, the warning triangle is enough; no lights need to be on."
+  ja: "夜間、高速道路で故障して停止したときは、停止表示器材を置けば、灯火はつけなくてもよい。"
+  answer: false
+  why: "At night - and by day with visibility of 200 m or less - hazard, parking or tail lights go on as well."
+  ref: "教則 第7章第2節4(2)"
+  exams: [hon]
+
+- id: exp-breakdown-stay
+  en: "After a breakdown on an expressway, the safest place to wait is inside the car with your seat belt on."
+  ja: "高速道路で故障したときは、シートベルトを着用して車内で待つのが最も安全である。"
+  answer: false
+  why: "Staying in the car risks being hit from behind. After the safety measures, get out to a safe place such as behind the guard rail."
+  ref: "教則 第7章第2節4(4)"
+  exams: [hon]
+
+- id: exp-fallen-load
+  en: "If part of your load falls onto an expressway, call 110 and use an emergency telephone to ask for it to be removed."
+  ja: "高速道路で荷物が転落、飛散したときは、110番通報で警察に連絡するとともに、非常電話を利用して荷物の除去の依頼などをする。"
+  answer: true
+  why: "The carriageway is too dangerous to walk onto."
+  ref: "教則 第7章第2節4(5)"
+  exams: [hon]
+
+- id: exp-exit-lane
+  en: "When nearing your exit, move in advance into the lane that leads to it, and use the deceleration lane to slow down."
+  ja: "出口に近づいたときは、あらかじめ出口に接続する車両通行帯を通行し、減速車線があるときは、その車線を通って速度を落とさなければならない。"
+  answer: true
+  why: "Slow down in the deceleration lane, not on the main carriageway."
+  ref: "教則 第7章第2節5(2)"
+  exams: [hon]
+
+- id: exp-exit-speed-sense
+  en: "When leaving an expressway, judge your speed by feel rather than by the speedometer."
+  ja: "高速道路から出るときは、速度計よりも自分の感覚で速度を判断するのがよい。"
+  answer: false
+  why: "After high speed your sense of speed is unreliable: check the speedometer."
+  ref: "教則 第7章第2節5(2)"
+  exams: [hon]
+
+- id: exp-emergency-vehicle
+  en: "You must not hinder an emergency vehicle that is joining or leaving the main carriageway."
+  ja: "緊急自動車が本線車道へ入ろうとしているときや本線車道から出ようとしているときは、その通行を妨げてはならない。"
+  answer: true
+  why: "An emergency vehicle has priority here too."
+  ref: "教則 第7章第2節3(6)"
+  exams: [hon]

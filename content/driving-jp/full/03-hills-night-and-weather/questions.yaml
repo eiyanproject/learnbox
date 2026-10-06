@@ -1,0 +1,287 @@
+- id: hill-give-way-down
+  en: "When two cars meet on a narrow slope, the car going downhill gives way to the car going uphill."
+  ja: "坂道で行き違うときは、下りの車が、上りの車に道を譲る。"
+  answer: true
+  why: "Starting off uphill is harder, so the downhill car yields."
+  ref: "教則 第6章第2節1(6)"
+  exams: [kari, hon]
+
+- id: hill-passing-place
+  en: "On a slope, a car going uphill always has priority, even when there is a passing place right beside it."
+  ja: "坂道では、近くに待避所があっても、常に上りの車が優先する。"
+  answer: false
+  why: "If a passing place is near, the uphill car pulls into it and waits."
+  ref: "教則 第6章第2節1(6)"
+  exams: [kari, hon]
+
+- id: hill-cliff-side
+  en: "On a road with a drop on one side, when cars cannot pass safely, the car on the cliff side stops and gives way."
+  ja: "片側が転落のおそれのあるがけになっている道路で、安全な行き違いができないときは、がけ側の車が一時停止をして道を譲る。"
+  answer: true
+  why: "The car on the dangerous side stays still while the other passes."
+  ref: "教則 第6章第2節1(8)"
+  exams: [kari, hon]
+
+- id: hill-cliff-mountain-side
+  en: "On a road with a drop on one side, the car on the hillside stops and lets the car on the cliff side go first."
+  ja: "片側ががけになっている道路で行き違うときは、山側の車が一時停止をして、がけ側の車を先に通す。"
+  answer: false
+  why: "It is the cliff-side car that stops."
+  ref: "教則 第6章第2節1(8)"
+  exams: [kari, hon]
+
+- id: hill-engine-brake
+  en: "On a long downhill, use a low gear and engine braking rather than relying on the foot brake."
+  ja: "長い下り坂では、低速のギアを用い、エンジンブレーキを活用する。"
+  answer: true
+  why: "Overusing the foot brake on a long descent can make the brakes suddenly stop working."
+  ref: "教則 第6章第2節1(4)"
+  exams: [hon]
+
+- id: hill-neutral-downhill
+  en: "On a long downhill it is good to coast in neutral and control the speed with the foot brake alone."
+  ja: "長い下り坂では、ギアをニュートラルにし、フットブレーキだけで速度を調節するのがよい。"
+  answer: false
+  why: "That gives no engine braking and overheats the brakes. Use a low gear."
+  ref: "教則 第6章第2節1(4)"
+  exams: [hon]
+
+- id: hill-gap-downhill
+  en: "On a downhill, leave a longer gap to the car in front, because the stopping distance is longer."
+  ja: "下り坂では、加速がつき停止距離が長くなるので、車間距離を広くとる。"
+  answer: true
+  why: "The car gathers speed on the way down."
+  ref: "教則 第6章第2節1(5)"
+  exams: [hon]
+
+- id: hill-stop-uphill-close
+  en: "When stopping behind another car on an uphill, pull up as close as you can so that traffic keeps flowing."
+  ja: "上り坂で前の車に続いて停車するときは、できるだけ接近して止まるのがよい。"
+  answer: false
+  why: "Keep back: the car in front may roll backwards into you."
+  ref: "教則 第6章第2節1(1)"
+  exams: [hon]
+
+- id: hill-start-handbrake
+  en: "When starting on an uphill, use the handbrake as far as possible."
+  ja: "上り坂で発進するときは、できるだけハンドブレーキを利用する。"
+  answer: true
+  why: "With the clutch alone the car may roll back into the one behind."
+  ref: "教則 第6章第2節1(2)"
+  exams: [kari, hon]
+
+- id: bend-brake-while-steering
+  en: "Braking while turning the wheel in a bend makes a skid or rollover more likely."
+  ja: "ハンドルを切りながらブレーキを掛けると、横転や横滑りを起こしやすくなる。"
+  answer: true
+  why: "Get the speed down on the straight before the bend."
+  ref: "教則 第6章第2節2(1)"
+  exams: [hon]
+
+- id: bend-inner-wheel
+  en: "In a bend the rear wheels follow a path inside the front wheels, so take care not to catch a cyclist on the inside."
+  ja: "カーブでは、車の内輪差のため、内側にいる自転車などを巻き込むおそれがある。"
+  answer: true
+  why: "That is the inner wheel difference (内輪差)."
+  ref: "教則 第6章第2節2(4)"
+  exams: [hon]
+
+- id: night-speed
+  en: "At night your sense of speed is dulled and you tend to drive too fast, so drive more slowly than in the daytime."
+  ja: "夜間は速度感が鈍り速度超過になりがちなので、昼間より速度を落として運転する。"
+  answer: true
+  why: "And pedestrians and cyclists are spotted later."
+  ref: "教則 第6章第3節1(1)"
+  exams: [hon]
+
+- id: night-centre-pedestrian
+  en: "At night a pedestrian near the centre of the road is easy to see, lit by both your lights and the oncoming car's."
+  ja: "夜間、道路の中央付近の歩行者は、自分の車と対向車のライトで照らされるので見えやすい。"
+  answer: false
+  why: "Between the two sets of lights the pedestrian can disappear from view."
+  ref: "教則 第6章第3節1(2)"
+  exams: [hon]
+
+- id: night-dusk-lights
+  en: "Many accidents happen at dusk, so switch your lights on early."
+  ja: "薄暮時には事故が多く発生するので、早めにライトを点灯する。"
+  answer: true
+  why: "The lights also show others that you are there."
+  ref: "教則 第6章第3節1(6)"
+  exams: [hon]
+
+- id: light-tunnel-50m
+  en: "In the daytime, in a tunnel where you cannot see 50 metres ahead, you must switch your lights on."
+  ja: "昼間でも、トンネルの中などで50メートル先が見えないような場所を通行するときは、前照灯などをつけなければならない。"
+  answer: true
+  why: "50 m on an ordinary road; 200 m on an expressway."
+  ref: "教則 第6章第3節2(1)"
+  exams: [hon]
+
+- id: light-fog-day
+  en: "Lights are needed only at night, so in thick daytime fog you need not use them."
+  ja: "灯火は夜間だけつければよいので、昼間は濃い霧の中でもつける必要はない。"
+  answer: false
+  why: "In fog where you cannot see 50 m ahead the lights go on by day as well."
+  ref: "教則 第6章第3節2(1)"
+  exams: [hon]
+
+- id: light-dip-oncoming
+  en: "At night, when meeting an oncoming car, dim your headlights or switch to dipped beam."
+  ja: "夜間、対向車と行き違うときは、前照灯を減光するか、下向きに切り替えなければならない。"
+  answer: true
+  why: "The same when driving directly behind another car."
+  ref: "教則 第6章第3節2(2)"
+  exams: [hon]
+
+- id: light-following-main-beam
+  en: "When driving directly behind another car at night, keep your headlights on main beam so that you can see well."
+  ja: "夜間、ほかの車の直後を通行しているときは、よく見えるように前照灯を上向きにしておく。"
+  answer: false
+  why: "Dim them or dip them: main beam dazzles the driver ahead through the mirrors."
+  ref: "教則 第6章第3節2(2)"
+  exams: [hon]
+
+- id: light-main-beam-default
+  en: "At night, outside busy built-up streets, drive on main beam so that pedestrians are seen as early as possible."
+  ja: "夜間は、交通量の多い市街地などを通行しているときを除き、前照灯を上向きにして、歩行者などを少しでも早く発見するようにする。"
+  answer: true
+  why: "Main beam is the default; dipping is for oncoming traffic, following, and busy streets."
+  ref: "教則 第6章第3節2(2)"
+  exams: [hon]
+
+- id: light-dazzle-left
+  en: "When dazzled by oncoming headlights, shift your eyes a little to the left front."
+  ja: "対向車のライトがまぶしいときは、視点をやや左前方に移して、目がくらまないようにする。"
+  answer: true
+  why: "Looking straight at the lights blinds you."
+  ref: "教則 第6章第3節2(3)"
+  exams: [hon]
+
+- id: light-interior
+  en: "It is safer to keep the interior light on while driving an ordinary car at night."
+  ja: "夜間、普通自動車を運転するときは、室内灯をつけたまま走行したほうが安全である。"
+  answer: false
+  why: "Apart from buses, the interior light stays off while moving."
+  ref: "教則 第6章第3節2(5)"
+  exams: [hon]
+
+- id: light-parked-night
+  en: "When parking on a road at night, switch on the hazard lights, parking lights or tail lights."
+  ja: "夜間、道路に駐停車するときは、非常点滅表示灯、駐車灯又は尾灯をつけなければならない。"
+  answer: true
+  why: "Unless street lighting lets the car be seen from 50 m behind, or a warning triangle or light is set out."
+  ref: "教則 第6章第3節2(6)"
+  exams: [hon]
+
+- id: light-parked-streetlight
+  en: "Parked at night where street lighting lets the car be seen from 50 metres behind, you need not leave any lights on."
+  ja: "夜間、道路照明などにより50メートル後方から見える場所に駐停車しているときは、非常点滅表示灯などをつけなくてもよい。"
+  answer: true
+  why: "That is one of the two exceptions; the other is setting out a warning triangle or light."
+  ref: "教則 第6章第3節2(6)"
+  exams: [hon]
+
+- id: rain-first-drops
+  en: "A paved road is most slippery after it has been raining for a long time, not when the rain has just begun."
+  ja: "舗装道路は、雨が長時間降り続いたときが最も滑りやすく、降り始めはそれほど滑らない。"
+  answer: false
+  why: "Take care when rain has just started: that is when paving is slippery."
+  ref: "教則 第6章第4節1(4)"
+  exams: [hon]
+
+- id: rain-splash
+  en: "On a wet day, slow down when passing pedestrians so as not to splash mud or water on them."
+  ja: "雨の日に歩行者のそばを通るときは、速度を落として、泥や水をはねないようにしなければならない。"
+  answer: true
+  why: "This one is an obligation, not just good manners."
+  ref: "教則 第6章第4節1(5)"
+  exams: [kari, hon]
+
+- id: rain-puddle
+  en: "Driving through a deep puddle can let water into the brake drums and weaken the brakes."
+  ja: "深い水たまりを通ると、ブレーキドラムに水が入り、ブレーキが効かなくなったり、効きが悪くなったりすることがある。"
+  answer: true
+  why: "So go round deep puddles."
+  ref: "教則 第6章第4節1(6)"
+  exams: [hon]
+
+- id: rain-steel-plate
+  en: "In the rain, steel plates at roadworks and tram rails are slippery."
+  ja: "雨の日は、工事現場の鉄板や路面電車のレールなどが滑りやすい。"
+  answer: true
+  why: "Smooth metal gives the tyres little grip when wet."
+  ref: "教則 第6章第4節1(4)"
+  exams: [hon]
+
+- id: snow-chain-sign
+  en: "Where a sign bans vehicles without tyre chains, winter tyres alone are enough to go on."
+  ja: "標識によりタイヤチェーンを着けていない車の通行が禁止されている道路でも、スタッドレスタイヤを着けていれば通行できる。"
+  answer: false
+  why: "On that road you may not go without chains on the tyres."
+  ref: "教則 第6章第4節2(1)"
+  exams: [hon]
+
+- id: snow-tracks
+  en: "On a snowy road, choose the tracks left by other cars as far as possible."
+  ja: "雪道では、できるだけ車の通った跡を選んで走る。"
+  answer: true
+  why: "And no sudden starts, braking or steering at all."
+  ref: "教則 第6章第4節2(3)"
+  exams: [hon]
+
+- id: fog-lights
+  en: "In fog, switch on fog lamps - or headlights if there are none - early, and slow down, using the centre line or the tail lights ahead as a guide."
+  ja: "霧のときは、霧灯があるときは霧灯を、ないときは前照灯を早めにつけ、中心線や前の車の尾灯を目安にし、速度を落として運転する。"
+  answer: true
+  why: "Use the horn too, where it is needed to prevent danger."
+  ref: "教則 第6章第4節3"
+  exams: [hon]
+
+- id: emg-puncture
+  en: "If a tyre punctures while you are driving, brake hard at once to stop the car."
+  ja: "走行中にタイヤがパンクしたときは、直ちに急ブレーキを掛けて車を止める。"
+  answer: false
+  why: "Hold the wheel firmly, keep the car straight, and stop with short repeated presses on the brake."
+  ref: "教則 第6章第5節(4)"
+  exams: [hon]
+
+- id: emg-rear-skid-brake
+  en: "If the rear wheels start to skid, brake at once."
+  ja: "後輪が横滑りを始めたときは、直ちにブレーキを掛ける。"
+  answer: false
+  why: "No braking: ease off the accelerator and correct with the steering."
+  ref: "教則 第6章第5節(5)"
+  exams: [hon]
+
+- id: emg-rear-skid-steer
+  en: "If the rear wheels slide to the right, steer to the right."
+  ja: "後輪が右に滑ったときは、ハンドルを右に切る。"
+  answer: true
+  why: "The car's nose swings left, so steering right straightens it."
+  ref: "教則 第6章第5節(5)"
+  exams: [hon]
+
+- id: emg-brake-fail
+  en: "If the brakes fail on a downhill, change down quickly and pull the handbrake."
+  ja: "下り坂でブレーキが効かなくなったときは、手早く減速チェンジをし、ハンドブレーキを引く。"
+  answer: true
+  why: "If that does not stop the car: a wheel into the hillside ditch, the body against the guard rail, or into roadside gravel."
+  ref: "教則 第6章第5節(6)"
+  exams: [hon]
+
+- id: emg-head-on
+  en: "If a head-on collision threatens, use the horn and the brakes together and move as far to the left as you can."
+  ja: "対向車と正面衝突のおそれが生じたときは、警音器とブレーキを同時に使い、できる限り左側によける。"
+  answer: true
+  why: "And if the ground beside the road is not dangerous, do not hesitate to leave the road."
+  ref: "教則 第6章第5節(7)"
+  exams: [hon]
+
+- id: emg-engine-racing
+  en: "If the engine revs will not come down while driving a car, shift to neutral, move to a safe place such as the roadside, stop, then switch the engine off."
+  ja: "四輪車で走行中にエンジンの回転数が下がらなくなったときは、ギアをニュートラルにして路肩など安全な場所に行き、停止した後にエンジンスイッチを切る。"
+  answer: true
+  why: "Neutral takes the engine's power off the wheels; switching off comes after stopping."
+  ref: "教則 第6章第5節(3)"
+  exams: [hon]

@@ -18,6 +18,7 @@ import (
 	"os/signal"
 	"path"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"syscall"
@@ -29,6 +30,7 @@ import (
 	"github.com/eiyanproject/learnbox/internal/game"
 	"github.com/eiyanproject/learnbox/internal/httpapi"
 	"github.com/eiyanproject/learnbox/internal/profiles"
+	"github.com/eiyanproject/learnbox/internal/quiz"
 	"github.com/eiyanproject/learnbox/internal/runner"
 	"github.com/eiyanproject/learnbox/internal/sandbox"
 	"github.com/eiyanproject/learnbox/internal/term"
@@ -215,6 +217,11 @@ func serve(log *slog.Logger, c cfg) error {
 	if err != nil {
 		return fmt.Errorf("open profiles: %w", err)
 	}
+	profs.AlsoDelete("quiz")
+	banks, err := quiz.Load(lib)
+	if err != nil {
+		return fmt.Errorf("load quiz questions: %w", err)
+	}
 	terms := term.NewManager(sb, log)
 	terms.MaxSessions = c.MaxSessions
 	terms.IdleTimeout = c.IdleTimeout
@@ -247,7 +254,7 @@ func serve(log *slog.Logger, c cfg) error {
 	api := httpapi.New(httpapi.Deps{
 		Version: version, Commit: commit, Log: log, Lib: lib,
 		Sandbox: sb, Workspace: ws, Runner: newRunner(sb, ws, c),
-		Profiles: profs, Terms: terms, WebDir: c.WebDir, AllowedHosts: c.AllowedHosts,
+		Profiles: profs, Quiz: banks, Terms: terms, WebDir: c.WebDir, AllowedHosts: c.AllowedHosts,
 		MinFreeDisk: c.MinFreeDisk,
 		AccessHosts: c.AccessHosts, Access: verifier,
 		Location: loc,
@@ -378,6 +385,11 @@ func verify(log *slog.Logger, c cfg, args []string) error {
 			}
 		}
 	}
+	quizProblems, err := verifyQuiz(lib, prefix)
+	if err != nil {
+		return err
+	}
+	failed += quizProblems
 	fmt.Printf("\n%d checked, %d failed, %d without a reference solution\n", checked, failed, skipped)
 	if failed > 0 {
 		return fmt.Errorf("%d lessons failed verification", failed)
@@ -464,6 +476,48 @@ func runExamples(run *runner.Runner, ws *workspace.Manager, c cfg, l *content.Le
 		return nil, 0, err
 	}
 	return res, n, nil
+}
+
+// verifyQuiz checks the question banks of the quiz tracks matching prefix:
+// that every question is well formed (quiz.Load refuses otherwise), and that
+// each mock exam has enough questions to draw from. It returns how many
+// tracks fail.
+func verifyQuiz(lib *content.Library, prefix string) (int, error) {
+	banks, err := quiz.Load(lib)
+	if err != nil {
+		fmt.Printf("FAIL quiz questions\n%s\n", indent(err.Error()))
+		return 1, nil
+	}
+	langs := make([]string, 0, len(banks))
+	for lang := range banks {
+		if prefix == "" || strings.HasPrefix(lang+"/", prefix) || strings.HasPrefix(prefix, lang+"/") {
+			langs = append(langs, lang)
+		}
+	}
+	sort.Strings(langs)
+	failed := 0
+	for _, lang := range langs {
+		b := banks[lang]
+		mark, notes := "ok  ", []string{}
+		for _, id := range quiz.SpecOrder {
+			spec := quiz.Specs[id]
+			tf, sc := b.Pool(id)
+			note := fmt.Sprintf("%s %d/%d", id, len(tf), spec.TF)
+			if spec.Scenarios > 0 {
+				note += fmt.Sprintf(" + %d/%d scenarios", len(sc), spec.Scenarios)
+			}
+			if len(tf) < spec.TF || len(sc) < spec.Scenarios {
+				mark = "FAIL"
+				note += " (too few to draw an exam)"
+			}
+			notes = append(notes, note)
+		}
+		if mark == "FAIL" {
+			failed++
+		}
+		fmt.Printf("%s %-55s %d questions; %s\n", mark, lang+" (quiz)", len(b.Questions), strings.Join(notes, ", "))
+	}
+	return failed, nil
 }
 
 func indent(s string) string {

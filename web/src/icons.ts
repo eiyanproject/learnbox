@@ -24,4 +24,5 @@ export const icons = {
   key: svg(`<circle cx="8" cy="15" r="4"/><path d="M11 12l8.5-8.5M16 6.5l2.5 2.5M13.5 9l2 2"/>`),
   bolt: svg(`<path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/>`),
   up: svg(`<path d="M12 20V5"/><path d="M5.5 11.5 12 5l6.5 6.5"/>`),
+  misc: svg(`<circle cx="7" cy="7" r="3"/><rect x="14" y="4" width="6" height="6"/><path d="M7 14l3.5 6h-7z"/><path d="M14 14l6 6M20 14l-6 6"/>`),
 };

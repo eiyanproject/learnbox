@@ -1,0 +1,151 @@
+- id: sgn-check-then-signal
+  en: "Before changing course, you should check safety with the mirrors first, then signal."
+  ja: "進路変更などをしようとするときは、あらかじめバックミラーなどで安全を確かめてから合図をしなければならない。"
+  answer: true
+  why: "Check first, then signal."
+  ref: "教則 第5章第5節1(1)"
+  exams: [kari, hon]
+
+- id: sgn-left-30m
+  en: "When turning left at an intersection, start signalling when you reach a point 30 metres before the intersection."
+  ja: "交差点で左折するときは、その交差点から30メートル手前の地点に達したときに合図を行う。"
+  answer: true
+  why: "Turning left or right, or making a U-turn: signal from 30 m before."
+  ref: "教則 第5章第5節1(1) 合図の表"
+  exams: [kari, hon]
+
+- id: sgn-right-3s
+  en: "When turning right at an intersection, signal about 3 seconds before turning."
+  ja: "交差点で右折するときは、右折しようとするときの約3秒前に合図を行う。"
+  answer: false
+  why: "For turns the signal starts 30 metres before. About 3 seconds before is for moving over while carrying on in the same direction."
+  ref: "教則 第5章第5節1(1) 合図の表"
+  exams: [kari, hon]
+
+- id: sgn-lane-change-3s
+  en: "When moving to the right while carrying on in the same direction, signal about 3 seconds before you move over."
+  ja: "同一方向に進行しながら進路を右方に変えるときは、進路を変えようとする時の約3秒前に合図を行う。"
+  answer: true
+  why: "That is the timing for a course change in the same direction."
+  ref: "教則 第5章第5節1(1) 合図の表"
+  exams: [kari, hon]
+
+- id: sgn-uturn-30m
+  en: "A U-turn is signalled the same way as a right turn: right indicator, from 30 metres before."
+  ja: "転回をするときは、右折の場合と同じく、転回しようとする地点から30メートル手前の地点に達したときに右側の方向指示器で合図を行う。"
+  answer: true
+  why: "Right turns and U-turns share the same signal and timing."
+  ref: "教則 第5章第5節1(1) 合図の表"
+  exams: [kari, hon]
+
+- id: sgn-hand-left
+  en: "To signal a left turn by hand, you can hold your right arm out of the window and bend the elbow so the forearm points up."
+  ja: "左折の合図を手で行うときは、右腕を車の右側の外に出して肘を垂直に上に曲げる。"
+  answer: true
+  why: "Left turn by hand: right arm out with the elbow bent upward, or left arm held straight out on the left."
+  ref: "教則 第5章第5節1(1) 合図の表"
+  exams: [kari, hon]
+
+- id: sgn-hand-right
+  en: "To signal a right turn by hand, hold your right arm straight out of the window."
+  ja: "右折の合図を手で行うときは、右腕を車の右側の外に出して水平に伸ばす。"
+  answer: true
+  why: "Right turn by hand: right arm straight out, or left arm with the elbow bent upward."
+  ref: "教則 第5章第5節1(1) 合図の表"
+  exams: [kari, hon]
+
+- id: sgn-hand-stop
+  en: "To signal slowing down or stopping by hand, put your arm out of the car pointing diagonally downward."
+  ja: "徐行か停止の合図を手で行うときは、腕を車の外に出して斜め下に伸ばす。"
+  answer: true
+  why: "Slowing or stopping: brake lights, or the arm out and angled down."
+  ref: "教則 第5章第5節1(1) 合図の表"
+  exams: [kari, hon]
+
+- id: sgn-keep-on
+  en: "After a turn, it is fine to leave the indicator on for a while in case you turn again."
+  ja: "右左折を終えた後も、続けて曲がる場合に備えて、しばらく合図を続けておいてよい。"
+  answer: false
+  why: "Stop signalling promptly once the manoeuvre is done, and never signal without need."
+  ref: "教則 第5章第5節1(3)"
+  exams: [kari, hon]
+
+- id: sgn-sunset-hand
+  en: "When the setting sun makes indicators hard to see, it is good to give a hand signal as well."
+  ja: "夕日の反射などで方向指示器が見えにくい場合には、方向指示器の操作と併せて手による合図を行うとよい。"
+  answer: true
+  why: "That is the advice in the Rules of the Road."
+  ref: "教則 第5章第5節1(4)"
+  exams: [kari, hon]
+
+- id: horn-sign
+  en: "Where a 'sound horn' sign stands, you must sound the horn."
+  ja: "「警笛鳴らせ」の標識がある場所では、警音器を鳴らさなければならない。"
+  answer: true
+  why: "That sign makes sounding the horn compulsory."
+  ref: "教則 第5章第5節1(5)"
+  exams: [kari, hon]
+
+- id: horn-zone-all
+  en: "Inside a 'horn zone', you must sound the horn continuously along the whole zone."
+  ja: "「警笛区間」の標識がある区間内では、区間全体にわたって警音器を鳴らし続けなければならない。"
+  answer: false
+  why: "In a horn zone you must sound it at blind intersections, bends and hilltops within the zone - not all the way along."
+  ref: "教則 第5章第5節1(5)"
+  exams: [kari, hon]
+
+- id: horn-greeting
+  en: "A short toot of the horn to thank another driver is allowed."
+  ja: "道を譲ってくれた車へのあいさつとして、軽く警音器を鳴らすことは認められている。"
+  answer: false
+  why: "Outside the sign-required places and unavoidable danger, the horn must not be used - courtesy included."
+  ref: "教則 第5章第5節1(5)"
+  exams: [kari, hon]
+
+- id: horn-danger
+  en: "When it is unavoidable to avoid danger, you may sound the horn."
+  ja: "危険を避けるためやむを得ない場合は、警音器を鳴らすことができる。"
+  answer: true
+  why: "Avoiding danger is the one other time the horn may be used."
+  ref: "教則 第5章第5節1(5)"
+  exams: [kari, hon]
+
+- id: chg-rear-brake
+  en: "If changing course would make the car behind brake or swerve suddenly, you must not change course."
+  ja: "進路を変更すると後から来る車が急ブレーキや急ハンドルで避けなければならないような場合は、進路を変えてはならない。"
+  answer: true
+  why: "That is the rule for course changes."
+  ref: "教則 第5章第5節2(1)"
+  exams: [kari, hon]
+
+- id: chg-yellow-line
+  en: "Where lanes are separated by a yellow line, you may cross it to change lanes as long as it is safe."
+  ja: "車両通行帯が黄色の線で区画されている場合でも、安全を確認すれば、その線を越えて進路を変更してよい。"
+  answer: false
+  why: "A yellow lane line must not be crossed to change course, however safe it looks."
+  ref: "教則 第5章第5節2(2)"
+  exams: [kari, hon]
+
+- id: chg-white-plus-yellow
+  en: "Where lanes are divided by a white line but a yellow line runs alongside it on your side, you must not cross to change lanes."
+  ja: "車両通行帯が白の線で区画されていても、自分が通行している車両通行帯の側に平行して黄色の線が引かれているときは、その線を越えて進路を変更してはならない。"
+  answer: true
+  why: "A yellow line on your side counts the same as a yellow lane line."
+  ref: "教則 第5章第5節2(2)"
+  exams: [kari, hon]
+
+- id: chg-leave-right
+  en: "To turn right off the road into a property, move as close as you can to the centre of the road beforehand and crawl."
+  ja: "道路外に出るため右折しようとするときは、あらかじめできるだけ道路の中央に寄って徐行しなければならない。"
+  answer: true
+  why: "Right: the centre (the right edge on a one-way road). Left: the left edge. Crawl in both cases."
+  ref: "教則 第5章第5節3(3)"
+  exams: [kari, hon]
+
+- id: chg-uturn-hinder
+  en: "You may make a U-turn even if it gets in the way of other traffic, provided you signal 30 metres before."
+  ja: "30メートル手前から合図をすれば、他の車の正常な通行を妨げるおそれがあるときでも転回してよい。"
+  answer: false
+  why: "If it may get in the way of pedestrians or other traffic, a U-turn is not allowed, signal or not."
+  ref: "教則 第5章第5節3(1)"
+  exams: [kari, hon]
