@@ -37,9 +37,23 @@ const mmss = (secs: number) => {
 const MARK = (b: boolean) => (b ? "○" : "×");
 const WORD = (b: boolean) => (b ? "True" : "False");
 
+/**
+ * The picture that goes with a question. It is fetched from where it is
+ * hosted, so it may not arrive (no internet, or the host is down): then it
+ * takes itself away and the wording carries the question alone.
+ */
+function questionImage(src: string): HTMLElement {
+  const fig = h("figure", { class: "q-img" });
+  const img = h("img", { src, alt: "The sign or picture this question is about", loading: "lazy", decoding: "async", referrerpolicy: "no-referrer" }) as HTMLImageElement;
+  img.addEventListener("error", () => fig.remove());
+  fig.append(img);
+  return fig;
+}
+
 /** The question text: English, with the Japanese underneath. */
-function questionText(q: { en: string; ja: string }, cls = "q-text") {
-  return h("div", { class: cls }, h("p", { class: "q-en" }, q.en), h("p", { class: "q-ja", lang: "ja" }, q.ja));
+function questionText(q: { en: string; ja: string; image?: string }, cls = "q-text") {
+  const text = h("div", { class: "q-words" }, h("p", { class: "q-en" }, q.en), h("p", { class: "q-ja", lang: "ja" }, q.ja));
+  return h("div", { class: q.image ? `${cls} has-img` : cls }, q.image ? questionImage(q.image) : null, text);
 }
 
 function tfButtons(onPick: (v: boolean) => void, chosen?: boolean, disabled = false) {
@@ -316,7 +330,7 @@ export async function quizStudyPage(shell: Shell, track: string, section: string
   const wrong: QuizQuestion[] = [];
   let right = 0;
   let card: { el: HTMLElement; dispose: () => void } | null = null;
-  const stage = h("div");
+  const stage = h("div", { class: "quiz-stage" });
 
   const summary = () => {
     card?.dispose();
@@ -377,7 +391,8 @@ export async function quizStudyPage(shell: Shell, track: string, section: string
       onNext: () => {
         i++;
         show();
-        stage.scrollIntoView({ block: "start", behavior: "smooth" });
+        stage.scrollTop = 0;
+        stage.scrollIntoView({ block: "nearest", behavior: "smooth" });
       },
     });
     stage.replaceChildren(card.el);
@@ -390,8 +405,12 @@ export async function quizStudyPage(shell: Shell, track: string, section: string
       { class: "headrow" },
       h("div", null, h("a", { class: "lbl", href: back, onclick: go(back) }, "← overview"), h("h1", null, title)),
     ),
-    notesHTML ? h("details", { class: "panel notes", open: true }, h("summary", { class: "phead" }, h("h2", null, "Study notes")), html("div", "prose pbody", notesHTML)) : null,
-    questions.length ? stage : h("div", { class: "empty" }, h("h2", null, reviewing ? "Nothing to review" : "No questions yet"), h("p", null, reviewing ? "Every mistake has been cleared." : "")),
+    h(
+      "div",
+      { class: notesHTML ? "quiz-split" : "quiz-solo" },
+      notesHTML ? h("details", { class: "panel notes", open: true }, h("summary", { class: "phead" }, h("h2", null, "Study notes")), html("div", "prose pbody", notesHTML)) : null,
+      questions.length ? stage : h("div", { class: "empty" }, h("h2", null, reviewing ? "Nothing to review" : "No questions yet"), h("p", null, reviewing ? "Every mistake has been cleared." : "")),
+    ),
   ]);
   if (questions.length) show();
   return { dispose: () => card?.dispose() };
@@ -432,7 +451,7 @@ export async function quizExamPage(shell: Shell, track: string, exam: string): P
       h("div", { class: "headrow" }, h("div", null, h("a", { class: "lbl", href: back, onclick: go(back) }, "← overview"), h("h1", null, spec.title))),
       h(
         "section",
-        { class: "q-card panel" },
+        { class: "q-card panel solo" },
         h(
           "div",
           { class: "q-body" },
@@ -641,8 +660,7 @@ export async function quizExamPage(shell: Shell, track: string, exam: string): P
           h("button", { class: "btn primary", onclick: () => void submit(false) }, "Submit"),
         ),
       ),
-      grid,
-      stage,
+      h("div", { class: "exam-split" }, stage, h("aside", { class: "panel exam-side" }, h("div", { class: "phead" }, h("h2", null, "Questions")), grid)),
     );
     show();
     tick();

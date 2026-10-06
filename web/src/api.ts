@@ -219,6 +219,8 @@ export interface QuizQuestion {
   en: string;
   ja: string;
   topic: string;
+  /** A picture that goes with the question, fetched from where it is hosted. */
+  image?: string;
   statements?: QuizStatement[];
 }
 

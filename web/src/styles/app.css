@@ -1987,6 +1987,9 @@ a.secbar:hover .lbl {
 
   .ch-act {
     grid-column: 2;
+  }
+}
+
 /* ---------- quiz ---------- */
 
 .quiz-top {
@@ -2043,8 +2046,119 @@ a.secbar:hover .lbl {
   display: none;
 }
 
+/* A question card alone on the page sits in the middle of it. */
 .q-card {
-  max-width: 820px;
+  width: 100%;
+  max-width: 900px;
+  margin-inline: auto;
+}
+
+.quiz-solo > .empty {
+  margin-inline: auto;
+}
+
+/* Studying: the notes beside the question when there is room, the way a
+   lesson has its text beside its editor. The question stays put while the
+   notes scroll, and scrolls by itself if it is taller than the window. */
+.quiz-split {
+  display: grid;
+  gap: 18px;
+  align-items: start;
+}
+
+@media (min-width: 1180px) {
+  .quiz-split {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .quiz-split .notes {
+    margin-bottom: 0;
+  }
+
+  .quiz-split .quiz-stage {
+    position: sticky;
+    top: 0;
+    max-height: calc(100dvh - 130px);
+    overflow-y: auto;
+  }
+
+  .quiz-split .q-card,
+  .exam-split .q-card {
+    max-width: none;
+  }
+}
+
+/* A mock exam: the question beside the grid of question numbers. */
+.exam-split {
+  display: grid;
+  gap: 14px;
+  align-items: start;
+}
+
+.exam-side .exam-grid {
+  margin: 0;
+  padding: 14px;
+}
+
+@media (min-width: 1180px) {
+  .exam-split {
+    grid-template-columns: minmax(0, 1fr) 372px;
+  }
+
+  .exam-side {
+    position: sticky;
+    top: 78px;
+  }
+}
+
+@media (max-width: 1179px) {
+  .exam-side {
+    order: -1;
+  }
+}
+
+/* The picture a question is about, linked from where it is hosted. Signs are
+   drawn for daylight, so the tile is light in both themes. */
+.q-text.has-img {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+}
+
+.q-img {
+  margin: 0;
+  padding: 10px;
+  display: grid;
+  place-items: center;
+  background: #e9edf2;
+  border: 1px solid var(--line);
+}
+
+.q-img img {
+  display: block;
+  width: 100%;
+  max-height: 132px;
+  object-fit: contain;
+}
+
+.notes .prose img {
+  height: 54px;
+  width: auto;
+  padding: 4px;
+  vertical-align: middle;
+  background: #e9edf2;
+}
+
+@media (max-width: 560px) {
+  .q-text.has-img {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  .q-img {
+    width: 132px;
+  }
 }
 
 .q-head {

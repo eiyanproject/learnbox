@@ -89,14 +89,16 @@ func TestLoadAndMark(t *testing.T) {
 
 func TestBrokenBanksAreRefused(t *testing.T) {
 	cases := map[string]string{
-		"no answer":      "- {id: a, en: E, ja: J, why: W, ref: R, exams: [hon]}\n",
-		"no japanese":    "- {id: a, en: E, answer: true, why: W, ref: R, exams: [hon]}\n",
-		"no ref":         "- {id: a, en: E, ja: J, answer: true, why: W, exams: [hon]}\n",
-		"bad exam":       "- {id: a, en: E, ja: J, answer: true, why: W, ref: R, exams: [menkyo]}\n",
-		"bad id":         "- {id: A_1, en: E, ja: J, answer: true, why: W, ref: R, exams: [hon]}\n",
-		"duplicate":      tf("a", true, "hon") + tf("a", false, "hon"),
-		"scenario kari":  strings.Replace(scenario, "exams: [hon]", "exams: [kari]", 1),
-		"two statements": strings.Replace(scenario, "    - {en: c, ja: c, answer: true, why: w}\n", "", 1),
+		"no answer":       "- {id: a, en: E, ja: J, why: W, ref: R, exams: [hon]}\n",
+		"no japanese":     "- {id: a, en: E, answer: true, why: W, ref: R, exams: [hon]}\n",
+		"no ref":          "- {id: a, en: E, ja: J, answer: true, why: W, exams: [hon]}\n",
+		"bad exam":        "- {id: a, en: E, ja: J, answer: true, why: W, ref: R, exams: [menkyo]}\n",
+		"bad id":          "- {id: A_1, en: E, ja: J, answer: true, why: W, ref: R, exams: [hon]}\n",
+		"duplicate":       tf("a", true, "hon") + tf("a", false, "hon"),
+		"scenario kari":   strings.Replace(scenario, "exams: [hon]", "exams: [kari]", 1),
+		"image not https": "- {id: a, en: E, ja: J, answer: true, why: W, ref: R, exams: [hon], image: 'http://example.org/a.svg'}\n",
+		"image no host":   "- {id: a, en: E, ja: J, answer: true, why: W, ref: R, exams: [hon], image: 'sign.svg'}\n",
+		"two statements":  strings.Replace(scenario, "    - {en: c, ja: c, answer: true, why: w}\n", "", 1),
 	}
 	for name, yml := range cases {
 		if _, err := Load(lib(t, map[string]string{"t": yml})); err == nil {

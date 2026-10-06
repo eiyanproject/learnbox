@@ -53,6 +53,7 @@
   why: "For drivers 70 and over the Rules of the Road say it should be shown."
   ref: "教則 第4章第1節1(2)"
   exams: [kari, hon]
+  image: "https://upload.wikimedia.org/wikipedia/commons/7/79/Kourei_Mark_2.svg"
 
 - id: pre-learner-supervisor
   en: "A learner on a provisional licence must be accompanied by someone who has held the licence for that vehicle for at least 3 years, or who holds a second-class licence."
