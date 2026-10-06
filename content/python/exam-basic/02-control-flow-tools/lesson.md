@@ -85,12 +85,20 @@ Calling with `f(*[1, 2])` and `f(**{"a": 1})` unpacks in the other direction.
 
 In `flow.py`:
 
-- `first_divisible(values, divisor)`: the first value divisible by `divisor`,
-  or the string `"none"` if there is none — written with `for ... else`
-- `append_safely(item, target=None)`: appends and returns the list, without the
-  shared-default bug
-- `describe_args(*args, **kwargs)`: a dict with keys `count` (how many
-  positional), `names` (sorted keyword names) and `total` (sum of the
-  positional arguments)
-- `apply_all(funcs, value)`: feed `value` through each function in order and
-  return the final result
+- `first_divisible(values, divisor)`: the first value that `divisor` divides
+  exactly, or the string `"none"` if there is no such value - written with
+  `for ... else`. `first_divisible([3, 8, 10], 4)` is `8`, and
+  `first_divisible([3, 5], 4)` is `"none"`.
+- `append_safely(item, target=None)`: append `item` to the list `target` and
+  return the list. Called without a list, it starts a new empty one every
+  time, without the shared-default bug: `append_safely(1)` is `[1]`, and so is
+  the next `append_safely(1)`. `append_safely(2, [1])` is `[1, 2]`.
+- `describe_args(*args, **kwargs)`: a dict with three keys: `count`, how many
+  positional arguments there were; `names`, the keyword names as a sorted
+  list; and `total`, the sum of the positional arguments.
+  `describe_args(1, 2, b=0, a=0)` is
+  `{"count": 2, "names": ["a", "b"], "total": 3}`.
+- `apply_all(funcs, value)`: a pipeline. Call the first function with
+  `value`, the second with what the first returned, and so on, and return
+  what the last one returns. `apply_all([abs, str], -3)` is `"3"`: `abs`
+  gives `3`, then `str` gives `"3"`. With no functions it returns `value`.

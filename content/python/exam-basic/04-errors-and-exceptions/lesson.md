@@ -86,12 +86,17 @@ already handles `ValueError` keeps working. The argument you pass becomes
 
 In `errors.py`:
 
-- `safe_divide(a, b)`: `a / b`, or the string `"undefined"` when `b` is zero
-- `parse_ints(items)`: every item that converts to `int`, skipping any that
-  raises — `["1", "x", 2, None]` gives `[1, 2]`
-- `trace_order(should_raise)`: a list of the clause names visited, in order —
-  `["try", "except", "finally"]` when it raises, `["try", "else", "finally"]`
-  when it does not
-- `AgeError`, a subclass of `ValueError`, and `validate_age(age)` which raises
-  it with the message `"age must not be negative"` for a negative age, and
-  returns the age otherwise
+- `safe_divide(a, b)`: `a / b`, or the string `"undefined"` when `b` is zero:
+  `safe_divide(7, 2)` is `3.5`
+- `parse_ints(items)`: try `int()` on every item and keep the results,
+  skipping any item it raises for, whatever the exception:
+  `["1", "x", 2, None]` gives `[1, 2]`
+- `trace_order(should_raise)`: write one `try` statement with all four
+  clauses - `try`, `except`, `else`, `finally` - and have each clause append
+  its own name to a list as it runs. Inside the `try`, raise an exception
+  when `should_raise` is true. Return the list: it is
+  `["try", "except", "finally"]` when it raises and
+  `["try", "else", "finally"]` when it does not.
+- `AgeError`, a subclass of `ValueError`, and `validate_age(age)`, which
+  returns the age when it is zero or more and raises `AgeError` with the
+  message `"age must not be negative"` otherwise

@@ -115,11 +115,19 @@ concurrency needs, `asyncio` is the modern tool.
 
 In `coroutines.py`:
 
-- `primed(genfunc)`: decorator that advances a new generator to its first `yield`
-- `running_average()`: a primed coroutine; each `send(x)` returns the average
-  of everything sent so far
-- `accumulate_until_none()`: a coroutine that sums the numbers sent to it and,
-  when sent `None`, **returns** the total
-- `batch_totals(results)`: a primed coroutine that repeatedly delegates to
-  `accumulate_until_none()` with `yield from`, appending each batch's total to
-  the `results` list it was given
+- `primed(genfunc)`: a decorator. Calling the decorated function creates the
+  generator and advances it to its first `yield`, so the caller can `send`
+  to it straight away.
+- `running_average()`: a primed coroutine. Each `send(x)` returns the average
+  of everything sent so far: after `avg = running_average()`, `avg.send(10)`
+  is `10.0` and `avg.send(20)` is `15.0`.
+- `accumulate_until_none()`: a coroutine that adds up the numbers sent to it.
+  When it is sent `None` it finishes, and **returns** the total (with
+  `return`, which is what `yield from` hands back to whoever delegated to
+  it).
+- `batch_totals(results)`: a primed coroutine that never finishes by itself.
+  In a loop it delegates to a fresh `accumulate_until_none()` with
+  `yield from` and appends the total that comes back to the `results` list
+  it was given. So the numbers sent to it are split into batches by the
+  `None`s: sending `1`, `2`, `None`, `10`, `None` leaves `results` as
+  `[3, 10]`.

@@ -117,14 +117,33 @@ not work with `__slots__`.
 
 In `functional.py`:
 
-- `compose(*funcs)`: one function applying `funcs` **left to right**;
-  `compose()` is the identity
-- `parse_bits`: a `functools.partial` of `int` that parses binary strings
-- `to_json_like(value)`: a `singledispatch` function producing JSON text for
-  `dict` (keys sorted, `{"a": 1}` style), `list`, `str` (double-quoted),
-  `int`, `float`, `bool` (`true`/`false`) and `None` (`null`); other types raise
-  `TypeError`. Nested values must work.
-- `by_fields(*names)`: a key function sorting objects by those attributes, using `operator`
+- `compose(*funcs)`: returns one function that applies `funcs` **left to
+  right**: the first function gets the argument, the next gets its result.
+  `compose(str.strip, str.upper)("  hi ")` is `"HI"`. `compose()` with no
+  functions returns its argument unchanged.
+- `parse_bits`: a `functools.partial` of `int` that parses binary strings:
+  `parse_bits("101")` is `5`
+- `to_json_like(value)`: a `singledispatch` function that returns the JSON
+  text for a value. One implementation per type:
+
+  | Type | Output |
+  |---|---|
+  | `dict` | `{"a": 1, "b": 2}`, keys sorted, `", "` between pairs, `": "` after a key |
+  | `list` | `[1, 2]`, `", "` between items |
+  | `str` | the text in double quotes |
+  | `int`, `float` | the number |
+  | `bool` | `true` or `false` |
+  | `None` | `null` |
+
+  Any other type raises `TypeError`. Values inside a dict or a list are
+  converted the same way, however deep:
+  `to_json_like({"b": [1, 2.5, None], "a": True})` is
+  `'{"a": true, "b": [1, 2.5, null]}'`. Remember that `bool` is a subclass
+  of `int`, so it needs its own registration.
+- `by_fields(*names)`: returns a key function for `sorted` that orders
+  objects by those attributes, first name first, built with the `operator`
+  module
 - `Report(rows)`: `summary` is a `cached_property` returning
-  `{"count": ..., "total": ...}` of `rows`; `self.computations` counts how many
-  times it was actually computed
+  `{"count": ..., "total": ...}`, the number of rows and their sum.
+  `self.computations` counts how many times the summary was actually worked
+  out, which should stay at `1` however often it is read.

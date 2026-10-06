@@ -86,9 +86,16 @@ A nested list is a list of lists, and `matrix[1][2]` reads row 1, column 2.
 In `basics.py`:
 
 - `arithmetic_facts(a, b)`: a dict with keys `quotient`, `floor`, `remainder`
-  and `power`, holding `a / b`, `a // b`, `a % b` and `a ** b`
-- `slice_word(word)`: a tuple of the first three characters, the last three,
-  the word reversed, and every other character from the start
-- `replace_slice(values)`: replace items 1 through 3 of the list with two
-  zeros, in place, and return the same list object
-- `build_matrix(rows, cols)`: a nested list where `matrix[r][c] == r * cols + c`
+  and `power`, holding `a / b`, `a // b`, `a % b` and `a ** b`.
+  `arithmetic_facts(7, 2)` is
+  `{"quotient": 3.5, "floor": 3, "remainder": 1, "power": 49}`.
+- `slice_word(word)`: a tuple of four slices of the word, in this order: its
+  first three characters, its last three, the whole word reversed, and every
+  second character starting with the first. `slice_word("python")` is
+  `("pyt", "hon", "nohtyp", "pto")`.
+- `replace_slice(values)`: replace the items at indexes 1, 2 and 3 of the
+  list with two zeros. Change the list you were given and return that same
+  list, not a copy: `[10, 11, 12, 13, 14]` becomes `[10, 0, 0, 14]`.
+- `build_matrix(rows, cols)`: a list of `rows` lists, each `cols` long,
+  numbered row by row from 0, so that `matrix[r][c] == r * cols + c`.
+  `build_matrix(2, 3)` is `[[0, 1, 2], [3, 4, 5]]`.

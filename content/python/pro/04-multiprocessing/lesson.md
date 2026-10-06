@@ -78,12 +78,23 @@ pool of a few workers is plenty.
 
 In `parallel.py`:
 
-- `is_prime(n)` and `count_primes_in_range(bounds)`: count primes in
-  `range(start, stop)` for a `(start, stop)` tuple
-- `split_range(start, stop, parts)`: split into at most `parts` contiguous
-  `(lo, hi)` chunks covering the range exactly
-- `parallel_prime_count(start, stop, workers=2)`: count primes using a
-  `ProcessPoolExecutor` over the chunks
+- `is_prime(n)`, and `count_primes_in_range(bounds)`, which takes a
+  `(start, stop)` tuple and counts the primes in `range(start, stop)`:
+  `count_primes_in_range((0, 10))` is `4`
+- `split_range(start, stop, parts)`: cut `range(start, stop)` into
+  consecutive `(lo, hi)` chunks, each meaning `range(lo, hi)`, that together
+  cover it exactly. Every chunk holds the same number of values - the length
+  of the range divided by `parts`, **rounded up** - except the last, which
+  holds what is left. That gives at most `parts` chunks, and never an empty
+  one:
+  - `split_range(0, 10, 3)` is `[(0, 4), (4, 8), (8, 10)]` (chunks of 4)
+  - `split_range(10, 13, 8)` is `[(10, 11), (11, 12), (12, 13)]` (only three
+    values, so three chunks of 1)
+  - `split_range(0, 0, 4)` is `[]`
+- `parallel_prime_count(start, stop, workers=2)`: count the primes in
+  `range(start, stop)` by splitting it into chunks and counting each chunk
+  in a `ProcessPoolExecutor`
 - `map_with_errors(func, items, workers=2)`: run `func` on each item in a
-  process pool; return a list in input order of `("ok", result)` or
-  `("error", "<ExceptionClassName>")`
+  process pool. Return a list in input order with one tuple per item:
+  `("ok", result)` if the call returned, or `("error", "<ExceptionClassName>")`
+  if it raised, such as `("error", "ValueError")`.

@@ -76,11 +76,16 @@ file, `readlines()` a list of lines **with** their newlines.
 
 In `parts.py`:
 
-- `Shape`, with a class attribute `created` counting how many have been made,
-  an instance attribute `name`, and an `area()` that raises `NotImplementedError`
-- `Rect(Shape)`, taking width and height, calling `super().__init__("rect")`,
-  with a working `area()`
-- `save_lines(path, lines)` and `load_lines(path)`: write one line per item and
-  read them back without trailing newlines
-- `render(name, score)`: `name` left-aligned in 10 columns, then `score` right
-  aligned in 6 columns to one decimal place
+- `Shape`: its `__init__(name)` stores `name` on the instance and adds one to
+  `Shape.created`, a class attribute that starts at `0` and so counts how
+  many shapes have ever been made. Its `area()` raises `NotImplementedError`.
+- `Rect(Shape)`: takes a width and a height, calls `super().__init__("rect")`
+  so that it has a name and is counted, and has an `area()` that works:
+  `Rect(2, 3).area()` is `6`.
+- `save_lines(path, lines)` writes each item of the list as one line of the
+  file, and `load_lines(path)` reads them back as a list of strings with no
+  newline characters on the ends. What you load is what you saved.
+- `render(name, score)`: one line of a results table as a string: `name`
+  left-aligned in a column 10 characters wide, immediately followed by
+  `score` right-aligned in a column 6 wide, to one decimal place.
+  `render("ana", 9.25)` is `"ana          9.2"`.

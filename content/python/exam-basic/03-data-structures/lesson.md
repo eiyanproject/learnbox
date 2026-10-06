@@ -75,11 +75,19 @@ the key was missing.
 
 In `structures.py`:
 
-- `dedupe(values)`: the values with duplicates removed, **first occurrence
-  order preserved**
-- `invert(mapping)`: turn `{"a": 1, "b": 1, "c": 2}` into `{1: ["a", "b"], 2: ["c"]}`,
-  with each list in sorted order
-- `rank_scores(scores)`: given `{name: score}`, a list of `(rank, name, score)`
-  tuples, highest score first, ties broken alphabetically, ranks starting at 1
-- `set_report(a, b)`: a dict with keys `union`, `common`, `only_a` and
-  `symmetric`, each a **sorted list**
+- `dedupe(values)`: the values with duplicates removed, keeping each value
+  where it **first** appeared: `[3, 1, 3, 2, 1]` gives `[3, 1, 2]`
+- `invert(mapping)`: a dict from each value to the list of keys that had it.
+  `{"a": 1, "b": 1, "c": 2}` gives `{1: ["a", "b"], 2: ["c"]}`, with each
+  list in sorted order.
+- `rank_scores(scores)`: `scores` is a dict of name to score. Return a list of
+  `(rank, name, score)` tuples, highest score first. Equal scores go in
+  alphabetical order of name, and still get different ranks: the rank is just
+  the position in the list, starting at 1.
+  `{"bo": 70, "ana": 90, "cy": 70}` gives
+  `[(1, "ana", 90), (2, "bo", 70), (3, "cy", 70)]`.
+- `set_report(a, b)`: compare two lists as sets. Return a dict with four
+  keys, each a **sorted list**: `union` (in either), `common` (in both),
+  `only_a` (in `a` and not in `b`) and `symmetric` (in exactly one of them).
+  `set_report([1, 2, 3], [3, 4])` is
+  `{"union": [1, 2, 3, 4], "common": [3], "only_a": [1, 2], "symmetric": [1, 2, 4]}`.

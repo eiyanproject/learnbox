@@ -83,11 +83,20 @@ as a **list**. Dict keys always come back as strings.
 
 In `toolbox.py`:
 
-- `summarise(values)`: a dict with `mean`, `median` and `stdev` (population,
-  rounded to 3 decimals)
-- `date_facts(iso)`: a dict with `formatted` (`YYYY/MM/DD`), `weekday`
-  (Monday is 0), `day_of_year`, and `is_weekend`
-- `find_codes(text)`: every code in the text that looks like two uppercase
-  letters followed by three digits, e.g. `"AB123"`
-- `round_trip(obj)`: serialise with sorted keys and read back, returning a
-  `(json_text, restored_object)` tuple
+- `summarise(values)`: a dict with the `mean`, the `median` and the `stdev`
+  of the numbers, using the `statistics` module. The standard deviation is
+  the **population** one (`pstdev`), rounded to 3 decimals.
+  `summarise([2, 4, 4, 4, 5, 5, 7, 9])` is
+  `{"mean": 5, "median": 4.5, "stdev": 2.0}`.
+- `date_facts(iso)`: `iso` is a date written like `"2026-03-07"`. Return a
+  dict with `formatted` (the date as `YYYY/MM/DD`), `weekday` (a number,
+  Monday is 0), `day_of_year` (1 January is 1) and `is_weekend` (true on
+  Saturday and Sunday). For `"2026-03-07"`, a Saturday, that is
+  `{"formatted": "2026/03/07", "weekday": 5, "day_of_year": 66, "is_weekend": True}`.
+- `find_codes(text)`: a list of every code in the text, in order, where a
+  code is two upper-case letters followed by three digits.
+  `"ship AB123 and xy999, then ZZ007."` gives `["AB123", "ZZ007"]`.
+- `round_trip(obj)`: turn the object into JSON text with its keys sorted,
+  then read that text back into an object. Return both as a tuple,
+  `(json_text, restored_object)`: `round_trip({"b": 1, "a": [1, 2]})` is
+  `('{"a": [1, 2], "b": 1}', {"a": [1, 2], "b": 1})`.
