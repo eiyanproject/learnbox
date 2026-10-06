@@ -4,6 +4,13 @@
   ja: "夜間、雨の中を時速40キロメートルで郊外の対面通行の道路を走行しています。対向車のライトがまぶしく感じられます。"
   ref: "教則 第6章第3節1(2)・2(3), 第4節1(2)"
   exams: [hon]
+  scene:
+    road: straight
+    night: true
+    rain: true
+    things:
+      - { is: car, at: [94, 34], heading: 180, lights: true, label: "oncoming" }
+      - { is: you, at: [66, 100], lights: true }
   statements:
     - en: "A pedestrian near the centre of the road may be invisible between my lights and the oncoming car's, so I slow down."
       ja: "自分の車と対向車のライトで道路の中央付近の歩行者が見えなくなることがあるので、速度を落とす。"
@@ -24,6 +31,13 @@
   ja: "踏切に近づいています。遮断機は上がっており、警報機も鳴っていません。踏切の先は渋滞しており、最後尾の車が踏切を出たすぐのところで止まっています。"
   ref: "教則 第6章第1節"
   exams: [hon]
+  scene:
+    road: rail
+    things:
+      - { is: car, at: [66, 10] }
+      - { is: car, at: [66, 37], label: "queue, stopped" }
+      - { is: label, at: [24, 90], label: "barrier up" }
+      - { is: you, at: [66, 104] }
   statements:
     - en: "The barriers are up and the alarm is silent, so I drive across without stopping."
       ja: "遮断機が上がっており警報機も鳴っていないので、一時停止をせずに通過する。"
@@ -44,6 +58,13 @@
   ja: "高速道路の加速車線から本線車道へ入ろうとしています。ミラーには、本線車道の左側の車両通行帯を大型トラックが近づいてくるのが見えます。"
   ref: "教則 第7章第2節1"
   exams: [hon]
+  scene:
+    road: merge
+    things:
+      - { is: arrow, via: [[39, 82], [42, 52], [64, 24]] }
+      - { is: car, at: [94, 30] }
+      - { is: truck, at: [66, 104], label: "truck" }
+      - { is: you, at: [39, 96], blink: right }
   statements:
     - en: "I build up enough speed in the acceleration lane and join where I will not hinder the truck."
       ja: "加速車線で十分に加速し、トラックの進行を妨げないように本線車道へ入る。"
@@ -64,6 +85,12 @@
   ja: "雨の高速道路を時速100キロメートルで走行しています。水しぶきを上げて走るトラックの約50メートル後方にいます。"
   ref: "教則 第7章第2節2(4)・(5), 3(9)"
   exams: [hon]
+  scene:
+    road: expressway
+    rain: true
+    things:
+      - { is: truck, at: [66, 44], label: "truck, 50 m ahead" }
+      - { is: you, at: [66, 100] }
   statements:
     - en: "The gap is far too short for a wet road, so I ease off and drop back."
       ja: "ぬれた路面では車間距離が短すぎるので、速度を落として車間距離を空ける。"
@@ -84,6 +111,13 @@
   ja: "長い下り坂の続く山道を、速度の遅いトラックに続いて走行しています。フットブレーキをひんぱんに使っています。前方は見通しの悪い右カーブです。"
   ref: "教則 第6章第2節1(4)・(5)・(7), 2(1)・(3)・(5)"
   exams: [hon]
+  scene:
+    road: bend
+    things:
+      - { is: label, at: [124, 92], label: "hillside" }
+      - { is: label, at: [15, 96], label: "drop" }
+      - { is: truck, at: [46, 62], label: "truck" }
+      - { is: you, at: [46, 104] }
   statements:
     - en: "I change to a low gear and let engine braking hold the speed, because overusing the foot brake can make it fail."
       ja: "フットブレーキを使い過ぎると効かなくなることがあるので、低速ギアに入れてエンジンブレーキを活用する。"

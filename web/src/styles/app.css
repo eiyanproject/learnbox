@@ -2142,6 +2142,39 @@ a.secbar:hover .lbl {
   object-fit: contain;
 }
 
+/* A scenario drawn from above. It keeps its own colours in both themes. */
+.q-text.has-scene {
+  display: grid;
+  gap: 14px;
+}
+
+.q-scene {
+  margin: 0;
+  width: 100%;
+  max-width: 430px;
+  justify-self: center;
+}
+
+.q-scene svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+}
+
+.q-scene figcaption {
+  margin-top: 6px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--mut);
+}
+
+.review-item .q-scene {
+  max-width: 360px;
+  justify-self: start;
+}
+
 .notes .prose img {
   height: 54px;
   width: auto;

@@ -10,8 +10,11 @@ questions** (イラスト問題): a picture of a scene from the driver's seat, a
 three statements about what to do or what to watch for. Each is worth
 **2 points**, and you score **only if all three answers are right**.
 
-The real test draws the scene. Here it is described in words; read it and
-picture it before answering.
+The real test draws the scene from the driver's seat. Here each scene is drawn
+**from above**: you are the cyan car, driving up the picture, and the dashed
+cyan arrow is where you mean to go. The description is underneath. The drawing
+shows only what the driver can see - what is hidden behind the bus or the
+truck is yours to think of.
 
 **How to read a scene.** Ask three things, in this order:
 

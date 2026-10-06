@@ -4,6 +4,15 @@
   ja: "時速30キロメートルで市街地の対面通行の道路を走行しています。前方左側の停留所に路線バスが止まっており、乗客が降りています。対向車線には対向車が近づいています。"
   ref: "教則 第5章第2節6(1)・第3節1(5)"
   exams: [hon]
+  scene:
+    road: straight
+    things:
+      - { is: bus, at: [61, 50], label: "bus, stopped" }
+      - { is: busstop, at: [46, 60], label: "bus stop", label_at: left }
+      - { is: person, at: [47, 41] }
+      - { is: person, at: [46, 31] }
+      - { is: car, at: [94, 14], heading: 180, label: "oncoming" }
+      - { is: you, at: [66, 102] }
   statements:
     - en: "Someone who has got off may cross the road from in front of the bus, so I slow down and watch the front of the bus as I approach."
       ja: "バスを降りた人がバスの前方から道路を横断するかもしれないので、速度を落とし、バスの前方に注意しながら近づく。"
@@ -24,6 +33,12 @@
   ja: "時速40キロメートルで、信号機のない横断歩道に近づいています。横断歩道のすぐ手前の左側にワゴン車が止まっています。横断歩道に人の姿は見えません。"
   ref: "教則 第5章第3節2(2)・(3)"
   exams: [hon]
+  scene:
+    road: straight
+    things:
+      - { is: crosswalk, at: [80, 36] }
+      - { is: van, at: [61, 57], label: "van, stopped" }
+      - { is: you, at: [68, 104] }
   statements:
     - en: "The van may be hiding a pedestrian, so I stop before moving out past the front of the van."
       ja: "ワゴン車の陰に歩行者がいるかもしれないので、ワゴン車の前方に出る前に一時停止をする。"
@@ -44,6 +59,14 @@
   ja: "青信号の交差点で右折のため待っています。対向車線では右折待ちのトラックが止まっており、運転者がパッシングをして先に行くよう合図しています。"
   ref: "教則 第5章第7節1(1)・(5)"
   exams: [hon]
+  scene:
+    road: cross
+    things:
+      - { is: light, at: [136, 12], color: green }
+      - { is: crosswalk, at: [117, 60], heading: 90 }
+      - { is: arrow, via: [[75, 63], [92, 54], [134, 46]] }
+      - { is: truck, at: [89, 28], heading: 188, lights: true, blink: right, label: "truck" }
+      - { is: you, at: [71, 77], heading: 12, blink: right }
   statements:
     - en: "A motorcycle may come straight through from behind the truck, so I move forward slowly, checking, until I can see past it."
       ja: "トラックの陰から二輪車が直進してくるかもしれないので、安全を確かめながらゆっくり進む。"
@@ -64,6 +87,16 @@
   ja: "青信号の交差点で左折しようとしています。左のミラーには左後方から近づく原動機付自転車が見えます。左折する先の横断歩道では歩行者が横断を始めています。"
   ref: "教則 第5章第7節1(1)・2(1), 第3節2(2)"
   exams: [hon]
+  scene:
+    road: cross
+    things:
+      - { is: light, at: [136, 12], color: green }
+      - { is: crosswalk, at: [43, 60], heading: 90 }
+      - { is: arrow, via: [[64, 90], [62, 74], [20, 74]] }
+      - { is: person, at: [43, 68] }
+      - { is: person, at: [43, 49], label: "crossing", label_at: above }
+      - { is: moped, at: [56.5, 113], label: "moped", label_at: left }
+      - { is: you, at: [65, 104], blink: left }
   statements:
     - en: "I keep as far to the left as I can beforehand and turn at a crawl, checking that I do not catch the moped on the inside."
       ja: "あらかじめできるだけ道路の左端に寄り、原動機付自転車を巻き込まないよう確かめながら徐行して左折する。"
@@ -84,6 +117,16 @@
   ja: "時速20キロメートルで住宅街の道路を走行しています。右側に駐車している車のそばで子供たちが遊んでおり、ボールが前方の道路に転がってきました。"
   ref: "教則 第5章第3節1(5)・4(1)"
   exams: [hon]
+  scene:
+    road: straight
+    narrow: true
+    no_sidewalk: true
+    things:
+      - { is: car, at: [93, 54], heading: 180, label: "parked", label_at: below }
+      - { is: child, at: [104, 39] }
+      - { is: child, at: [107, 46], label: "children" }
+      - { is: ball, at: [82, 72], label: "ball", label_at: left }
+      - { is: you, at: [71, 103] }
   statements:
     - en: "A child may run out after the ball, so I brake and get ready to stop."
       ja: "子供がボールを追って飛び出してくるかもしれないので、ブレーキを掛けて止まれるようにする。"
@@ -104,6 +147,14 @@
   ja: "時速30キロメートルで幅の狭い対面通行の道路を走行しています。前方の自分の側に駐車車両があり、避けるには道路の中央を越えなければなりません。対向車が近づいています。"
   ref: "教則 第5章第6節5(2)・第3節1(5)"
   exams: [hon]
+  scene:
+    road: straight
+    narrow: true
+    things:
+      - { is: arrow, via: [[70, 92], [88, 60], [72, 28]] }
+      - { is: car, at: [68, 58], label: "parked", label_at: left }
+      - { is: car, at: [90, 12], heading: 180, label: "oncoming" }
+      - { is: you, at: [70, 106] }
   statements:
     - en: "The obstacle is on my side, so I slow down or stop before it and let the oncoming car through."
       ja: "障害物は自分の側にあるので、手前で減速か一時停止をして、対向車に道を譲る。"
@@ -124,6 +175,15 @@
   ja: "時速30キロメートルで歩道のない道路を走行しています。前方左側をつえを持った高齢者が歩いており、その先を自転車がふらつきながら走っています。対向車が近づいています。"
   ref: "教則 第5章第3節1(1)・5"
   exams: [hon]
+  scene:
+    road: straight
+    narrow: true
+    no_sidewalk: true
+    things:
+      - { is: elder, at: [65, 76], label: "elderly, with a stick", label_at: left }
+      - { is: bicycle, at: [66, 50], heading: 350, label: "bicycle", label_at: left }
+      - { is: car, at: [90, 12], heading: 180, label: "oncoming" }
+      - { is: you, at: [73, 106] }
   statements:
     - en: "With the oncoming car there I cannot leave a safe gap, so I slow down and wait behind until it has gone by."
       ja: "対向車がいて安全な間隔を空けられないので、速度を落とし、対向車が通り過ぎるまで後ろで待つ。"
@@ -144,6 +204,12 @@
   ja: "市街地の交差点に近づいているとき、後方からサイレンを鳴らした救急車が近づいてきました。"
   ref: "教則 第5章第2節5"
   exams: [hon]
+  scene:
+    road: cross
+    things:
+      - { is: light, at: [136, 12], color: green }
+      - { is: ambulance, at: [81, 113], lights: true, label: "ambulance" }
+      - { is: you, at: [64, 101] }
   statements:
     - en: "I keep clear of the intersection, pull over to the left side of the road, and stop."
       ja: "交差点を避けて、道路の左側に寄って一時停止をする。"

@@ -235,7 +235,8 @@ The questions are written for this project from the National Police Agency's
 Rules of the Road (交通の方法に関する教則, as amended 2024-11-13), not copied
 from any question bank. The real test shows pictures of signs and scenes; here
 the common signs are shown (linked from Wikimedia Commons, so they need an
-internet connection) and the scenes are described in words. Treat it as practice, not as legal advice: check
+internet connection) and each scenario is drawn from above by the app itself,
+with its description underneath. Treat it as practice, not as legal advice: check
 anything that matters against the 教則 itself.
 
 
@@ -608,6 +609,32 @@ copied into the repository: the learner's browser fetches them from the host
 question must still make sense without its picture. Link only what may be
 used freely - the road signs here are public-domain files on Wikimedia
 Commons.
+
+`scene:` is a diagram of the situation, seen from above, which the browser
+draws - used for the scenario questions. It is a description, not markup: a
+road layout and the things on it, on a 160 x 120 grid with x to the right and
+y down. "You" drive up the picture on the left, so on an ordinary road your
+lane is centred on x = 66 and the oncoming lane on x = 94. A heading is in
+degrees clockwise from straight up (0 up, 90 right, 180 down, 270 left).
+
+```yaml
+  scene:
+    road: cross            # straight | cross | rail | merge | expressway | bend
+    night: true            # also: rain, and for straight: narrow, no_sidewalk
+    things:
+      - { is: light, at: [136, 12], color: green }
+      - { is: crosswalk, at: [43, 60], heading: 90 }   # 90: across the side road
+      - { is: arrow, via: [[64, 90], [62, 74], [20, 74]] }   # where you mean to go
+      - { is: moped, at: [56.5, 113], label: "moped", label_at: left }
+      - { is: you, at: [65, 104], blink: left }
+```
+
+Things are `you` (exactly one), `car`, `van`, `bus`, `truck`, `ambulance`,
+`moped`, `bicycle`, `person`, `child`, `elder`, `ball`, `crosswalk`,
+`busstop`, `light`, `arrow` and `label`. A vehicle may have `blink: left` or
+`right` and `lights: true`. Draw only what the driver could see: what is
+hidden is the point of the question. `internal/quiz/scene.go` has the rules
+and `web/src/components/scene.ts` the drawing.
 
 Answers, reasons and references never leave the server until a question has
 been answered. `learnbox verify <track>` checks every bank and fails if a mock

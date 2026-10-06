@@ -17,6 +17,7 @@
 // A scenario question - the illustration questions of the full licence test -
 // has `kind: scenario`, a scene in en/ja, and exactly three statements, each
 // with its own en, ja, answer and why. It scores only if all three are right.
+// Any question may carry a `scene`: a diagram of it, described in scene.go.
 package quiz
 
 import (
@@ -54,6 +55,8 @@ type Question struct {
 	Image      string      `yaml:"image" json:"image,omitempty"`
 	Exams      []string    `yaml:"exams" json:"-"`
 	Statements []Statement `yaml:"statements" json:"statements,omitempty"`
+	// Scene is a diagram of the question's situation, drawn by the browser.
+	Scene *Scene `yaml:"scene" json:"scene,omitempty"`
 
 	Topic string `yaml:"-" json:"topic"` // the lesson id it belongs to
 }
@@ -231,6 +234,11 @@ func check(q *Question) error {
 	for _, e := range q.Exams {
 		if _, ok := Specs[e]; !ok {
 			return fmt.Errorf("%s: unknown exam %q", where, e)
+		}
+	}
+	if q.Scene != nil {
+		if err := q.Scene.check(); err != nil {
+			return fmt.Errorf("%s: %w", where, err)
 		}
 	}
 	if q.Image != "" {

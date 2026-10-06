@@ -8,8 +8,10 @@ import {
   type QuizGiven,
   type QuizOverview,
   type QuizQuestion,
+  type QuizScene,
   type Track,
 } from "../api";
+import { sceneFigure } from "../components/scene";
 import { append, clear, h, html, toast } from "../dom";
 import { navigate, type Page } from "../router";
 import type { Shell } from "../shell";
@@ -51,8 +53,9 @@ function questionImage(src: string): HTMLElement {
 }
 
 /** The question text: English, with the Japanese underneath. */
-function questionText(q: { en: string; ja: string; image?: string }, cls = "q-text") {
+function questionText(q: { en: string; ja: string; image?: string; scene?: QuizScene }, cls = "q-text") {
   const text = h("div", { class: "q-words" }, h("p", { class: "q-en" }, q.en), h("p", { class: "q-ja", lang: "ja" }, q.ja));
+  if (q.scene) return h("div", { class: `${cls} has-scene` }, sceneFigure(q.scene), text);
   return h("div", { class: q.image ? `${cls} has-img` : cls }, q.image ? questionImage(q.image) : null, text);
 }
 

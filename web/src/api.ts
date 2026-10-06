@@ -213,6 +213,29 @@ export interface QuizStatement {
   ja: string;
 }
 
+/** One item in a scene diagram; see internal/quiz/scene.go. */
+export interface SceneThing {
+  is: string;
+  at?: number[];
+  heading?: number;
+  label?: string;
+  label_at?: "right" | "left" | "above" | "below";
+  blink?: "left" | "right";
+  lights?: boolean;
+  color?: "green" | "yellow" | "red";
+  via?: number[][];
+}
+
+/** A scenario seen from above, on a 160 x 120 grid. */
+export interface QuizScene {
+  road: "straight" | "cross" | "rail" | "merge" | "expressway" | "bend";
+  narrow?: boolean;
+  no_sidewalk?: boolean;
+  night?: boolean;
+  rain?: boolean;
+  things: SceneThing[];
+}
+
 export interface QuizQuestion {
   id: string;
   kind?: "scenario";
@@ -221,6 +244,8 @@ export interface QuizQuestion {
   topic: string;
   /** A picture that goes with the question, fetched from where it is hosted. */
   image?: string;
+  /** A diagram of the situation, drawn here from its description. */
+  scene?: QuizScene;
   statements?: QuizStatement[];
 }
 

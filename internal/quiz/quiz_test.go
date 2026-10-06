@@ -107,6 +107,44 @@ func TestBrokenBanksAreRefused(t *testing.T) {
 	}
 }
 
+// withScene is the scenario with a diagram added to it.
+func withScene(scene string) string {
+	return strings.Replace(scenario, "  statements:\n", "  scene:\n"+scene+"  statements:\n", 1)
+}
+
+func TestScenes(t *testing.T) {
+	good := "    road: cross\n    night: true\n    things:\n" +
+		"      - {is: you, at: [66, 100], blink: left}\n" +
+		"      - {is: truck, at: [94, 20], heading: 180, label: truck, lights: true}\n" +
+		"      - {is: light, at: [136, 12], color: green}\n" +
+		"      - {is: arrow, via: [[66, 90], [62, 74], [20, 74]]}\n"
+	banks, err := Load(lib(t, map[string]string{"t": withScene(good)}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sc := banks["drive"].Question("sc-1").Scene; sc == nil || sc.Road != "cross" || len(sc.Things) != 4 || sc.Things[1].Heading != 180 {
+		t.Fatalf("scene did not load: %+v", sc)
+	}
+
+	bad := map[string]string{
+		"unknown road":  "    road: runway\n    things:\n      - {is: you, at: [66, 100]}\n",
+		"unknown thing": "    road: straight\n    things:\n      - {is: you, at: [66, 100]}\n      - {is: tank, at: [94, 20]}\n",
+		"nobody is you": "    road: straight\n    things:\n      - {is: car, at: [94, 20]}\n",
+		"two of you":    "    road: straight\n    things:\n      - {is: you, at: [66, 100]}\n      - {is: you, at: [66, 60]}\n",
+		"off the grid":  "    road: straight\n    things:\n      - {is: you, at: [66, 400]}\n",
+		"no position":   "    road: straight\n    things:\n      - {is: you}\n",
+		"bad heading":   "    road: straight\n    things:\n      - {is: you, at: [66, 100], heading: 400}\n",
+		"light colour":  "    road: straight\n    things:\n      - {is: you, at: [66, 100]}\n      - {is: light, at: [130, 10], color: blue}\n",
+		"short arrow":   "    road: straight\n    things:\n      - {is: you, at: [66, 100]}\n      - {is: arrow, via: [[66, 90]]}\n",
+		"empty":         "    road: straight\n",
+	}
+	for name, scene := range bad {
+		if _, err := Load(lib(t, map[string]string{"t": withScene(scene)})); err == nil {
+			t.Errorf("%s: accepted", name)
+		}
+	}
+}
+
 func TestDrawFollowsTheSpec(t *testing.T) {
 	var yml strings.Builder
 	for i := range 60 {
