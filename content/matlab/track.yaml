@@ -24,3 +24,7 @@ sections:
     xp: 100
     title: "Associate - practice exam"
     description: "Four cumulative papers, one per exam domain. Fewer hints than a lesson, on purpose."
+  - id: arena
+    title: Arena
+    arena: true
+    description: "Timed challenges against the clock. Rounds, then the boss."

@@ -1,0 +1,17 @@
+lbx_run({
+  'window_of_two',            @() lbx_near([1.5 2.5 3.5], moving_mean([1 2 3 4], 2))
+  'window_of_three',          @() lbx_near([4 6 8], moving_mean([2 4 6 8 10], 3))
+  'window_as_long_as_v',      @() lbx_near(6, moving_mean([5 7], 2))
+  'window_of_one_is_v',       @() lbx_near([3 1 4], moving_mean([3 1 4], 1))
+  'result_is_a_row',          @() lbx_eq([1 4], size(moving_mean([1 2 3 4 5], 2)))
+  'result_length',            @() lbx_eq(8, numel(moving_mean(1:10, 3)))
+  'a_constant_stays_constant',@() lbx_near([7 7 7], moving_mean([7 7 7 7 7], 3))
+  'negatives_and_fractions',  @() lbx_near([-0.25 0.5], moving_mean([-1 0.5 0.5], 2))
+  'a_single_element',         @() lbx_near(9, moving_mean(9, 1))
+  'a_long_signal',            @() lbx_near(50.5, mean(moving_mean(1:100, 10)))
+  'window_of_zero',           @() lbx_error('moving_mean:window', @() moving_mean([1 2 3], 0))
+  'negative_window',          @() lbx_error('moving_mean:window', @() moving_mean([1 2 3], -1))
+  'window_too_long',          @() lbx_error('moving_mean:window', @() moving_mean([1 2 3], 4))
+  'fractional_window',        @() lbx_error('moving_mean:window', @() moving_mean([1 2 3], 1.5))
+  'window_on_empty',          @() lbx_error('moving_mean:window', @() moving_mean([], 1))
+});

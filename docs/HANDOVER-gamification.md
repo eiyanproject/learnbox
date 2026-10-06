@@ -48,7 +48,7 @@ into pieces that each work and ship by themselves:
 3. **Arena, one track** - DONE on this branch. Challenge start/forfeit endpoints, the server-side
    clock, loss and cooldown, unlock rules, the Arena page and the countdown in
    the lesson view, with the Python ladder (rounds then a boss) as content.
-4. **Arena, every other track** - ladders for rust, c, cpp, java, csharp,
+4. **Arena, every other track** - DONE on this branch. Ladders for rust, c, cpp, java, csharp,
    matlab, ccna, mindset and security, each passing `learnbox verify`. The
    owner chose every track; this order only decides what ships first.
 
@@ -107,6 +107,19 @@ How it was going to be built - a starting point, not a decision:
 - Once XP exists, quiz topics and passed mock exams can award it.
 
 ## Done on this branch
+
+- **Milestone 4.** Ladders of two rounds and a boss for rust, c, cpp, java,
+  csharp, matlab, ccna, mindset and security (27 challenges; Python has three
+  rounds and a boss). Every reference solution passes `learnbox verify
+  <lang>/arena`, run in that toolchain's image: the dev image for the
+  pytest tracks and gcc/g++, `rust:slim`, `eclipse-temurin:21` with the
+  pinned JUnit jar, `mcr.microsoft.com/dotnet/sdk:8.0`, and the Octave image.
+  Every starter was checked to fail. Unlock thresholds scale with the size of
+  the track (roughly 10%, 30% and 50% of its lesson XP). Two rounds rather
+  than three was a call made to get every track a ladder; more rounds are
+  just more lesson directories.
+- Still to do from the plan: **suggestions for what could come next** are at
+  the end of this file.
 
 - **Milestone 3.** `internal/game/arena.go`: the rules as pure functions
   (unlocking, start, win with speed bonus, loss and cooldown) with tests.
@@ -169,3 +182,24 @@ The verify harness from the previous work (lesson examples) is unaffected.
 To test a track end to end, the scripts used before ran `learnbox verify`
 inside each toolchain's Docker image (see the README section on writing
 lessons for what verify checks).
+
+## What could come next
+
+Ideas, none of them started and none of them decided:
+
+- **A third round for the nine shorter ladders**, and a second, harder ladder
+  ("ascension") for a track whose boss is beaten.
+- **A daily challenge**: one arena round picked per day across every unlocked
+  track, with its own streak badge.
+- **Profile comparison**: now that several profiles exist, a small
+  leaderboard page (level, XP, bosses beaten) - opt-in, since profiles are
+  not logins.
+- **A history page**: XP per day as a calendar heat map, from the pass
+  timestamps that are already stored.
+- **Review prompts**: resurface a passed lesson's task after a few weeks and
+  pay a little XP for passing it again from the starter.
+- **Quiz XP**: once the driving-test track lands, topics and mock exams can
+  pay XP through the same engine (a new source beside lessons and
+  challenges).
+- **Arena polish**: a pause-free "practice" mode that shows a won
+  challenge's best time to beat, and a sound or animation on a boss win.
