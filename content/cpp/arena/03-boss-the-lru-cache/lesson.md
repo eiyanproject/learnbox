@@ -1,7 +1,7 @@
 ---
 title: "Boss: The LRU cache"
 summary: A cache with a size limit that throws out whatever was used longest ago. Design the data structure yourself.
-order: 3
+order: 4
 files: [lru.cpp, lru.h]
 run: g++ -std=c++20 -Wall -c lru.cpp
 challenge:

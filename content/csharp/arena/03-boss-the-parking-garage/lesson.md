@@ -1,7 +1,7 @@
 ---
 title: "Boss: The parking garage"
 summary: Slots, number plates, a fee table and every way the barrier can refuse a car.
-order: 3
+order: 4
 files: [Garage.cs]
 run: dotnet build -c Release
 challenge:

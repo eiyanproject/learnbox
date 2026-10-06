@@ -108,6 +108,15 @@ How it was going to be built - a starting point, not a decision:
 
 ## Done on this branch
 
+- **A third round for the nine shorter ladders** (2026-10-06, branch
+  `arena-round-3`): every ladder is now three rounds and a boss. The new
+  rounds sit at `order: 3` and the bosses moved to `order: 4` **without
+  renaming their folders** - a challenge's id is its path, so renaming a boss
+  would orphan the wins already recorded on the deployed box. That is why
+  each arena folder has two entries starting `03-`. Unlock thresholds are
+  about 40% of the track's lesson XP. A boss that was unlocked but not yet
+  won locks again until the new round is won; a boss already won stays won.
+
 - **Milestone 4.** Ladders of two rounds and a boss for rust, c, cpp, java,
   csharp, matlab, ccna, mindset and security (27 challenges; Python has three
   rounds and a boss). Every reference solution passes `learnbox verify

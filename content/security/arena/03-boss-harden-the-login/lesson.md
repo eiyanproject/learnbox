@@ -1,7 +1,7 @@
 ---
 title: "Boss: Harden the login"
 summary: A working login with every classic weakness in it. Fix all of them before it ships.
-order: 3
+order: 4
 files: [auth.py]
 run: python -i auth.py
 challenge:

@@ -1,7 +1,7 @@
 ---
 title: "Boss: The string builder"
 summary: A string that grows. malloc, realloc, a terminator that must always be there, and nothing leaked.
-order: 3
+order: 4
 files: [str.c, str.h]
 run: gcc -std=c17 -Wall -c str.c
 challenge:

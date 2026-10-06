@@ -322,8 +322,7 @@ challenges, a few rounds and then a boss.
   better time; only a result that pays more than your best counts.
 - There are no hints in the arena.
 
-Every track has a ladder: Python has three rounds and a boss, the other nine
-two rounds and a boss. The Security ladder stays on the defending side -
+Every track has a ladder of three rounds and a boss. The Security ladder stays on the defending side -
 detect a brute force, close a path traversal, harden a login.
 
 ### Safety model

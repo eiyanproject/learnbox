@@ -1,7 +1,7 @@
 ---
 title: "Boss: The library desk"
 summary: Books, members, loans and limits. Collections, Optional and the right exception for each refusal.
-order: 3
+order: 4
 files: [Library.java]
 run: javac Library.java && java Library
 challenge:

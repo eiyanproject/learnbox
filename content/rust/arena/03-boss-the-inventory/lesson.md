@@ -1,7 +1,7 @@
 ---
 title: "Boss: The inventory"
 summary: A stock room as a type, with borrowed views into it, errors that carry their reasons and a Display impl.
-order: 3
+order: 4
 files: [src/lib.rs]
 run: cargo test
 challenge:

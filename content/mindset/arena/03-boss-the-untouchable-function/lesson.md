@@ -1,7 +1,7 @@
 ---
 title: "Boss: The function nobody wants to touch"
 summary: One long function that works. Take it apart into named pieces and add a feature without breaking what it already does.
-order: 3
+order: 4
 files: [billing.py]
 run: python -i billing.py
 challenge:

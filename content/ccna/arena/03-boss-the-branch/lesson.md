@@ -1,7 +1,7 @@
 ---
 title: "Boss: The branch office"
 summary: Three unconfigured routers between a PC and a server. Address them, route them, and lock the server down.
-order: 3
+order: 4
 files: [r1.ios, r2.ios, r3.ios]
 run: python lab.py
 challenge:

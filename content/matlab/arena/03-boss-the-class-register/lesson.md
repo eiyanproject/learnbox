@@ -1,7 +1,7 @@
 ---
 title: "Boss: The class register"
 summary: A matrix of marks with gaps in it, a list of names, and one struct that has to answer five questions about them.
-order: 3
+order: 4
 files: [class_report.m]
 run: octave --no-gui --quiet --eval "disp(class_report({'ana','bo'}, [80 90; 50 NaN]))"
 challenge:
