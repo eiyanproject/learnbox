@@ -345,7 +345,7 @@ export async function quizStudyPage(shell: Shell, track: string, section: string
         h("div", { class: "q-body" }, h("h2", null, `${right} of ${right + wrong.length} right`)),
         h(
           "div",
-          { class: "q-next", style: "padding:0 18px 18px" },
+          { class: "q-next pad" },
           wrong.length
             ? h(
                 "button",
@@ -411,7 +411,11 @@ export async function quizStudyPage(shell: Shell, track: string, section: string
     h(
       "div",
       { class: notesHTML ? "quiz-split" : "quiz-solo" },
-      notesHTML ? h("details", { class: "panel notes", open: true }, h("summary", { class: "phead" }, h("h2", null, "Study notes")), html("div", "prose pbody", notesHTML)) : null,
+      // Beside the question the notes stay open; stacked above it (a phone, a
+      // narrow window) they start folded so the question is on screen.
+      notesHTML
+        ? h("details", { class: "panel notes", open: window.matchMedia("(min-width: 1180px)").matches }, h("summary", { class: "phead" }, h("h2", null, "Study notes")), html("div", "prose pbody", notesHTML))
+        : null,
       questions.length ? stage : h("div", { class: "empty" }, h("h2", null, reviewing ? "Nothing to review" : "No questions yet"), h("p", null, reviewing ? "Every mistake has been cleared." : "")),
     ),
   ]);
@@ -538,6 +542,10 @@ export async function quizExamPage(shell: Shell, track: string, exam: string): P
         ),
       );
       count.textContent = `${qs.filter(isAnswered).length} of ${qs.length} answered`;
+      // On a phone the grid is one scrolling row: keep the current number in
+      // the middle of it. (Wider, the row does not scroll and this is a no-op.)
+      const cur = grid.querySelector<HTMLElement>(".at");
+      if (cur) grid.scrollLeft = cur.offsetLeft - (grid.clientWidth - cur.offsetWidth) / 2;
     };
 
     const show = () => {
@@ -581,7 +589,7 @@ export async function quizExamPage(shell: Shell, track: string, exam: string): P
           body,
           h(
             "div",
-            { class: "q-next", style: "padding:0 18px 18px" },
+            { class: "q-next pad" },
             h("button", { class: "btn", disabled: at === 0, onclick: () => ((at = Math.max(0, at - 1)), show()) }, "Previous"),
             h("button", { class: "btn", disabled: at === qs.length - 1, onclick: () => ((at = Math.min(qs.length - 1, at + 1)), show()) }, "Next"),
           ),

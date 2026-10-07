@@ -2062,8 +2062,30 @@ a.secbar:hover .lbl {
    notes scroll, and scrolls by itself if it is taller than the window. */
 .quiz-split {
   display: grid;
+  /* minmax(0, ..): a wide table in the notes scrolls instead of stretching
+     the page. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
   align-items: start;
+}
+
+/* Says which way a tap will take the notes. */
+.notes > summary::after {
+  content: "show";
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cy);
+}
+
+.notes[open] > summary::after {
+  content: "hide";
+  color: var(--mut);
+}
+
+.notes:not([open]) > summary {
+  border-bottom: 0;
 }
 
 @media (min-width: 1180px) {
@@ -2091,8 +2113,17 @@ a.secbar:hover .lbl {
 /* A mock exam: the question beside the grid of question numbers. */
 .exam-split {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
   align-items: start;
+}
+
+.exam-grid {
+  position: relative; /* so a cell's offsetLeft is measured from the grid */
+}
+
+.q-next.pad {
+  padding: 0 18px 18px;
 }
 
 .exam-side .exam-grid {
@@ -2463,5 +2494,171 @@ a.secbar:hover .lbl {
 
   .exam-clock {
     font-size: 22px;
+  }
+}
+
+/* ---------- quiz on a phone ----------
+   One column, the question first, and nothing wider than the screen. */
+
+@media (max-width: 860px) {
+  /* The number grid would fill the screen and push the question off it:
+     here it is one row that scrolls sideways, the current number centred. */
+  .exam-side {
+    border: 0;
+    background: none;
+  }
+
+  .exam-side .phead {
+    display: none;
+  }
+
+  .exam-side .exam-grid {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 2px 0 6px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .exam-side .exam-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .exam-grid .cell {
+    flex: none;
+    width: 42px;
+    height: 40px;
+    font-size: 12px;
+  }
+
+  /* The bar stays on screen all exam long, so it is kept short: the clock
+     over the count, the two buttons beside them. */
+  .exam-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0 10px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+  }
+
+  .exam-bar > div:first-child {
+    display: contents;
+  }
+
+  .exam-bar h1 {
+    display: none;
+  }
+
+  .exam-bar .exam-clock {
+    grid-area: 1 / 1;
+    line-height: 1.1;
+  }
+
+  .exam-bar > div:first-child > .lbl {
+    grid-area: 2 / 1;
+  }
+
+  .exam-bar > div:last-child {
+    grid-area: 1 / 2 / span 2;
+  }
+
+  .exam-split {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 560px) {
+  .content {
+    padding: 14px 10px 28px;
+    gap: 16px;
+  }
+
+  .q-head {
+    padding: 10px 12px;
+  }
+
+  .q-body {
+    padding: 14px 12px;
+  }
+
+  .q-text .q-en {
+    font-size: 16px;
+  }
+
+  .q-feedback {
+    margin: 0 12px;
+    padding: 10px 12px;
+  }
+
+  .q-after .q-next,
+  .q-next.pad {
+    padding: 0 12px 14px;
+  }
+
+  .q-next .btn {
+    flex: 1;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .stmt {
+    grid-template-columns: 16px minmax(0, 1fr);
+    gap: 4px 8px;
+  }
+
+  .tf {
+    min-height: 54px;
+    padding: 10px 8px;
+  }
+
+  .review-item .q-text {
+    padding: 0 12px 10px;
+  }
+
+  .notes .pbody {
+    padding: 14px 12px 4px;
+  }
+
+  .exam-card {
+    padding: 14px;
+  }
+
+  .exam-result {
+    padding: 20px 12px;
+  }
+
+  .exam-result .big {
+    font-size: 36px;
+  }
+
+  /* A picture table in the notes - the sign chart - is four columns wide.
+     Lay its cells out two to a row instead: picture, then name. */
+  .notes .prose table:has(img) {
+    display: block;
+    overflow: visible;
+  }
+
+  .notes .prose table:has(img) thead {
+    display: none;
+  }
+
+  .notes .prose table:has(img) tbody {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .notes .prose table:has(img) tr {
+    display: contents;
+  }
+
+  .notes .prose table:has(img) td {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+  }
+
+  .notes .prose img {
+    height: 44px;
   }
 }
