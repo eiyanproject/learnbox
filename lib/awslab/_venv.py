@@ -17,6 +17,11 @@ FAKE_CREDENTIALS = {
 }
 DEFAULT_REGION = "us-east-1"
 
+# Settings for the emulator itself. AWS managed policies (ReadOnlyAccess,
+# SecurityAudit, ...) are not loaded unless asked for, and the lessons attach
+# them the way a real account would.
+EMULATOR_ENV = {"MOTO_IAM_LOAD_MANAGED_POLICIES": "true"}
+
 
 def venv() -> str:
     return os.environ.get("LEARNBOX_AWS_VENV", DEFAULT_VENV)

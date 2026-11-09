@@ -36,7 +36,8 @@ sys.path here so the learner's own environment needs none of them.
 
 from __future__ import annotations
 
+from . import policy
 from ._venv import use_venv
 from .account import Account, lab
 
-__all__ = ["Account", "lab", "use_venv"]
+__all__ = ["Account", "lab", "policy", "use_venv"]

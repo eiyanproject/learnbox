@@ -10,7 +10,8 @@ import subprocess
 from dataclasses import dataclass, field
 from typing import Any, Iterator
 
-from ._venv import sandbox_env, use_venv
+from . import policy
+from ._venv import EMULATOR_ENV, sandbox_env, use_venv
 
 # How long a learner's script may take. The CLI starts a Python process per
 # command, about half a second each, so this is generous for any lesson.
@@ -75,6 +76,40 @@ class Account:
         """A resource's Tags list as a dict."""
         return {t["Key"]: t["Value"] for t in items or []}
 
+    def policy_documents(self, kind: str, name: str) -> list[dict]:
+        """Every identity policy that applies to an IAM user, group or role:
+        attached and inline, and for a user, those of its groups as well."""
+        iam = self.client("iam")
+        docs: list[dict] = []
+
+        def attached(items: list[dict]) -> None:
+            for p in items:
+                pol = iam.get_policy(PolicyArn=p["PolicyArn"])["Policy"]
+                ver = iam.get_policy_version(PolicyArn=p["PolicyArn"], VersionId=pol["DefaultVersionId"])
+                docs.append(policy.load(ver["PolicyVersion"]["Document"]))
+
+        if kind == "user":
+            attached(iam.list_attached_user_policies(UserName=name)["AttachedPolicies"])
+            for pn in iam.list_user_policies(UserName=name)["PolicyNames"]:
+                docs.append(policy.load(iam.get_user_policy(UserName=name, PolicyName=pn)["PolicyDocument"]))
+            for g in iam.list_groups_for_user(UserName=name)["Groups"]:
+                docs += self.policy_documents("group", g["GroupName"])
+        elif kind == "group":
+            attached(iam.list_attached_group_policies(GroupName=name)["AttachedPolicies"])
+            for pn in iam.list_group_policies(GroupName=name)["PolicyNames"]:
+                docs.append(policy.load(iam.get_group_policy(GroupName=name, PolicyName=pn)["PolicyDocument"]))
+        elif kind == "role":
+            attached(iam.list_attached_role_policies(RoleName=name)["AttachedPolicies"])
+            for pn in iam.list_role_policies(RoleName=name)["PolicyNames"]:
+                docs.append(policy.load(iam.get_role_policy(RoleName=name, PolicyName=pn)["PolicyDocument"]))
+        else:
+            raise ValueError(f"kind is user, group or role, not {kind!r}")
+        return docs
+
+    def can(self, kind: str, name: str, action: str, resource: str = "*") -> bool:
+        """Whether that identity's policies allow the action on the resource."""
+        return policy.decide(self.policy_documents(kind, name), action, resource).allowed
+
     def by_name(self, resources: list[dict]) -> dict[str, dict]:
         """EC2-style resources keyed by their Name tag."""
         out = {}
@@ -112,6 +147,7 @@ def lab(script: str | None = "setup.sh", region: str = "us-east-1") -> Iterator[
     an empty account and drive it from the test.
     """
     use_venv()
+    os.environ.update(EMULATOR_ENV)
     from moto.server import ThreadedMotoServer
 
     port = free_port()

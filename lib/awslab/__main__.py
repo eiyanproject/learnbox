@@ -22,7 +22,7 @@ import sys
 import time
 import urllib.request
 
-from ._venv import DEFAULT_REGION, sandbox_env, venv_bin
+from ._venv import DEFAULT_REGION, EMULATOR_ENV, sandbox_env, venv_bin
 
 PORT = int(os.environ.get("LEARNBOX_AWS_PORT", "4599"))
 ENDPOINT = f"http://127.0.0.1:{PORT}"
@@ -44,6 +44,7 @@ def start() -> None:
     with open(LOGFILE, "ab") as log:
         p = subprocess.Popen(
             [venv_bin("python"), "-m", "moto.server", "-H", "127.0.0.1", "-p", str(PORT)],
+            env={**os.environ, **EMULATOR_ENV},
             stdin=subprocess.DEVNULL,
             stdout=log,
             stderr=log,
