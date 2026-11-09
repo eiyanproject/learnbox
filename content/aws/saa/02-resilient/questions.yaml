@@ -1,0 +1,339 @@
+- id: res-sqs-decouple
+  kind: choice
+  en: "An order website writes each order directly to a processing service. During sales the processing service falls behind and the website starts returning errors. Which change makes the design MOST resilient to these spikes?"
+  options:
+    - "Increase the instance size of the processing service."
+    - "Add an Amazon CloudFront distribution in front of the website."
+    - "Have the website retry failed calls in a tight loop until they succeed."
+    - "Put an Amazon SQS queue between the website and the processing service, and have the service poll the queue."
+  correct: [D]
+  why: "A queue absorbs the burst: the website succeeds as soon as the message is queued, and the processors work through the backlog at their own pace and can scale on queue depth. Bigger instances only move the limit; tight retries make the overload worse."
+  ref: "Amazon SQS Developer Guide: What is Amazon SQS"
+  exams: [saa]
+
+- id: res-sns-fanout
+  kind: choice
+  en: "When an order is placed, three independent services - billing, shipping and analytics - must each process the order at their own pace. A failure in one must not affect the others. Which design meets these requirements?"
+  options:
+    - "Have the order service call the three services in sequence."
+    - "Send the order to one SQS queue that all three services poll."
+    - "Write the order to a DynamoDB table that the services scan every minute."
+    - "Publish the order to an Amazon SNS topic with an Amazon SQS queue subscribed for each service."
+  correct: [D]
+  why: "SNS-to-SQS fan-out gives every service its own durable copy of each message, so each consumes independently. With one shared queue, a message read by one service is hidden from the others."
+  ref: "Amazon SNS Developer Guide: Fanout to Amazon SQS queues"
+  exams: [saa]
+
+- id: res-sqs-fifo
+  kind: choice
+  en: "A payment system processes account transactions from a queue. Transactions for the same account must be processed in the order they were sent and exactly once; transactions for different accounts can be processed in parallel. What should a solutions architect use?"
+  options:
+    - "An SNS standard topic"
+    - "An SQS standard queue with a dead-letter queue"
+    - "An SQS FIFO queue, using the account ID as the message group ID"
+    - "An SQS standard queue with a larger visibility timeout"
+  correct: [C]
+  why: "FIFO queues provide exactly-once processing and preserve order within a message group; using the account ID as the group keeps each account in order while different accounts proceed in parallel. Standard queues give at-least-once delivery and best-effort ordering."
+  ref: "Amazon SQS Developer Guide: Amazon SQS FIFO queues"
+  exams: [saa]
+
+- id: res-step-functions
+  kind: choice
+  en: "A loan application goes through several steps: a credit check, a fraud check run in parallel with it, a manager's approval that can take days, then account creation. Each step must be retried on failure. Which service should coordinate the workflow?"
+  options:
+    - "Amazon Kinesis Data Streams"
+    - "A cron job on an EC2 instance"
+    - "AWS Step Functions"
+    - "Amazon SQS with a single queue"
+  correct: [C]
+  why: "Step Functions orchestrates multi-step workflows with parallel branches, retries, error handling, and waits for human callbacks, with state kept for up to a year in Standard workflows."
+  ref: "AWS Step Functions Developer Guide: What is Step Functions"
+  exams: [saa]
+
+- id: res-session-state
+  kind: choice
+  en: "A web application runs on EC2 instances in an Auto Scaling group behind an Application Load Balancer. Users are logged out whenever the group scales in. Which change fixes this while keeping the instances able to scale freely?"
+  options:
+    - "Store session data on each instance's EBS volume."
+    - "Use larger instances so fewer are needed."
+    - "Turn off scale-in for the Auto Scaling group."
+    - "Store session data in Amazon ElastiCache or DynamoDB instead of on the instances."
+  correct: [D]
+  why: "Keeping session state outside the instances makes the web tier stateless, so any instance can serve any user and instances can be removed safely. Sticky sessions reduce the problem but still lose sessions when an instance goes."
+  ref: "AWS Well-Architected Framework, Reliability Pillar: Make services stateless where possible"
+  exams: [saa]
+
+- id: res-rds-multi-az
+  kind: choice
+  en: "A production Amazon RDS for PostgreSQL database must keep running if its Availability Zone fails, with automatic failover and no data loss. What should a solutions architect configure?"
+  options:
+    - "Automated backups with a 35-day retention period"
+    - "A larger instance class"
+    - "A read replica in another Availability Zone"
+    - "A Multi-AZ deployment"
+  correct: [D]
+  why: "Multi-AZ keeps a synchronously replicated standby in another AZ and fails over to it automatically. A read replica is replicated asynchronously and must be promoted by hand; backups need a restore."
+  ref: "Amazon RDS User Guide: Multi-AZ deployments"
+  exams: [saa]
+
+- id: res-read-replica
+  kind: choice
+  en: "Heavy reporting queries run against a production Amazon RDS for MySQL database every afternoon and slow down the application. Which change BEST isolates the reporting load?"
+  options:
+    - "Move the reports to run at midnight on the primary."
+    - "Double the primary's storage."
+    - "Enable Multi-AZ and point the reporting tool at the standby."
+    - "Create a read replica and point the reporting tool at it."
+  correct: [D]
+  why: "Read replicas serve read-only traffic from a separate instance. The Multi-AZ standby of an RDS DB instance cannot be read from."
+  ref: "Amazon RDS User Guide: Working with DB instance read replicas"
+  exams: [saa]
+
+- id: res-aurora-global
+  kind: choice
+  en: "A company's Aurora MySQL database must survive a full Region outage with an RPO of about a second and an RTO of under a minute. Which solution meets these requirements?"
+  options:
+    - "Daily snapshots copied to another Region"
+    - "Aurora Global Database with a secondary cluster in another Region"
+    - "An Aurora Replica in another Availability Zone"
+    - "Multi-AZ for the Aurora cluster"
+  correct: [B]
+  why: "Aurora Global Database replicates storage to secondary Regions with typical lag under a second and supports promoting a secondary in about a minute. AZ-level options do not survive a Region outage; snapshots give an RPO of up to a day."
+  ref: "Amazon Aurora User Guide: Using Amazon Aurora Global Database"
+  exams: [saa]
+
+- id: res-dr-backup-restore
+  kind: choice
+  en: "An internal application can be down for up to 24 hours and lose up to a day of data. The company wants the cheapest disaster recovery strategy across Regions. Which strategy fits?"
+  options:
+    - "Warm standby"
+    - "Backup and restore"
+    - "Multi-site active-active"
+    - "Pilot light"
+  correct: [B]
+  why: "With generous RTO and RPO, backups copied to another Region and restored when needed are enough, and the DR Region runs nothing until then."
+  ref: "Disaster Recovery of Workloads on AWS: Backup and restore"
+  exams: [saa]
+
+- id: res-dr-warm-standby
+  kind: choice
+  en: "A company keeps a scaled-down but fully working copy of its production environment running in a second Region. On failover it scales the copy up to full size. Which disaster recovery strategy is this?"
+  options:
+    - "Backup and restore"
+    - "Pilot light"
+    - "Multi-site active-active"
+    - "Warm standby"
+  correct: [D]
+  why: "Warm standby keeps a smaller, fully functional copy running that can take traffic at once and is scaled up on failover. Pilot light keeps data replicated but the application servers off or minimal until a disaster."
+  ref: "Disaster Recovery of Workloads on AWS: Warm standby"
+  exams: [saa]
+
+- id: res-route53-failover
+  kind: choice
+  en: "A website runs in two Regions, primary and standby. Users must be sent to the standby automatically when the primary stops responding. Which configuration meets this requirement?"
+  options:
+    - "Route 53 failover routing with a health check on the primary"
+    - "A single Application Load Balancer spanning both Regions"
+    - "Route 53 weighted routing with equal weights"
+    - "Route 53 simple routing with both IP addresses"
+  correct: [A]
+  why: "Failover routing answers with the primary record while its health check passes and with the secondary when it fails. A load balancer is a regional resource and cannot span Regions."
+  ref: "Amazon Route 53 Developer Guide: Failover routing"
+  exams: [saa]
+
+- id: res-alb-asg-multi-az
+  kind: choice
+  en: "A company runs its web application on a single EC2 instance. It must keep serving if an instance or an Availability Zone fails. Which TWO steps should a solutions architect take?"
+  options:
+    - "Move the instance to a larger instance type."
+    - "Create an Auto Scaling group that spans at least two Availability Zones."
+    - "Put an Application Load Balancer in front of the instances, with subnets in the same Availability Zones."
+    - "Add a second EBS volume to the instance."
+    - "Place all instances in a cluster placement group."
+  correct: [B, C]
+  why: "An Auto Scaling group across AZs replaces failed instances and keeps capacity in each zone; an ALB spread over the same AZs routes only to healthy targets. A cluster placement group packs instances into one AZ - the opposite of what is needed."
+  ref: "Amazon EC2 Auto Scaling User Guide: Use Elastic Load Balancing to distribute traffic across the instances in your Auto Scaling group"
+  exams: [saa]
+
+- id: res-rds-proxy
+  kind: choice
+  en: "A Lambda function that queries an Amazon RDS for MySQL database runs thousands of concurrent invocations at peak, and the database runs out of connections. What should a solutions architect do?"
+  options:
+    - "Increase the function's memory."
+    - "Move the function into a different Availability Zone."
+    - "Use a larger database instance only."
+    - "Put Amazon RDS Proxy between the function and the database."
+  correct: [D]
+  why: "RDS Proxy keeps a pool of database connections and shares them across invocations, so bursts of Lambda concurrency no longer open a connection each. It also reduces failover time."
+  ref: "Amazon RDS User Guide: Using Amazon RDS Proxy"
+  exams: [saa]
+
+- id: res-efs-shared
+  kind: choice
+  en: "A legacy Linux application writes uploaded files to a local directory. The company is moving it to several EC2 instances across two Availability Zones, and every instance must see the same files. Which storage should be used?"
+  options:
+    - "Amazon EBS volumes attached to each instance"
+    - "Amazon EFS mounted on every instance"
+    - "Instance store volumes"
+    - "Amazon S3 Glacier"
+  correct: [B]
+  why: "EFS is a regional NFS file system that many Linux instances across AZs can mount at once, with no application change. EBS volumes belong to one AZ and normally to one instance."
+  ref: "Amazon EFS User Guide: What is Amazon Elastic File System"
+  exams: [saa]
+
+- id: res-fsx-windows
+  kind: choice
+  en: "Windows-based applications need a shared file system using the SMB protocol, integrated with the company's Active Directory and available across two Availability Zones. Which service meets these requirements?"
+  options:
+    - "Amazon FSx for Lustre"
+    - "Amazon FSx for Windows File Server with a Multi-AZ deployment"
+    - "Amazon S3 with S3 Transfer Acceleration"
+    - "Amazon EFS"
+  correct: [B]
+  why: "FSx for Windows File Server provides SMB shares with Active Directory integration and supports Multi-AZ file systems. EFS uses NFS; FSx for Lustre is for high-performance computing."
+  ref: "Amazon FSx for Windows File Server User Guide: Availability and durability"
+  exams: [saa]
+
+- id: res-fargate
+  kind: choice
+  en: "A team has packaged its microservices as Docker containers. It wants to run them on AWS without managing servers or a cluster's EC2 capacity. Which option meets these requirements?"
+  options:
+    - "Amazon ECS on AWS Fargate"
+    - "EC2 instances with Docker installed"
+    - "AWS Elastic Beanstalk on a single instance"
+    - "Amazon ECS on EC2 instances in an Auto Scaling group"
+  correct: [A]
+  why: "Fargate is serverless compute for containers: AWS runs the underlying capacity, and you define tasks and services only."
+  ref: "Amazon ECS Developer Guide: AWS Fargate for Amazon ECS"
+  exams: [saa]
+
+- id: res-eks
+  kind: choice
+  en: "A company already runs its applications on Kubernetes on premises with existing manifests and tooling. It wants to move them to AWS with as few changes as possible. Which service should it use?"
+  options:
+    - "AWS Lambda"
+    - "Amazon EKS"
+    - "AWS Batch"
+    - "Amazon ECS"
+  correct: [B]
+  why: "EKS runs upstream-compatible Kubernetes, so existing manifests, Helm charts and tooling keep working. ECS is AWS's own orchestrator with a different API."
+  ref: "Amazon EKS User Guide: What is Amazon EKS"
+  exams: [saa]
+
+- id: res-s3-event-lambda
+  kind: choice
+  en: "Every time an image is uploaded to an S3 bucket, a thumbnail must be created. Traffic is unpredictable and sometimes zero for days. Which solution is the MOST cost-effective and scalable?"
+  options:
+    - "An S3 event notification that invokes an AWS Lambda function"
+    - "An ECS service with two always-on tasks polling the bucket"
+    - "An EC2 instance that lists the bucket every minute"
+    - "An Amazon EMR cluster that runs every hour"
+  correct: [A]
+  why: "S3 event notifications invoke Lambda per upload; Lambda scales with the uploads and costs nothing when idle. Polling and always-on capacity cost money when nothing is happening."
+  ref: "AWS Lambda Developer Guide: Process Amazon S3 event notifications with Lambda"
+  exams: [saa]
+
+- id: res-api-gateway
+  kind: choice
+  en: "A company is exposing a set of Lambda functions to partners as a REST API. It needs request throttling per partner, API keys and usage plans. Which service should front the functions?"
+  options:
+    - "An Application Load Balancer"
+    - "Amazon API Gateway"
+    - "Amazon CloudFront alone"
+    - "AWS Global Accelerator"
+  correct: [B]
+  why: "API Gateway REST APIs support API keys and usage plans with per-client throttling and quotas, and integrate directly with Lambda."
+  ref: "Amazon API Gateway Developer Guide: Usage plans and API keys for REST APIs"
+  exams: [saa]
+
+- id: res-dlq
+  kind: choice
+  en: "A few malformed messages in an SQS queue fail processing every time, are retried endlessly, and slow down the consumers. What should a solutions architect configure?"
+  options:
+    - "A FIFO queue instead of a standard queue"
+    - "A dead-letter queue with a redrive policy and a maxReceiveCount"
+    - "A shorter message retention period of 60 seconds"
+    - "Long polling on the queue"
+  correct: [B]
+  why: "After a message has been received maxReceiveCount times without being deleted, SQS moves it to the dead-letter queue, where it can be inspected without blocking the main queue."
+  ref: "Amazon SQS Developer Guide: Using dead-letter queues"
+  exams: [saa]
+
+- id: res-visibility-timeout
+  kind: choice
+  en: "Consumers take up to 5 minutes to process each SQS message, and some messages are being processed twice. The queue uses the default settings. What is the MOST likely fix?"
+  options:
+    - "Increase the maximum message size."
+    - "Enable long polling."
+    - "Increase the queue's visibility timeout to longer than the processing time."
+    - "Decrease the message retention period."
+  correct: [C]
+  why: "The default visibility timeout is 30 seconds. If processing takes longer, the message becomes visible again and another consumer picks it up. The timeout should exceed the processing time."
+  ref: "Amazon SQS Developer Guide: Amazon SQS visibility timeout"
+  exams: [saa]
+
+- id: res-dynamodb-global
+  kind: choice
+  en: "A gaming company needs a key-value database that users in North America, Europe and Asia can all write to locally with low latency, and that keeps working if one Region fails. Which solution meets these requirements?"
+  options:
+    - "Amazon RDS for MySQL with cross-Region read replicas"
+    - "Amazon ElastiCache in each Region with no database"
+    - "Amazon DynamoDB global tables with replicas in the three Regions"
+    - "One DynamoDB table in us-east-1 with DAX"
+  correct: [C]
+  why: "DynamoDB global tables replicate a table across Regions and accept writes in every replica (multi-active). Cross-Region read replicas only take reads."
+  ref: "Amazon DynamoDB Developer Guide: Global tables"
+  exams: [saa]
+
+- id: res-s3-crr
+  kind: choice
+  en: "A company must keep a copy of every new object in an S3 bucket in a second Region for disaster recovery. Which TWO steps are required?"
+  options:
+    - "Create a replication rule on the source bucket with the destination bucket and an IAM role S3 can assume."
+    - "Turn on Requester Pays on the destination bucket."
+    - "Enable S3 Transfer Acceleration on the source bucket."
+    - "Create a lifecycle rule that transitions objects to the other Region."
+    - "Enable versioning on both the source and the destination buckets."
+  correct: [A, E]
+  why: "S3 Replication needs versioning on both buckets and a replication configuration with a role that grants S3 permission to replicate. Lifecycle rules change storage class, not Region."
+  ref: "Amazon S3 User Guide: Replicating objects within and across Regions"
+  exams: [saa]
+
+- id: res-immutable
+  kind: choice
+  en: "Production EC2 instances drift from each other because administrators patch them by hand. The company wants every instance to be identical and changes to be rolled out by replacing instances. Which approach meets these requirements?"
+  options:
+    - "Use SSH scripts to apply the same changes to every instance."
+    - "Build a new AMI for each change, update the Auto Scaling group's launch template, and run an instance refresh."
+    - "Increase the Auto Scaling group's minimum size."
+    - "Take an EBS snapshot of one instance each week."
+  correct: [B]
+  why: "Immutable infrastructure: a versioned image and launch template define the instances, and an instance refresh replaces running instances with new ones built from them, instead of changing servers in place."
+  ref: "Amazon EC2 Auto Scaling User Guide: Use an instance refresh to update instances in an Auto Scaling group"
+  exams: [saa]
+
+- id: res-service-quotas
+  kind: choice
+  en: "A company's DR plan scales a small warm-standby environment in a second Region up to full production size during a failover. What should a solutions architect check in advance so that the failover does not fail?"
+  options:
+    - "That the AMIs are public"
+    - "That the service quotas in the standby Region allow the full production capacity"
+    - "That the standby Region uses the same Availability Zone names"
+    - "That the standby Region has the same pricing"
+  correct: [B]
+  why: "Quotas such as running instances or vCPUs are per Region. If the standby Region's quotas are sized for the small environment, scaling up will fail at the worst moment; request increases ahead of time."
+  ref: "Service Quotas User Guide: What is Service Quotas"
+  exams: [saa]
+
+- id: res-eventbridge
+  kind: choice
+  en: "Several teams need to react to events from a company's own order application and from AWS services, each team selecting only the events it cares about, without the application knowing who is listening. Which service fits BEST?"
+  options:
+    - "Direct HTTP calls from the application to each team"
+    - "An Amazon Kinesis data stream read by every team"
+    - "A shared DynamoDB table"
+    - "Amazon EventBridge with a custom event bus and rules per team"
+  correct: [D]
+  why: "EventBridge routes events from custom applications, AWS services and SaaS partners to targets based on rules that match event content, so producers and consumers stay decoupled."
+  ref: "Amazon EventBridge User Guide: Event buses"
+  exams: [saa]

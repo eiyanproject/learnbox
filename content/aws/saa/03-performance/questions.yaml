@@ -1,0 +1,312 @@
+- id: perf-ebs-io2
+  kind: choice
+  en: "A self-managed database on EC2 needs a single block volume with sustained, very high IOPS and consistently low latency. Which EBS volume type should a solutions architect choose?"
+  options:
+    - "Throughput Optimized HDD (st1)"
+    - "General Purpose SSD (gp3)"
+    - "Provisioned IOPS SSD (io2 Block Express)"
+    - "Cold HDD (sc1)"
+  correct: [C]
+  why: "io2 Block Express provides the highest IOPS and sub-millisecond latency for demanding databases. gp3 tops out at a lower IOPS figure; the HDD types are built for throughput, not IOPS."
+  ref: "Amazon EBS User Guide: Amazon EBS volume types"
+  exams: [saa]
+
+- id: perf-ebs-st1
+  kind: choice
+  en: "A log-processing application reads large files sequentially and needs high throughput at low cost. IOPS and latency do not matter much. Which EBS volume type is the BEST fit?"
+  options:
+    - "General Purpose SSD (gp3)"
+    - "Provisioned IOPS SSD (io2)"
+    - "Throughput Optimized HDD (st1)"
+    - "Magnetic (standard)"
+  correct: [C]
+  why: "st1 is a low-cost HDD volume designed for frequently accessed, throughput-intensive sequential workloads such as big data and log processing."
+  ref: "Amazon EBS User Guide: Throughput Optimized HDD and Cold HDD volumes"
+  exams: [saa]
+
+- id: perf-instance-store
+  kind: choice
+  en: "A video transcoding job needs the fastest possible temporary scratch space on each instance. The data can be regenerated if lost. Which storage should be used?"
+  options:
+    - "Amazon S3"
+    - "Amazon EFS"
+    - "EBS Cold HDD (sc1)"
+    - "Instance store volumes"
+  correct: [D]
+  why: "Instance store is physically attached to the host and gives very high I/O, but its data is lost when the instance stops or fails - fine for regenerable scratch data."
+  ref: "Amazon EC2 User Guide: Instance store temporary block storage"
+  exams: [saa]
+
+- id: perf-fsx-lustre
+  kind: choice
+  en: "A genomics workload on hundreds of EC2 instances needs a parallel file system with sub-millisecond latency, reading input data that is stored in S3 and writing results back to it. Which service meets these requirements?"
+  options:
+    - "An S3 bucket mounted with a FUSE driver"
+    - "Amazon FSx for Windows File Server"
+    - "Amazon FSx for Lustre linked to the S3 bucket"
+    - "Amazon EFS in Max I/O mode"
+  correct: [C]
+  why: "FSx for Lustre is built for HPC and machine learning, and can be linked to an S3 bucket to present its objects as files and write changes back."
+  ref: "Amazon FSx for Lustre User Guide: Using data repositories with Amazon FSx for Lustre"
+  exams: [saa]
+
+- id: perf-cloudfront
+  kind: choice
+  en: "A media site hosted in us-west-2 has users worldwide who complain that images and videos load slowly. Which solution improves performance with the LEAST change to the application?"
+  options:
+    - "Copy the site to an EC2 instance in every Region."
+    - "Put an Amazon CloudFront distribution in front of the site."
+    - "Move the content to S3 One Zone-IA."
+    - "Increase the size of the web servers."
+  correct: [B]
+  why: "CloudFront caches content at edge locations close to users, so most requests never travel back to us-west-2."
+  ref: "Amazon CloudFront Developer Guide: How CloudFront delivers content"
+  exams: [saa]
+
+- id: perf-global-accelerator
+  kind: choice
+  en: "A multiplayer game uses UDP and runs in two Regions. Players need low latency, two static IP addresses that never change, and fast failover between Regions. Which service meets these requirements?"
+  options:
+    - "An Application Load Balancer"
+    - "Amazon Route 53 latency-based routing"
+    - "AWS Global Accelerator"
+    - "Amazon CloudFront"
+  correct: [C]
+  why: "Global Accelerator provides static anycast IPs, carries TCP and UDP traffic over the AWS backbone to the nearest healthy endpoint, and fails over in seconds. CloudFront and ALB are HTTP-oriented; DNS failover depends on clients' DNS caching."
+  ref: "AWS Global Accelerator Developer Guide: How AWS Global Accelerator works"
+  exams: [saa]
+
+- id: perf-dax
+  kind: choice
+  en: "A read-heavy application on Amazon DynamoDB needs microsecond read latency for frequently read items, with as little code change as possible. What should a solutions architect add?"
+  options:
+    - "A DynamoDB global secondary index"
+    - "Amazon ElastiCache with custom caching logic"
+    - "Amazon DynamoDB Accelerator (DAX)"
+    - "DynamoDB Streams"
+  correct: [C]
+  why: "DAX is an in-memory cache for DynamoDB that is API-compatible, so applications switch to the DAX client and get microsecond reads for cached items."
+  ref: "Amazon DynamoDB Developer Guide: In-memory acceleration with DynamoDB Accelerator (DAX)"
+  exams: [saa]
+
+- id: perf-elasticache
+  kind: choice
+  en: "The same expensive queries run against an Amazon RDS database thousands of times a minute and return the same results for several minutes at a time. Which change will MOST reduce load on the database?"
+  options:
+    - "Increase the database's allocated storage."
+    - "Enable Multi-AZ."
+    - "Cache query results in Amazon ElastiCache."
+    - "Use Provisioned IOPS storage."
+  correct: [C]
+  why: "Caching repeated query results in memory serves them without touching the database. Multi-AZ adds availability, not read capacity."
+  ref: "Amazon ElastiCache User Guide: Caching strategies"
+  exams: [saa]
+
+- id: perf-dynamodb-on-demand
+  kind: choice
+  en: "A new application stores data in DynamoDB. Its traffic is unpredictable, with sudden spikes, and the team cannot forecast capacity. Which capacity mode should it use?"
+  options:
+    - "On-demand capacity"
+    - "A DAX cluster instead of capacity"
+    - "Provisioned capacity with no auto scaling"
+    - "Provisioned capacity with reserved capacity"
+  correct: [A]
+  why: "On-demand mode serves requests as they come with no capacity planning and charges per request, which suits unpredictable workloads."
+  ref: "Amazon DynamoDB Developer Guide: On-demand capacity mode"
+  exams: [saa]
+
+- id: perf-dynamodb-choice
+  kind: choice
+  en: "A shopping cart service needs a database that returns items by key in single-digit milliseconds at any scale, with no servers to manage. Which database should it use?"
+  options:
+    - "Amazon RDS for MySQL"
+    - "Amazon DynamoDB"
+    - "Amazon Neptune"
+    - "Amazon Redshift"
+  correct: [B]
+  why: "DynamoDB is a serverless key-value and document database with single-digit millisecond performance at any scale. Redshift is a data warehouse and Neptune a graph database."
+  ref: "Amazon DynamoDB Developer Guide: What is Amazon DynamoDB"
+  exams: [saa]
+
+- id: perf-aurora
+  kind: choice
+  en: "A MySQL-based application needs more read capacity with replica lag usually under a few tens of milliseconds, and storage that grows automatically. The team wants to keep using MySQL tools. Which database should it move to?"
+  options:
+    - "MySQL on a large EC2 instance"
+    - "Amazon DynamoDB"
+    - "Amazon Aurora MySQL-Compatible Edition"
+    - "Amazon RDS for MySQL with magnetic storage"
+  correct: [C]
+  why: "Aurora is MySQL compatible, supports up to 15 replicas that share the cluster's storage (so replica lag is typically low), and grows storage automatically."
+  ref: "Amazon Aurora User Guide: Replication with Amazon Aurora"
+  exams: [saa]
+
+- id: perf-kinesis-streams
+  kind: choice
+  en: "Clickstream events from a website must be processed in real time by three separate applications, and the data must be replayable for 7 days. Which service should ingest the events?"
+  options:
+    - "Amazon SNS"
+    - "Amazon Kinesis Data Streams"
+    - "Amazon SQS standard queue"
+    - "Amazon S3 with event notifications"
+  correct: [B]
+  why: "Kinesis Data Streams lets multiple consumers read the same ordered stream independently, and retention can be extended to 7 days or more for replay. An SQS message is consumed by one reader and then deleted."
+  ref: "Amazon Kinesis Data Streams Developer Guide: Key concepts"
+  exams: [saa]
+
+- id: perf-firehose
+  kind: choice
+  en: "A company wants IoT readings delivered to Amazon S3 in near real time, batched and compressed, without writing or running any consumer code. Which service should it use?"
+  options:
+    - "Amazon Data Firehose"
+    - "Amazon SQS"
+    - "AWS Glue crawlers"
+    - "Amazon Kinesis Data Streams with a custom consumer on EC2"
+  correct: [A]
+  why: "Firehose is fully managed delivery of streaming data to destinations such as S3, Redshift and OpenSearch, with buffering, compression and optional transformation."
+  ref: "Amazon Data Firehose Developer Guide: What is Amazon Data Firehose"
+  exams: [saa]
+
+- id: perf-athena-parquet
+  kind: choice
+  en: "Analysts query terabytes of CSV logs in S3 with Amazon Athena. Queries are slow and expensive because every query scans entire files. Which change will MOST improve performance and cost?"
+  options:
+    - "Convert the data to Apache Parquet and partition it by date, using AWS Glue."
+    - "Move the logs to S3 Glacier Deep Archive."
+    - "Compress each CSV file with ZIP."
+    - "Load the logs into an RDS database."
+  correct: [A]
+  why: "Athena charges by data scanned. A columnar format such as Parquet reads only the needed columns, and partitions let queries skip whole sets of files."
+  ref: "Amazon Athena User Guide: Optimize data for query performance"
+  exams: [saa]
+
+- id: perf-snowball
+  kind: choice
+  en: "A company must move 600 TB from its data center to Amazon S3 within a few weeks. Its internet connection is 100 Mbps and already busy. Which option is the MOST practical?"
+  options:
+    - "S3 Transfer Acceleration"
+    - "AWS DataSync over the existing connection"
+    - "AWS Snowball Edge devices"
+    - "A Site-to-Site VPN"
+  correct: [C]
+  why: "At 100 Mbps, 600 TB would take well over a year. Snowball Edge ships the data physically. The online options are all limited by the same link."
+  ref: "AWS Snowball Edge Developer Guide: What is AWS Snowball Edge"
+  exams: [saa]
+
+- id: perf-datasync
+  kind: choice
+  en: "A company wants to copy files from an on-premises NFS server to Amazon EFS every night, transferring only changed files, with encryption in transit and integrity checks. Which service meets these requirements?"
+  options:
+    - "rsync from a cron job over the internet"
+    - "AWS DataSync"
+    - "Amazon S3 Transfer Acceleration"
+    - "AWS Snowball Edge"
+  correct: [B]
+  why: "DataSync automates online transfers between on-premises storage and AWS storage services, transfers incrementally, encrypts in transit, verifies data, and can be scheduled."
+  ref: "AWS DataSync User Guide: What is AWS DataSync"
+  exams: [saa]
+
+- id: perf-file-gateway
+  kind: choice
+  en: "On-premises applications must keep using an SMB file share while the data is stored in Amazon S3, with frequently used files cached locally for low latency. Which service meets these requirements?"
+  options:
+    - "AWS Transfer Family"
+    - "Amazon S3 File Gateway (AWS Storage Gateway)"
+    - "Amazon FSx for Lustre"
+    - "AWS DataSync"
+  correct: [B]
+  why: "S3 File Gateway presents NFS or SMB shares on premises, stores the files as S3 objects, and caches recently used data locally."
+  ref: "AWS Storage Gateway User Guide: Amazon S3 File Gateway"
+  exams: [saa]
+
+- id: perf-memory-optimized
+  kind: choice
+  en: "An in-memory analytics application on EC2 needs 512 GiB of RAM but modest CPU. Which instance family should a solutions architect choose?"
+  options:
+    - "Memory optimized (R family)"
+    - "Burstable (T family)"
+    - "Compute optimized (C family)"
+    - "Storage optimized (I family)"
+  correct: [A]
+  why: "Memory optimized instances have a high ratio of memory to vCPU for in-memory workloads. C instances favour CPU; T instances are for low, bursty CPU."
+  ref: "Amazon EC2 Instance Types: Memory optimized"
+  exams: [saa]
+
+- id: perf-target-tracking
+  kind: choice
+  en: "An Auto Scaling group should keep its average CPU utilization near 50%, adding and removing instances as load changes. What is the SIMPLEST scaling policy to use?"
+  options:
+    - "A scheduled action every hour"
+    - "A target tracking policy on average CPU utilization of 50%"
+    - "Manual changes to the desired capacity"
+    - "A step scaling policy with five steps"
+  correct: [B]
+  why: "Target tracking adjusts capacity to keep a metric at a target value, creating and managing the CloudWatch alarms itself."
+  ref: "Amazon EC2 Auto Scaling User Guide: Target tracking scaling policies"
+  exams: [saa]
+
+- id: perf-scheduled-scaling
+  kind: choice
+  en: "An internal application's load jumps every weekday at 08:00 and new instances take 10 minutes to be ready, so users see slow responses for the first part of each morning. What should a solutions architect add?"
+  options:
+    - "A scheduled scaling action that increases capacity shortly before 08:00 on weekdays"
+    - "A longer health check grace period"
+    - "A larger instance type for all instances"
+    - "A higher CPU threshold on the existing scaling policy"
+  correct: [A]
+  why: "Scheduled scaling adds capacity ahead of a known peak, so instances are ready before the load arrives. Reactive policies only start after the load has risen. Predictive scaling is another option for recurring patterns."
+  ref: "Amazon EC2 Auto Scaling User Guide: Scheduled scaling"
+  exams: [saa]
+
+- id: perf-lambda-memory
+  kind: choice
+  en: "A CPU-intensive AWS Lambda function takes too long to finish. How can a solutions architect give it more CPU?"
+  options:
+    - "Increase the function's timeout."
+    - "Move the function into a VPC."
+    - "Set a reserved concurrency."
+    - "Increase the function's memory setting."
+  correct: [D]
+  why: "Lambda allocates CPU power in proportion to the memory configured, so more memory also means more CPU."
+  ref: "AWS Lambda Developer Guide: Configure Lambda function memory"
+  exams: [saa]
+
+- id: perf-s3-uploads
+  kind: choice
+  en: "Users around the world upload files of several gigabytes to an S3 bucket in us-east-1, and uploads from Asia are slow. Which TWO changes will improve upload performance?"
+  options:
+    - "Use multipart upload."
+    - "Enable S3 Transfer Acceleration on the bucket."
+    - "Turn on default encryption with SSE-KMS."
+    - "Change the storage class to S3 Standard-IA."
+    - "Enable S3 Versioning."
+  correct: [A, B]
+  why: "Multipart upload sends parts in parallel and retries only failed parts; Transfer Acceleration routes uploads through the nearest edge location and the AWS backbone. Versioning, storage class and encryption do not speed uploads."
+  ref: "Amazon S3 User Guide: Configuring fast, secure file transfers using Amazon S3 Transfer Acceleration"
+  exams: [saa]
+
+- id: perf-cluster-placement
+  kind: choice
+  en: "A tightly coupled HPC application needs the lowest possible network latency and the highest throughput between its EC2 instances. How should the instances be placed?"
+  options:
+    - "In different Regions behind Global Accelerator"
+    - "In a spread placement group across three Availability Zones"
+    - "In a partition placement group"
+    - "In a cluster placement group"
+  correct: [D]
+  why: "A cluster placement group packs instances close together in one AZ for low latency and high per-flow throughput. Spread groups deliberately place instances on separate hardware."
+  ref: "Amazon EC2 User Guide: Placement strategies"
+  exams: [saa]
+
+- id: perf-nlb
+  kind: choice
+  en: "A financial trading application uses a custom TCP protocol, must handle millions of requests per second with very low latency, and clients need a static IP address per Availability Zone. Which load balancer should be used?"
+  options:
+    - "Classic Load Balancer"
+    - "Network Load Balancer"
+    - "Application Load Balancer"
+    - "Gateway Load Balancer"
+  correct: [B]
+  why: "A Network Load Balancer works at layer 4 for TCP and UDP, scales to millions of requests per second with ultra-low latency, and supports a static or Elastic IP address per AZ."
+  ref: "Elastic Load Balancing User Guide: Network Load Balancers"
+  exams: [saa]

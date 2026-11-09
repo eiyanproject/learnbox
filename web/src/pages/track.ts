@@ -104,6 +104,11 @@ export async function trackPage(shell: Shell, lang: string): Promise<Page> {
               f,
             ),
           ),
+          // A section of quiz topics also has mock exams and a mistakes
+          // review, which live on the track's practice page.
+          sec.lessons.some((l) => l.kind === "quiz")
+            ? h("a", { class: "btn", href: `/quiz/${lang}`, onclick: (e: Event) => (e.preventDefault(), navigate(`/quiz/${lang}`)) }, "Mock exams")
+            : null,
           firstTodo
             ? h("a", { class: "btn primary", href: `/learn/${firstTodo.id}`, onclick: (e: Event) => (e.preventDefault(), navigate(`/learn/${firstTodo.id}`)) }, "Next up")
             : null,

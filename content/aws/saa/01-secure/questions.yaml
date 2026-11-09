@@ -1,0 +1,392 @@
+- id: sec-root-user
+  kind: choice
+  en: "A company has just opened a new AWS account. A solutions architect must protect the root user and set up access for daily administration. Which TWO actions should the architect take?"
+  options:
+    - "Create administrative identities for daily work, such as in IAM Identity Center, and keep the root credentials locked away."
+    - "Delete the root user once an administrator IAM user exists."
+    - "Enable multi-factor authentication (MFA) on the root user."
+    - "Create access keys for the root user and store them in AWS Secrets Manager."
+    - "Use the root user for daily administration, protected by a strong password."
+  correct: [A, C]
+  why: "Root should have MFA and be used only for the handful of tasks that need it. Root access keys should never exist - storing them safely is still having them. The root user cannot be deleted."
+  ref: "IAM User Guide: Root user best practices"
+  exams: [saa]
+
+- id: sec-instance-profile
+  kind: choice
+  en: "An application on Amazon EC2 reads objects from an S3 bucket. The developers put an IAM user's access keys in the application's configuration file. What is the MOST secure way to give the application access?"
+  options:
+    - "Rotate the access keys every 30 days with a scheduled script."
+    - "Store the access keys in AWS Secrets Manager and read them at startup."
+    - "Attach an IAM role to the instance through an instance profile, with a policy that allows reading the bucket."
+    - "Encrypt the configuration file with an AWS KMS key."
+  correct: [C]
+  why: "A role through an instance profile gives the instance temporary credentials that rotate automatically, with no long-lived key anywhere. The other options still rely on long-lived access keys."
+  ref: "IAM User Guide: Using an IAM role to grant permissions to applications running on Amazon EC2 instances"
+  exams: [saa]
+
+- id: sec-scp-cloudtrail
+  kind: choice
+  en: "A company uses AWS Organizations. Security requires that no one in any account in the Workloads OU - including account administrators - can stop or delete AWS CloudTrail trails. What should a solutions architect do?"
+  options:
+    - "Set a permissions boundary on every administrator in each account."
+    - "Attach an IAM policy that denies the CloudTrail actions to every user and role in each account."
+    - "Use an AWS Config rule that turns CloudTrail back on when it is stopped."
+    - "Attach a service control policy to the Workloads OU that denies cloudtrail:StopLogging and cloudtrail:DeleteTrail."
+  correct: [D]
+  why: "An SCP caps the permissions of every principal in the member accounts it applies to, including administrators, and cannot be removed from inside those accounts. Per-account IAM policies can be edited by the administrators themselves; a Config rule only reacts after the fact."
+  ref: "AWS Organizations User Guide: Service control policies"
+  exams: [saa]
+
+- id: sec-third-party-role
+  kind: choice
+  en: "A third-party monitoring company needs read access to a customer's AWS account. The company serves many customers from its own AWS account. What is the MOST secure way to grant access?"
+  options:
+    - "Create an IAM role that trusts the company's AWS account and requires an external ID agreed with the company."
+    - "Create an IAM user for the company and send it the access keys."
+    - "Add a bucket policy to each bucket granting the company's account access."
+    - "Create an IAM role that trusts any AWS account and attach a read-only policy."
+    - "Share the root user's credentials with the company over an encrypted channel."
+  correct: [A]
+  why: "A cross-account role avoids sharing long-lived credentials, and the external ID protects against the confused deputy problem when a third party acts for many customers."
+  ref: "IAM User Guide: How to use an external ID when granting access to your AWS resources to a third party"
+  exams: [saa]
+
+- id: sec-identity-center-ad
+  kind: choice
+  en: "A company has 40 AWS accounts and an on-premises Microsoft Active Directory. Employees should sign in once with their corporate credentials and reach the accounts they need. Which solution meets these requirements with the LEAST operational overhead?"
+  options:
+    - "Create IAM users in every account with the same names as the directory users."
+    - "Create one shared IAM user per team and store the password in AWS Secrets Manager."
+    - "Use AWS IAM Identity Center with the Active Directory as its identity source, and assign permission sets to groups for each account."
+    - "Use an Amazon Cognito user pool federated with the directory."
+  correct: [C]
+  why: "IAM Identity Center provides single sign-on across the accounts in an organization and can use Active Directory (through AWS Managed Microsoft AD or AD Connector) as its identity source. Cognito is for the users of your own applications, not workforce access to AWS accounts."
+  ref: "IAM Identity Center User Guide: Connect to a Microsoft AD directory"
+  exams: [saa]
+
+- id: sec-cognito-mobile
+  kind: choice
+  en: "A mobile app lets customers sign up and upload photos directly to Amazon S3. Each customer must write only to their own prefix in the bucket. Which solution meets these requirements?"
+  options:
+    - "Make the bucket public and give each customer a random prefix."
+    - "Use an Amazon Cognito user pool for sign-in and an identity pool that issues temporary credentials scoped to each user's prefix."
+    - "Embed an IAM user's access keys in the app and check prefixes in the app's code."
+    - "Create an IAM user for each customer when they sign up."
+  correct: [B]
+  why: "Cognito user pools authenticate app users; identity pools exchange that sign-in for temporary AWS credentials through an IAM role, whose policy can use the user's identity ID to limit access to their own prefix. Keys in an app can be extracted, and IAM users do not scale to customers."
+  ref: "Amazon Cognito Developer Guide: Identity pools"
+  exams: [saa]
+
+- id: sec-permissions-boundary
+  kind: choice
+  en: "Developers must be able to create IAM roles for their own AWS Lambda functions, but must not be able to create a role with more permissions than the developers themselves are allowed. What should a solutions architect use?"
+  options:
+    - "A permissions boundary that the developers must attach to every role they create, enforced with a condition on iam:CreateRole."
+    - "A session policy passed when the developers sign in."
+    - "A service control policy that denies iam:CreateRole."
+    - "A resource-based policy on each Lambda function."
+  correct: [A]
+  why: "A permissions boundary sets the maximum permissions an identity can have. Requiring it (through the iam:PermissionsBoundary condition key) on every role the developers create stops privilege escalation while still letting them create roles. Denying CreateRole outright would block the work."
+  ref: "IAM User Guide: Permissions boundaries for IAM entities"
+  exams: [saa]
+
+- id: sec-secrets-rotation
+  kind: choice
+  en: "An application's Amazon RDS for MySQL password is hard-coded in its source code. The company wants the password stored outside the code and changed automatically every 30 days. Which solution meets these requirements?"
+  options:
+    - "Store the password in AWS Secrets Manager and turn on automatic rotation."
+    - "Store the password in an S3 object encrypted with SSE-S3."
+    - "Store the password as a String parameter in AWS Systems Manager Parameter Store."
+    - "Encrypt the password with an AWS KMS key and keep the ciphertext in the code."
+  correct: [A]
+  why: "Secrets Manager stores secrets and has built-in automatic rotation for Amazon RDS credentials. Parameter Store has no native rotation, and the other options leave rotation to you."
+  ref: "AWS Secrets Manager User Guide: Rotate AWS Secrets Manager secrets"
+  exams: [saa]
+
+- id: sec-s3-gateway-endpoint
+  kind: choice
+  en: "EC2 instances in private subnets read large files from Amazon S3 in the same Region through a NAT gateway. The company wants to keep the traffic off the internet and reduce data processing charges. What should a solutions architect do?"
+  options:
+    - "Create a VPC peering connection to Amazon S3."
+    - "Move the instances to public subnets with public IP addresses."
+    - "Create a gateway VPC endpoint for S3 and add it to the private subnets' route tables."
+    - "Replace the NAT gateway with a NAT instance."
+  correct: [C]
+  why: "A gateway endpoint for S3 routes the traffic privately inside the AWS network and has no hourly or data processing charge, so the NAT gateway's per-GB charges for that traffic go away."
+  ref: "Amazon VPC User Guide: Gateway endpoints for Amazon S3"
+  exams: [saa]
+
+- id: sec-nacl-deny
+  kind: choice
+  en: "Instances in a public subnet are being probed by a specific IP address range. The instances are not behind a load balancer. How can a solutions architect block that range?"
+  options:
+    - "Add an inbound deny rule for the range to the subnet's network ACL, numbered lower than the allow rules."
+    - "Enable AWS Shield Standard on the instances."
+    - "Add a route for the range to a blackhole target in the route table."
+    - "Add a deny rule for the range to the instances' security group."
+  correct: [A]
+  why: "Security groups can only allow traffic; network ACLs support deny rules, evaluated in order of rule number, so a lower-numbered deny takes effect before any allow."
+  ref: "Amazon VPC User Guide: Control subnet traffic with network access control lists"
+  exams: [saa]
+
+- id: sec-waf-sqli
+  kind: choice
+  en: "A web application runs behind an Application Load Balancer. The company has seen SQL injection and cross-site scripting attempts in its logs. Which service should a solutions architect use to block these requests before they reach the application?"
+  options:
+    - "AWS WAF with a web ACL associated with the load balancer, using managed rule groups"
+    - "Amazon GuardDuty"
+    - "A security group rule on the load balancer"
+    - "AWS Shield Advanced"
+  correct: [A]
+  why: "AWS WAF inspects HTTP requests and its managed rule groups block common attacks such as SQL injection and XSS; it attaches to ALB, CloudFront and API Gateway. Shield is for DDoS, GuardDuty detects threats without blocking, and security groups cannot inspect request content."
+  ref: "AWS WAF Developer Guide: AWS Managed Rules for AWS WAF"
+  exams: [saa]
+
+- id: sec-guardduty
+  kind: choice
+  en: "A security team wants to be told when an EC2 instance starts talking to known command-and-control servers or begins mining cryptocurrency. The solution must need no agents and little setup. Which service meets these requirements?"
+  options:
+    - "Amazon Inspector"
+    - "AWS Config"
+    - "Amazon GuardDuty"
+    - "Amazon Macie"
+  correct: [C]
+  why: "GuardDuty analyses sources such as VPC Flow Logs, DNS logs and CloudTrail to detect threats like communication with malicious hosts and crypto mining, with no agents. Inspector scans for vulnerabilities, Macie finds sensitive data in S3, Config records configuration changes."
+  ref: "Amazon GuardDuty User Guide: What is Amazon GuardDuty"
+  exams: [saa]
+
+- id: sec-macie
+  kind: choice
+  en: "A company must find out which of its hundreds of S3 buckets contain personally identifiable information such as passport numbers. Which service should it use?"
+  options:
+    - "Amazon Macie"
+    - "Amazon Detective"
+    - "AWS Security Hub"
+    - "Amazon GuardDuty"
+  correct: [A]
+  why: "Macie uses machine learning and pattern matching to discover sensitive data, including PII, in S3. The others work with security findings and logs, not the contents of objects."
+  ref: "Amazon Macie User Guide: What is Amazon Macie"
+  exams: [saa]
+
+- id: sec-shield-advanced
+  kind: choice
+  en: "A company's public application has been hit by large DDoS attacks. It wants access to a dedicated response team during an attack and protection against the extra charges the attack's scaling causes. Which solution meets these requirements?"
+  options:
+    - "Amazon CloudFront with no other service"
+    - "AWS Shield Advanced"
+    - "AWS Shield Standard"
+    - "AWS WAF with rate-based rules only"
+  correct: [B]
+  why: "Shield Advanced adds the Shield Response Team and cost protection for scaling charges caused by a DDoS attack. Shield Standard is automatic and free but includes neither."
+  ref: "AWS Shield Developer Guide: AWS Shield Advanced"
+  exams: [saa]
+
+- id: sec-site-to-site-vpn
+  kind: choice
+  en: "A company needs an encrypted connection between its data center and a VPC within a few days. Traffic is modest and cost is a concern. Which solution meets these requirements?"
+  options:
+    - "AWS Site-to-Site VPN"
+    - "An internet gateway with security groups"
+    - "AWS Direct Connect"
+    - "VPC peering"
+  correct: [A]
+  why: "Site-to-Site VPN creates IPsec tunnels over the internet and can be running in hours. Direct Connect takes weeks to provision and is not encrypted by default; peering connects VPCs, not data centers."
+  ref: "AWS Site-to-Site VPN User Guide: What is AWS Site-to-Site VPN"
+  exams: [saa]
+
+- id: sec-dx-encrypted
+  kind: choice
+  en: "A company needs a private connection to AWS with consistent network performance, and its compliance team requires the traffic to be encrypted in transit. Which solution meets these requirements?"
+  options:
+    - "VPC peering with the on-premises network"
+    - "AWS Direct Connect with an AWS Site-to-Site VPN running over it"
+    - "AWS Site-to-Site VPN over the internet only"
+    - "AWS Direct Connect on its own, because the link is private"
+  correct: [B]
+  why: "Direct Connect gives the consistent performance; it does not encrypt traffic by itself, so an IPsec VPN over the Direct Connect link (or MACsec where supported) adds the encryption. A VPN over the internet alone does not give consistent performance."
+  ref: "AWS Direct Connect User Guide: Encryption in transit"
+  exams: [saa]
+
+- id: sec-sse-kms
+  kind: choice
+  en: "Objects in an S3 bucket must be encrypted at rest with a key the company controls. The security team must be able to audit every use of the key and restrict who may use it, separately from S3 permissions. Which option meets these requirements?"
+  options:
+    - "Server-side encryption with customer-provided keys (SSE-C)"
+    - "Server-side encryption with a customer managed AWS KMS key (SSE-KMS)"
+    - "Server-side encryption with Amazon S3 managed keys (SSE-S3)"
+    - "No encryption, with Block Public Access turned on"
+  correct: [B]
+  why: "With a customer managed KMS key, the key policy controls who may use the key, every use is logged in CloudTrail, and rotation can be enabled. SSE-S3 keys are managed by S3 with no separate key permissions; with SSE-C the company must supply and manage the key on every request."
+  ref: "Amazon S3 User Guide: Using server-side encryption with AWS KMS keys (SSE-KMS)"
+  exams: [saa]
+
+- id: sec-acm-alb
+  kind: choice
+  en: "A company wants HTTPS on its Application Load Balancer with a certificate that is free and renews itself. What should a solutions architect do?"
+  options:
+    - "Store the certificate in an S3 bucket the load balancer can read."
+    - "Generate a self-signed certificate and import it into the load balancer."
+    - "Upload a certificate to IAM and renew it every year."
+    - "Request a public certificate from AWS Certificate Manager and use it on the HTTPS listener."
+  correct: [D]
+  why: "Public certificates from ACM cost nothing when used with integrated services such as ALB, and ACM renews them automatically. Self-signed certificates are not trusted by browsers; IAM certificates are renewed by hand."
+  ref: "AWS Certificate Manager User Guide: Managed renewal for ACM certificates"
+  exams: [saa]
+
+- id: sec-acm-cloudfront-region
+  kind: choice
+  en: "A solutions architect is adding a custom domain with HTTPS to an Amazon CloudFront distribution whose origin is an S3 bucket in eu-west-2. In which Region must the ACM certificate be requested?"
+  options:
+    - "The Region of the nearest edge location"
+    - "us-east-1"
+    - "Any Region; CloudFront copies the certificate"
+    - "eu-west-2, the bucket's Region"
+  correct: [B]
+  why: "CloudFront uses certificates from ACM in US East (N. Virginia), us-east-1, whatever the Region of the origin."
+  ref: "Amazon CloudFront Developer Guide: Requirements for using SSL/TLS certificates with CloudFront"
+  exams: [saa]
+
+- id: sec-object-lock
+  kind: choice
+  en: "Financial records stored in Amazon S3 must not be deleted or overwritten by anyone, including the root user, for 7 years. Which solution meets this requirement?"
+  options:
+    - "S3 Versioning with MFA delete"
+    - "S3 Object Lock in compliance mode with a 7-year retention period"
+    - "S3 Object Lock in governance mode with a 7-year retention period"
+    - "A bucket policy that denies s3:DeleteObject to everyone"
+  correct: [B]
+  why: "In compliance mode no user, including root, can delete or overwrite a protected object version or shorten its retention. Governance mode can be bypassed by users with special permission; a bucket policy can be changed."
+  ref: "Amazon S3 User Guide: Locking objects with Object Lock"
+  exams: [saa]
+
+- id: sec-aws-backup
+  kind: choice
+  en: "A company must back up its Amazon EBS volumes, RDS databases and DynamoDB tables on a schedule, keep copies in another Region and another account, and manage it all from one place. Which service meets these requirements with the LEAST effort?"
+  options:
+    - "S3 Cross-Region Replication"
+    - "Amazon Data Lifecycle Manager for every resource type"
+    - "AWS Backup with backup plans and cross-Region and cross-account copy"
+    - "Scheduled Lambda functions that call each service's snapshot API"
+  correct: [C]
+  why: "AWS Backup centralises policy-based backups across many services, and copies recovery points to other Regions and accounts. Data Lifecycle Manager covers EBS snapshots and AMIs only."
+  ref: "AWS Backup Developer Guide: Creating backup copies across AWS Regions and accounts"
+  exams: [saa]
+
+- id: sec-kms-cross-account
+  kind: choice
+  en: "Account A owns a customer managed KMS key that encrypts objects in a bucket. A role in Account B must decrypt those objects. Which TWO steps are required?"
+  options:
+    - "Attach an IAM policy to the role in Account B that allows kms:Decrypt on the key's ARN."
+    - "Make the key public by allowing Principal \"*\" in the key policy."
+    - "Add a statement to the key policy in Account A that allows Account B to use the key."
+    - "Switch the bucket to the AWS managed key aws/s3."
+    - "Copy the key material into a new key in Account B."
+  correct: [A, C]
+  why: "Cross-account use of a KMS key needs both: the key policy in the owning account must allow the other account, and that account must grant its principal permission through IAM. AWS managed keys such as aws/s3 cannot be used across accounts."
+  ref: "AWS KMS Developer Guide: Allowing users in other accounts to use a KMS key"
+  exams: [saa]
+
+- id: sec-shared-responsibility
+  kind: choice
+  en: "Under the AWS shared responsibility model, which task is the customer's responsibility for workloads on Amazon EC2?"
+  options:
+    - "Patching the guest operating system on the instances"
+    - "Patching the hypervisor"
+    - "Physical security of the data centers"
+    - "Maintaining the network hardware between Availability Zones"
+  correct: [A]
+  why: "AWS is responsible for security of the cloud: facilities, hardware, network and the virtualization layer. The customer is responsible for security in the cloud: the guest OS, applications, data and configuration."
+  ref: "AWS Shared Responsibility Model"
+  exams: [saa]
+
+- id: sec-nacl-ephemeral
+  kind: choice
+  en: "A team replaced the default network ACL on a public subnet with a custom one that allows inbound TCP 443 and outbound TCP 443 only. Users can no longer load the website hosted there. What should a solutions architect change?"
+  options:
+    - "Allow outbound TCP 1024-65535 in the network ACL."
+    - "Add a route to the internet gateway for port 443."
+    - "Remove the outbound 443 rule from the network ACL."
+    - "Allow inbound TCP 80 in the instances' security group."
+  correct: [A]
+  why: "Network ACLs are stateless, so the responses to clients - sent to the clients' ephemeral ports - need their own outbound rule. Security groups are stateful and would not need this."
+  ref: "Amazon VPC User Guide: Ephemeral ports"
+  exams: [saa]
+
+- id: sec-nat-gateway
+  kind: choice
+  en: "Instances in a private subnet must download operating system updates from the internet but must not be reachable from the internet. Which solution meets these requirements?"
+  options:
+    - "Create a NAT gateway in a public subnet and route the private subnet's 0.0.0.0/0 traffic to it."
+    - "Create an interface VPC endpoint for the update servers."
+    - "Assign Elastic IP addresses to the instances."
+    - "Add a route to the internet gateway in the private subnet's route table."
+  correct: [A]
+  why: "A NAT gateway lets instances start outbound connections while refusing connections started from the internet. A route to the internet gateway or public addresses would make the instances reachable; VPC endpoints reach AWS services, not arbitrary internet hosts."
+  ref: "Amazon VPC User Guide: NAT gateways"
+  exams: [saa]
+
+- id: sec-parameter-store
+  kind: choice
+  en: "AWS Lambda functions in three environments need configuration values and a few API keys. The keys do not need automatic rotation and the company wants the lowest cost. Where should they be stored?"
+  options:
+    - "AWS Secrets Manager"
+    - "AWS Systems Manager Parameter Store, using SecureString parameters for the keys"
+    - "In the function code, separated by environment"
+    - "In a public S3 bucket as a JSON file"
+  correct: [B]
+  why: "Standard Parameter Store parameters, including SecureString parameters encrypted with KMS, have no storage charge, which suits configuration and secrets that do not need rotation. Secrets Manager charges per secret and is the choice when rotation is needed."
+  ref: "AWS Systems Manager User Guide: Parameter Store"
+  exams: [saa]
+
+- id: sec-control-tower
+  kind: choice
+  en: "A company is starting a multi-account environment. It wants a pre-configured landing zone with guardrails, centralized logging, and a standard way to create new accounts. Which service should it use?"
+  options:
+    - "AWS Service Catalog alone"
+    - "AWS Organizations with manually written policies only"
+    - "AWS Control Tower"
+    - "AWS Config"
+  correct: [C]
+  why: "Control Tower sets up and governs a multi-account landing zone on top of Organizations, with preventive and detective controls (guardrails), log archive and audit accounts, and an account factory."
+  ref: "AWS Control Tower User Guide: What is AWS Control Tower"
+  exams: [saa]
+
+- id: sec-sourcevpce
+  kind: choice
+  en: "An S3 bucket must be accessible only from one VPC, through its S3 gateway endpoint. How should a solutions architect enforce this?"
+  options:
+    - "Add a bucket policy that denies access unless aws:SourceVpce equals the endpoint's ID."
+    - "Attach an IAM policy to every user that names the VPC."
+    - "Attach a security group to the bucket."
+    - "Add a network ACL rule to the VPC."
+  correct: [A]
+  why: "A bucket policy can deny any request that does not arrive through a given VPC endpoint using the aws:SourceVpce condition key. Buckets have no security groups, and network rules in one VPC cannot stop access from elsewhere."
+  ref: "Amazon S3 User Guide: Controlling access from VPC endpoints with bucket policies"
+  exams: [saa]
+
+- id: sec-cloudfront-oac
+  kind: choice
+  en: "A company serves static content from a private S3 bucket through Amazon CloudFront. Users must not be able to bypass CloudFront and fetch objects from S3 directly. Which solution meets this requirement?"
+  options:
+    - "Generate presigned URLs for every object and publish them."
+    - "Use the S3 static website endpoint as the origin."
+    - "Configure an origin access control (OAC) on the distribution and a bucket policy that allows only the CloudFront service principal for that distribution."
+    - "Make the bucket public and rely on the obscurity of the bucket name."
+  correct: [C]
+  why: "OAC signs CloudFront's requests to S3, and the bucket policy allows only cloudfront.amazonaws.com with the distribution's ARN as source, so direct requests to S3 are refused. A website endpoint requires public objects."
+  ref: "Amazon CloudFront Developer Guide: Restricting access to an Amazon S3 origin"
+  exams: [saa]
+
+- id: sec-sg-reference
+  kind: choice
+  en: "A three-tier application has web servers in an Auto Scaling group and an Amazon RDS database. The database must accept connections only from the web servers, whose IP addresses change as the group scales. What is the SIMPLEST way to configure this?"
+  options:
+    - "Allow the VPC's whole CIDR range on the database port in the database's security group."
+    - "Put the database in a public subnet with a security group open to 0.0.0.0/0."
+    - "Update a network ACL with each web server's IP address from a Lambda function."
+    - "Allow the database port in the database's security group with the web servers' security group as the source."
+  correct: [D]
+  why: "A security group rule can reference another security group, so any instance in the web tier's group is allowed whatever its address, and nothing else is. The VPC CIDR would let every resource in the VPC in."
+  ref: "Amazon VPC User Guide: Security group rules"
+  exams: [saa]
