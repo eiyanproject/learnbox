@@ -1,0 +1,17 @@
+{
+  "ImageId": "AMI_ID",
+  "InstanceType": "t3.micro",
+  "SecurityGroupIds": ["WEB_SG"],
+  "IamInstanceProfile": { "Name": "web-server" },
+  "MetadataOptions": { "HttpTokens": "required", "HttpPutResponseHopLimit": 1 },
+  "BlockDeviceMappings": [
+    {
+      "DeviceName": "/dev/xvda",
+      "Ebs": { "VolumeSize": 20, "VolumeType": "gp3", "Encrypted": true, "DeleteOnTermination": true }
+    }
+  ],
+  "UserData": "USER_DATA",
+  "TagSpecifications": [
+    { "ResourceType": "instance", "Tags": [{ "Key": "Name", "Value": "web" }] }
+  ]
+}
