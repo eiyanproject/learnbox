@@ -1,0 +1,34 @@
+{
+  "Comment": "Charge, check, ship - or fail.",
+  "StartAt": "Charge",
+  "States": {
+    "Charge": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:123456789012:function:charge",
+      "Retry": [
+        { "ErrorEquals": ["States.TaskFailed"], "IntervalSeconds": 2, "MaxAttempts": 3, "BackoffRate": 2 }
+      ],
+      "Catch": [
+        { "ErrorEquals": ["States.ALL"], "Next": "Failed" }
+      ],
+      "Next": "CheckPaid"
+    },
+    "CheckPaid": {
+      "Type": "Choice",
+      "Choices": [
+        { "Variable": "$.paid", "BooleanEquals": true, "Next": "Ship" }
+      ],
+      "Default": "Failed"
+    },
+    "Ship": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:123456789012:function:ship",
+      "End": true
+    },
+    "Failed": {
+      "Type": "Fail",
+      "Error": "OrderFailed",
+      "Cause": "The charge failed or was not paid."
+    }
+  }
+}

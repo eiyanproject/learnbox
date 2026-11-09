@@ -1,0 +1,5 @@
+{
+  "Comment": "Charge, check, ship - or fail.",
+  "StartAt": "Charge",
+  "States": {}
+}
