@@ -1,0 +1,8 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Uploads bucket and a jobs queue with dead letters.
+
+Parameters: {}
+
+Resources: {}
+
+Outputs: {}

@@ -5,8 +5,10 @@ explanation on the left and a real workspace on the right: a code editor over a
 real `bash` terminal, hidden tests behind a **Check** button, and hints when you
 are stuck. Everything runs in one small LXC on your own network.
 
-- **Ten tracks**, written for this project: Python, Rust, C, C++, C#, Java,
-  MATLAB, CCNA, Security and Programming mindset (see [Curriculum](#curriculum))
+- **Eleven tracks**, written for this project: Python, Rust, C, C++, C#, Java,
+  MATLAB, CCNA, Security, Programming mindset and AWS (see [Curriculum](#curriculum))
+- **AWS without an account**: the real AWS CLI against a local emulator, with
+  certification practice exams
 - **Practice**: ~130 Python and ~90 Rust exercises imported from [Exercism](https://exercism.org) (MIT)
 - **Misc**: things that are not programming, as question banks with timed mock
   exams - so far the written tests for a Japanese driving licence
@@ -201,6 +203,43 @@ the language.
 
 **Pro** (10) — Unsafe Rust; Futures by hand; A tiny executor; Atomics and lock-free code; Memory layout and allocation; Zero-copy parsing; FFI: calling C and being called; Designing a library API; Advanced traits; Capstone: a concurrent TCP server
 
+### AWS
+
+Amazon Web Services from the command line, with the **real AWS CLI** pointed
+at **moto**, an emulator of the AWS APIs running inside the box: no account,
+no credentials, no bill, and nothing sent to the real AWS. Each hands-on
+lesson is a script, `setup.sh`; **Run** empties the sandbox account and runs
+it, and **Check** runs it against a fresh emulator and inspects what it built.
+
+**1. Foundations** (8) - The CLI and your sandbox account; IAM users, groups and the root user; Writing IAM policies; Roles and temporary credentials; S3 objects, versioning and lifecycle; Locking down a bucket; A VPC from scratch; Security groups and an instance
+
+**2. Networking in depth** (4) - NAT gateways, one per AZ; Network ACLs that deny; VPC endpoints; Peering and private DNS
+
+**3. Compute and scaling** (3) - Launch templates and user data; An Application Load Balancer; Auto Scaling groups
+
+**4. Databases** (3) - RDS done right; DynamoDB, designed by access pattern; A cache that survives an AZ
+
+**5. Serverless and messaging** (4) - Queues and dead letters; Fan-out with SNS; Lambda, fed by a queue; Events and workflows
+
+**6. Operations and infrastructure as code** (3) - Logs, metrics and alarms; An audit trail and config rules; Infrastructure as code with CloudFormation
+
+**Exam practice** - Solutions Architect - Associate (SAA-C03): 100 original
+multiple-choice questions written from AWS documentation, one topic per exam
+domain, and a timed 65-question mock exam weighted like the exam guide
+(30/26/24/20%), scored out of 1,000 with a pass at 720.
+
+In the terminal, `aws ...` starts a private emulator on 127.0.0.1 the first
+time and keeps it until `awslab stop`; `awslab reset` empties it, `awslab run
+setup.sh` rebuilds it from a lesson's script, and `awslab given vpc` builds
+an earlier lesson's end state for a later one (`--show` prints the commands it
+stands for). The emulator does not run code: Lambda functions are stored, not
+invoked, so the Lambda lesson tests its handler directly.
+
+The CLI (1.46) and moto (5.2) are pinned and installed in their own venv,
+`/opt/learnbox-toolchain/aws`; `install.sh --no-aws` skips them (about
+450MB). `lib/awslab` is the sandbox: the `aws` and `awslab` wrappers, `lab()`
+for checks, and a small IAM policy evaluator (the emulator has none).
+
 
 ### Misc: Japanese driving test
 
@@ -393,8 +432,8 @@ refreshes the Exercism import and restarts the service. It never touches
 | `scripts/install.sh` | inside the CT | packages, learner user, Python venv, rustup, build, Exercism import, systemd unit |
 | `scripts/update.sh` | inside the CT | `git pull --ff-only`, then `install.sh` |
 
-`install.sh --no-rust`, `--no-java`, `--no-dotnet`, `--no-octave` and
-`--no-exercism` skip those parts.
+`install.sh --no-rust`, `--no-java`, `--no-dotnet`, `--no-octave`, `--no-aws`
+and `--no-exercism` skip those parts.
 
 ### Configuration
 
@@ -575,10 +614,37 @@ make sense in context. None of this happens in a learner's **Check**.
 
 ### Quiz tracks
 
-A track with `group: misc` in its `track.yaml` is listed under **Misc** instead
-of with the programming tracks. A lesson with `kind: quiz` has no workspace:
-`lesson.md` is the topic's study notes and `questions.yaml` beside it holds the
-questions.
+A lesson with `kind: quiz` has no workspace: `lesson.md` is the topic's study
+notes and `questions.yaml` beside it holds the questions. A track can be all
+quiz topics (with `group: misc` it is listed under **Misc** instead of with
+the courses) or mix them with ordinary lessons, as the AWS track does with
+its exam practice. Japanese is required on every question only if the track
+says `bilingual: true`.
+
+The track's mock exams are declared in its `track.yaml`. Each draws **parts**
+in order (or mixed, with `shuffle`), and its score is the points earned scaled
+to `max`:
+
+```yaml
+exams:
+  - id: hon
+    title: "Full licence (本免)"
+    minutes: 50
+    pass: 90
+    max: 100
+    draw:
+      - { kind: tf, count: 90, points: 1 }
+      - { kind: scenario, count: 5, points: 2 }
+  - id: saa
+    title: "Solutions Architect - Associate (SAA-C03)"
+    minutes: 130
+    pass: 720
+    max: 1000
+    shuffle: true
+    draw:                      # from: only topics whose id starts with this
+      - { kind: choice, count: 20, points: 1, from: aws/saa/01-secure }
+      - ...
+```
 
 ```yaml
 - id: pk-crossing-10m          # unique within the track
@@ -591,7 +657,7 @@ questions.
   image: "https://upload.wikimedia.org/..."   # optional picture, see below
 
 - id: sc-bus-stop
-  kind: scenario               # full-licence only: exams must be [hon]
+  kind: scenario               # a scene and three statements
   en: "A bus has stopped at a bus stop ahead ..."
   ja: "..."
   ref: "教則 第5章第2節6(1)"
@@ -600,6 +666,15 @@ questions.
     - { en: "...", ja: "...", answer: true, why: "..." }
     - { en: "...", ja: "...", answer: false, why: "..." }
     - { en: "...", ja: "...", answer: true, why: "..." }
+
+- id: sec-kms-cross-account
+  kind: choice                 # multiple choice, options lettered A, B, ...
+  en: "Account A owns a KMS key ... Which TWO steps are required?"
+  options: ["...", "...", "...", "...", "..."]
+  correct: [A, B]              # one letter, or several for "choose two"
+  why: "..."
+  ref: "AWS KMS Developer Guide: ..."
+  exams: [saa]
 ```
 
 `image:` is the https address of a picture shown beside the question, and
@@ -638,8 +713,7 @@ and `web/src/components/scene.ts` the drawing.
 
 Answers, reasons and references never leave the server until a question has
 been answered. `learnbox verify <track>` checks every bank and fails if a mock
-exam cannot be drawn from it. The exam formats live in `internal/quiz`
-(`Specs`). Each profile's answers, mistakes and exam history are in
+exam cannot be drawn from it. Each profile's answers, mistakes and exam history are in
 `quiz.json` (`quiz-<id>.json` for added profiles) in the data directory.
 
 ## Development
