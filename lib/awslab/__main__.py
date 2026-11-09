@@ -67,14 +67,27 @@ def reset() -> None:
     urllib.request.urlopen(req, timeout=10).read()
 
 
+def with_endpoint(args: list[str], endpoint: str) -> list[str]:
+    """The arguments with --endpoint-url added, unless the learner gave one.
+
+    The environment variable alone is not enough: CLI v1 overrides it for a
+    few services (SQS, RDS among them) with their legacy public endpoints,
+    which would send those calls to the real AWS. The command-line option
+    wins over everything.
+    """
+    if any(a == "--endpoint-url" or a.startswith("--endpoint-url=") for a in args):
+        return args
+    return ["--endpoint-url", endpoint, *args]
+
+
 def cmd_aws(args: list[str]) -> int:
     aws = venv_bin("aws")
     if "AWS_ENDPOINT_URL" in os.environ:
         # Already pointed somewhere - a lesson's check, running its own
-        # throwaway emulator. Leave it be.
-        os.execv(aws, [aws, *args])
+        # throwaway emulator.
+        os.execv(aws, [aws, *with_endpoint(args, os.environ["AWS_ENDPOINT_URL"])])
     start()
-    os.execve(aws, [aws, *args], sandbox_env(ENDPOINT))
+    os.execve(aws, [aws, *with_endpoint(args, ENDPOINT)], sandbox_env(ENDPOINT))
     return 0  # not reached
 
 
