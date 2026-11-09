@@ -11,6 +11,25 @@ import (
 	"github.com/eiyanproject/learnbox/internal/content"
 )
 
+// driveTrack is a bilingual quiz track with the two driving tests and a small
+// multiple-choice exam scored out of 1,000.
+const driveTrack = `title: Drive
+group: misc
+bilingual: true
+exams:
+  - {id: kari, title: K, minutes: 30, pass: 90, max: 100, draw: [{kind: tf, count: 50, points: 2}]}
+  - id: hon
+    title: H
+    minutes: 50
+    pass: 90
+    max: 100
+    draw: [{kind: tf, count: 90, points: 1}, {kind: scenario, count: 5, points: 2}]
+  - {id: mc, title: M, minutes: 10, pass: 720, max: 1000, shuffle: true, draw: [{kind: choice, count: 3, points: 1}]}
+sections:
+  - id: rules
+    title: Rules
+`
+
 // lib builds a one-track library with the given topics' questions.yaml.
 func lib(t *testing.T, topics map[string]string) *content.Library {
 	t.Helper()
@@ -22,7 +41,7 @@ func lib(t *testing.T, topics map[string]string) *content.Library {
 		}
 	}
 	must(os.MkdirAll(track, 0o755))
-	must(os.WriteFile(filepath.Join(track, "track.yaml"), []byte("title: Drive\ngroup: misc\nsections:\n  - id: rules\n    title: Rules\n"), 0o644))
+	must(os.WriteFile(filepath.Join(track, "track.yaml"), []byte(driveTrack), 0o644))
 	i := 0
 	for slug, yml := range topics {
 		i++
@@ -89,16 +108,20 @@ func TestLoadAndMark(t *testing.T) {
 
 func TestBrokenBanksAreRefused(t *testing.T) {
 	cases := map[string]string{
-		"no answer":       "- {id: a, en: E, ja: J, why: W, ref: R, exams: [hon]}\n",
-		"no japanese":     "- {id: a, en: E, answer: true, why: W, ref: R, exams: [hon]}\n",
-		"no ref":          "- {id: a, en: E, ja: J, answer: true, why: W, exams: [hon]}\n",
-		"bad exam":        "- {id: a, en: E, ja: J, answer: true, why: W, ref: R, exams: [menkyo]}\n",
-		"bad id":          "- {id: A_1, en: E, ja: J, answer: true, why: W, ref: R, exams: [hon]}\n",
-		"duplicate":       tf("a", true, "hon") + tf("a", false, "hon"),
-		"scenario kari":   strings.Replace(scenario, "exams: [hon]", "exams: [kari]", 1),
-		"image not https": "- {id: a, en: E, ja: J, answer: true, why: W, ref: R, exams: [hon], image: 'http://example.org/a.svg'}\n",
-		"image no host":   "- {id: a, en: E, ja: J, answer: true, why: W, ref: R, exams: [hon], image: 'sign.svg'}\n",
-		"two statements":  strings.Replace(scenario, "    - {en: c, ja: c, answer: true, why: w}\n", "", 1),
+		"no answer":         "- {id: a, en: E, ja: J, why: W, ref: R, exams: [hon]}\n",
+		"no japanese":       "- {id: a, en: E, answer: true, why: W, ref: R, exams: [hon]}\n",
+		"no ref":            "- {id: a, en: E, ja: J, answer: true, why: W, exams: [hon]}\n",
+		"bad exam":          "- {id: a, en: E, ja: J, answer: true, why: W, ref: R, exams: [menkyo]}\n",
+		"bad id":            "- {id: A_1, en: E, ja: J, answer: true, why: W, ref: R, exams: [hon]}\n",
+		"duplicate":         tf("a", true, "hon") + tf("a", false, "hon"),
+		"choice no options": "- {id: a, kind: choice, en: E, ja: J, why: W, ref: R, exams: [mc], correct: [A]}\n",
+		"choice bad letter": "- {id: a, kind: choice, en: E, ja: J, why: W, ref: R, exams: [mc], options: [x, y, z], correct: [D]}\n",
+		"choice all right":  "- {id: a, kind: choice, en: E, ja: J, why: W, ref: R, exams: [mc], options: [x, y, z], correct: [A, B, C]}\n",
+		"choice no why":     "- {id: a, kind: choice, en: E, ja: J, ref: R, exams: [mc], options: [x, y, z], correct: [A]}\n",
+		"options on tf":     "- {id: a, en: E, ja: J, answer: true, why: W, ref: R, exams: [hon], options: [x, y, z]}\n",
+		"image not https":   "- {id: a, en: E, ja: J, answer: true, why: W, ref: R, exams: [hon], image: 'http://example.org/a.svg'}\n",
+		"image no host":     "- {id: a, en: E, ja: J, answer: true, why: W, ref: R, exams: [hon], image: 'sign.svg'}\n",
+		"two statements":    strings.Replace(scenario, "    - {en: c, ja: c, answer: true, why: w}\n", "", 1),
 	}
 	for name, yml := range cases {
 		if _, err := Load(lib(t, map[string]string{"t": yml})); err == nil {
@@ -155,7 +178,8 @@ func TestDrawFollowsTheSpec(t *testing.T) {
 		t.Fatal(err)
 	}
 	b := banks["drive"]
-	qs, err := b.Draw(Specs["kari"], rand.New(rand.NewPCG(1, 2)))
+	kari, _ := b.Exam("kari")
+	qs, err := b.Draw(kari, rand.New(rand.NewPCG(1, 2)))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -169,16 +193,106 @@ func TestDrawFollowsTheSpec(t *testing.T) {
 	if len(qs) != 50 {
 		t.Fatalf("drew %d", len(qs))
 	}
-	if _, err := b.Draw(Specs["hon"], rand.New(rand.NewPCG(1, 2))); err == nil {
+	hon, _ := b.Exam("hon")
+	if _, err := b.Draw(hon, rand.New(rand.NewPCG(1, 2))); err == nil {
 		t.Fatal("hon needs 90 + 5 scenarios; 60 should not be enough")
 	}
 }
 
-func TestSpecsAddUpToAHundred(t *testing.T) {
-	for id, s := range Specs {
-		if got := s.TF*s.TFPoints + s.Scenarios*s.ScPoints; got != s.Max || s.Max != 100 || s.Pass != 90 {
-			t.Errorf("%s: %d points, max %d, pass %d", id, got, s.Max, s.Pass)
+func TestScoresScaleToTheExamsMax(t *testing.T) {
+	banks, err := Load(lib(t, map[string]string{"t": tf("a", true, "kari")}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	b := banks["drive"]
+	for _, c := range []struct {
+		exam           string
+		earned, scaled int
+	}{
+		{"kari", 90, 90}, {"kari", 100, 100}, {"hon", 89, 89}, {"hon", 100, 100},
+		{"mc", 3, 1000}, {"mc", 2, 667}, {"mc", 0, 0},
+	} {
+		spec, _ := b.Exam(c.exam)
+		if got := Scale(spec, c.earned); got != c.scaled {
+			t.Errorf("%s: %d points scaled to %d, want %d", c.exam, c.earned, got, c.scaled)
 		}
+	}
+	// 47 of 65 is 723 out of 1,000: a pass at 720, as on the AWS exams.
+	if got := Scale(Spec{Max: 1000, Draw: []content.ExamPart{{Kind: "choice", Count: 65, Points: 1}}}, 47); got != 723 {
+		t.Errorf("47/65 scaled to %d", got)
+	}
+}
+
+func TestChoiceQuestions(t *testing.T) {
+	yml := `- {id: one, kind: choice, en: E, ja: J, why: W, ref: R, exams: [mc], options: [w, x, y, z], correct: [C]}
+- {id: two, kind: choice, en: E, ja: J, why: W, ref: R, exams: [mc], options: [v, w, x, y, z], correct: [E, B]}
+- {id: three, kind: choice, en: E, ja: J, why: W, ref: R, exams: [mc], options: [x, y, z], correct: [A]}
+`
+	banks, err := Load(lib(t, map[string]string{"t": yml}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	b := banks["drive"]
+	one, two := b.Question("one"), b.Question("two")
+	if one.Choose != 1 || two.Choose != 2 {
+		t.Fatalf("choose = %d, %d", one.Choose, two.Choose)
+	}
+	for _, c := range []struct {
+		q     *Question
+		picks []int
+		ok    bool
+	}{
+		{one, []int{2}, true}, {one, []int{1}, false}, {one, nil, false}, {one, []int{2, 3}, false},
+		{two, []int{1, 4}, true}, {two, []int{4, 1}, true}, {two, []int{1}, false}, {two, []int{1, 4, 0}, false},
+		{two, []int{1, 1, 4}, true}, // a repeated pick is the same pick
+	} {
+		if got := Mark(c.q, Given{Picks: c.picks}); got != c.ok {
+			t.Errorf("%s with %v: got %v", c.q.ID, c.picks, got)
+		}
+	}
+	mc, _ := b.Exam("mc")
+	qs, err := b.Draw(mc, rand.New(rand.NewPCG(3, 4)))
+	if err != nil || len(qs) != 3 {
+		t.Fatalf("drew %d, %v", len(qs), err)
+	}
+	if got := Points(mc, one); got != 1 {
+		t.Errorf("a choice question in mc is worth %d", got)
+	}
+}
+
+func TestPartsFromATopicAndShortfalls(t *testing.T) {
+	track := strings.Replace(driveTrack, "draw: [{kind: choice, count: 3, points: 1}]",
+		"draw: [{kind: choice, count: 1, points: 1, from: drive/rules/a}, {kind: choice, count: 2, points: 1, from: drive/rules/b}]", 1)
+	q := func(id string) string {
+		return "- {id: " + id + ", kind: choice, en: E, ja: J, why: W, ref: R, exams: [mc], options: [x, y, z], correct: [A]}\n"
+	}
+	root := t.TempDir()
+	write := func(rel, s string) {
+		path := filepath.Join(root, "drive", rel)
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(s), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("track.yaml", track)
+	write("rules/a/lesson.md", "---\ntitle: A\nkind: quiz\norder: 1\n---\n")
+	write("rules/a/questions.yaml", q("a1")+q("a2"))
+	write("rules/b/lesson.md", "---\ntitle: B\nkind: quiz\norder: 2\n---\n")
+	write("rules/b/questions.yaml", q("b1"))
+	l, err := content.Load(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	banks, err := Load(l)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mc, _ := banks["drive"].Exam("mc")
+	short := banks["drive"].Shortfalls(mc)
+	if len(short) != 1 || !strings.Contains(short[0], "1 of 2") {
+		t.Fatalf("shortfalls = %v", short)
 	}
 }
 

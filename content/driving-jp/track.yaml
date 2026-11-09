@@ -2,6 +2,24 @@ title: "Japanese driving test"
 group: misc
 order: 100
 description: "Practice for the written tests of a Japanese ordinary car licence: the provisional (仮免) and the full (本免). Questions in English with the Japanese underneath, written from the National Police Agency's Rules of the Road (交通の方法に関する教則)."
+bilingual: true
+# The two written tests. Both pass at 90 of 100; running over time fails.
+exams:
+  - id: kari
+    title: "Provisional licence (仮免)"
+    minutes: 30
+    pass: 90
+    max: 100
+    draw:
+      - { kind: tf, count: 50, points: 2 }
+  - id: hon
+    title: "Full licence (本免)"
+    minutes: 50
+    pass: 90
+    max: 100
+    draw:
+      - { kind: tf, count: 90, points: 1 }
+      - { kind: scenario, count: 5, points: 2 }
 sections:
   - id: basics
     title: "Rules of the road"

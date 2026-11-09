@@ -210,7 +210,7 @@ export interface ProfilesResponse {
 
 export interface QuizStatement {
   en: string;
-  ja: string;
+  ja?: string;
 }
 
 /** One item in a scene diagram; see internal/quiz/scene.go. */
@@ -238,10 +238,14 @@ export interface QuizScene {
 
 export interface QuizQuestion {
   id: string;
-  kind?: "scenario";
+  kind?: "scenario" | "choice";
   en: string;
-  ja: string;
+  ja?: string;
   topic: string;
+  /** A choice question's options, lettered A, B, ... in this order. */
+  options?: string[];
+  /** How many options to pick: 2 for a "choose two" question. */
+  choose?: number;
   /** A picture that goes with the question, fetched from where it is hosted. */
   image?: string;
   /** A diagram of the situation, drawn here from its description. */
@@ -252,12 +256,16 @@ export interface QuizQuestion {
 export interface QuizGiven {
   answer?: boolean;
   answers?: boolean[];
+  /** Option indexes picked, A = 0. */
+  picks?: number[];
 }
 
 export interface QuizExplanation {
   id: string;
   correct: boolean;
   answer?: boolean;
+  /** A choice question's right options, A = 0. */
+  key?: number[];
   why?: string;
   ref: string;
   statements?: (QuizStatement & { answer: boolean; why: string })[];
@@ -265,16 +273,23 @@ export interface QuizExplanation {
   question?: QuizQuestion;
 }
 
+/** One block of questions a mock exam draws. */
+export interface ExamPart {
+  kind: "tf" | "scenario" | "choice";
+  count: number;
+  points: number;
+  from?: string;
+}
+
 export interface ExamSpec {
   id: string;
   title: string;
-  tf: number;
-  scenarios: number;
   minutes: number;
-  tf_points: number;
-  scenario_points: number;
   pass: number;
   max: number;
+  shuffle?: boolean;
+  note?: string;
+  draw: ExamPart[];
 }
 
 export interface ExamResult {
@@ -292,6 +307,8 @@ export interface QuizOverview {
   track: string;
   title: string;
   description: string;
+  /** "misc" for the Misc area; otherwise the track sits with the courses. */
+  group?: string;
   total: number;
   mistakes: number;
   clear_after: number;
@@ -301,8 +318,8 @@ export interface QuizOverview {
     topics: { id: string; title: string; summary: string; total: number; mastered: number; mistakes: number }[];
   }[];
   exams: (ExamSpec & {
-    pool: number;
-    scenario_pool: number;
+    /** Parts the bank cannot fill yet, e.g. "choice 40 of 65". */
+    short: string[];
     ready: boolean;
     deadline?: string;
     best?: ExamResult;
@@ -319,6 +336,7 @@ export interface QuizTopic {
   notes_html: string;
   track: string;
   track_title: string;
+  group?: string;
   questions: (QuizQuestion & { mistake: boolean; right_before: boolean })[];
   prev: LessonLink | null;
   next: LessonLink | null;
@@ -399,7 +417,7 @@ export const api = {
   quizTopic: (track: string, section: string, slug: string) => call<QuizTopic>("GET", `/api/quiz/${track}/topic/${section}/${slug}`),
   quizAnswer: (track: string, id: string, given: QuizGiven) =>
     call<{ result: QuizExplanation; topic_mastered: boolean }>("POST", `/api/quiz/${track}/answer`, { id, ...given }),
-  quizMistakes: (track: string) => call<{ questions: QuizQuestion[]; clear_after: number }>("GET", `/api/quiz/${track}/mistakes`),
+  quizMistakes: (track: string) => call<{ questions: QuizQuestion[]; clear_after: number; group?: string }>("GET", `/api/quiz/${track}/mistakes`),
   examStart: (track: string, exam: string) => call<ExamStart>("POST", `/api/quiz/${track}/exam/${exam}`),
   examSubmit: (track: string, exam: string, answers: Record<string, QuizGiven>) =>
     call<{ result: ExamResult; review: QuizExplanation[] }>("POST", `/api/quiz/${track}/exam/${exam}/submit`, { answers }),

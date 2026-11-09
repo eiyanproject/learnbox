@@ -71,7 +71,7 @@ var ErrNoTests = errors.New("lesson has no tests")
 // to write it; and security, where the learner writes a script or a fix and
 // the test runs it against a target inside the container. Same runner,
 // different thing being written.
-var pytestLangs = map[string]bool{"python": true, "ccna": true, "mindset": true, "security": true}
+var pytestLangs = map[string]bool{"python": true, "ccna": true, "mindset": true, "security": true, "aws": true}
 
 // UsesPytest reports whether lessons in this language are graded by pytest.
 // `learnbox verify` uses it too: lesson >>> examples are run as doctests only

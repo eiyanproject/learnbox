@@ -499,14 +499,17 @@ func verifyQuiz(lib *content.Library, prefix string) (int, error) {
 	for _, lang := range langs {
 		b := banks[lang]
 		mark, notes := "ok  ", []string{}
-		for _, id := range quiz.SpecOrder {
-			spec := quiz.Specs[id]
-			tf, sc := b.Pool(id)
-			note := fmt.Sprintf("%s %d/%d", id, len(tf), spec.TF)
-			if spec.Scenarios > 0 {
-				note += fmt.Sprintf(" + %d/%d scenarios", len(sc), spec.Scenarios)
+		for _, spec := range b.Exams {
+			parts := []string{}
+			for _, p := range spec.Draw {
+				part := fmt.Sprintf("%d/%d %s", len(b.Pool(spec.ID, p)), p.Count, p.Kind)
+				if p.From != "" {
+					part += " from " + strings.TrimPrefix(p.From, lang+"/")
+				}
+				parts = append(parts, part)
 			}
-			if len(tf) < spec.TF || len(sc) < spec.Scenarios {
+			note := spec.ID + " " + strings.Join(parts, " + ")
+			if short := b.Shortfalls(spec); len(short) > 0 {
 				mark = "FAIL"
 				note += " (too few to draw an exam)"
 			}

@@ -19,6 +19,22 @@ import (
 	"github.com/eiyanproject/learnbox/internal/workspace"
 )
 
+const driveTrackYAML = `title: Drive
+group: misc
+bilingual: true
+exams:
+  - {id: kari, title: K, minutes: 30, pass: 90, max: 100, draw: [{kind: tf, count: 50, points: 2}]}
+  - id: hon
+    title: H
+    minutes: 50
+    pass: 90
+    max: 100
+    draw: [{kind: tf, count: 90, points: 1}, {kind: scenario, count: 5, points: 2}]
+sections:
+  - id: rules
+    title: Rules
+`
+
 // quizServer serves a quiz track "drive" with one topic of 100 true/false
 // questions (q000-q099; the even ones are true) and 6 scenarios whose
 // statements are true, false, true.
@@ -29,7 +45,7 @@ func quizServer(t *testing.T) (http.Handler, *Server) {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	os.WriteFile(filepath.Join(root, "drive", "track.yaml"), []byte("title: Drive\ngroup: misc\nsections:\n  - id: rules\n    title: Rules\n"), 0o644)
+	os.WriteFile(filepath.Join(root, "drive", "track.yaml"), []byte(driveTrackYAML), 0o644)
 	os.WriteFile(filepath.Join(dir, "lesson.md"), []byte("---\ntitle: Basics\nkind: quiz\n---\nNotes.\n"), 0o644)
 	var y strings.Builder
 	for i := range 100 {

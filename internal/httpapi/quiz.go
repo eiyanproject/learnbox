@@ -83,8 +83,7 @@ func (s *Server) forgetQuizStore(profile string) {
 
 type quizExamOut struct {
 	quiz.Spec
-	Pool       int           `json:"pool"`
-	ScPool     int           `json:"scenario_pool"`
+	Short      []string      `json:"short"` // parts the bank cannot fill yet
 	Ready      bool          `json:"ready"`
 	Deadline   time.Time     `json:"deadline,omitzero"` // set while one is running
 	Best       *quiz.Result  `json:"best,omitempty"`
@@ -136,16 +135,22 @@ func (s *Server) quizOverview(w http.ResponseWriter, r *http.Request) {
 			}
 			so.Topics = append(so.Topics, to)
 		}
-		sections = append(sections, so)
+		// A track can mix quiz topics with ordinary lessons; list only the
+		// sections that have something to study here.
+		if len(so.Topics) > 0 {
+			sections = append(sections, so)
+		}
 	}
 
 	history := st.Results(b.Track)
 	exams := []quizExamOut{}
-	for _, id := range quiz.SpecOrder {
-		spec := quiz.Specs[id]
-		tf, sc := b.Pool(id)
-		eo := quizExamOut{Spec: spec, Pool: len(tf), ScPool: len(sc), Recent: []quiz.Result{}}
-		eo.Ready = len(tf) >= spec.TF && len(sc) >= spec.Scenarios
+	for _, spec := range b.Exams {
+		id := spec.ID
+		eo := quizExamOut{Spec: spec, Short: b.Shortfalls(spec), Recent: []quiz.Result{}}
+		eo.Ready = len(eo.Short) == 0
+		if eo.Short == nil {
+			eo.Short = []string{}
+		}
 		if a, ok := st.Active(b.Track, id); ok {
 			eo.Deadline = a.Deadline
 		}
@@ -172,7 +177,7 @@ func (s *Server) quizOverview(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, map[string]any{
-		"track": b.Track, "title": t.Title, "description": t.Description,
+		"track": b.Track, "title": t.Title, "description": t.Description, "group": t.Group,
 		"sections": sections, "exams": exams, "mistakes": mistakes,
 		"total": len(b.Questions), "clear_after": quiz.ClearAfter,
 	})
@@ -228,7 +233,7 @@ func (s *Server) quizTopic(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, http.StatusOK, map[string]any{
 		"id": l.ID(), "title": l.Title, "summary": l.Summary, "notes_html": notes,
-		"track": b.Track, "track_title": s.track(b.Track).Title,
+		"track": b.Track, "track_title": s.track(b.Track).Title, "group": s.track(b.Track).Group,
 		"questions": qs, "prev": link(prev), "next": link(next),
 	})
 }
@@ -245,6 +250,7 @@ type explanation struct {
 	ID         string         `json:"id"`
 	Correct    bool           `json:"correct"`
 	Answer     *bool          `json:"answer,omitempty"`
+	Key        []int          `json:"key,omitempty"` // a choice question's right options, A = 0
 	Why        string         `json:"why,omitempty"`
 	Ref        string         `json:"ref"`
 	Statements []statementOut `json:"statements,omitempty"`
@@ -254,18 +260,21 @@ type explanation struct {
 
 type statementOut struct {
 	EN     string `json:"en"`
-	JA     string `json:"ja"`
+	JA     string `json:"ja,omitempty"`
 	Answer bool   `json:"answer"`
 	Why    string `json:"why"`
 }
 
 func explain(q *quiz.Question, correct bool) explanation {
 	e := explanation{ID: q.ID, Correct: correct, Ref: q.Ref}
-	if q.Scenario() {
+	switch q.Kind {
+	case "scenario":
 		for _, st := range q.Statements {
 			e.Statements = append(e.Statements, statementOut{EN: st.EN, JA: st.JA, Answer: *st.Answer, Why: st.Why})
 		}
-	} else {
+	case "choice":
+		e.Key, e.Why = q.CorrectPicks(), q.Why
+	default:
 		e.Answer, e.Why = q.Answer, q.Why
 	}
 	return e
@@ -278,7 +287,7 @@ func (s *Server) quizAnswer(w http.ResponseWriter, r *http.Request) {
 	}
 	var in answerIn
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4<<10)).Decode(&in); err != nil {
-		writeErr(w, http.StatusBadRequest, `body must be {"id": string, "answer": bool} or {"id": string, "answers": [bool, bool, bool]}`)
+		writeErr(w, http.StatusBadRequest, `body must be {"id": string} with "answer": bool, "answers": [bool, bool, bool] or "picks": [int, ...]`)
 		return
 	}
 	q := b.Question(in.ID)
@@ -335,7 +344,7 @@ func (s *Server) quizMistakes(w http.ResponseWriter, r *http.Request) {
 	// Least recently seen first, so a long list rotates rather than repeating
 	// the same opening questions every visit.
 	sortByLastSeen(qs, recs)
-	writeJSON(w, http.StatusOK, map[string]any{"questions": qs, "clear_after": quiz.ClearAfter})
+	writeJSON(w, http.StatusOK, map[string]any{"questions": qs, "clear_after": quiz.ClearAfter, "group": s.track(b.Track).Group})
 }
 
 func sortByLastSeen(qs []*quiz.Question, recs map[string]quiz.Record) {
@@ -349,7 +358,12 @@ func sortByLastSeen(qs []*quiz.Question, recs map[string]quiz.Record) {
 // ---------- mock exams ----------
 
 func (s *Server) examSpec(w http.ResponseWriter, r *http.Request) (quiz.Spec, bool) {
-	spec, ok := quiz.Specs[r.PathValue("exam")]
+	b := s.Quiz[r.PathValue("track")]
+	if b == nil {
+		writeErr(w, http.StatusNotFound, "no such quiz track")
+		return quiz.Spec{}, false
+	}
+	spec, ok := b.Exam(r.PathValue("exam"))
 	if !ok {
 		writeErr(w, http.StatusNotFound, "no such exam")
 	}
@@ -414,7 +428,7 @@ func (s *Server) quizSubmitExam(w http.ResponseWriter, r *http.Request) {
 		Answers map[string]quiz.Given `json:"answers"`
 	}
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 64<<10)).Decode(&in); err != nil {
-		writeErr(w, http.StatusBadRequest, `body must be {"answers": {"<id>": {"answer": bool} | {"answers": [bool, bool, bool]}}}`)
+		writeErr(w, http.StatusBadRequest, `body must be {"answers": {"<id>": {"answer": bool} | {"answers": [bool, bool, bool]} | {"picks": [int, ...]}}}`)
 		return
 	}
 	now := time.Now().UTC()
@@ -422,6 +436,7 @@ func (s *Server) quizSubmitExam(w http.ResponseWriter, r *http.Request) {
 		Seconds: int(now.Sub(a.Started).Seconds()), Overtime: now.After(a.Deadline.Add(overtimeGrace))}
 	correct := map[string]bool{}
 	review := []explanation{}
+	earned := 0
 	for _, id := range a.IDs {
 		q := b.Question(id)
 		if q == nil {
@@ -431,7 +446,7 @@ func (s *Server) quizSubmitExam(w http.ResponseWriter, r *http.Request) {
 		right := quiz.Mark(q, g)
 		correct[id] = right
 		if right {
-			res.Score += quiz.Points(spec, q)
+			earned += quiz.Points(spec, q)
 		} else {
 			res.Wrong = append(res.Wrong, id)
 		}
@@ -443,6 +458,7 @@ func (s *Server) quizSubmitExam(w http.ResponseWriter, r *http.Request) {
 		}
 		review = append(review, e)
 	}
+	res.Score = quiz.Scale(spec, earned)
 	// Over time is a fail however high the score: the real test stops at the
 	// bell. The score is still shown, so the practice is not wasted.
 	res.Passed = res.Score >= spec.Pass && !res.Overtime

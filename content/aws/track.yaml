@@ -1,0 +1,28 @@
+title: "AWS"
+order: 11
+description: "Amazon Web Services with the real AWS CLI, run against a local emulator: no account, no credentials, no bill. Hands-on lessons are graded on what your commands actually build; practice exams follow the certification guides."
+badge: "No Surprise Bill"
+# The practice exams. Each draws its domains in the proportions of the
+# official exam guide.
+exams:
+  - id: saa
+    title: "Solutions Architect - Associate (SAA-C03)"
+    minutes: 130
+    pass: 720
+    max: 1000
+    shuffle: true
+    note: "The real exam has 65 questions, 15 of them unscored and not marked as such, and scales its score; here all 65 count equally."
+    draw:
+      - { kind: choice, count: 20, points: 1, from: aws/saa/01-secure }
+      - { kind: choice, count: 17, points: 1, from: aws/saa/02-resilient }
+      - { kind: choice, count: 15, points: 1, from: aws/saa/03-performance }
+      - { kind: choice, count: 13, points: 1, from: aws/saa/04-cost }
+sections:
+  - id: foundations
+    xp: 50
+    beginner: true
+    title: 1. Foundations
+    description: "The CLI and your sandbox account, IAM users, groups, policies and roles, S3 done safely, and a VPC with a server in it - built from the command line."
+  - id: saa
+    title: "Exam practice: Solutions Architect - Associate"
+    description: "Multiple-choice questions by exam domain - secure, resilient, high-performing, cost-optimized - and a timed 65-question mock exam."

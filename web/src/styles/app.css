@@ -2336,6 +2336,93 @@ a.secbar:hover .lbl {
   color: var(--cy);
 }
 
+/* A multiple-choice question: lettered options, one press each. */
+.choose {
+  margin: 16px 0 8px;
+}
+
+.opts {
+  display: grid;
+  gap: 8px;
+}
+
+.opt {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  background: var(--surf2);
+  color: var(--fg);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  text-align: left;
+  cursor: pointer;
+}
+
+.opt:hover:not(:disabled) {
+  border-color: var(--cyl);
+}
+
+.opt-l {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--line);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mut);
+}
+
+.opt.on {
+  border-color: var(--cy);
+  background: var(--cyw);
+}
+
+.opt.on .opt-l {
+  border-color: var(--cy);
+  background: var(--cy);
+  color: var(--bg);
+}
+
+.opt:disabled {
+  cursor: default;
+}
+
+/* Once marked: the right options in cyan, a wrong pick in amber, the rest dimmed. */
+.opt.right {
+  border-color: var(--cy);
+}
+
+.opt.right .opt-l {
+  border-color: var(--cy);
+  color: var(--cy);
+}
+
+.opt.wrong {
+  border-color: var(--am);
+  background: var(--amw);
+}
+
+.opt.wrong .opt-l {
+  border-color: var(--am);
+  background: var(--am);
+  color: var(--bg);
+}
+
+.opt:disabled:not(.right):not(.wrong):not(.on) {
+  opacity: 0.55;
+}
+
+.review-opts {
+  padding: 0 18px 12px;
+}
+
 .q-after:empty {
   display: none;
 }

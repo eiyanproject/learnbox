@@ -7,6 +7,7 @@
 #   /opt/learnbox/scripts/install.sh --no-java       # skip the JDK and JUnit
 #   /opt/learnbox/scripts/install.sh --no-dotnet     # skip the .NET SDK (569MB)
 #   /opt/learnbox/scripts/install.sh --no-octave     # skip Octave, the MATLAB engine (620MB)
+#   /opt/learnbox/scripts/install.sh --no-aws        # skip the AWS CLI and its emulator (450MB)
 #   /opt/learnbox/scripts/install.sh --no-exercism   # skip the practice import
 #
 # Idempotent: safe to re-run. update.sh re-runs it after every pull, so
@@ -21,6 +22,7 @@ WITH_RUST=1
 WITH_JAVA=1
 WITH_DOTNET=1
 WITH_OCTAVE=1
+WITH_AWS=1
 WITH_EXERCISM=1
 for a in "$@"; do
   case "$a" in
@@ -28,8 +30,9 @@ for a in "$@"; do
     --no-java) WITH_JAVA=0 ;;
     --no-dotnet) WITH_DOTNET=0 ;;
     --no-octave) WITH_OCTAVE=0 ;;
+    --no-aws) WITH_AWS=0 ;;
     --no-exercism) WITH_EXERCISM=0 ;;
-    -h|--help) sed -n '2,13p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,14p' "$0"; exit 0 ;;
     *) echo "unknown option: $a" >&2; exit 2 ;;
   esac
 done
@@ -38,6 +41,12 @@ LEARNER=learner
 DATA_DIR=/var/lib/learnbox
 TOOLS=/opt/learnbox-toolchain       # build-only toolchains, outside the checkout
 CACHE=/var/cache/learnbox-build
+
+# The AWS lessons run the real AWS CLI against moto, an emulator of the AWS
+# APIs. Both are pinned: the lessons are checked against these versions'
+# output, and a new moto can change what an emulated call returns.
+AWSCLI_VERSION=1.46.3
+MOTO_VERSION=5.2.5
 
 # Pinned build toolchains. Bump deliberately; the checksums come from
 # https://go.dev/dl/?mode=json and https://nodejs.org/dist/<v>/SHASUMS256.txt
@@ -217,6 +226,36 @@ if [ "$WITH_OCTAVE" -eq 1 ]; then
   # figure inside a cgroup - so it would oversubscribe this container's CPU
   # quota. Pinning costs nothing today and removes that trap.
   as_learner octave --no-gui --quiet --norc     --path "$ROOT/lib/octave" --eval "lbx_show(1);" >/dev/null     && echo "  shim library loads"     || echo "  WARNING: lib/octave did not load"
+fi
+
+if [ "$WITH_AWS" -eq 1 ]; then
+  say "AWS CLI $AWSCLI_VERSION and the moto $MOTO_VERSION emulator"
+  # A venv of its own, root-owned and outside the learner's: the learner's
+  # environment stays small, and nothing in it can shadow the tools a
+  # lesson's check depends on. awslab (lib/awslab) puts it on sys.path for
+  # the checks, and the wrappers below put the commands on PATH.
+  AWSV="$TOOLS/aws"
+  if [ "$("$AWSV/bin/python" -c 'import awscli, moto; print(awscli.__version__, moto.__version__)' 2>/dev/null)" != "$AWSCLI_VERSION $MOTO_VERSION" ]; then
+    rm -rf "$AWSV"
+    python3 -m venv "$AWSV"
+    "$AWSV/bin/pip" install -q --upgrade pip
+    "$AWSV/bin/pip" install -q "awscli==$AWSCLI_VERSION" "moto[server]==$MOTO_VERSION"
+  fi
+  chmod -R a+rX "$AWSV"
+  # `aws` in the terminal is the real CLI, pointed at a private emulator on
+  # 127.0.0.1 that awslab starts on first use: no account, no credentials,
+  # and nothing sent to the real AWS.
+  for cmd in aws awslab; do
+    sub=$([ "$cmd" = aws ] && echo "aws " || echo "")
+    cat > "/usr/local/bin/$cmd" <<AWSSH
+#!/bin/sh
+export LEARNBOX_AWS_VENV="$AWSV"
+exec env PYTHONPATH="$ROOT/lib" "$AWSV/bin/python" -m awslab $sub"\$@"
+AWSSH
+    chmod 0755 "/usr/local/bin/$cmd"
+  done
+  # Not through the wrapper: that would start the learner's sandbox now.
+  "$AWSV/bin/aws" --version
 fi
 
 # ---------------------------------------------------------------- build tools

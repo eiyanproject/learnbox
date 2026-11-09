@@ -34,6 +34,34 @@ type Track struct {
 	// programming tracks.
 	Group    string    `yaml:"group" json:"group,omitempty"`
 	Sections []Section `yaml:"sections" json:"sections"`
+	// Exams are the mock exams a track with quiz lessons offers; see
+	// internal/quiz. Bilingual makes every question carry Japanese as well.
+	Exams     []Exam `yaml:"exams" json:"-"`
+	Bilingual bool   `yaml:"bilingual" json:"-"`
+}
+
+// Exam is one mock exam: what it draws, in what order, and how it scores. The
+// score is the points earned scaled to Max, so an exam reported out of 1,000
+// can draw 65 one-point questions.
+type Exam struct {
+	ID      string     `yaml:"id" json:"id"`
+	Title   string     `yaml:"title" json:"title"`
+	Minutes int        `yaml:"minutes" json:"minutes"`
+	Pass    int        `yaml:"pass" json:"pass"`
+	Max     int        `yaml:"max" json:"max"`
+	Shuffle bool       `yaml:"shuffle" json:"shuffle,omitempty"` // mix the parts instead of keeping their order
+	Note    string     `yaml:"note" json:"note,omitempty"`       // a line on how this differs from the real thing
+	Draw    []ExamPart `yaml:"draw" json:"draw"`
+}
+
+// ExamPart is one block of questions an exam draws.
+type ExamPart struct {
+	Kind   string `yaml:"kind" json:"kind"` // tf, scenario or choice
+	Count  int    `yaml:"count" json:"count"`
+	Points int    `yaml:"points" json:"points"`
+	// From limits the part to topics whose lesson id starts with this - a
+	// section, say, so an exam can weight its domains as the real one does.
+	From string `yaml:"from" json:"from,omitempty"`
 }
 
 type Section struct {
