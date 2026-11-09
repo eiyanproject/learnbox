@@ -23,6 +23,26 @@ sections:
     beginner: true
     title: 1. Foundations
     description: "The CLI and your sandbox account, IAM users, groups, policies and roles, S3 done safely, and a VPC with a server in it - built from the command line."
+  - id: networking
+    xp: 75
+    title: 2. Networking in depth
+    description: "NAT gateways per Availability Zone, network ACLs that deny, VPC endpoints that keep traffic off the internet, and peering with private DNS."
+  - id: compute
+    xp: 75
+    title: 3. Compute and scaling
+    description: "Launch templates and user data, an Application Load Balancer with HTTPS, and an Auto Scaling group that scales on load and on schedule."
+  - id: databases
+    xp: 100
+    title: 4. Databases
+    description: "RDS with Multi-AZ, encryption and a managed password, DynamoDB designed around its access patterns, and a Redis cache that survives an AZ."
+  - id: serverless
+    xp: 100
+    title: 5. Serverless and messaging
+    description: "Queues with dead-letter queues, SNS fan-out, Lambda functions fed by SQS, and EventBridge schedules driving a Step Functions workflow."
+  - id: operations
+    xp: 100
+    title: 6. Operations and infrastructure as code
+    description: "Logs, metric filters and alarms, CloudTrail and Config for audit, and the same resources described once in CloudFormation."
   - id: saa
     title: "Exam practice: Solutions Architect - Associate"
     description: "Multiple-choice questions by exam domain - secure, resilient, high-performing, cost-optimized - and a timed 65-question mock exam."

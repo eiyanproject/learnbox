@@ -1,0 +1,21 @@
+#!/bin/sh
+# The terminal's `aws`: the real AWS CLI, always pointed at a sandbox.
+# install.sh links /usr/local/bin/aws here.
+here=$(dirname "$(readlink -f "$0")")
+lib=$(dirname "$(dirname "$here")")
+venv=${LEARNBOX_AWS_VENV:-/opt/learnbox-toolchain/aws}
+
+if [ -n "${AWS_ENDPOINT_URL:-}" ]; then
+  # A lesson's check or `awslab run`: the sandbox is already chosen, so go
+  # straight to the CLI - each command is one Python start-up, not two.
+  # --endpoint-url is passed as well as the variable because CLI v1 ignores
+  # the variable for a few services (SQS, RDS) and would call the real AWS.
+  case " $* " in
+    *" --endpoint-url"*) exec "$venv/bin/aws" "$@" ;;
+  esac
+  exec "$venv/bin/aws" --endpoint-url "$AWS_ENDPOINT_URL" "$@"
+fi
+
+# In the terminal: awslab starts the private emulator if it is not running.
+export LEARNBOX_AWS_VENV="$venv"
+exec env PYTHONPATH="$lib${PYTHONPATH:+:$PYTHONPATH}" "$venv/bin/python" -m awslab aws "$@"

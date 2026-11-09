@@ -244,15 +244,10 @@ if [ "$WITH_AWS" -eq 1 ]; then
   chmod -R a+rX "$AWSV"
   # `aws` in the terminal is the real CLI, pointed at a private emulator on
   # 127.0.0.1 that awslab starts on first use: no account, no credentials,
-  # and nothing sent to the real AWS.
+  # and nothing sent to the real AWS. The wrappers live in the repo.
   for cmd in aws awslab; do
-    sub=$([ "$cmd" = aws ] && echo "aws " || echo "")
-    cat > "/usr/local/bin/$cmd" <<AWSSH
-#!/bin/sh
-export LEARNBOX_AWS_VENV="$AWSV"
-exec env PYTHONPATH="$ROOT/lib" "$AWSV/bin/python" -m awslab $sub"\$@"
-AWSSH
-    chmod 0755 "/usr/local/bin/$cmd"
+    rm -f "/usr/local/bin/$cmd"
+    ln -s "$ROOT/lib/awslab/wrappers/$cmd" "/usr/local/bin/$cmd"
   done
   # Not through the wrapper: that would start the learner's sandbox now.
   "$AWSV/bin/aws" --version

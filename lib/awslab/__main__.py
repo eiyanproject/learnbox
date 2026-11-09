@@ -6,6 +6,9 @@
     awslab status           is the sandbox running, and where
     awslab stop             stop it (the next `aws` starts it again)
     awslab env              shell exports that point boto3 or the CLI at it
+    awslab given [name]     build a ready-made setup a lesson builds on and
+                            print its IDs:  eval "$(awslab given vpc)"
+    awslab given name --show   the same setup as the CLI commands it stands for
 
 The sandbox is a moto emulator listening on 127.0.0.1 only, started on first
 use and left running. Everything in it lives in memory: stopping it, or a
@@ -138,6 +141,25 @@ def main(argv: list[str]) -> int:
         return 0
     if cmd == "stop":
         return cmd_stop()
+    if cmd == "given":
+        from . import given
+
+        if not rest:
+            print("awslab given: " + ", ".join(given.names()))
+            return 0
+        if rest[0] not in given.names():
+            print(f"awslab given: no {rest[0]!r}; there is {', '.join(given.names())}", file=sys.stderr)
+            return 2
+        if "--show" in rest:
+            sys.stdout.write(given.show(rest[0]))
+            return 0
+        endpoint = os.environ.get("AWS_ENDPOINT_URL")
+        if not endpoint:
+            start()
+            endpoint = ENDPOINT
+        region = os.environ.get("AWS_DEFAULT_REGION", DEFAULT_REGION)
+        sys.stdout.write(given.build(rest[0], endpoint, region))
+        return 0
     if cmd == "env":
         start()
         for k, v in sandbox_env(ENDPOINT, base={}).items():

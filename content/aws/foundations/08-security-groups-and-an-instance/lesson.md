@@ -59,8 +59,9 @@ Two launch options worth always setting:
 
 ## Your task
 
-`setup.sh` already builds lesson 7's VPC and lesson 4's `web-server` role and
-instance profile. Add:
+`setup.sh` starts by building lesson 7's VPC and lesson 4's `web-server`
+role and instance profile with `awslab given` (run `awslab given vpc --show`
+to see the commands it stands for). Add:
 
 1. a security group **`web`** allowing **443 from anywhere** and **22 only
    from 203.0.113.0/24** (the office);

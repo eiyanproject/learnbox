@@ -148,6 +148,11 @@ def lab(script: str | None = "setup.sh", region: str = "us-east-1") -> Iterator[
     """
     use_venv()
     os.environ.update(EMULATOR_ENV)
+    import logging
+
+    # The emulator's web server logs every request; a failing check should
+    # show the learner's output, not a page of POST lines.
+    logging.getLogger("werkzeug").setLevel(logging.ERROR)
     from moto.server import ThreadedMotoServer
 
     port = free_port()
