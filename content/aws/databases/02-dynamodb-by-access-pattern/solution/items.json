@@ -1,0 +1,16 @@
+{
+  "orders": [
+    { "PutRequest": { "Item": {
+      "pk": { "S": "CUSTOMER#1" }, "sk": { "S": "ORDER#2026-11-01#0001" },
+      "status": { "S": "SHIPPED" }, "total": { "N": "42.50" } } } },
+    { "PutRequest": { "Item": {
+      "pk": { "S": "CUSTOMER#1" }, "sk": { "S": "ORDER#2026-11-05#0002" },
+      "status": { "S": "SHIPPED" }, "total": { "N": "18.00" } } } },
+    { "PutRequest": { "Item": {
+      "pk": { "S": "CUSTOMER#1" }, "sk": { "S": "ORDER#2026-11-09#0003" },
+      "status": { "S": "PLACED" }, "total": { "N": "99.95" } } } },
+    { "PutRequest": { "Item": {
+      "pk": { "S": "CUSTOMER#2" }, "sk": { "S": "ORDER#2026-11-08#0004" },
+      "status": { "S": "PLACED" }, "total": { "N": "7.25" } } } }
+  ]
+}
