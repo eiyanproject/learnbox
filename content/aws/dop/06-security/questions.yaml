@@ -1,0 +1,182 @@
+- id: dop-github-oidc
+  kind: choice
+  en: "A GitHub Actions workflow deploys to AWS using an IAM user's access keys stored as repository secrets. Security wants no long-lived keys. What should replace them?"
+  options:
+    - "Rotate the keys every 90 days"
+    - "Use the root user's keys with MFA"
+    - "Store the keys in a different secret"
+    - "An IAM OIDC identity provider for GitHub and a role whose trust policy allows sts:AssumeRoleWithWebIdentity only for the specific repository and branch (sub claim)"
+  correct: [D]
+  why: "OIDC federation gives the workflow short-lived role credentials; conditions on the token's sub and aud claims restrict which repository and branch can assume the role."
+  ref: "IAM User Guide: Create an OpenID Connect (OIDC) identity provider"
+  exams: [dop]
+
+- id: dop-eks-pod-identity
+  kind: choice
+  en: "Pods in an EKS cluster use the node's instance role to call S3 and DynamoDB, so every pod has the permissions of all of them. How should access be scoped per workload?"
+  options:
+    - "Run one pod per node"
+    - "Store access keys in ConfigMaps"
+    - "Use EKS Pod Identity (or IAM roles for service accounts) to associate a separate IAM role with each workload's Kubernetes service account"
+    - "Give the node role AdministratorAccess"
+  correct: [C]
+  why: "Pod Identity and IRSA give pods their own role credentials based on their service account, so each workload gets only its permissions."
+  ref: "Amazon EKS User Guide: Learn how EKS Pod Identity grants pods access to AWS services"
+  exams: [dop]
+
+- id: dop-access-analyzer-policy-checks
+  kind: choice
+  en: "The platform team wants pull requests that change IAM policies in CloudFormation templates to fail if a policy grants new access, such as a public bucket or wildcard admin actions. What can be added to the pipeline?"
+  options:
+    - "IAM Access Analyzer custom policy checks (check-no-new-access, check-access-not-granted, check-no-public-access) run in a CodeBuild step"
+    - "Amazon Macie"
+    - "AWS Trusted Advisor"
+    - "A manual review only"
+  correct: [A]
+  why: "Access Analyzer custom policy checks use automated reasoning to compare policies against a reference or list of disallowed actions and can fail a build."
+  ref: "IAM User Guide: IAM Access Analyzer custom policy checks"
+  exams: [dop]
+
+- id: dop-firewall-manager
+  kind: choice
+  en: "Every Application Load Balancer and CloudFront distribution in all accounts must have a standard set of AWS WAF managed rules, including resources created in the future. What should be used?"
+  options:
+    - "AWS Firewall Manager WAF policies applied across the organization"
+    - "Network ACLs"
+    - "Security groups"
+    - "Ask each team to attach the web ACL"
+  correct: [A]
+  why: "Firewall Manager centrally applies WAF (and Shield Advanced, security group and Network Firewall) policies to existing and new resources across accounts."
+  ref: "AWS Firewall Manager Developer Guide: AWS WAF policies"
+  exams: [dop]
+
+- id: dop-conformance-pack
+  kind: choice
+  en: "Auditors need continuous evidence that all accounts meet a set of 40 configuration controls (encryption, logging, public access), with one aggregated compliance view. What should be deployed?"
+  options:
+    - "CloudWatch dashboards"
+    - "An AWS Config organization conformance pack with the controls, plus a Config aggregator in the audit account"
+    - "Forty Lambda functions run monthly"
+    - "AWS Budgets"
+  correct: [B]
+  why: "Conformance packs deploy a collection of Config rules (and remediations) as one unit across the organization; aggregators show compliance across accounts and Regions."
+  ref: "AWS Config Developer Guide: Conformance packs"
+  exams: [dop]
+
+- id: dop-ebs-default-encryption
+  kind: choice
+  en: "Developers sometimes launch instances with unencrypted EBS volumes. The team wants every new volume encrypted automatically, without changing launch templates. What should be done?"
+  options:
+    - "Encrypt volumes with a cron job"
+    - "Ask developers to tick the box"
+    - "Use instance store only"
+    - "Enable EBS encryption by default in each account and Region (for example through StackSets or an SSM automation), with a default KMS key"
+  correct: [D]
+  why: "With encryption by default, all new EBS volumes and snapshot copies in that Region are encrypted, regardless of launch settings."
+  ref: "Amazon EBS User Guide: Enable Amazon EBS encryption by default"
+  exams: [dop]
+
+- id: dop-trail-validation
+  kind: choice
+  en: "Compliance requires proof that CloudTrail log files have not been modified or deleted after delivery. What should be enabled?"
+  options:
+    - "CloudTrail Insights"
+    - "CloudTrail log file integrity validation, verified with the digest files"
+    - "S3 Transfer Acceleration"
+    - "CloudWatch Logs retention"
+  correct: [B]
+  why: "Log file validation produces signed, hash-chained digest files so modifications or deletions of log files can be detected (for example with validate-logs)."
+  ref: "AWS CloudTrail User Guide: Validating CloudTrail log file integrity"
+  exams: [dop]
+
+- id: dop-inspector-ec2-lambda
+  kind: choice
+  en: "Security wants continuous vulnerability scanning of EC2 instances, container images in ECR and Lambda functions across all accounts, with findings prioritized by exploitability. What should be enabled?"
+  options:
+    - "AWS Config"
+    - "Amazon Macie"
+    - "AWS Shield"
+    - "Amazon Inspector with a delegated administrator and auto-enable for EC2, ECR and Lambda scanning"
+  correct: [D]
+  why: "Inspector continuously scans EC2 (agent via SSM or agentless), ECR images and Lambda functions for software vulnerabilities and network exposure, scoring findings in context."
+  ref: "Amazon Inspector User Guide: What is Amazon Inspector"
+  exams: [dop]
+
+- id: dop-secrets-cross-account
+  kind: choice
+  en: "A Lambda function in account A must read a secret stored in Secrets Manager in account B. Which TWO configurations are required besides the function's IAM permissions?"
+  options:
+    - "Encryption of the secret with a customer managed KMS key whose key policy lets account A's role decrypt."
+    - "A resource policy on the secret allowing the function's role from account A."
+    - "Making the secret public."
+    - "VPC peering between the accounts."
+    - "Encryption with the aws/secretsmanager managed key."
+  correct: [A, B]
+  why: "Cross-account access needs both the secret's resource policy and permission to use the KMS key; the AWS managed key cannot be shared across accounts."
+  ref: "AWS Secrets Manager User Guide: Access AWS Secrets Manager secrets from a different account"
+  exams: [dop]
+
+- id: dop-security-hub-auto-remediate
+  kind: choice
+  en: "Security Hub reports failed controls such as 'S3 buckets should block public access'. The team wants specific failed controls fixed automatically across accounts. What should be built?"
+  options:
+    - "A weekly email to bucket owners"
+    - "Turn off Security Hub"
+    - "Security Hub automation (custom actions or EventBridge rules on findings) that triggers SSM Automation runbooks to remediate, as in the Automated Security Response on AWS solution"
+    - "Disable the control"
+  correct: [C]
+  why: "Security Hub findings flow to EventBridge, where rules can invoke runbooks that fix the resource; AWS publishes a solution with ready-made remediations."
+  ref: "AWS Solutions: Automated Security Response on AWS"
+  exams: [dop]
+
+- id: dop-detective
+  kind: choice
+  en: "After a GuardDuty finding about unusual API calls by an IAM role, an analyst wants to see the role's behaviour over time, related IP addresses and resources, without building queries. Which service helps?"
+  options:
+    - "Amazon Detective"
+    - "AWS Artifact"
+    - "Amazon Inspector"
+    - "AWS Config"
+  correct: [A]
+  why: "Detective builds a behaviour graph from CloudTrail, VPC Flow Logs and GuardDuty findings, supporting investigations of entities over time."
+  ref: "Amazon Detective User Guide: What is Amazon Detective"
+  exams: [dop]
+
+- id: dop-s3-account-bpa
+  kind: choice
+  en: "No bucket in any production account may ever be made public, even by account administrators. Which combination is MOST robust?"
+  options:
+    - "Macie alerts"
+    - "Object ACLs set to private"
+    - "Enable S3 Block Public Access at the account level and use an SCP that denies s3:PutAccountPublicAccessBlock in those accounts"
+    - "Bucket policies on each bucket"
+  correct: [C]
+  why: "Account-level Block Public Access overrides bucket and object settings; the SCP stops anyone in the account from turning it off."
+  ref: "Amazon S3 User Guide: Blocking public access to your Amazon S3 storage"
+  exams: [dop]
+
+- id: dop-unused-access
+  kind: choice
+  en: "An organization has thousands of roles and wants to find roles, access keys and permissions that have not been used in 90 days so they can be removed. Which feature fits?"
+  options:
+    - "AWS Health"
+    - "IAM Access Analyzer unused access analyzer for the organization"
+    - "AWS Budgets"
+    - "CloudWatch Synthetics"
+  correct: [B]
+  why: "The unused access analyzer reports unused roles, access keys, passwords and unused permissions in policies, centrally across accounts."
+  ref: "IAM User Guide: IAM Access Analyzer unused access findings"
+  exams: [dop]
+
+- id: dop-audit-manager
+  kind: choice
+  en: "A company preparing for a SOC 2 audit wants evidence collected automatically from its AWS configuration and activity and mapped to the framework's controls. Which service should it use?"
+  options:
+    - "Amazon Inspector"
+    - "AWS Trusted Advisor"
+    - "AWS Audit Manager with the SOC 2 framework"
+    - "AWS Artifact only"
+  correct: [C]
+  why: "Audit Manager continuously collects evidence from Config, CloudTrail, Security Hub and more, mapped to prebuilt frameworks. Artifact provides AWS's own compliance reports, not evidence about your environment."
+  ref: "AWS Audit Manager User Guide: What is AWS Audit Manager"
+  exams: [dop]

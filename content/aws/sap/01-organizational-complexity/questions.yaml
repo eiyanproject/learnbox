@@ -1,0 +1,274 @@
+- id: sap-tgw-hub
+  kind: choice
+  en: "A company has 60 VPCs across 15 accounts in one Region, connected by a growing mesh of VPC peering connections. It also needs every VPC to reach the data center over an existing Direct Connect link. The network team wants to reduce operational overhead and segment production from development. What should a solutions architect recommend?"
+  options:
+    - "Use PrivateLink between every pair of VPCs."
+    - "Merge all workloads into a single VPC."
+    - "Create a Transit Gateway shared with RAM, attach all VPCs, connect the data center through a Direct Connect gateway with a transit VIF, and use separate Transit Gateway route tables for production and development."
+    - "Keep the peering mesh and add a VPN from each VPC to the data center."
+  correct: [C]
+  why: "A Transit Gateway replaces the n-squared peering mesh with one hub, attaches to Direct Connect through a Direct Connect gateway and transit VIF, and its route tables segment environments. Per-VPC VPNs and PrivateLink between every pair keep the overhead high."
+  ref: "AWS Transit Gateway Guide: How transit gateways work"
+  exams: [sap]
+
+- id: sap-dxgw-multi-region
+  kind: choice
+  en: "A company has one Direct Connect connection in us-east-1 and needs private access from its data center to VPCs in us-east-1, eu-west-1 and ap-southeast-2, without buying more connections. What should be used?"
+  options:
+    - "Inter-Region VPC peering only"
+    - "Three new Direct Connect connections"
+    - "A public virtual interface"
+    - "A Direct Connect gateway associated with virtual private gateways (or Transit Gateways) in each Region"
+  correct: [D]
+  why: "A Direct Connect gateway is a global resource: one private or transit VIF reaches VPCs in any Region (except China) through associated gateways."
+  ref: "AWS Direct Connect User Guide: Direct Connect gateways"
+  exams: [sap]
+
+- id: sap-privatelink-overlap
+  kind: choice
+  en: "A SaaS provider must offer its API privately to 200 customer VPCs. Many customers use the same 10.0.0.0/16 range as the provider. Which approach works?"
+  options:
+    - "Ask every customer to renumber their VPCs."
+    - "Expose the service through a Network Load Balancer as a VPC endpoint service (PrivateLink); customers create interface endpoints."
+    - "Attach all customer VPCs to the provider's Transit Gateway."
+    - "Peer every customer VPC with the provider's VPC."
+  correct: [B]
+  why: "PrivateLink presents the service as an interface endpoint with IPs in each consumer's VPC, so there is no routing between VPCs and overlapping CIDRs do not matter. Peering and Transit Gateway need non-overlapping ranges."
+  ref: "AWS PrivateLink Guide: Share your services through AWS PrivateLink"
+  exams: [sap]
+
+- id: sap-hybrid-dns-ram
+  kind: choice
+  en: "Forty VPCs in different accounts must resolve the on-premises domain corp.example, and on-premises servers must resolve names in Route 53 private hosted zones. The team wants to manage DNS forwarding in one place. What should a solutions architect do?"
+  options:
+    - "Create Route 53 Resolver inbound and outbound endpoints in a shared-services VPC, create a forwarding rule for corp.example, share the rule with the other accounts using AWS RAM, and associate it with their VPCs."
+    - "Set each instance's /etc/hosts file."
+    - "Run DNS servers on EC2 in every VPC."
+    - "Create a public hosted zone for corp.example."
+  correct: [A]
+  why: "Centralized Resolver endpoints plus forwarding rules shared through RAM give every VPC hybrid resolution without endpoints in each account."
+  ref: "Amazon Route 53 Developer Guide: Managing forwarding rules"
+  exams: [sap]
+
+- id: sap-scp-guardrails
+  kind: choice
+  en: "A company wants to prevent anyone in member accounts from leaving the organization, disabling GuardDuty, or modifying the central CloudTrail trail, while letting account administrators otherwise manage their accounts freely. What is the MOST effective control?"
+  options:
+    - "SCPs attached to the root or OUs that deny those specific actions"
+    - "Permissions boundaries on every role"
+    - "IAM policies in each account"
+    - "A Config rule with automatic remediation"
+  correct: [A]
+  why: "SCPs set the maximum permissions for every principal in member accounts and cannot be changed from inside them. Deny-list SCPs block specific actions while leaving the rest to the accounts' own IAM."
+  ref: "AWS Organizations User Guide: Service control policies"
+  exams: [sap]
+
+- id: sap-identity-center-idp
+  kind: choice
+  en: "A company uses Okta for workforce identity and has 80 AWS accounts. It wants users and group memberships provisioned automatically and access granted per account by group. What should be configured?"
+  options:
+    - "Amazon Cognito user pools"
+    - "IAM Identity Center with Okta as an external identity provider (SAML 2.0) and SCIM automatic provisioning, with permission sets assigned to groups per account"
+    - "IAM users synchronized nightly by a script"
+    - "An IAM SAML identity provider and role in each account, managed by hand"
+  correct: [B]
+  why: "Identity Center centralizes workforce access across the organization; SCIM keeps users and groups in sync from the IdP, and permission sets map groups to roles in each account."
+  ref: "IAM Identity Center User Guide: Connect to an external identity provider"
+  exams: [sap]
+
+- id: sap-central-logging
+  kind: choice
+  en: "Auditors require that API activity from all current and future accounts is collected in one place that member account administrators cannot alter. Which design meets this with the LEAST operational overhead?"
+  options:
+    - "VPC Flow Logs in every VPC"
+    - "A trail in each account writing to its own bucket"
+    - "An organization trail from the management account (or delegated admin) writing to an S3 bucket in a dedicated log archive account, with a bucket policy and Object Lock preventing changes"
+    - "Daily exports of CloudTrail event history"
+  correct: [C]
+  why: "An organization trail applies to every account automatically, including new ones, and member accounts cannot modify it. A separate log archive account with restrictive policies (and optionally Object Lock) protects the logs."
+  ref: "AWS CloudTrail User Guide: Creating a trail for an organization"
+  exams: [sap]
+
+- id: sap-delegated-admin
+  kind: choice
+  en: "The security team wants to manage GuardDuty and Security Hub for all accounts from a dedicated security account rather than the management account. What should be done?"
+  options:
+    - "Enable the services separately in each account."
+    - "Share the management account's root credentials with the security team."
+    - "Register the security account as the delegated administrator for GuardDuty and Security Hub in Organizations, and enable auto-enable for new accounts."
+    - "Use SCPs to grant the security account access."
+  correct: [C]
+  why: "Delegated administration lets a member account manage a service organization-wide, keeping the management account's use minimal; auto-enable covers new accounts."
+  ref: "Amazon GuardDuty User Guide: Managing GuardDuty accounts with AWS Organizations"
+  exams: [sap]
+
+- id: sap-control-tower-factory
+  kind: choice
+  en: "Teams request new AWS accounts several times a week. Each account must be placed in the right OU with baseline guardrails, networking and logging, without manual work by the central team. Which solution fits BEST?"
+  options:
+    - "Create accounts by hand in the Organizations console"
+    - "Write a script that creates IAM users"
+    - "Reuse one shared account for all teams"
+    - "AWS Control Tower Account Factory (optionally Account Factory for Terraform or customizations) with OU-level controls"
+  correct: [D]
+  why: "Control Tower provisions accounts into OUs with governed baselines and controls automatically; customizations add networking and other baseline resources."
+  ref: "AWS Control Tower User Guide: Provision and manage accounts with Account Factory"
+  exams: [sap]
+
+- id: sap-tag-policy-cost
+  kind: choice
+  en: "Finance needs costs reported by cost center across 50 accounts, but resources are often tagged inconsistently (CostCenter, costcenter, cost-center). Which TWO actions help MOST?"
+  options:
+    - "Use an Organizations tag policy to standardize the CostCenter tag key and allowed values, and enforce it for supported resource types."
+    - "Disable consolidated billing."
+    - "Activate CostCenter as a cost allocation tag in the management account."
+    - "Create a separate organization for each cost center."
+    - "Tag only the IAM users."
+  correct: [A, C]
+  why: "Tag policies standardize keys and values (and can prevent non-compliant tagging on supported resources); activating the tag as a cost allocation tag makes it usable in Cost Explorer and the CUR across the organization."
+  ref: "AWS Organizations User Guide: Tag policies"
+  exams: [sap]
+
+- id: sap-elastic-dr
+  kind: choice
+  en: "A company must protect 300 on-premises Windows and Linux servers with an RPO of seconds and an RTO of under an hour, failing over into AWS, while paying little for the standby. Which service fits BEST?"
+  options:
+    - "AWS Elastic Disaster Recovery with continuous block-level replication to a low-cost staging area"
+    - "Nightly AMI exports"
+    - "A full copy of every server running on EC2 at all times"
+    - "AWS Backup of the on-premises servers once a day"
+  correct: [A]
+  why: "Elastic Disaster Recovery replicates continuously (RPO of seconds) into a lightweight staging area and launches recovery instances in minutes when needed, avoiding full-size standby costs."
+  ref: "AWS Elastic Disaster Recovery User Guide: What is Elastic Disaster Recovery"
+  exams: [sap]
+
+- id: sap-dr-route53-arc
+  kind: choice
+  en: "A multi-Region active/passive application needs a reliable, manually controlled failover switch that keeps working even if the primary Region's control plane is impaired. What should a solutions architect use?"
+  options:
+    - "CloudFront origin failover only"
+    - "Amazon Application Recovery Controller (ARC) routing controls with Route 53 health checks"
+    - "A Lambda function in the primary Region that updates DNS"
+    - "Editing Route 53 records in the console during the incident"
+  correct: [B]
+  why: "ARC routing controls are highly available data-plane switches backed by a multi-Region cluster, designed for failover when a Region is impaired. Control-plane edits or functions in the failing Region may not work then."
+  ref: "Amazon Application Recovery Controller Developer Guide: Routing control"
+  exams: [sap]
+
+- id: sap-cross-account-kms-org
+  kind: choice
+  en: "Many accounts in an organization must decrypt objects in a central data lake bucket encrypted with a customer managed KMS key, including accounts created in the future. What is the simplest key policy approach?"
+  options:
+    - "Make the key policy allow Principal * with no condition."
+    - "Use the AWS managed key aws/s3."
+    - "List every account ID in the key policy and update it for each new account."
+    - "Allow kms:Decrypt to principals with the condition aws:PrincipalOrgID equal to the organization ID (and grant IAM permissions in the accounts)."
+  correct: [D]
+  why: "The aws:PrincipalOrgID condition scopes access to any principal in the organization, so new accounts are covered without editing the policy. AWS managed keys cannot be used cross-account."
+  ref: "AWS KMS Developer Guide: AWS global condition keys - aws:PrincipalOrgID"
+  exams: [sap]
+
+- id: sap-vpc-sharing
+  kind: choice
+  en: "A company wants application teams to have separate accounts for billing and permissions, but wants the network team to own and manage one set of VPCs, avoiding Transit Gateway data processing charges between teams' workloads. What should be used?"
+  options:
+    - "One VPC per application account connected by Transit Gateway"
+    - "PrivateLink for every service"
+    - "VPC sharing with AWS RAM: the network account shares subnets with the application accounts"
+    - "VPC peering between all accounts"
+  correct: [C]
+  why: "With VPC sharing, participants launch resources into the owner's subnets; traffic between them stays within one VPC, with no peering or Transit Gateway charges, while accounts remain separate."
+  ref: "Amazon VPC User Guide: Share your VPC with other accounts"
+  exams: [sap]
+
+- id: sap-network-firewall-central
+  kind: choice
+  en: "All traffic between VPCs and to the internet must pass through a centrally managed stateful firewall. The company uses a Transit Gateway. Which design meets this?"
+  options:
+    - "Network ACLs in each subnet"
+    - "AWS WAF on the Transit Gateway"
+    - "Security groups in each VPC"
+    - "An inspection VPC with AWS Network Firewall attached to the Transit Gateway, with appliance mode enabled and Transit Gateway route tables sending traffic through it"
+  correct: [D]
+  why: "A centralized inspection VPC with Network Firewall, reached through Transit Gateway routing (with appliance mode for symmetric flows), inspects east-west and egress traffic in one place."
+  ref: "AWS Network Firewall Developer Guide: Centralized deployment model"
+  exams: [sap]
+
+- id: sap-budget-actions
+  kind: choice
+  en: "A sandbox OU's accounts sometimes run up large bills from forgotten resources. The company wants spending in each sandbox account capped automatically when it exceeds 500 USD a month. What should be implemented?"
+  options:
+    - "AWS Budgets with budget actions that apply a restrictive SCP or IAM policy (or stop instances) when the threshold is reached"
+    - "A monthly email from Cost Explorer"
+    - "Savings Plans"
+    - "Consolidated billing alone"
+  correct: [A]
+  why: "Budget actions can automatically apply IAM policies or SCPs, or stop EC2 and RDS instances, when a budget threshold is exceeded."
+  ref: "AWS Cost Management User Guide: Configuring a budget action"
+  exams: [sap]
+
+- id: sap-access-analyzer-org
+  kind: choice
+  en: "Security must continuously detect any resource policy in the organization that grants access to a principal outside the organization. Which solution needs the LEAST effort?"
+  options:
+    - "CloudTrail Insights"
+    - "A Lambda function in each account that parses all resource policies daily"
+    - "Trusted Advisor in each account"
+    - "IAM Access Analyzer with the organization as the zone of trust, from a delegated administrator account"
+  correct: [D]
+  why: "An organization-level analyzer evaluates supported resource policies across all accounts continuously and reports external access findings centrally."
+  ref: "IAM User Guide: IAM Access Analyzer - zone of trust"
+  exams: [sap]
+
+- id: sap-latency-region
+  kind: choice
+  en: "A trading application's users are all in Tokyo, and it must reach a partner's systems hosted in a colocation facility in Tokyo with the lowest possible latency. Which choice MOST affects meeting this requirement?"
+  options:
+    - "Using the largest instance types in any Region"
+    - "Using S3 Transfer Acceleration"
+    - "Deploying in ap-northeast-1 and connecting to the partner through Direct Connect at a Tokyo location"
+    - "Deploying in us-east-1 with CloudFront in front"
+  correct: [C]
+  why: "Physical distance dominates latency: placing the workload in the nearest Region and using a private, consistent link to the colocation facility minimizes it."
+  ref: "AWS Well-Architected Framework, Performance Efficiency Pillar: Choose the location of your workload"
+  exams: [sap]
+
+- id: sap-centralized-egress
+  kind: choice
+  en: "Each of 30 VPCs has its own NAT gateways, and the company wants to reduce cost and inspect outbound internet traffic in one place. What design should a solutions architect propose?"
+  options:
+    - "Use gateway endpoints for all internet traffic"
+    - "Remove NAT gateways and give every instance a public IP"
+    - "Add more NAT gateways per VPC"
+    - "A central egress VPC with NAT gateways (and a firewall) attached to the Transit Gateway, with the VPCs' default routes pointing to the Transit Gateway"
+  correct: [D]
+  why: "Centralized egress consolidates NAT gateways and adds a single inspection point, trading per-VPC NAT hourly charges for Transit Gateway processing - usually cheaper at this scale."
+  ref: "AWS Whitepaper: Building a Scalable and Secure Multi-VPC AWS Network Infrastructure - Centralized egress"
+  exams: [sap]
+
+- id: sap-security-hub-central
+  kind: choice
+  en: "A company wants all security findings from every account and Region aggregated in one place and sent to its ticketing system automatically. Which TWO steps are needed?"
+  options:
+    - "Disable GuardDuty to reduce noise."
+    - "Create IAM users for the ticketing system in every account."
+    - "Create an EventBridge rule in the aggregation account that sends Security Hub findings to the ticketing integration."
+    - "Turn on CloudTrail data events for all S3 buckets."
+    - "Enable Security Hub with a delegated administrator and cross-Region aggregation."
+  correct: [C, E]
+  why: "Security Hub's delegated admin and cross-Region aggregation collect findings centrally; EventBridge in that account routes them to integrations such as a ticketing system."
+  ref: "AWS Security Hub User Guide: Cross-Region aggregation"
+  exams: [sap]
+
+- id: sap-savings-plan-sharing
+  kind: choice
+  en: "A company buys Compute Savings Plans in its management account. Several member accounts with steady usage are not benefiting. What should be checked?"
+  options:
+    - "That discount sharing is turned on for those accounts in the billing preferences"
+    - "That the accounts use the same instance family"
+    - "That the member accounts have their own Savings Plans"
+    - "That the accounts are in the same Region"
+  correct: [A]
+  why: "In consolidated billing, Savings Plans and RI discounts apply across accounts only where discount sharing is enabled. Compute Savings Plans are Region- and family-independent."
+  ref: "AWS Billing User Guide: Turning off reserved instances and Savings Plans discount sharing"
+  exams: [sap]

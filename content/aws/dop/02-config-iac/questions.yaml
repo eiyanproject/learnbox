@@ -1,0 +1,181 @@
+- id: dop-stack-policy
+  kind: choice
+  en: "A production stack contains an RDS instance. The team wants to make sure no stack update can replace or delete the database by accident, while other resources in the stack can still be updated. What should be applied?"
+  options:
+    - "A DeletionPolicy of Delete"
+    - "A stack policy that denies Update:Replace and Update:Delete on the database's logical ID"
+    - "An SCP denying cloudformation:UpdateStack"
+    - "Termination protection only"
+  correct: [B]
+  why: "Stack policies protect specific resources from update actions during stack updates. Termination protection prevents deleting the whole stack, not replacements during updates."
+  ref: "AWS CloudFormation User Guide: Prevent updates to stack resources"
+  exams: [dop]
+
+- id: dop-change-sets
+  kind: choice
+  en: "Before changing a production stack's template, the team wants to see exactly which resources will be modified or replaced, and to approve before anything happens. What should it use?"
+  options:
+    - "Update the stack and watch the events"
+    - "Create a change set, review it, then execute it"
+    - "Run drift detection"
+    - "Delete and recreate the stack"
+  correct: [B]
+  why: "Change sets preview resource additions, modifications and replacements without applying them; executing the change set performs the update."
+  ref: "AWS CloudFormation User Guide: Update CloudFormation stacks using change sets"
+  exams: [dop]
+
+- id: dop-custom-resource
+  kind: choice
+  en: "A stack must create an item in a third-party system that CloudFormation does not support, and remove it when the stack is deleted. What should be used?"
+  options:
+    - "A stack output"
+    - "Stack tags"
+    - "A Lambda-backed custom resource that handles Create, Update and Delete requests and responds to the pre-signed URL"
+    - "A mapping"
+  correct: [C]
+  why: "Custom resources call a Lambda function (or SNS topic) on stack events; the function does the work and signals success or failure to CloudFormation."
+  ref: "AWS CloudFormation User Guide: Create custom provisioning logic with custom resources"
+  exams: [dop]
+
+- id: dop-custom-resource-hang
+  kind: choice
+  en: "A stack deletion hangs for an hour on a Lambda-backed custom resource. Logs show the function threw an exception before replying. What is the root cause and the fix?"
+  options:
+    - "The stack needs termination protection"
+    - "The function never sent a response to the ResponseURL; wrap the logic so it always sends SUCCESS or FAILED, including on errors and Delete events"
+    - "Lambda was out of memory; double it"
+    - "CloudFormation does not support deletes of custom resources"
+  correct: [B]
+  why: "CloudFormation waits for a response until the timeout. A custom resource handler must always respond, even on exceptions, or the stack operation hangs."
+  ref: "AWS CloudFormation User Guide: Custom resource response objects"
+  exams: [dop]
+
+- id: dop-cross-stack-export
+  kind: choice
+  en: "A network stack creates a VPC and subnets, and several application stacks must use the subnet IDs. The team wants application stacks to stay independent. What is the standard approach?"
+  options:
+    - "Put everything into one large stack"
+    - "Export the subnet IDs as outputs in the network stack and use Fn::ImportValue in the application stacks"
+    - "Use Fn::GetAtt across stacks"
+    - "Copy the IDs into each template by hand"
+  correct: [B]
+  why: "Exports share values across stacks in the same account and Region; CloudFormation prevents deleting or changing an export that another stack imports."
+  ref: "AWS CloudFormation User Guide: Get exported outputs from a deployed CloudFormation stack"
+  exams: [dop]
+
+- id: dop-dynamic-reference
+  kind: choice
+  en: "A template must set an RDS master password stored in Secrets Manager without the password appearing in parameters, the template or stack events. What should the template use?"
+  options:
+    - "A dynamic reference such as {{resolve:secretsmanager:prod/db:SecretString:password}}"
+    - "An output with the password"
+    - "A NoEcho parameter with the default set to the password"
+    - "A mapping containing the password"
+  correct: [A]
+  why: "Dynamic references resolve the secret at deploy time and CloudFormation does not store or display the value. A default in the template exposes it. (ManageMasterUserPassword is another option for RDS.)"
+  ref: "AWS CloudFormation User Guide: Get values stored in other services using dynamic references"
+  exams: [dop]
+
+- id: dop-cfn-hooks
+  kind: choice
+  en: "The platform team wants every CloudFormation deployment in the organization to be blocked if it would create an S3 bucket without encryption or a security group open to the world, before the resource is provisioned. What should it use?"
+  options:
+    - "Stack policies"
+    - "Drift detection"
+    - "CloudFormation Hooks (for example Guard rule hooks or managed proactive controls) activated in the accounts"
+    - "AWS Config detective rules only"
+  correct: [C]
+  why: "Hooks inspect resource configurations before CloudFormation provisions them and can fail the operation; Config rules detect problems after the fact."
+  ref: "AWS CloudFormation Hooks User Guide: What is CloudFormation Hooks"
+  exams: [dop]
+
+- id: dop-cdk-bootstrap
+  kind: choice
+  en: "A CDK app deploys fine to the dev account but fails in a new production account with an error that the stack requires bootstrap resources. What must be done?"
+  options:
+    - "Run cdk bootstrap for the production account and Region (with a trust to the deploying account if deploying cross-account)"
+    - "Create an IAM user in production"
+    - "Run cdk synth in production"
+    - "Convert the app to raw CloudFormation"
+  correct: [A]
+  why: "Bootstrapping creates the CDK toolkit stack (asset bucket, ECR repository, deployment roles) needed in each account and Region; --trust lets another account's pipeline deploy."
+  ref: "AWS CDK Developer Guide: CDK bootstrapping"
+  exams: [dop]
+
+- id: dop-service-catalog
+  kind: choice
+  en: "Developers must be able to launch an approved, preconfigured EMR cluster or RDS database themselves, without broad IAM permissions to those services. What should the platform team provide?"
+  options:
+    - "AWS Service Catalog products in a portfolio shared with the developers, with launch constraints using a role that has the needed permissions"
+    - "An SCP allowing EMR"
+    - "A wiki page with CLI commands"
+    - "AdministratorAccess for developers"
+  correct: [A]
+  why: "Service Catalog lets users launch approved CloudFormation-based products; the launch constraint role provisions resources so users need only Service Catalog permissions."
+  ref: "AWS Service Catalog Administrator Guide: Launch constraints"
+  exams: [dop]
+
+- id: dop-appconfig
+  kind: choice
+  en: "A team wants to turn features on gradually for its application on Lambda and EC2 without redeploying code, with validation of the configuration and automatic rollback if an alarm fires during rollout. What should it use?"
+  options:
+    - "DynamoDB with no validation"
+    - "A config file inside the deployment package"
+    - "Environment variables updated by hand"
+    - "AWS AppConfig feature flags with a validator, a gradual deployment strategy and a CloudWatch alarm monitor"
+  correct: [D]
+  why: "AppConfig deploys configuration gradually with deployment strategies, validates it with JSON Schema or Lambda validators, and rolls back automatically when monitored alarms trigger."
+  ref: "AWS AppConfig User Guide: What is AWS AppConfig"
+  exams: [dop]
+
+- id: dop-parameter-hierarchy
+  kind: choice
+  en: "Applications in dev, staging and prod read about 40 configuration values each. The team wants values organized per environment, encrypted where sensitive, and fetched with one call per environment. What should be used?"
+  options:
+    - "Parameter Store hierarchies such as /app/prod/..., SecureString for secrets, and GetParametersByPath"
+    - "Hard-coded values in each AMI"
+    - "One S3 object per value"
+    - "Route 53 TXT records"
+  correct: [A]
+  why: "Hierarchical parameter names group values by environment; GetParametersByPath retrieves a whole branch, decrypting SecureString values with KMS when permitted."
+  ref: "AWS Systems Manager User Guide: Working with parameter hierarchies"
+  exams: [dop]
+
+- id: dop-stacksets-new-accounts
+  kind: choice
+  en: "Every account added to the Workloads OU must automatically receive a baseline stack with IAM roles and a Config recorder in two Regions, and stacks must be removed when an account leaves the OU. What should be configured?"
+  options:
+    - "A Lambda function that runs CreateStack in each new account"
+    - "A StackSet with service-managed permissions targeting the OU, with automatic deployment enabled and retain stacks disabled"
+    - "AWS RAM"
+    - "A self-managed StackSet updated manually for each account"
+  correct: [B]
+  why: "Service-managed StackSets with automatic deployment add stack instances when accounts join the target OU and remove them when they leave (unless retention is on)."
+  ref: "AWS CloudFormation User Guide: Enable or disable automatic deployments for StackSets"
+  exams: [dop]
+
+- id: dop-image-builder-pipeline
+  kind: choice
+  en: "Each month, the team must produce a patched AMI with its agents installed, run tests on it, distribute it to four Regions, and update a launch template to use it. What should it use?"
+  options:
+    - "An EC2 Image Builder pipeline with a recipe, test components and a distribution configuration that updates the launch template"
+    - "Manual snapshots"
+    - "AWS Backup"
+    - "CloudFormation drift detection"
+  correct: [A]
+  why: "Image Builder pipelines build, test and distribute images on a schedule, and distribution settings can copy AMIs to Regions and set them on launch templates."
+  ref: "EC2 Image Builder User Guide: Manage EC2 Image Builder distribution settings"
+  exams: [dop]
+
+- id: dop-update-replace-policy
+  kind: choice
+  en: "A template change will cause CloudFormation to replace an S3 bucket that holds data. The team wants the old bucket kept rather than deleted during the replacement. Which attribute controls this?"
+  options:
+    - "UpdateReplacePolicy: Retain"
+    - "CreationPolicy"
+    - "DeletionPolicy: Delete"
+    - "DependsOn"
+  correct: [A]
+  why: "UpdateReplacePolicy decides what happens to the old physical resource when an update replaces it; DeletionPolicy applies when the resource is removed from the stack or the stack is deleted."
+  ref: "AWS CloudFormation User Guide: UpdateReplacePolicy attribute"
+  exams: [dop]

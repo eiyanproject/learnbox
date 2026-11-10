@@ -1,0 +1,143 @@
+- id: dop-health-events
+  kind: choice
+  en: "The operations team wants to be notified automatically, and open a ticket, whenever AWS schedules maintenance that will retire one of the company's EC2 instances in any account. What should be configured?"
+  options:
+    - "An EventBridge rule on AWS Health events (aws.health, scheduled change) - with the organizational view or a rule in each account - targeting the ticketing integration"
+    - "A daily check of the EC2 console"
+    - "Trusted Advisor email once a week"
+    - "CloudTrail Insights"
+  correct: [A]
+  why: "AWS Health emits events for scheduled maintenance and retirements; EventBridge rules route them to SNS, Lambda or ticketing tools as they happen."
+  ref: "AWS Health User Guide: Monitoring AWS Health events with Amazon EventBridge"
+  exams: [dop]
+
+- id: dop-incident-manager
+  kind: choice
+  en: "When a critical alarm fires, the company wants an incident created automatically, the on-call engineer paged with escalation if not acknowledged, a chat channel opened and a diagnostic runbook started. Which service provides this?"
+  options:
+    - "AWS Systems Manager Incident Manager with a response plan, contacts, escalation plan, chat channel and Automation runbook"
+    - "AWS Config"
+    - "AWS Trusted Advisor"
+    - "Amazon SNS email only"
+  correct: [A]
+  why: "Incident Manager response plans tie alarms or EventBridge events to engagement of contacts, escalation, chat channels and runbooks."
+  ref: "AWS Systems Manager Incident Manager User Guide: Response plans"
+  exams: [dop]
+
+- id: dop-guardduty-auto-response
+  kind: choice
+  en: "When GuardDuty reports that an EC2 instance is communicating with a known command-and-control server, the instance must be isolated immediately and a snapshot taken for forensics. What should be implemented?"
+  options:
+    - "An EventBridge rule for that GuardDuty finding type that starts a Step Functions workflow or SSM Automation runbook to snapshot the volumes and swap the instance's security group to an isolation group"
+    - "Terminate the instance immediately"
+    - "Wait for the security team to read the GuardDuty console"
+    - "Disable GuardDuty"
+  correct: [A]
+  why: "GuardDuty findings arrive as EventBridge events; automated responses can contain the instance while preserving evidence. Terminating destroys forensic data."
+  ref: "Amazon GuardDuty User Guide: Creating custom responses to GuardDuty findings with Amazon EventBridge"
+  exams: [dop]
+
+- id: dop-codedeploy-failed-hook
+  kind: choice
+  en: "A CodeDeploy deployment to EC2 fails at the AfterInstall event with 'script timed out'. Where should the engineer look first?"
+  options:
+    - "The CloudFormation stack events"
+    - "The deployment's lifecycle event details and the CodeDeploy agent logs on the instance (for example /opt/codedeploy-agent/deployment-root/deployment-logs)"
+    - "The ECR repository"
+    - "VPC Flow Logs"
+  correct: [B]
+  why: "Lifecycle event details show the failing script and its output; the agent's deployment logs on the instance contain the full script output. The hook's timeout is set in appspec.yml."
+  ref: "AWS CodeDeploy User Guide: Troubleshoot EC2/On-Premises deployment issues"
+  exams: [dop]
+
+- id: dop-cfn-first-failure
+  kind: choice
+  en: "A stack creation rolled back with many CREATE_FAILED and 'Resource creation cancelled' events. How should the engineer find the actual cause?"
+  options:
+    - "Delete the stack and try again unchanged"
+    - "Find the earliest CREATE_FAILED event in the stack events and read its status reason; the cancelled ones are side effects"
+    - "Check the billing console"
+    - "Look only at the last event"
+  correct: [B]
+  why: "When one resource fails, CloudFormation cancels the others; the first failure's status reason explains the root cause. Disabling rollback can keep resources for inspection."
+  ref: "AWS CloudFormation User Guide: Troubleshooting CloudFormation"
+  exams: [dop]
+
+- id: dop-ecs-stopped-reason
+  kind: choice
+  en: "ECS tasks keep stopping shortly after starting, and the service never reaches its desired count. What should the engineer check first?"
+  options:
+    - "AWS Budgets"
+    - "IAM Access Analyzer"
+    - "The stopped reason and container exit codes of the stopped tasks, and the container's logs (for example 'CannotPullContainerError' or 'Essential container exited')"
+    - "The Route 53 hosted zone"
+  correct: [C]
+  why: "Stopped tasks report why they stopped (image pull errors, failed health checks, out-of-memory exit code 137, missing secrets); the container logs give detail."
+  ref: "Amazon ECS Developer Guide: View Amazon ECS stopped task errors"
+  exams: [dop]
+
+- id: dop-eventbridge-cross-account
+  kind: choice
+  en: "Events from 30 workload accounts (for example CodePipeline failures) must be processed by one Lambda function in a central operations account. What should be configured?"
+  options:
+    - "Rules in each workload account that send matching events to the central account's event bus, whose resource policy allows the organization, and a rule there targeting the function"
+    - "Shared IAM users"
+    - "A Lambda function in every account that polls CloudTrail"
+    - "SNS email subscriptions"
+  correct: [A]
+  why: "EventBridge supports sending events to an event bus in another account; the central bus's policy (for example with aws:PrincipalOrgID) allows it, and central rules route them."
+  ref: "Amazon EventBridge User Guide: Sending and receiving events between AWS accounts"
+  exams: [dop]
+
+- id: dop-asg-launch-failures
+  kind: choice
+  en: "An Auto Scaling group is not launching new instances during a spike. Which source shows why each launch attempt failed?"
+  options:
+    - "Route 53 query logs"
+    - "AWS Artifact"
+    - "S3 server access logs"
+    - "The Auto Scaling group's activity history (for example insufficient capacity, invalid AMI, or a vCPU quota exceeded)"
+  correct: [D]
+  why: "Activity history records each scaling activity with its status and a cause, including errors such as InsufficientInstanceCapacity or exceeded service quotas."
+  ref: "Amazon EC2 Auto Scaling User Guide: Troubleshoot Amazon EC2 Auto Scaling"
+  exams: [dop]
+
+- id: dop-lambda-throttles
+  kind: choice
+  en: "An asynchronously invoked Lambda function shows many Throttles during a nightly batch, and some events never get processed. Which TWO actions address this?"
+  options:
+    - "Switch the runtime version."
+    - "Reduce the memory to 128 MB."
+    - "Delete the function's log group."
+    - "Configure an on-failure destination or DLQ so events that exhaust retries are kept for reprocessing."
+    - "Request a higher account concurrency quota or set reserved concurrency so other functions cannot starve it."
+  correct: [D, E]
+  why: "Throttles mean concurrency is exhausted; reserving or raising concurrency gives the function capacity. Async events retried past the maximum age are dropped unless a destination or DLQ keeps them."
+  ref: "AWS Lambda Developer Guide: Lambda function scaling and asynchronous invocation error handling"
+  exams: [dop]
+
+- id: dop-eventbridge-archive-replay
+  kind: choice
+  en: "A consumer of order events had a bug for 6 hours and dropped events. After fixing it, the team needs those events delivered again. Which feature allows this if it was set up beforehand?"
+  options:
+    - "An EventBridge archive on the event bus, then a replay of the time range to the fixed rule"
+    - "SNS delivery status logs"
+    - "SQS message timers"
+    - "CloudTrail event history"
+  correct: [A]
+  why: "EventBridge archives store matching events and replays resend them for a chosen time window."
+  ref: "Amazon EventBridge User Guide: Archiving and replaying events"
+  exams: [dop]
+
+- id: dop-service-quota-alarm
+  kind: choice
+  en: "A deployment failed because the account reached its limit for running On-Demand vCPUs. The team wants warning before this happens again. What should it set up?"
+  options:
+    - "Check the quota once a year"
+    - "Create a new account for each deployment"
+    - "A CloudWatch alarm on the service quota usage metric (for example with Service Quotas' alarm integration) at 80%, and request an increase"
+    - "Use only Spot Instances"
+  correct: [C]
+  why: "Service Quotas publishes usage metrics for many quotas and can create CloudWatch alarms on utilization, giving time to request increases."
+  ref: "Service Quotas User Guide: Service Quotas and Amazon CloudWatch alarms"
+  exams: [dop]

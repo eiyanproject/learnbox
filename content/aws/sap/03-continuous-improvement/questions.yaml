@@ -1,0 +1,260 @@
+- id: sap-rds-proxy-lambda
+  kind: choice
+  en: "A Lambda-based API on RDS for PostgreSQL fails during traffic spikes with 'too many connections' errors, although database CPU stays below 30%. What change fixes this with the LEAST effort?"
+  options:
+    - "Put RDS Proxy between the functions and the database and connect through the proxy endpoint"
+    - "Rewrite the API to run on EC2"
+    - "Set Lambda reserved concurrency to 1"
+    - "Move the database to a larger instance class"
+  correct: [A]
+  why: "Each concurrent function opens its own connections; RDS Proxy pools and shares them, keeping the database under its connection limit. A larger instance raises the limit somewhat but wastes money while CPU is idle."
+  ref: "Amazon RDS User Guide: Using Amazon RDS Proxy"
+  exams: [sap]
+
+- id: sap-encrypt-existing-rds
+  kind: choice
+  en: "An unencrypted production RDS for MySQL instance must be encrypted at rest. What is the correct approach?"
+  options:
+    - "Encrypt the EBS volumes of the RDS instance from the EC2 console"
+    - "Turn on encryption in the instance's settings"
+    - "Take a snapshot, copy it with encryption using a KMS key, restore a new instance from the encrypted copy, and cut over (using replication to minimize downtime)"
+    - "Enable S3 default encryption"
+  correct: [C]
+  why: "Encryption cannot be enabled on an existing unencrypted DB instance. An encrypted snapshot copy restored to a new instance is the supported path."
+  ref: "Amazon RDS User Guide: Limitations of Amazon RDS encrypted DB instances"
+  exams: [sap]
+
+- id: sap-s3-batch-encrypt
+  kind: choice
+  en: "A bucket holds 500 million objects, many written before default encryption with SSE-KMS was turned on. Compliance requires every existing object to use the new KMS key. What is the MOST efficient way?"
+  options:
+    - "Enable default encryption again"
+    - "Use S3 Inventory to list unencrypted objects and an S3 Batch Operations copy job that rewrites them in place with SSE-KMS"
+    - "Download and re-upload every object from an EC2 instance"
+    - "Create a new bucket and wait for objects to expire"
+  correct: [B]
+  why: "Default encryption applies only to new writes. Batch Operations runs a managed, tracked copy across billions of objects, driven by an Inventory report."
+  ref: "Amazon S3 User Guide: Encrypting objects with Amazon S3 Batch Operations"
+  exams: [sap]
+
+- id: sap-compute-optimizer
+  kind: choice
+  en: "A company runs 2,000 EC2 instances whose sizes were chosen years ago. Management wants data-driven right-sizing recommendations across all accounts. Which service should be used?"
+  options:
+    - "AWS Config"
+    - "AWS Compute Optimizer enabled for the organization"
+    - "CloudTrail Lake"
+    - "Amazon Inspector"
+  correct: [B]
+  why: "Compute Optimizer analyses utilization metrics and recommends instance types and sizes (and for EBS, Lambda, ECS and Auto Scaling groups) across the organization."
+  ref: "AWS Compute Optimizer User Guide: What is AWS Compute Optimizer"
+  exams: [sap]
+
+- id: sap-savings-plans-steady
+  kind: choice
+  en: "After right-sizing, a company has a steady 24x7 baseline of EC2 and Fargate usage that shifts between instance families and Regions over the year. Which purchase gives the largest discount while keeping that flexibility?"
+  options:
+    - "Spot Instances for the baseline"
+    - "Compute Savings Plans for the baseline commitment"
+    - "Standard Reserved Instances for one instance type"
+    - "Dedicated Hosts"
+  correct: [B]
+  why: "Compute Savings Plans apply to EC2 in any family, size and Region, and to Fargate and Lambda. Standard RIs lock to attributes; Spot can be interrupted."
+  ref: "Savings Plans User Guide: Savings Plans types"
+  exams: [sap]
+
+- id: sap-iam-roles-anywhere
+  kind: choice
+  en: "On-premises servers call AWS APIs using long-lived IAM user access keys stored in config files. Security wants to remove these keys. The company already runs a private certificate authority. What should replace them?"
+  options:
+    - "Use the root user's keys"
+    - "Store the keys in a password manager"
+    - "Rotate the access keys every year"
+    - "IAM Roles Anywhere with a trust anchor for the CA, issuing temporary credentials to servers that present their certificates"
+  correct: [D]
+  why: "Roles Anywhere lets workloads outside AWS obtain temporary role credentials using X.509 certificates, removing long-lived keys."
+  ref: "IAM Roles Anywhere User Guide: What is IAM Roles Anywhere"
+  exams: [sap]
+
+- id: sap-config-remediation
+  kind: choice
+  en: "Security groups that allow SSH from 0.0.0.0/0 keep appearing in many accounts. The company wants them detected and fixed automatically within minutes. What should be implemented?"
+  options:
+    - "An AWS Config rule (restricted-ssh) deployed through a conformance pack or organization rule, with automatic remediation using a Systems Manager Automation runbook"
+    - "An SCP that denies ec2:DescribeSecurityGroups"
+    - "A quarterly manual review"
+    - "VPC Flow Logs"
+  correct: [A]
+  why: "Config evaluates resources on change, and auto-remediation runs an Automation document to remove the offending rule, across accounts when deployed organization-wide."
+  ref: "AWS Config Developer Guide: Remediating noncompliant resources"
+  exams: [sap]
+
+- id: sap-dax-hot-reads
+  kind: choice
+  en: "A DynamoDB-backed product catalogue gets throttled on a few very popular items during sales, and read latency must drop to microseconds. The application uses the DynamoDB SDK. What change fits BEST?"
+  options:
+    - "Add DynamoDB Accelerator (DAX) and point the SDK client at the DAX cluster"
+    - "Switch to strongly consistent reads"
+    - "Add a global secondary index"
+    - "Export the table to S3"
+  correct: [A]
+  why: "DAX is a write-through, API-compatible cache in front of DynamoDB that serves hot reads in microseconds and absorbs repeated reads of the same items."
+  ref: "Amazon DynamoDB Developer Guide: In-memory acceleration with DAX"
+  exams: [sap]
+
+- id: sap-cloudfront-s3-transfer-cost
+  kind: choice
+  en: "A company serves 400 TB a month of images directly from S3 to users worldwide, and data transfer out is its largest bill. Users also complain about slow loads in Asia. What change addresses BOTH problems?"
+  options:
+    - "Serve the images through CloudFront with origin access control on the bucket"
+    - "Move the bucket to a Region in Asia"
+    - "Enable S3 Transfer Acceleration"
+    - "Switch the objects to S3 Standard-IA"
+  correct: [A]
+  why: "CloudFront caches at edge locations near users and data transfer from S3 to CloudFront is free, with CloudFront's out rates generally lower than S3 direct. Transfer Acceleration speeds uploads and costs extra."
+  ref: "Amazon CloudFront Developer Guide: Restrict access to an Amazon S3 origin"
+  exams: [sap]
+
+- id: sap-x-ray-latency
+  kind: choice
+  en: "Users report that a request through API Gateway, three Lambda functions and two downstream HTTP services is sometimes slow, and nobody knows which hop is responsible. What should be added first?"
+  options:
+    - "A larger API Gateway quota"
+    - "More memory for every function"
+    - "AWS X-Ray tracing on API Gateway and the functions, with the SDK instrumenting downstream calls"
+    - "CloudTrail data events"
+  correct: [C]
+  why: "X-Ray traces show the latency of each segment and subsegment across services, identifying the slow hop before changing anything."
+  ref: "AWS X-Ray Developer Guide: What is AWS X-Ray"
+  exams: [sap]
+
+- id: sap-patch-manager
+  kind: choice
+  en: "Patching 1,500 instances across accounts is done by hand and often missed. The company wants patches applied automatically in maintenance windows with compliance reporting. What should be used?"
+  options:
+    - "Systems Manager Patch Manager with patch baselines, patch policies through Quick Setup across the organization, and maintenance windows"
+    - "AWS Backup"
+    - "A new AMI built by hand every quarter"
+    - "Amazon Inspector alone"
+  correct: [A]
+  why: "Patch Manager applies baselines on schedules across accounts and Regions and reports patch compliance. Inspector finds vulnerabilities but does not patch."
+  ref: "AWS Systems Manager User Guide: Patch Manager"
+  exams: [sap]
+
+- id: sap-gp3-migration
+  kind: choice
+  en: "Hundreds of EBS gp2 volumes were sized large only to get more IOPS. The company wants to cut storage cost without downtime while keeping performance. What should it do?"
+  options:
+    - "Switch them to st1"
+    - "Modify the volumes to gp3 with Elastic Volumes, provisioning the needed IOPS and throughput independently of size"
+    - "Detach and recreate every volume from snapshots"
+    - "Move all data to S3"
+  correct: [B]
+  why: "gp3 decouples IOPS and throughput from capacity and costs less per GB; Elastic Volumes changes type online without detaching."
+  ref: "Amazon EBS User Guide: Modify a volume using Amazon EBS Elastic Volumes"
+  exams: [sap]
+
+- id: sap-sqs-visibility-dupes
+  kind: choice
+  en: "An order processor reading an SQS standard queue sometimes charges customers twice. Processing a message takes up to 3 minutes and the visibility timeout is 30 seconds. Which TWO changes fix this?"
+  options:
+    - "Use short polling."
+    - "Turn off the dead-letter queue."
+    - "Make the processor idempotent, for example by recording processed order IDs."
+    - "Lower the message retention period."
+    - "Raise the visibility timeout above the maximum processing time (or extend it while processing)."
+  correct: [C, E]
+  why: "A message that becomes visible again before processing finishes is delivered to another consumer. Standard queues are at-least-once, so idempotency is still required."
+  ref: "Amazon SQS Developer Guide: Visibility timeout"
+  exams: [sap]
+
+- id: sap-graviton
+  kind: choice
+  en: "A fleet of containerized Java microservices on x86 EC2 must reduce compute cost by 20% or more without changing business logic. The images can be rebuilt for multiple architectures. Which option fits BEST?"
+  options:
+    - "Run on Dedicated Instances"
+    - "Move to larger x86 instances"
+    - "Move to AWS Graviton (arm64) instance types after building multi-architecture images"
+    - "Disable Auto Scaling"
+  correct: [C]
+  why: "Graviton instances offer better price performance for many workloads; JVM workloads usually run unchanged once images are built for arm64."
+  ref: "AWS Graviton Technical Guide"
+  exams: [sap]
+
+- id: sap-elasticache-session
+  kind: choice
+  en: "A web application stores sessions on each EC2 instance, so users are logged out when Auto Scaling terminates instances, and sticky sessions cause uneven load. What should be changed?"
+  options:
+    - "Disable scale-in"
+    - "Store sessions in ElastiCache (Redis OSS or Valkey) or DynamoDB and disable stickiness"
+    - "Increase the stickiness duration"
+    - "Store sessions in instance store volumes"
+  correct: [B]
+  why: "Externalizing session state makes the web tier stateless, so instances can be added and removed freely and load spreads evenly."
+  ref: "AWS Whitepaper: Session management - Amazon ElastiCache"
+  exams: [sap]
+
+- id: sap-canary-synthetics
+  kind: choice
+  en: "A checkout flow broke twice last month and the team only learned from customer complaints. They want to detect broken user journeys within minutes, even at night with no traffic. What should be added?"
+  options:
+    - "More CloudWatch dashboards"
+    - "CloudWatch Synthetics canaries that script the checkout journey on a schedule, with alarms on failures"
+    - "CloudTrail Insights"
+    - "Weekly penetration tests"
+  correct: [B]
+  why: "Synthetics canaries run scripted journeys continuously and alarm on failures, finding problems before users do regardless of real traffic."
+  ref: "Amazon CloudWatch User Guide: Synthetic monitoring (canaries)"
+  exams: [sap]
+
+- id: sap-idle-cost
+  kind: choice
+  en: "Development environments run 24x7 although developers work 9 to 6 on weekdays. Which change gives a large saving with little effort?"
+  options:
+    - "Enable detailed monitoring"
+    - "Move dev to Dedicated Hosts"
+    - "Buy three-year Reserved Instances for dev"
+    - "Schedule stop and start for dev EC2 and RDS instances (for example with the Instance Scheduler solution or EventBridge Scheduler) outside working hours"
+  correct: [D]
+  why: "Running 45 of 168 hours a week cuts compute cost for those resources by roughly 70%; commitments would pay for unused hours."
+  ref: "AWS Solutions: Instance Scheduler on AWS"
+  exams: [sap]
+
+- id: sap-aurora-serverless-v2
+  kind: choice
+  en: "An Aurora MySQL cluster is provisioned for its rare monthly peak and is under 10% utilized the rest of the time. The application cannot tolerate cold starts. What change reduces cost the MOST while handling the peak?"
+  options:
+    - "Migrate to DynamoDB"
+    - "Move to a single larger provisioned instance"
+    - "Switch the instances to Aurora Serverless v2 with suitable minimum and maximum ACUs"
+    - "Add more read replicas"
+  correct: [C]
+  why: "Aurora Serverless v2 scales capacity in fine increments within seconds and bills per ACU-second, so it costs little at low load and scales for the peak, staying online."
+  ref: "Amazon Aurora User Guide: Using Aurora Serverless v2"
+  exams: [sap]
+
+- id: sap-guardduty-malware
+  kind: choice
+  en: "After a security incident, the company wants continuous threat detection for compromised instances, unusual API calls and access from known malicious IPs across all accounts, with the least setup. What should be enabled?"
+  options:
+    - "Amazon GuardDuty organization-wide with a delegated administrator and auto-enable"
+    - "AWS Artifact"
+    - "AWS Config"
+    - "Amazon Macie"
+  correct: [A]
+  why: "GuardDuty analyses CloudTrail, VPC Flow Logs and DNS logs (and more with protection plans) for threats, without agents, and can be enabled for every account centrally."
+  ref: "Amazon GuardDuty User Guide: What is GuardDuty"
+  exams: [sap]
+
+- id: sap-macie-pii
+  kind: choice
+  en: "A company does not know which of its 3,000 S3 buckets contain personal data. It needs an automated, ongoing inventory of sensitive data. Which service should it use?"
+  options:
+    - "S3 Storage Lens alone"
+    - "Amazon GuardDuty"
+    - "AWS Trusted Advisor"
+    - "Amazon Macie with automated sensitive data discovery"
+  correct: [D]
+  why: "Macie samples and classifies objects using managed and custom data identifiers and reports buckets that contain sensitive data such as PII."
+  ref: "Amazon Macie User Guide: Automated sensitive data discovery"
+  exams: [sap]

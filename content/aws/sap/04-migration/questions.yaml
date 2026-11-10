@@ -1,0 +1,209 @@
+- id: sap-7rs-repurchase
+  kind: choice
+  en: "During portfolio assessment, a company finds it runs a self-hosted CRM that it would like to replace with a SaaS CRM, and an old reporting tool that nobody has used for a year. Which migration strategies apply to these two applications?"
+  options:
+    - "Repurchase for the CRM, retire for the reporting tool"
+    - "Relocate for both"
+    - "Refactor for the CRM, retain for the reporting tool"
+    - "Rehost for both"
+  correct: [A]
+  why: "Moving to a different product, typically SaaS, is repurchase; decommissioning an unused application is retire, which also shrinks the migration scope."
+  ref: "AWS Prescriptive Guidance: About the migration strategies"
+  exams: [sap]
+
+- id: sap-mgn-rehost
+  kind: choice
+  en: "A company must move 400 VMware and physical servers to AWS within 6 months with minimal changes and a cutover window of under an hour per application. Which service should it use?"
+  options:
+    - "AWS DataSync"
+    - "AWS Application Migration Service (MGN) with continuous replication, test launches and planned cutovers"
+    - "AWS Schema Conversion Tool"
+    - "Manual AMI creation for each server"
+  correct: [B]
+  why: "MGN replicates source servers continuously at block level, lets teams test launches without disruption, and cuts over in minutes - the recommended rehost tool."
+  ref: "AWS Application Migration Service User Guide: What is MGN"
+  exams: [sap]
+
+- id: sap-dms-cdc
+  kind: choice
+  en: "A 5 TB Oracle database must move to Amazon Aurora PostgreSQL with less than 10 minutes of downtime. Which TWO steps are needed?"
+  options:
+    - "Take an RMAN backup and restore it into Aurora."
+    - "Use AWS DMS with a full load followed by ongoing change data capture until cutover."
+    - "Use AWS DataSync to copy the data files."
+    - "Convert the schema and code objects with AWS SCT (or DMS Schema Conversion)."
+    - "Export to CSV and import with psql during a maintenance weekend."
+  correct: [B, D]
+  why: "A heterogeneous migration needs schema conversion; DMS full load plus CDC keeps the target in sync so cutover takes only minutes."
+  ref: "AWS DMS User Guide: Creating tasks for ongoing replication using AWS DMS"
+  exams: [sap]
+
+- id: sap-snowball-math
+  kind: choice
+  en: "A company must move 800 TB from its data center to S3 within 4 weeks. Its internet link is 1 Gbps and is half used by production traffic. What should it use?"
+  options:
+    - "A Site-to-Site VPN"
+    - "AWS DataSync over the existing link"
+    - "S3 Transfer Acceleration"
+    - "Several AWS Snowball Edge devices"
+  correct: [D]
+  why: "At about 500 Mbps available, 800 TB would take roughly 150 days, far beyond 4 weeks. Snowball Edge devices ship the data physically in days."
+  ref: "AWS Snowball Edge Developer Guide: What is AWS Snowball Edge"
+  exams: [sap]
+
+- id: sap-datasync-nfs
+  kind: choice
+  en: "A company needs to copy 60 TB from an on-premises NFS file server to Amazon EFS over Direct Connect, verify the data, then run incremental syncs nightly until cutover. Which service fits BEST?"
+  options:
+    - "AWS DataSync with an agent on premises and a scheduled task"
+    - "AWS Snowcone"
+    - "rsync from a single EC2 instance"
+    - "AWS Transfer Family"
+  correct: [A]
+  why: "DataSync moves data between NFS/SMB and AWS storage at high speed, verifies integrity, and transfers only changes on subsequent scheduled runs."
+  ref: "AWS DataSync User Guide: What is AWS DataSync"
+  exams: [sap]
+
+- id: sap-transfer-family
+  kind: choice
+  en: "Hundreds of partners upload files to the company's on-premises SFTP server. The company is migrating storage to S3 and does not want partners to change their clients or credentials process. What should replace the SFTP server?"
+  options:
+    - "Snowball Edge"
+    - "Give partners IAM access keys and the AWS CLI"
+    - "A public S3 bucket"
+    - "AWS Transfer Family SFTP server backed by S3, with a custom identity provider or service-managed users and the same hostname via DNS"
+  correct: [D]
+  why: "Transfer Family provides managed SFTP/FTPS/FTP/AS2 endpoints that store files directly in S3 or EFS, so partners keep using SFTP."
+  ref: "AWS Transfer Family User Guide: What is AWS Transfer Family"
+  exams: [sap]
+
+- id: sap-discovery-service
+  kind: choice
+  en: "Before planning a migration, a company needs utilization data and network dependencies for 1,200 servers, most of them VMware VMs, to group applications into migration waves. What should it use?"
+  options:
+    - "A spreadsheet filled in by application owners only"
+    - "AWS Application Discovery Service (agentless collector for VMware, agents for dependency data) with results in Migration Hub"
+    - "Amazon Inspector"
+    - "AWS Config"
+  correct: [B]
+  why: "Discovery Service collects configuration, utilization and (with agents) network connection data; Migration Hub groups servers into applications for wave planning."
+  ref: "AWS Application Discovery Service User Guide: What is AWS Application Discovery Service"
+  exams: [sap]
+
+- id: sap-storage-gateway-file
+  kind: choice
+  en: "On-premises applications write files over SMB. The company wants the data stored in S3 for analytics and archiving while the applications keep using a local SMB share with low-latency access to recent files. What should it deploy?"
+  options:
+    - "AWS Direct Connect alone"
+    - "Amazon S3 File Gateway"
+    - "Snowball Edge"
+    - "Tape Gateway"
+  correct: [B]
+  why: "S3 File Gateway presents NFS or SMB shares on premises, caches recent data locally, and stores files as objects in S3."
+  ref: "AWS Storage Gateway User Guide: What is Amazon S3 File Gateway"
+  exams: [sap]
+
+- id: sap-amazon-mq
+  kind: choice
+  en: "A Java application being migrated uses an on-premises ActiveMQ broker through JMS. The company wants a managed broker without rewriting the messaging code. What should it use?"
+  options:
+    - "Amazon MQ for ActiveMQ"
+    - "Amazon SQS with code changes"
+    - "Amazon Kinesis"
+    - "Amazon SNS"
+  correct: [A]
+  why: "Amazon MQ is a managed ActiveMQ/RabbitMQ broker that speaks standard protocols (JMS, AMQP, MQTT, STOMP), so existing clients work with configuration changes only."
+  ref: "Amazon MQ Developer Guide: What is Amazon MQ"
+  exams: [sap]
+
+- id: sap-strangler-fig
+  kind: choice
+  en: "A monolithic e-commerce application has been rehosted on EC2. The company now wants to move features into microservices gradually, with no big-bang rewrite and no downtime. Which approach should be used?"
+  options:
+    - "The strangler fig pattern: route specific paths (for example through an ALB or API Gateway) to new services one feature at a time until the monolith can be retired"
+    - "Rewrite the whole application and switch over in one weekend"
+    - "Keep the monolith and only scale it vertically"
+    - "Move the monolith to a larger instance"
+  correct: [A]
+  why: "The strangler fig pattern replaces functionality incrementally behind a routing facade, reducing risk."
+  ref: "AWS Prescriptive Guidance: Strangler fig pattern"
+  exams: [sap]
+
+- id: sap-replatform-rds
+  kind: choice
+  en: "A company is migrating a self-managed MySQL database and wants to stop handling backups, patching and failover, but has no time to change the application. Which strategy and target fit BEST?"
+  options:
+    - "Rehost MySQL on EC2"
+    - "Replatform to Amazon RDS for MySQL (or Aurora MySQL) Multi-AZ"
+    - "Refactor to DynamoDB"
+    - "Retain on premises"
+  correct: [B]
+  why: "Replatforming to a managed engine of the same type removes operational work with little or no code change. Rehosting on EC2 keeps all the operational burden."
+  ref: "AWS Prescriptive Guidance: Replatform"
+  exams: [sap]
+
+- id: sap-containerize-dotnet
+  kind: choice
+  en: "A company has dozens of small legacy Java web applications on aging servers. It wants to containerize them with little manual work and run them without managing servers. Which TWO choices fit?"
+  options:
+    - "Run each on a Dedicated Host."
+    - "Use AWS Snowball Edge to run them."
+    - "Run the containers on Amazon ECS with AWS Fargate."
+    - "Rewrite every application in Lambda first."
+    - "Use AWS App2Container to analyze and containerize the applications."
+  correct: [C, E]
+  why: "App2Container generates container images and deployment artifacts from running Java and .NET applications; Fargate runs them without managing servers."
+  ref: "AWS App2Container User Guide: What is AWS App2Container"
+  exams: [sap]
+
+- id: sap-landing-zone-first
+  kind: choice
+  en: "A company will migrate 300 applications owned by 20 business units over the next two years. Before moving any workload, what should be established?"
+  options:
+    - "A VPC peering connection to each data center"
+    - "A single AWS account shared by all business units"
+    - "Reserved Instances for every server"
+    - "A multi-account landing zone (for example with AWS Control Tower) with networking, identity, logging and guardrails"
+  correct: [D]
+  why: "A well-architected landing zone gives each team governed accounts and shared foundations; retrofitting governance after migration is far harder."
+  ref: "AWS Prescriptive Guidance: Setting up a secure and scalable multi-account AWS environment"
+  exams: [sap]
+
+- id: sap-migration-hub-tracking
+  kind: choice
+  en: "Several teams migrate applications with MGN and DMS in parallel. Leadership wants one place to see the migration status of each application. What should be used?"
+  options:
+    - "AWS Migration Hub"
+    - "AWS Trusted Advisor"
+    - "Amazon CloudWatch Logs Insights"
+    - "AWS Budgets"
+  correct: [A]
+  why: "Migration Hub aggregates status from integrated migration tools per server and application in a home Region."
+  ref: "AWS Migration Hub User Guide: What is AWS Migration Hub"
+  exams: [sap]
+
+- id: sap-vmware-relocate
+  kind: choice
+  en: "A company must exit its data center in 3 months because the lease ends. It runs 2,000 VMware VMs and wants to keep using its VMware tooling and skills, modernizing later. Which strategy fits BEST?"
+  options:
+    - "Refactor all applications into microservices first"
+    - "Relocate to a VMware-based environment in AWS (such as VMware Cloud on AWS or Amazon Elastic VMware Service) and move VMs without conversion"
+    - "Repurchase SaaS for every application"
+    - "Retain everything on premises"
+  correct: [B]
+  why: "Relocate moves VMs to a VMware-compatible platform in AWS without converting them, the fastest path when the deadline is hard and the team relies on VMware operations."
+  ref: "AWS Prescriptive Guidance: Relocate"
+  exams: [sap]
+
+- id: sap-dms-validation
+  kind: choice
+  en: "Auditors require proof that all rows migrated from SQL Server to Aurora by DMS match the source before cutover. What should the team use?"
+  options:
+    - "Manually compare row counts of a few tables"
+    - "DMS data validation on the migration task"
+    - "CloudTrail"
+    - "AWS Config"
+  correct: [B]
+  why: "DMS data validation compares source and target data row by row during and after migration and reports mismatches."
+  ref: "AWS DMS User Guide: AWS DMS data validation"
+  exams: [sap]

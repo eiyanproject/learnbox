@@ -1,0 +1,156 @@
+- id: dop-cross-account-observability
+  kind: choice
+  en: "An operations team wants to search logs, view metrics and follow traces from 25 application accounts in one monitoring account, without copying data. What should be configured?"
+  options:
+    - "Daily exports of logs to S3"
+    - "One shared root user"
+    - "CloudWatch cross-account observability with the monitoring account as a sink and the application accounts linked as sources (through Organizations)"
+    - "IAM users in each account for the operators"
+  correct: [C]
+  why: "Cross-account observability links source accounts to a monitoring account so metrics, logs and traces can be queried there directly."
+  ref: "Amazon CloudWatch User Guide: CloudWatch cross-account observability"
+  exams: [dop]
+
+- id: dop-subscription-filter
+  kind: choice
+  en: "Application logs from many accounts must be delivered in near real time to a central account and stored in S3 for long-term analysis with Athena. Which design fits?"
+  options:
+    - "CloudWatch Logs subscription filters sending to a cross-account destination backed by Kinesis Data Firehose that writes to S3"
+    - "Copy log files with rsync"
+    - "Run CreateExportTask in every account each night"
+    - "Install an FTP server in the central account"
+  correct: [A]
+  why: "Subscription filters stream log events continuously; a cross-account logs destination fronting Firehose delivers them to S3 in near real time. Export tasks are batch and slow."
+  ref: "Amazon CloudWatch Logs User Guide: Cross-account cross-Region log data sharing using subscriptions"
+  exams: [dop]
+
+- id: dop-emf
+  kind: choice
+  en: "A Lambda function must publish custom business metrics (orders per minute by country) at high volume without the latency and cost of a PutMetricData call per event. What should it use?"
+  options:
+    - "One PutMetricData call per order"
+    - "X-Ray annotations"
+    - "CloudWatch embedded metric format in its structured log output"
+    - "A DynamoDB counter table"
+  correct: [C]
+  why: "Embedded metric format writes metrics inside log lines, and CloudWatch extracts them asynchronously, avoiding synchronous API calls in the function."
+  ref: "Amazon CloudWatch User Guide: Embedding metrics within logs"
+  exams: [dop]
+
+- id: dop-composite-alarm
+  kind: choice
+  en: "On-call engineers get paged dozens of times during a single incident because several related alarms fire together. They want one page only when both high latency and high error rate occur. What should be used?"
+  options:
+    - "Delete the latency alarm"
+    - "A composite alarm with a rule ALARM(latency) AND ALARM(errors) that notifies, with the underlying alarms not notifying"
+    - "Longer evaluation periods on every alarm"
+    - "Send all alarms to email"
+  correct: [B]
+  why: "Composite alarms combine alarm states with boolean logic and can act as the single notification point, reducing noise."
+  ref: "Amazon CloudWatch User Guide: Create a composite alarm"
+  exams: [dop]
+
+- id: dop-anomaly-detection
+  kind: choice
+  en: "A metric's normal value differs a lot between day and night and weekdays and weekends, so a static threshold either misses problems or alarms constantly. What should be used?"
+  options:
+    - "A dashboard only"
+    - "CloudTrail Insights"
+    - "A static threshold set to the daily average"
+    - "A CloudWatch alarm based on an anomaly detection band"
+  correct: [D]
+  why: "Anomaly detection models the metric's expected pattern, including seasonality, and alarms when values leave the band."
+  ref: "Amazon CloudWatch User Guide: Using CloudWatch anomaly detection"
+  exams: [dop]
+
+- id: dop-cw-agent-ssm
+  kind: choice
+  en: "Memory and disk usage metrics and application log files must be collected from 600 EC2 instances with one central configuration that can be changed later. What should be done?"
+  options:
+    - "Use VPC Flow Logs"
+    - "Store the CloudWatch agent configuration in Parameter Store and install and configure the agent with Systems Manager (State Manager or Run Command)"
+    - "SSH into each instance to edit the agent config"
+    - "Enable detailed monitoring"
+  correct: [B]
+  why: "Memory and disk metrics need the CloudWatch agent; a configuration in Parameter Store applied through Systems Manager keeps every instance consistent."
+  ref: "Amazon CloudWatch User Guide: Install the CloudWatch agent using Systems Manager"
+  exams: [dop]
+
+- id: dop-logs-insights-query
+  kind: choice
+  en: "During an incident, an engineer needs to find the 10 request paths with the most HTTP 500 errors in the last hour from JSON application logs. What is the fastest way?"
+  options:
+    - "Download all log streams and grep them"
+    - "Create a new metric filter and wait an hour"
+    - "A CloudWatch Logs Insights query filtering status = 500, grouped by path with stats count(*), sorted descending, limit 10"
+    - "Check the CloudTrail event history"
+  correct: [C]
+  why: "Logs Insights queries log groups interactively with filter, stats and sort over discovered JSON fields."
+  ref: "Amazon CloudWatch Logs User Guide: Analyzing log data with CloudWatch Logs Insights"
+  exams: [dop]
+
+- id: dop-athena-cloudtrail
+  kind: choice
+  en: "Security needs to answer ad-hoc questions about API activity over the past year across the organization, such as every DeleteBucket call and who made it. CloudTrail logs are in S3. What should they use?"
+  options:
+    - "VPC Flow Logs"
+    - "CloudTrail event history in the console"
+    - "Amazon Athena with a table over the CloudTrail logs (with partition projection), or CloudTrail Lake"
+    - "CloudWatch metrics"
+  correct: [C]
+  why: "Event history covers only 90 days of management events per account and Region. Athena queries the S3 logs with SQL; CloudTrail Lake is a managed alternative."
+  ref: "AWS CloudTrail User Guide: Querying AWS CloudTrail logs with Athena"
+  exams: [dop]
+
+- id: dop-container-insights
+  kind: choice
+  en: "An EKS cluster's operators need CPU, memory, network and restart metrics per pod and per node, plus container logs, with minimal custom setup. What should be enabled?"
+  options:
+    - "Detailed monitoring on the nodes only"
+    - "Trusted Advisor"
+    - "CloudWatch Container Insights (the CloudWatch Observability EKS add-on)"
+    - "AWS Config"
+  correct: [C]
+  why: "Container Insights collects metrics and logs for clusters, nodes, pods and containers, with automatic dashboards; the EKS add-on installs the agent and Fluent Bit."
+  ref: "Amazon CloudWatch User Guide: Container Insights"
+  exams: [dop]
+
+- id: dop-log-retention
+  kind: choice
+  en: "Log storage costs keep growing because log groups created by Lambda and other services default to never expiring. Logs need 30 days of search and 1 year of archive. Which TWO actions fit?"
+  options:
+    - "Set a 30-day retention on log groups (enforced, for example, by a Config rule with remediation, or set in IaC)."
+    - "Delete all log groups every week."
+    - "Export or stream logs to S3 with a lifecycle rule that keeps them for a year in a cheaper storage class."
+    - "Raise the log group quota."
+    - "Turn off logging for Lambda."
+  correct: [A, C]
+  why: "Retention settings expire old events automatically; archiving to S3 with lifecycle policies is far cheaper for long-term storage than CloudWatch Logs."
+  ref: "Amazon CloudWatch Logs User Guide: Change log data retention in CloudWatch Logs"
+  exams: [dop]
+
+- id: dop-application-signals
+  kind: choice
+  en: "A team wants service-level objectives for latency and availability on its microservices, with automatic dashboards of service operations and dependencies, without writing custom metric code. What should it enable?"
+  options:
+    - "CloudTrail data events"
+    - "AWS Config conformance packs"
+    - "CloudWatch Application Signals with SLOs on the discovered services"
+    - "VPC Reachability Analyzer"
+  correct: [C]
+  why: "Application Signals instruments applications automatically (via OpenTelemetry-based agents), discovers services and operations, and lets teams define and track SLOs."
+  ref: "Amazon CloudWatch User Guide: Application Signals"
+  exams: [dop]
+
+- id: dop-dashboards-as-code
+  kind: choice
+  en: "Every new microservice must get the same CloudWatch dashboard and alarms, and they must stay consistent when the service is redeployed. What is the best approach?"
+  options:
+    - "Ask each team to build their own"
+    - "Copy dashboards by hand in the console"
+    - "Use a screenshot as reference"
+    - "Define the dashboard and alarms in the service's CloudFormation or CDK stack"
+  correct: [D]
+  why: "Defining dashboards (AWS::CloudWatch::Dashboard) and alarms in IaC creates them with the service and keeps them versioned and consistent."
+  ref: "AWS CloudFormation User Guide: AWS::CloudWatch::Dashboard"
+  exams: [dop]

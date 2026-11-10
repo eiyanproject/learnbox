@@ -1,0 +1,234 @@
+- id: dop-cross-account-pipeline
+  kind: choice
+  en: "A pipeline in a tooling account must deploy CloudFormation stacks into separate test and production accounts. Deployments fail with access denied when the target accounts read the pipeline's artifacts. Which TWO changes are required?"
+  options:
+    - "Encrypt the artifact bucket with a customer managed KMS key whose key policy allows the target accounts' roles, and allow them in the bucket policy."
+    - "Have the pipeline assume a cross-account role in each target account for the deploy actions."
+    - "Copy the pipeline into every account."
+    - "Make the artifact bucket public."
+    - "Use the default aws/s3 managed key for the artifact bucket."
+  correct: [A, B]
+  why: "AWS managed keys cannot be shared across accounts, so cross-account artifacts need a customer managed key; deploy actions run through roles in the target accounts that the pipeline assumes."
+  ref: "AWS CodePipeline User Guide: Create a pipeline that uses resources from another AWS account"
+  exams: [dop]
+
+- id: dop-lambda-canary
+  kind: choice
+  en: "A team wants new Lambda versions to receive 10% of traffic for 10 minutes, then all of it, and to roll back automatically if an error-rate alarm fires. What should it configure?"
+  options:
+    - "Two Lambda functions behind Route 53 weighted records"
+    - "Lambda reserved concurrency of 10%"
+    - "CodeDeploy with the LambdaCanary10Percent10Minutes deployment configuration on an alias, with the CloudWatch alarm attached to the deployment group"
+    - "A CodeBuild project that updates $LATEST"
+  correct: [C]
+  why: "CodeDeploy shifts alias traffic between versions using canary or linear configurations and rolls back when the associated alarms enter ALARM; pre- and post-traffic hooks can run tests."
+  ref: "AWS CodeDeploy User Guide: Deployment configurations on an AWS Lambda compute platform"
+  exams: [dop]
+
+- id: dop-ecs-blue-green
+  kind: choice
+  en: "An ECS service behind an ALB needs blue/green deployments in which the new task set is tested through a separate listener port before production traffic moves, with automatic rollback. Which solution fits?"
+  options:
+    - "CodeDeploy blue/green for ECS with a production listener, a test listener and two target groups"
+    - "ECS rolling update with minimumHealthyPercent 100"
+    - "Recreate the service for every release"
+    - "Elastic Beanstalk URL swap"
+  correct: [A]
+  why: "CodeDeploy's ECS blue/green deployment creates a replacement task set, exposes it on a test listener for validation hooks, then reroutes the production listener and can roll back."
+  ref: "Amazon ECS Developer Guide: Blue/green deployment with CodeDeploy"
+  exams: [dop]
+
+- id: dop-ecs-circuit-breaker
+  kind: choice
+  en: "ECS rolling deployments sometimes get stuck when new tasks keep failing health checks, leaving the service half updated for hours. What is the simplest fix?"
+  options:
+    - "Enable the ECS deployment circuit breaker with rollback on the service"
+    - "Switch the service to the EC2 launch type"
+    - "Lower the health check grace period to zero"
+    - "Raise the desired count"
+  correct: [A]
+  why: "The deployment circuit breaker detects that tasks of the new deployment fail to reach steady state and, with rollback on, returns the service to the last completed deployment."
+  ref: "Amazon ECS Developer Guide: Deployment circuit breaker"
+  exams: [dop]
+
+- id: dop-codedeploy-hooks
+  kind: choice
+  en: "During an in-place CodeDeploy deployment to EC2, the application must be stopped gracefully before new files are copied and smoke-tested after it starts. Where should these steps go?"
+  options:
+    - "Scripts for the ApplicationStop and ValidateService lifecycle hooks in appspec.yml"
+    - "The buildspec install phase"
+    - "The CloudFormation Outputs section"
+    - "EC2 user data"
+  correct: [A]
+  why: "AppSpec hooks run scripts at lifecycle events; ApplicationStop runs before the new revision is installed and ValidateService runs last to verify the deployment."
+  ref: "AWS CodeDeploy User Guide: AppSpec 'hooks' section"
+  exams: [dop]
+
+- id: dop-codeartifact-upstream
+  kind: choice
+  en: "Builds pull npm packages straight from the public registry, and security wants builds to use only packages cached in an internal repository, with the public registry as an upstream source. What should be used?"
+  options:
+    - "An S3 bucket of tarballs"
+    - "Amazon ECR"
+    - "A Lambda layer containing node_modules"
+    - "AWS CodeArtifact with an external connection to npmjs in an upstream repository, and CodeBuild configured to log in to the CodeArtifact repository"
+  correct: [D]
+  why: "CodeArtifact proxies and caches public packages through external connections and serves them to builds that authenticate with a temporary token."
+  ref: "AWS CodeArtifact User Guide: Connect a CodeArtifact repository to a public repository"
+  exams: [dop]
+
+- id: dop-codebuild-reports
+  kind: choice
+  en: "The team wants unit test results and code coverage from CodeBuild visible per build, with trends over time, and the pipeline to fail on failed tests. What should it configure?"
+  options:
+    - "Upload the results to a public website"
+    - "A reports section in buildspec.yml for JUnit and coverage files, with the test command's exit code failing the build"
+    - "Email the logs to the team"
+    - "Use CloudTrail data events"
+  correct: [B]
+  why: "CodeBuild test and coverage reports parse standard formats into report groups with history; a non-zero exit code in the build phase fails the action and stops the pipeline."
+  ref: "AWS CodeBuild User Guide: Test reports"
+  exams: [dop]
+
+- id: dop-manual-approval
+  kind: choice
+  en: "Production deployments must be approved by a release manager after automated tests pass in staging, and the manager must be notified. How should the pipeline be changed?"
+  options:
+    - "Add a Lambda function that waits for 24 hours"
+    - "Use a separate pipeline triggered by email"
+    - "Add a manual approval action before the production deploy stage with an SNS topic for notifications"
+    - "Ask the manager to run the deploy from a laptop"
+  correct: [C]
+  why: "Manual approval actions pause the pipeline until someone with permission approves or rejects, and can publish to SNS for notification."
+  ref: "AWS CodePipeline User Guide: Add a manual approval action to a stage"
+  exams: [dop]
+
+- id: dop-ecr-scanning
+  kind: choice
+  en: "Container images must be scanned for operating system and language package vulnerabilities on push and continuously as new CVEs are published, and the pipeline must block images with critical findings. Which approach fits?"
+  options:
+    - "Enable ECR basic scanning once a month"
+    - "Use AWS Config"
+    - "Enable ECR enhanced scanning (Amazon Inspector) with continuous scanning, and have a pipeline step check the findings for the image digest before deploying"
+    - "Run antivirus on the build server"
+  correct: [C]
+  why: "Enhanced scanning through Inspector covers OS and programming language packages and rescans when new vulnerabilities appear; the pipeline can gate on findings for the digest."
+  ref: "Amazon ECR User Guide: Scan images for software vulnerabilities"
+  exams: [dop]
+
+- id: dop-beanstalk-immutable
+  kind: choice
+  en: "An Elastic Beanstalk application must never run mixed versions on the same instances during a deployment, and failed deployments must not affect the existing instances. Which deployment policy fits?"
+  options:
+    - "Rolling with additional batch"
+    - "Rolling"
+    - "All at once"
+    - "Immutable"
+  correct: [D]
+  why: "Immutable deployments launch a full set of new instances in a temporary Auto Scaling group and move them in only after they pass health checks; a failure just terminates the new instances."
+  ref: "AWS Elastic Beanstalk Developer Guide: Deployment policies and settings"
+  exams: [dop]
+
+- id: dop-pipeline-trigger-filter
+  kind: choice
+  en: "A single repository holds a frontend and a backend. The team wants the backend pipeline to start only when files under backend/ change on the main branch. What should be configured?"
+  options:
+    - "A manual start each time"
+    - "Two copies of the repository"
+    - "A CodePipeline V2 trigger on the CodeConnections source with branch and file path filters"
+    - "A cron schedule that runs the pipeline hourly"
+  correct: [C]
+  why: "Pipeline type V2 triggers support filters on branches, tags and file paths for push and pull request events."
+  ref: "AWS CodePipeline User Guide: Add triggers with code push or pull request event types"
+  exams: [dop]
+
+- id: dop-codebuild-secrets
+  kind: choice
+  en: "A build needs a third-party API token. Developers have been putting it in buildspec.yml in the repository. What is the right replacement?"
+  options:
+    - "Put it in a plaintext environment variable in the project"
+    - "Base64-encode it in the repository"
+    - "Store the token in Secrets Manager and reference it under env secrets-manager in the buildspec, granting the CodeBuild service role access"
+    - "Write it on the build image"
+  correct: [C]
+  why: "CodeBuild resolves secrets-manager (and parameter-store) environment variables at build time with the service role, keeping secrets out of source control; CodeBuild also masks them in logs."
+  ref: "AWS CodeBuild User Guide: Buildspec env/secrets-manager"
+  exams: [dop]
+
+- id: dop-codedeploy-bg-ec2
+  kind: choice
+  en: "A web tier on EC2 behind an ALB must be deployed so that new instances are fully provisioned and tested before traffic moves, and the old instances are kept for one hour for quick rollback. Which option fits?"
+  options:
+    - "CodeDeploy in-place with OneAtATime"
+    - "Run Command to copy files"
+    - "CodeDeploy blue/green deployment for EC2 that copies the Auto Scaling group, reroutes the load balancer, and terminates the original instances after one hour"
+    - "Replace the AMI in the launch template and wait for scale-in"
+  correct: [C]
+  why: "EC2 blue/green with CodeDeploy provisions a replacement environment, reroutes traffic through the load balancer, and keeps or terminates the original fleet after a wait you set."
+  ref: "AWS CodeDeploy User Guide: Overview of a blue/green deployment"
+  exams: [dop]
+
+- id: dop-integration-test-stage
+  kind: choice
+  en: "After deploying to a staging environment, the pipeline must run an integration test suite that takes 40 minutes and fail the release if any test fails. What is the most suitable action?"
+  options:
+    - "A CloudFormation action"
+    - "A manual approval action"
+    - "A CodeBuild test action in a stage after the staging deploy, running the suite against the staging endpoint"
+    - "A Lambda invoke action that runs the whole suite"
+  correct: [C]
+  why: "CodeBuild runs long test suites (up to hours) in a configurable container and reports pass or fail to the pipeline. Lambda's 15-minute limit rules it out."
+  ref: "AWS CodePipeline User Guide: Integrations with CodePipeline action types - test actions"
+  exams: [dop]
+
+- id: dop-ecr-replication
+  kind: choice
+  en: "Images built in a shared tooling account in us-east-1 must be available in ECR in production accounts in two Regions with low pull latency. What is the simplest solution?"
+  options:
+    - "Docker push from the build to every registry"
+    - "Pull from us-east-1 everywhere"
+    - "ECR replication rules (cross-Region and cross-account) with registry permissions in the destination accounts"
+    - "Copy images through S3"
+  correct: [C]
+  why: "ECR private registry replication copies images automatically to other Regions and accounts once the destination registry policy allows it."
+  ref: "Amazon ECR User Guide: Private image replication"
+  exams: [dop]
+
+- id: dop-lambda-alias-versions
+  kind: choice
+  en: "A pipeline deploys a Lambda function to staging and production in one account. Production must run exactly the code that was tested in staging, even if a newer commit arrives meanwhile. What should be used?"
+  options:
+    - "Use environment variables to switch code paths"
+    - "Publish an immutable version after building, test it through the staging alias, then point the production alias at the same version number"
+    - "Rebuild the code for production"
+    - "Deploy $LATEST to both"
+  correct: [B]
+  why: "Published versions are immutable snapshots; promoting the same version between aliases guarantees identical code. $LATEST changes with every update."
+  ref: "AWS Lambda Developer Guide: Lambda function versions and aliases"
+  exams: [dop]
+
+- id: dop-signer-lambda
+  kind: choice
+  en: "Security requires that only code built and approved by the pipeline can be deployed to Lambda functions in production. Which feature enforces this?"
+  options:
+    - "An S3 bucket policy on the artifact bucket"
+    - "A Config rule that checks runtime versions"
+    - "VPC endpoints for Lambda"
+    - "Lambda code signing with an AWS Signer signing profile and a code signing configuration set to enforce"
+  correct: [D]
+  why: "With a code signing configuration in enforce mode, Lambda rejects deployment packages that are not signed by an allowed signing profile or have been altered."
+  ref: "AWS Lambda Developer Guide: Configuring code signing for Lambda"
+  exams: [dop]
+
+- id: dop-beanstalk-traffic-split
+  kind: choice
+  en: "An Elastic Beanstalk web application should send 15% of traffic to the new version for a few minutes and roll back automatically if the new instances are unhealthy. Which deployment policy fits?"
+  options:
+    - "Traffic splitting"
+    - "Swap environment URLs"
+    - "Rolling"
+    - "All at once"
+  correct: [A]
+  why: "Traffic-splitting deployments run a canary of new instances that receive a percentage of client traffic for an evaluation period, then finish or roll back based on health."
+  ref: "AWS Elastic Beanstalk Developer Guide: Traffic-splitting deployments"
+  exams: [dop]

@@ -1,0 +1,312 @@
+- id: sap-aurora-global-rpo
+  kind: choice
+  en: "A new financial application on Aurora PostgreSQL needs an RPO of about one second and an RTO of under a few minutes if us-east-1 becomes unavailable, with low-latency reads in eu-west-1. What should a solutions architect choose?"
+  options:
+    - "Aurora Global Database with a secondary cluster in eu-west-1, using managed failover or switchover"
+    - "Logical replication to an RDS instance managed by a cron job"
+    - "A Multi-AZ DB cluster in us-east-1 only"
+    - "Cross-Region automated snapshot copies every hour"
+  correct: [A]
+  why: "Aurora Global Database replicates storage across Regions with typical lag under a second, serves local reads from secondary clusters, and can promote a secondary in minutes. Snapshots give an RPO of hours; Multi-AZ does not survive a Region outage."
+  ref: "Amazon Aurora User Guide: Using Amazon Aurora Global Database"
+  exams: [sap]
+
+- id: sap-dynamodb-global-active
+  kind: choice
+  en: "A global gaming platform needs users in three Regions to write their own profiles with single-digit-millisecond latency, and to keep working if one Region fails. Which data store design fits BEST?"
+  options:
+    - "One RDS instance in us-east-1 with read replicas in the other Regions"
+    - "S3 with Cross-Region Replication"
+    - "ElastiCache in one Region"
+    - "DynamoDB global tables with replicas in the three Regions"
+  correct: [D]
+  why: "Global tables are multi-active: each replica accepts writes locally and replicates to the others, so every Region keeps serving if one fails. RDS read replicas only accept reads."
+  ref: "Amazon DynamoDB Developer Guide: Global tables"
+  exams: [sap]
+
+- id: sap-warm-standby
+  kind: choice
+  en: "A company's order system must recover within 15 minutes with less than one minute of data loss after a Regional disaster. Budget rules out running a full second copy. Which DR strategy fits BEST?"
+  options:
+    - "Multi-site active/active at full capacity"
+    - "Pilot light with only data replicated and no compute, provisioned by hand"
+    - "Warm standby: a scaled-down but running copy in the second Region with replicated data, scaled up on failover"
+    - "Backup and restore from daily snapshots"
+  correct: [C]
+  why: "Warm standby keeps a functional smaller stack running with continuous replication, giving minutes of RTO and near-zero RPO at a fraction of active/active cost. Backup and restore takes hours; a manual pilot light rarely meets 15 minutes."
+  ref: "AWS Whitepaper: Disaster Recovery of Workloads on AWS - Warm standby"
+  exams: [sap]
+
+- id: sap-pilot-light
+  kind: choice
+  en: "An internal reporting system can tolerate an RTO of a few hours and an RPO of 15 minutes. The company wants the lowest possible DR cost while still replicating the database continuously. Which strategy is MOST cost-effective?"
+  options:
+    - "No DR, because the RTO is long"
+    - "Pilot light: replicate the database to the DR Region and keep AMIs and IaC ready to launch compute only during a disaster"
+    - "Multi-site active/active"
+    - "Warm standby with full-size instances"
+  correct: [B]
+  why: "Pilot light keeps only the core (data) running in the DR Region; compute is deployed from templates when needed, meeting hours of RTO cheaply."
+  ref: "AWS Whitepaper: Disaster Recovery of Workloads on AWS - Pilot light"
+  exams: [sap]
+
+- id: sap-multi-region-kms
+  kind: choice
+  en: "Data encrypted client-side in us-east-1 is replicated to ap-southeast-2 and must be decryptable there even if us-east-1 is unavailable, without re-encrypting it. What should be used?"
+  options:
+    - "Two unrelated KMS keys"
+    - "Store the key material in S3"
+    - "KMS multi-Region keys with a replica key in ap-southeast-2"
+    - "The AWS managed key in each Region"
+  correct: [C]
+  why: "Multi-Region keys share key material and key ID across Regions, so ciphertext from one Region can be decrypted with the replica in another without cross-Region calls."
+  ref: "AWS KMS Developer Guide: Multi-Region keys"
+  exams: [sap]
+
+- id: sap-secrets-rotation
+  kind: choice
+  en: "A new application on ECS Fargate needs database credentials that rotate every 30 days with no application downtime and no credentials in task definitions. What should a solutions architect specify?"
+  options:
+    - "Store the password in a public S3 bucket"
+    - "Put the password in an environment variable in the task definition"
+    - "Hard-code the password and rebuild the image monthly"
+    - "Store the credentials in Secrets Manager with managed rotation, reference the secret in the task definition, and grant the task execution role access"
+  correct: [D]
+  why: "Secrets Manager rotates RDS credentials automatically (for example with the alternating users strategy to avoid downtime), and ECS injects the secret at launch without exposing it in the definition."
+  ref: "AWS Secrets Manager User Guide: Rotate AWS Secrets Manager secrets"
+  exams: [sap]
+
+- id: sap-shield-advanced
+  kind: choice
+  en: "A media company launching a high-profile public site wants protection against large DDoS attacks, access to the AWS Shield Response Team during attacks, and cost protection for scaling caused by an attack. What should it subscribe to?"
+  options:
+    - "AWS Shield Standard only"
+    - "Amazon GuardDuty"
+    - "Amazon Inspector"
+    - "AWS Shield Advanced on its CloudFront distributions, Route 53 zones and load balancers, together with AWS WAF"
+  correct: [D]
+  why: "Shield Advanced adds enhanced detection, SRT support and DDoS cost protection on top of the free Shield Standard; WAF handles application-layer rules."
+  ref: "AWS Shield Developer Guide: AWS Shield Advanced overview"
+  exams: [sap]
+
+- id: sap-step-functions-saga
+  kind: choice
+  en: "A new booking workflow reserves a flight, a hotel and a car through three services. If any step fails, the earlier reservations must be cancelled. Which design is MOST maintainable?"
+  options:
+    - "A Step Functions state machine implementing the saga pattern, with Catch blocks that run compensating cancel steps"
+    - "One Lambda function that calls all three services and retries forever"
+    - "A cron job that checks for half-finished bookings once a day"
+    - "Database triggers in each service"
+  correct: [A]
+  why: "Step Functions coordinates distributed steps with built-in retries and error handling; compensating transactions in Catch paths implement the saga pattern visibly and reliably."
+  ref: "AWS Prescriptive Guidance: Saga pattern"
+  exams: [sap]
+
+- id: sap-kinesis-ordering
+  kind: choice
+  en: "A new IoT platform ingests 50,000 readings per second. Readings from each device must be processed in order, several independent consumers read the same data, and it must be replayable for 7 days. Which ingestion service fits BEST?"
+  options:
+    - "SNS topic with email subscriptions"
+    - "SQS standard queue"
+    - "S3 PUTs from each device"
+    - "Kinesis Data Streams with the device ID as the partition key, extended retention, and enhanced fan-out consumers"
+  correct: [D]
+  why: "Kinesis keeps order per shard (per partition key), supports multiple consumers reading independently and retention beyond 24 hours for replay. SQS standard does not keep order and messages are removed once consumed."
+  ref: "Amazon Kinesis Data Streams Developer Guide: Key concepts"
+  exams: [sap]
+
+- id: sap-lake-formation
+  kind: choice
+  en: "A new data lake in S3 is queried by Athena and Redshift Spectrum users from several departments. Each department may see only certain tables, columns and rows, managed centrally. What should be used?"
+  options:
+    - "IAM policies listing S3 object keys"
+    - "Separate buckets per department with bucket policies"
+    - "AWS Lake Formation with fine-grained (column, row and cell-level) permissions on the Glue Data Catalog"
+    - "Copying data into a database per department"
+  correct: [C]
+  why: "Lake Formation centralizes permissions on catalog resources down to columns and rows, enforced for integrated engines such as Athena and Redshift Spectrum."
+  ref: "AWS Lake Formation Developer Guide: Data filtering and cell-level security"
+  exams: [sap]
+
+- id: sap-graph-db
+  kind: choice
+  en: "A new fraud-detection feature must find connections several hops deep between accounts, devices and payments in milliseconds. Which database fits BEST?"
+  options:
+    - "Amazon Neptune"
+    - "Amazon S3 Select"
+    - "Amazon RDS for MySQL with many joins"
+    - "Amazon Redshift"
+  correct: [A]
+  why: "Neptune is a managed graph database optimized for traversing highly connected data; multi-hop relationship queries are slow and complex in relational joins."
+  ref: "Amazon Neptune User Guide: What is Amazon Neptune"
+  exams: [sap]
+
+- id: sap-cloudfront-dynamic
+  kind: choice
+  en: "A new global API with mostly uncacheable dynamic responses has users on every continent and an origin ALB in one Region. The team wants lower latency and edge protection with minimal changes. What should be added?"
+  options:
+    - "CloudFront in front of the ALB with caching disabled for the API paths, AWS WAF on the distribution, and the ALB restricted to CloudFront"
+    - "Route 53 simple routing"
+    - "S3 static website hosting"
+    - "A bigger ALB"
+  correct: [A]
+  why: "CloudFront speeds up even uncacheable requests by terminating TLS at the edge and using the AWS backbone with persistent origin connections, and adds WAF and Shield at the edge."
+  ref: "Amazon CloudFront Developer Guide: Using CloudFront to deliver dynamic content"
+  exams: [sap]
+
+- id: sap-global-accelerator
+  kind: choice
+  en: "A new multiplayer game uses UDP on custom ports, runs in three Regions, and needs static anycast IP addresses with fast failover between Regions. What should a solutions architect use?"
+  options:
+    - "An Application Load Balancer"
+    - "AWS Global Accelerator with endpoint groups in each Region"
+    - "Route 53 latency routing with a 1-day TTL"
+    - "CloudFront"
+  correct: [B]
+  why: "Global Accelerator provides two static anycast IPs, supports TCP and UDP, routes over the AWS network to the closest healthy endpoint and fails over in seconds without DNS caching issues. CloudFront handles HTTP(S), not arbitrary UDP."
+  ref: "AWS Global Accelerator Developer Guide: How AWS Global Accelerator works"
+  exams: [sap]
+
+- id: sap-abac
+  kind: choice
+  en: "A company will have hundreds of projects, each with developers who may manage only their project's resources. Creating a policy per project is unmanageable. Which approach scales BEST?"
+  options:
+    - "One IAM user per developer per project"
+    - "Attribute-based access control: tag principals and resources with Project and use conditions comparing aws:PrincipalTag/Project with aws:ResourceTag/Project"
+    - "An SCP per project"
+    - "Give all developers AdministratorAccess"
+  correct: [B]
+  why: "ABAC uses one policy that compares tags, so new projects need only tags, not new policies."
+  ref: "IAM User Guide: Define permissions based on attributes with ABAC authorization"
+  exams: [sap]
+
+- id: sap-permissions-boundary
+  kind: choice
+  en: "Developers must be able to create IAM roles for their Lambda functions, but must never create a role with more permissions than a defined set. What should be enforced?"
+  options:
+    - "Allow iam:CreateRole only with the condition iam:PermissionsBoundary set to the approved boundary policy"
+    - "Use an S3 bucket policy"
+    - "Let developers create roles freely and review them monthly"
+    - "Deny iam:CreateRole entirely"
+  correct: [A]
+  why: "Requiring a permissions boundary on created roles caps their effective permissions, safely delegating role creation."
+  ref: "IAM User Guide: Permissions boundaries for IAM entities"
+  exams: [sap]
+
+- id: sap-serverless-cost
+  kind: choice
+  en: "A new internal API receives a few hundred requests a day in short bursts, and the company wants the lowest cost and no servers to patch. Which design fits BEST?"
+  options:
+    - "API Gateway with Lambda and DynamoDB on-demand"
+    - "An EKS cluster"
+    - "Provisioned Aurora instances"
+    - "An always-on EC2 Auto Scaling group with a minimum of two instances behind an ALB"
+  correct: [A]
+  why: "Serverless services bill per request and scale to zero, ideal for low, spiky traffic. Always-on instances and clusters cost money while idle."
+  ref: "AWS Well-Architected Serverless Applications Lens"
+  exams: [sap]
+
+- id: sap-spot-batch
+  kind: choice
+  en: "A new genomics pipeline runs large, fault-tolerant batch jobs that can checkpoint and restart. It needs thousands of vCPUs for a few hours at the lowest cost. Which TWO choices fit?"
+  options:
+    - "Dedicated Hosts"
+    - "On-Demand Capacity Reservations for all capacity"
+    - "Spot Instances across many instance types and AZs with a price-capacity-optimized allocation strategy"
+    - "AWS Batch with managed compute environments"
+    - "A single very large On-Demand instance"
+  correct: [C, D]
+  why: "Batch schedules jobs onto managed compute; diversified Spot capacity gives up to 90% savings and interruptions are tolerable because jobs checkpoint."
+  ref: "AWS Batch User Guide: Compute environments; Amazon EC2 User Guide: Spot Instances"
+  exams: [sap]
+
+- id: sap-s3-intelligent-tiering
+  kind: choice
+  en: "A new data platform will store petabytes of objects whose access patterns are unknown and will change over time. The team wants automatic cost optimization without retrieval fees or lifecycle rule tuning. Which storage class should be the default?"
+  options:
+    - "S3 Standard with no lifecycle"
+    - "S3 Glacier Deep Archive"
+    - "S3 Intelligent-Tiering"
+    - "S3 One Zone-IA"
+  correct: [C]
+  why: "Intelligent-Tiering moves objects between access tiers automatically based on access, with no retrieval charges for its frequent/infrequent/archive-instant tiers - the default choice for unknown patterns."
+  ref: "Amazon S3 User Guide: S3 Intelligent-Tiering"
+  exams: [sap]
+
+- id: sap-eventbridge-decouple
+  kind: choice
+  en: "In a new microservices design, an OrderPlaced event must trigger billing, shipping and analytics, and teams must be able to add new consumers later without changing the order service. Which service should carry the event?"
+  options:
+    - "An FTP server"
+    - "A shared database table polled by every service"
+    - "An Amazon EventBridge event bus with a rule per consumer"
+    - "Direct synchronous HTTP calls from the order service to each consumer"
+  correct: [C]
+  why: "EventBridge routes events to any number of targets through rules; new consumers add rules without touching the producer. Synchronous calls couple the services."
+  ref: "Amazon EventBridge User Guide: Event buses"
+  exams: [sap]
+
+- id: sap-cell-architecture
+  kind: choice
+  en: "A new multi-tenant SaaS platform must ensure a bad deployment or a noisy tenant can affect only a small fraction of customers. Which architectural approach addresses this?"
+  options:
+    - "Bigger instances"
+    - "Disabling deployments"
+    - "One large shared stack for all tenants"
+    - "A cell-based architecture: independent copies of the stack, each serving a subset of tenants, with a thin routing layer and deployments rolled out cell by cell"
+  correct: [D]
+  why: "Cells limit blast radius: failures and bad changes stay inside one cell, and staged deployments catch problems before they reach every tenant."
+  ref: "AWS Whitepaper: Reducing the Scope of Impact with Cell-Based Architecture"
+  exams: [sap]
+
+- id: sap-blue-green-dns
+  kind: choice
+  en: "A team wants new releases of a stateless web tier to go live with instant rollback. The current stack and the new stack can run side by side. Which approach fits BEST?"
+  options:
+    - "Stop the old stack, then start the new one"
+    - "Deploy only on weekends"
+    - "Blue/green deployment: deploy the new stack, shift traffic with weighted target groups on the ALB (or weighted DNS), and shift back if errors rise"
+    - "In-place updates on all instances at once"
+  correct: [C]
+  why: "Blue/green keeps the old environment intact, so rollback is a traffic shift. ALB weighted target groups shift traffic immediately, without DNS caching delays."
+  ref: "AWS Whitepaper: Blue/Green Deployments on AWS"
+  exams: [sap]
+
+- id: sap-timestream
+  kind: choice
+  en: "A new monitoring product stores trillions of time-stamped sensor readings, queries recent data often, and keeps older data cheaply for trend analysis with time-series functions. Which database fits BEST?"
+  options:
+    - "Amazon DocumentDB"
+    - "Amazon Neptune"
+    - "Amazon RDS for Oracle"
+    - "Amazon Timestream"
+  correct: [D]
+  why: "Timestream is purpose-built for time-series data with automatic tiering from memory to magnetic storage and built-in time-series functions."
+  ref: "Amazon Timestream Developer Guide: What is Timestream"
+  exams: [sap]
+
+- id: sap-private-api
+  kind: choice
+  en: "A new API must be reachable only from the company's VPCs and from on premises over Direct Connect, never from the internet. Which API Gateway configuration meets this?"
+  options:
+    - "An edge-optimized API with an API key"
+    - "A regional API with a WAF IP allow list only"
+    - "A public API with CORS restrictions"
+    - "A private REST API reached through an execute-api interface VPC endpoint, with a resource policy allowing only that endpoint"
+  correct: [D]
+  why: "Private APIs are accessible only through interface VPC endpoints; on-premises clients reach the endpoint over Direct Connect or VPN, and the resource policy limits access to it."
+  ref: "Amazon API Gateway Developer Guide: Private REST APIs"
+  exams: [sap]
+
+- id: sap-sqs-buffer-db
+  kind: choice
+  en: "A new ticket-sales site expects sudden bursts of 20 times normal traffic when sales open. The database cannot absorb writes that fast, but purchases may be confirmed a few seconds later. Which design protects the database?"
+  options:
+    - "Write purchase requests to an SQS queue and have consumers write to the database at a controlled rate, with a dead-letter queue for failures"
+    - "Cache writes in the browser"
+    - "Reject requests above normal traffic"
+    - "Scale the database vertically just before every sale"
+  correct: [A]
+  why: "A queue absorbs bursts and lets consumers process at the rate the database sustains (load leveling); a DLQ isolates poison messages."
+  ref: "AWS Prescriptive Guidance: Queue-based load leveling"
+  exams: [sap]

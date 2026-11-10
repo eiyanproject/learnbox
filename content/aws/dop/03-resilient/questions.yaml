@@ -1,0 +1,155 @@
+- id: dop-asg-elb-health
+  kind: choice
+  en: "Instances in an Auto Scaling group sometimes hang with the application unresponsive while the EC2 status checks still pass. The ALB marks them unhealthy, but they are never replaced. What should be changed?"
+  options:
+    - "Turn on ELB health checks for the Auto Scaling group, with a suitable grace period"
+    - "Enable detailed monitoring"
+    - "Use a Network Load Balancer instead"
+    - "Increase the instance size"
+  correct: [A]
+  why: "By default Auto Scaling uses only EC2 status checks; adding ELB health checks makes it replace instances the load balancer reports unhealthy."
+  ref: "Amazon EC2 Auto Scaling User Guide: Health checks for instances in an Auto Scaling group"
+  exams: [dop]
+
+- id: dop-warm-pool
+  kind: choice
+  en: "New instances take 12 minutes to boot and load caches, so scale-out during sudden spikes is too slow. Which feature shortens this the MOST without paying for idle running instances?"
+  options:
+    - "Scheduled scaling every hour"
+    - "An Auto Scaling warm pool of pre-initialized instances kept in the Stopped (or Hibernated) state"
+    - "A shorter health check grace period"
+    - "A larger maximum capacity"
+  correct: [B]
+  why: "Warm pools keep instances that have already run their initialization; when scaling out they start in a fraction of the time, and stopped instances incur only storage costs."
+  ref: "Amazon EC2 Auto Scaling User Guide: Warm pools for Amazon EC2 Auto Scaling"
+  exams: [dop]
+
+- id: dop-lifecycle-hook-drain
+  kind: choice
+  en: "Before an instance is terminated during scale-in, its local job queue must be drained and logs uploaded to S3, which takes up to 5 minutes. What should be configured?"
+  options:
+    - "A longer cooldown"
+    - "Scale-in protection on all instances permanently"
+    - "An autoscaling:EC2_INSTANCE_TERMINATING lifecycle hook that triggers the drain (for example through EventBridge and Run Command) and completes the lifecycle action"
+    - "A user data script"
+  correct: [C]
+  why: "A terminating lifecycle hook holds the instance in Terminating:Wait until the hook completes or times out, giving time for cleanup."
+  ref: "Amazon EC2 Auto Scaling User Guide: Amazon EC2 Auto Scaling lifecycle hooks"
+  exams: [dop]
+
+- id: dop-backup-vault-lock
+  kind: choice
+  en: "Ransomware protection requires that backups of RDS, EBS and DynamoDB are copied to a separate account and cannot be deleted by anyone, including administrators, for 35 days. What should be implemented?"
+  options:
+    - "An SCP that denies snapshot creation"
+    - "An S3 bucket with versioning"
+    - "AWS Backup plans with cross-account copy to a vault in a dedicated backup account, protected by Vault Lock in compliance mode"
+    - "Manual snapshots in the same account"
+  correct: [C]
+  why: "Cross-account copies isolate backups from a compromised account; Vault Lock in compliance mode makes retention immutable, even for the root user, once the grace period passes."
+  ref: "AWS Backup Developer Guide: AWS Backup Vault Lock"
+  exams: [dop]
+
+- id: dop-fis
+  kind: choice
+  en: "The team claims its service survives the loss of an Availability Zone and of 30% of its instances. Management wants this proven regularly in a controlled way with automatic stop conditions. What should be used?"
+  options:
+    - "AWS Fault Injection Service experiment templates with stop conditions tied to CloudWatch alarms"
+    - "Load testing only"
+    - "AWS Trusted Advisor"
+    - "Terminate instances by hand in production"
+  correct: [A]
+  why: "FIS runs controlled chaos experiments (stopping instances, disrupting AZ networking, throttling APIs) and stops automatically when alarms indicate the impact is too high."
+  ref: "AWS Fault Injection Service User Guide: What is AWS FIS"
+  exams: [dop]
+
+- id: dop-route53-failover-health
+  kind: choice
+  en: "An active/passive application runs in two Regions. Failover should happen automatically when the primary's application, not just its load balancer, is unhealthy. What should the Route 53 setup use?"
+  options:
+    - "Weighted routing 50/50"
+    - "Failover routing with a health check on the primary that probes an application health endpoint checking dependencies (or a calculated health check)"
+    - "A TTL of 7 days"
+    - "Simple routing with two IP addresses"
+  correct: [B]
+  why: "Failover routing answers with the secondary when the primary's health check fails. A deep health endpoint (or calculated checks over several checks) reflects real application health."
+  ref: "Amazon Route 53 Developer Guide: Configuring DNS failover"
+  exams: [dop]
+
+- id: dop-provisioned-concurrency
+  kind: choice
+  en: "A Lambda-based API has p99 latency spikes from cold starts every morning when traffic jumps at 9:00. What should be done?"
+  options:
+    - "Configure provisioned concurrency on the alias, scaled on a schedule with Application Auto Scaling"
+    - "Set reserved concurrency to 0"
+    - "Move the function out of the VPC"
+    - "Increase the timeout"
+  correct: [A]
+  why: "Provisioned concurrency keeps initialized execution environments ready; scheduled scaling adds it just before the predictable morning peak."
+  ref: "AWS Lambda Developer Guide: Configuring provisioned concurrency"
+  exams: [dop]
+
+- id: dop-single-nat
+  kind: choice
+  en: "A review finds that private subnets in three AZs all route through one NAT gateway in AZ a. What is the resilience risk and the fix?"
+  options:
+    - "If AZ a fails, all private subnets lose outbound access; create a NAT gateway per AZ and route each subnet to the one in its own AZ"
+    - "No risk, NAT gateways are Regional"
+    - "Add a second route table in AZ a"
+    - "Replace the NAT gateway with an internet gateway"
+  correct: [A]
+  why: "A zonal NAT gateway is a single point of failure for other AZs (and adds cross-AZ charges). One per AZ keeps each AZ independent."
+  ref: "Amazon VPC User Guide: NAT gateways - high availability"
+  exams: [dop]
+
+- id: dop-dynamodb-pitr
+  kind: choice
+  en: "A bug in a release corrupted items in a DynamoDB table 3 hours ago. The team needs the table as it was just before the release. What should have been enabled, and how is it used?"
+  options:
+    - "Point-in-time recovery; restore the table to a new table at a timestamp before the release, then switch the application or copy items back"
+    - "TTL; wait for the items to expire"
+    - "DynamoDB Streams; replay them backwards"
+    - "Global tables; fail over to another Region"
+  correct: [A]
+  why: "PITR keeps continuous backups for up to 35 days and restores to any second into a new table. Global tables replicate the corruption too."
+  ref: "Amazon DynamoDB Developer Guide: Point-in-time recovery"
+  exams: [dop]
+
+- id: dop-predictive-scaling
+  kind: choice
+  en: "An application's load follows a strong daily pattern, and target tracking reacts too late each morning. What should be added?"
+  options:
+    - "A shorter metric period only"
+    - "A larger minimum capacity all day"
+    - "A predictive scaling policy that forecasts load and launches capacity in advance, alongside target tracking"
+    - "Step scaling with one step"
+  correct: [C]
+  why: "Predictive scaling learns daily and weekly patterns and scales ahead of forecast demand; target tracking still handles unexpected changes."
+  ref: "Amazon EC2 Auto Scaling User Guide: Predictive scaling for Amazon EC2 Auto Scaling"
+  exams: [dop]
+
+- id: dop-restore-testing
+  kind: choice
+  en: "Auditors ask for evidence that backups can actually be restored within the RTO. Which approach provides this with the least manual work?"
+  options:
+    - "AWS Backup restore testing plans that restore recovery points on a schedule, run validation, and record restore times"
+    - "Copy backups to another Region"
+    - "Trust the backup job status"
+    - "Restore once a year by hand"
+  correct: [A]
+  why: "Restore testing automates periodic restores of selected resources, optionally validates them, and records duration for compliance evidence."
+  ref: "AWS Backup Developer Guide: Restore testing"
+  exams: [dop]
+
+- id: dop-sqs-decouple-resilience
+  kind: choice
+  en: "A web tier calls a downstream processing service synchronously; when the processor slows down, the web tier times out and customers see errors. Which change improves resilience the MOST?"
+  options:
+    - "Retry immediately in a tight loop"
+    - "Put an SQS queue between them, return to the user after enqueueing, and scale the processors on queue depth"
+    - "Increase the web tier's timeout to 5 minutes"
+    - "Add more web servers"
+  correct: [B]
+  why: "Asynchronous decoupling lets the web tier stay responsive while the backlog is processed; scaling on ApproximateNumberOfMessagesVisible (or backlog per instance) matches workers to demand."
+  ref: "Amazon EC2 Auto Scaling User Guide: Scaling policy based on Amazon SQS"
+  exams: [dop]
