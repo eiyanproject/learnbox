@@ -223,10 +223,16 @@ it, and **Check** runs it against a fresh emulator and inspects what it built.
 
 **6. Operations and infrastructure as code** (3) - Logs, metrics and alarms; An audit trail and config rules; Infrastructure as code with CloudFormation
 
-**Exam practice** - Solutions Architect - Associate (SAA-C03): 100 original
-multiple-choice questions written from AWS documentation, one topic per exam
-domain, and a timed 65-question mock exam weighted like the exam guide
-(30/26/24/20%), scored out of 1,000 with a pass at 720.
+**Exam practice** - original multiple-choice questions written from AWS
+documentation, one topic per exam domain, and a timed 65-question mock exam
+per certification, weighted like its exam guide and scored out of 1,000 with
+a pass at 720:
+
+| Exam | Questions | Domains (weight) |
+|---|---|---|
+| Solutions Architect - Associate (SAA-C03) | 100 | secure 30, resilient 26, high-performing 24, cost-optimized 20 |
+| Developer - Associate (DVA-C02) | 76 | development 32, security 26, deployment 24, troubleshooting 18 |
+| CloudOps Engineer - Associate (SOA-C03) | 73 | monitoring 22, reliability 22, automation 22, security 16, networking 18 |
 
 In the terminal, `aws ...` starts a private emulator on 127.0.0.1 the first
 time and keeps it until `awslab stop`; `awslab reset` empties it, `awslab run

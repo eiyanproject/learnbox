@@ -1,0 +1,248 @@
+- id: dva-cognito-authorizer
+  kind: choice
+  en: "A REST API in API Gateway must accept only requests from users signed in to the company's Amazon Cognito user pool. Which solution needs the LEAST custom code?"
+  options:
+    - "A Lambda authorizer that calls Cognito for every request"
+    - "IAM authorization with SigV4 signing in the browser"
+    - "A Cognito user pool authorizer on the API methods"
+    - "An API key in a usage plan"
+  correct: [C]
+  why: "A Cognito user pool authorizer validates the user's JWT itself. A Lambda authorizer would work but is custom code; API keys identify clients for usage plans and are not an authentication mechanism."
+  ref: "Amazon API Gateway Developer Guide: Control access to REST APIs using Amazon Cognito user pools as an authorizer"
+  exams: [dva]
+
+- id: dva-lambda-authorizer
+  kind: choice
+  en: "An API must accept bearer tokens issued by a third-party OAuth provider that is not Cognito, and decide access from claims in the token. What should the developer use?"
+  options:
+    - "A Cognito user pool authorizer"
+    - "A Lambda authorizer that validates the token and returns an IAM policy"
+    - "Resource policies on the API only"
+    - "Usage plans and API keys"
+  correct: [B]
+  why: "A Lambda (custom) authorizer runs your code to validate any token format and returns a policy allowing or denying the call. (For HTTP APIs, a JWT authorizer can validate standard OIDC tokens directly.)"
+  ref: "Amazon API Gateway Developer Guide: Use API Gateway Lambda authorizers"
+  exams: [dva]
+
+- id: dva-credential-chain
+  kind: choice
+  en: "An application on EC2 has an instance role allowing S3 access, yet the SDK is using a different identity with fewer permissions. The instance's environment has AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY set from an old deployment. What is happening?"
+  options:
+    - "Instance roles only work for the AWS CLI, not the SDK."
+    - "The SDK always prefers the most permissive credentials."
+    - "The SDK's credential provider chain uses environment variables before the instance role."
+    - "The instance role needs a session token in an environment variable."
+  correct: [C]
+  why: "The default credential chain checks environment variables before the instance metadata credentials, so leftover keys win. Remove them and the SDK falls through to the role."
+  ref: "AWS SDKs and Tools Reference Guide: Understand the credential provider chain"
+  exams: [dva]
+
+- id: dva-local-credentials
+  kind: choice
+  en: "Developers need AWS credentials on their laptops for testing. Security forbids long-term access keys. What should they use?"
+  options:
+    - "The root user's access keys"
+    - "An IAM user's access keys stored in an encrypted file"
+    - "IAM Identity Center with `aws configure sso` and `aws sso login`, which provides short-term credentials"
+    - "Hard-coded keys rotated every 90 days"
+  correct: [C]
+  why: "IAM Identity Center profiles give the CLI and SDKs temporary credentials that refresh after signing in, with no long-term keys on disk."
+  ref: "AWS CLI User Guide: Configuring IAM Identity Center authentication"
+  exams: [dva]
+
+- id: dva-envelope
+  kind: choice
+  en: "An application must encrypt 50 MB files with a KMS key before storing them. Calling the KMS Encrypt API with the file fails. What is the correct approach?"
+  options:
+    - "Call GenerateDataKey, encrypt the file locally with the plaintext data key, then store the encrypted data key with the file."
+    - "Use the KMS key's key material directly in the application."
+    - "Ask AWS to raise the Encrypt size limit."
+    - "Split the file into 4 KB chunks and call Encrypt for each."
+  correct: [A]
+  why: "KMS Encrypt accepts at most 4 KB of plaintext. Envelope encryption uses a data key for the bulk data and KMS only to protect that key. KMS key material never leaves KMS."
+  ref: "AWS KMS Developer Guide: Envelope encryption"
+  exams: [dva]
+
+- id: dva-client-side
+  kind: choice
+  en: "A healthcare application must ensure that records stored in S3 are never readable in plaintext by anything on the AWS side, including during upload. Which approach meets this requirement?"
+  options:
+    - "A bucket policy requiring HTTPS"
+    - "SSE-S3 default encryption"
+    - "SSE-KMS with an AWS managed key"
+    - "Client-side encryption before upload, with keys the application controls"
+  correct: [D]
+  why: "With client-side encryption the data is encrypted before it leaves the application, so S3 only ever receives ciphertext. Server-side options encrypt after S3 receives the data."
+  ref: "Amazon S3 User Guide: Protecting data by using client-side encryption"
+  exams: [dva]
+
+- id: dva-secrets-cache
+  kind: choice
+  en: "A Lambda function retrieves a database password from Secrets Manager on every invocation, adding latency and API cost at high volume. What should the developer do?"
+  options:
+    - "Store the password in a plaintext environment variable."
+    - "Hard-code the password in the function."
+    - "Disable rotation on the secret."
+    - "Cache the secret in memory outside the handler (or use the AWS Parameters and Secrets Lambda Extension) and refresh it periodically."
+  correct: [D]
+  why: "Values cached outside the handler survive across invocations in the same execution environment; a short refresh interval keeps rotation working. The Lambda extension provides such a cache."
+  ref: "AWS Secrets Manager User Guide: Use AWS Secrets Manager secrets in AWS Lambda functions"
+  exams: [dva]
+
+- id: dva-secret-vs-param
+  kind: choice
+  en: "A team needs to store database credentials that must rotate automatically every 30 days, and feature flags that never rotate. Which combination is the MOST cost-effective? (Choose TWO.)"
+  options:
+    - "Store the database credentials in AWS Secrets Manager with rotation."
+    - "Store the database credentials as a String parameter with no encryption."
+    - "Store the feature flags in Secrets Manager."
+    - "Store the feature flags as standard parameters in Systems Manager Parameter Store."
+    - "Store everything in Lambda environment variables."
+  correct: [A, D]
+  why: "Secrets Manager provides managed rotation for database credentials. Standard Parameter Store parameters cost nothing to store and suit configuration such as feature flags (AppConfig is another option for flags)."
+  ref: "AWS Systems Manager User Guide: Parameter Store"
+  exams: [dva]
+
+- id: dva-signature-expired
+  kind: choice
+  en: "Calls from an on-premises server to AWS APIs fail with 'Signature expired' errors, while the same code works from an EC2 instance. What is the MOST likely cause?"
+  options:
+    - "The IAM user lacks permissions."
+    - "The server's clock is wrong; synchronise it with NTP."
+    - "The access key has been deleted."
+    - "The server is using the wrong Region."
+  correct: [B]
+  why: "SigV4 signatures include a timestamp and are valid only within a few minutes of AWS's time, so a drifting clock makes every signature look expired."
+  ref: "AWS Identity and Access Management User Guide: Troubleshoot signing errors"
+  exams: [dva]
+
+- id: dva-policy-variable
+  kind: choice
+  en: "Users of a mobile app sign in through a Cognito identity pool. Each must be able to read and write only objects under their own prefix in a shared bucket. How should the role's policy be written?"
+  options:
+    - "Use a bucket policy that allows everyone in the identity pool to access everything."
+    - "Use the policy variable ${cognito-identity.amazonaws.com:sub} in the Resource ARN for the prefix."
+    - "Create one IAM role per user."
+    - "Check the prefix in the app before uploading."
+  correct: [B]
+  why: "Policy variables resolve per request, so one role policy like arn:aws:s3:::bucket/${cognito-identity.amazonaws.com:sub}/* confines each user to their own prefix."
+  ref: "Amazon Cognito Developer Guide: IAM roles and policy variables"
+  exams: [dva]
+
+- id: dva-leading-keys
+  kind: choice
+  en: "A multi-tenant application stores all tenants' data in one DynamoDB table with the tenant ID as the partition key. Each tenant's credentials must only access that tenant's items. What should the developer use?"
+  options:
+    - "DynamoDB Streams"
+    - "An IAM policy condition on dynamodb:LeadingKeys matching the tenant's ID"
+    - "A separate global secondary index per tenant"
+    - "A filter expression in every query"
+  correct: [B]
+  why: "The dynamodb:LeadingKeys condition key restricts access to items whose partition key value matches, enforced by IAM rather than by application code."
+  ref: "Amazon DynamoDB Developer Guide: Using IAM policy conditions for fine-grained access control"
+  exams: [dva]
+
+- id: dva-lambda-resource-policy
+  kind: choice
+  en: "A developer configured an S3 event notification to invoke a Lambda function, but S3 reports it cannot validate the destination. What is missing?"
+  options:
+    - "A VPC endpoint for Lambda"
+    - "A statement in the function's resource-based policy allowing s3.amazonaws.com to invoke it, for that bucket"
+    - "An S3 permission in the function's execution role"
+    - "Reserved concurrency on the function"
+  correct: [B]
+  why: "A service invoking a function needs permission in the function's resource-based policy (lambda add-permission, with the source ARN). The execution role governs what the function itself can do."
+  ref: "AWS Lambda Developer Guide: Granting Lambda function access to AWS services"
+  exams: [dva]
+
+- id: dva-private-ca
+  kind: choice
+  en: "Internal microservices must use TLS certificates trusted only inside the company, issued and renewed automatically. Which service should the developer use?"
+  options:
+    - "Self-signed certificates generated on each host"
+    - "IAM server certificates"
+    - "AWS Private Certificate Authority with ACM private certificates"
+    - "Public ACM certificates"
+  correct: [C]
+  why: "AWS Private CA issues private certificates for internal resources, and ACM can manage and renew them. Public ACM certificates require a public domain and are trusted everywhere."
+  ref: "AWS Private CA User Guide: What is AWS Private CA"
+  exams: [dva]
+
+- id: dva-env-var-encryption
+  kind: choice
+  en: "A Lambda function's environment variable holds an API token. Security requires it to be encrypted with a key the company controls and not visible in plaintext in the Lambda console. What should the developer do?"
+  options:
+    - "Base64-encode the value."
+    - "Encrypt the value with a customer managed KMS key using encryption helpers, and decrypt it in the function code."
+    - "Store the value in the function's code instead."
+    - "Mark the variable as hidden in the console."
+  correct: [B]
+  why: "Environment variables are encrypted at rest by default, but shown decrypted in the console. Client-side encryption with a customer managed key (decrypted by the function at runtime) keeps the value encrypted until used. Secrets Manager is the other common choice."
+  ref: "AWS Lambda Developer Guide: Securing Lambda environment variables"
+  exams: [dva]
+
+- id: dva-assume-role-code
+  kind: choice
+  en: "An application in account A must write to a DynamoDB table in account B. Account B has created a role that trusts account A. What must the application do?"
+  options:
+    - "Call STS AssumeRole for account B's role and use the temporary credentials it returns for the DynamoDB client."
+    - "Create a VPC peering connection between the accounts."
+    - "Copy account B's access keys into account A."
+    - "Use account A's credentials directly against account B's table."
+  correct: [A]
+  why: "Cross-account access to DynamoDB (without a resource policy) works by assuming a role in the owning account; the application's identity also needs permission for sts:AssumeRole on that role."
+  ref: "IAM User Guide: Cross-account resource access in IAM"
+  exams: [dva]
+
+- id: dva-mask-logs
+  kind: choice
+  en: "An application logs full request payloads, which sometimes include credit card numbers, to CloudWatch Logs. What should a developer do to stop sensitive data appearing in the logs? (Choose TWO.)"
+  options:
+    - "Stop logging raw payloads; log only the fields needed, with sensitive fields removed or masked in code."
+    - "Turn off encryption on the log group."
+    - "Increase the log group's retention period."
+    - "Attach a CloudWatch Logs data protection policy to the log group to detect and mask sensitive data."
+    - "Export the logs to S3 every day."
+  correct: [A, D]
+  why: "The first defence is not logging sensitive data at all; data protection policies add a net that masks recognised sensitive data such as card numbers in log events."
+  ref: "Amazon CloudWatch Logs User Guide: Help protect sensitive log data with masking"
+  exams: [dva]
+
+- id: dva-least-privilege-role
+  kind: choice
+  en: "A Lambda function reads items from one DynamoDB table. Its execution role currently has the AmazonDynamoDBFullAccess managed policy. What is the BEST change?"
+  options:
+    - "Remove the role and use access keys in environment variables."
+    - "Keep the managed policy and add a permissions boundary later."
+    - "Replace it with a policy allowing only dynamodb:GetItem and dynamodb:Query on that table's ARN."
+    - "Add AdministratorAccess so it never fails."
+  correct: [C]
+  why: "Least privilege: grant only the actions the function performs, on only the table it uses. Long-term keys in environment variables are worse than any role."
+  ref: "AWS Lambda Developer Guide: Defining Lambda function permissions with an execution role"
+  exams: [dva]
+
+- id: dva-cross-account-kms
+  kind: choice
+  en: "A function in account B must decrypt data encrypted with a customer managed KMS key in account A. Decrypt calls fail with AccessDenied. The function's role already allows kms:Decrypt on the key's ARN. What else is needed?"
+  options:
+    - "Nothing; KMS keys cannot be used across accounts."
+    - "Account A's key policy must allow account B (or the role) to use the key."
+    - "The function must call Decrypt in account A's Region only."
+    - "Account B must create a copy of the key."
+  correct: [B]
+  why: "Cross-account use of a KMS key requires both the key policy in the key's account and an IAM policy in the calling account."
+  ref: "AWS KMS Developer Guide: Allowing users in other accounts to use a KMS key"
+  exams: [dva]
+
+- id: dva-key-rotation
+  kind: choice
+  en: "A developer enables automatic rotation on a customer managed symmetric KMS key. What happens to data encrypted before the rotation?"
+  options:
+    - "It can still be decrypted with the same key ID; KMS keeps the old key material and uses it for old ciphertexts."
+    - "It must be re-encrypted immediately or it becomes unreadable."
+    - "It is automatically re-encrypted by KMS."
+    - "It is decrypted and stored in plaintext."
+  correct: [A]
+  why: "Rotation adds new key material for future encryptions while keeping previous material, so existing ciphertexts decrypt transparently. Nothing needs re-encrypting."
+  ref: "AWS KMS Developer Guide: Rotating AWS KMS keys"
+  exams: [dva]

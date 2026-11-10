@@ -1,0 +1,325 @@
+- id: dva-lambda-destination
+  kind: choice
+  en: "An S3 upload invokes a Lambda function asynchronously. When processing fails after all retries, the team needs the original event AND the error details captured for later analysis. What should a developer configure?"
+  options:
+    - "A dead-letter queue on the function"
+    - "An on-failure destination for the function that sends to an SQS queue"
+    - "A longer function timeout"
+    - "Provisioned concurrency"
+  correct: [B]
+  why: "For asynchronous invocations, an on-failure destination receives a record with the request and the response or error. A dead-letter queue only receives the original event, without the error details."
+  ref: "AWS Lambda Developer Guide: Capturing records of Lambda asynchronous invocations"
+  exams: [dva]
+
+- id: dva-lambda-vpc-internet
+  kind: choice
+  en: "A Lambda function was moved into private subnets of a VPC so it can reach an RDS database. It now times out when calling a third-party HTTPS API. What is the fix?"
+  options:
+    - "Add an internet gateway route to the private subnets."
+    - "Route the private subnets' internet traffic through a NAT gateway."
+    - "Increase the function's memory."
+    - "Give the function a public IP address in its configuration."
+  correct: [B]
+  why: "A function attached to a VPC has no public IP, so it reaches the internet only through a NAT gateway (or NAT instance) from private subnets. Lambda cannot be given a public IP, and an internet gateway route alone does not help without one."
+  ref: "AWS Lambda Developer Guide: Enable internet access for VPC-connected Lambda functions"
+  exams: [dva]
+
+- id: dva-lambda-layers
+  kind: choice
+  en: "Ten Lambda functions use the same in-house Python library. Every library change means redeploying all ten packages. How can a developer share the library more easily?"
+  options:
+    - "Copy the library into /tmp at the start of each invocation."
+    - "Store the library in an environment variable."
+    - "Package the library as a Lambda layer and add the layer to the functions."
+    - "Put the library in an S3 bucket and download it on every invocation."
+  correct: [C]
+  why: "Layers package shared libraries and dependencies separately from function code; functions reference a layer version, so the library is maintained in one place."
+  ref: "AWS Lambda Developer Guide: Managing Lambda dependencies with layers"
+  exams: [dva]
+
+- id: dva-backoff-jitter
+  kind: choice
+  en: "An application calls a third-party API that sometimes returns HTTP 503 under load. Retries from many clients at once make the overload worse. Which retry strategy should the developer use?"
+  options:
+    - "Retry immediately in a loop until the call succeeds."
+    - "Retry with exponential backoff and random jitter, up to a maximum number of attempts."
+    - "Retry every 100 ms forever."
+    - "Never retry; return the error to the user."
+  correct: [B]
+  why: "Exponential backoff spreads retries out over time and jitter stops clients from retrying in lockstep. A cap on attempts (or a circuit breaker) stops endless retrying."
+  ref: "AWS Builders' Library: Timeouts, retries, and backoff with jitter"
+  exams: [dva]
+
+- id: dva-hot-partition
+  kind: choice
+  en: "A DynamoDB table stores sensor readings with the date (for example 2026-11-10) as the partition key. Writes are being throttled even though the table's total capacity is well above the load. What is the MOST likely cause and fix?"
+  options:
+    - "The table should use strongly consistent reads."
+    - "The items are too small; pad them to 4 KB."
+    - "All of a day's writes go to one partition key; use a high-cardinality key such as the sensor ID, or add a suffix to spread writes."
+    - "The table needs a local secondary index."
+  correct: [C]
+  why: "A partition key with few distinct values concentrates traffic on one partition (a hot key), which throttles regardless of the table's total capacity. High-cardinality keys, or write sharding with a suffix, spread the load."
+  ref: "Amazon DynamoDB Developer Guide: Designing partition keys to distribute your workload"
+  exams: [dva]
+
+- id: dva-consistent-read
+  kind: choice
+  en: "Immediately after writing an item to DynamoDB, an application reads it back with GetItem and sometimes receives the old version. The read must always return the latest write. What should the developer do?"
+  options:
+    - "Use a Scan instead of GetItem."
+    - "Read the item from a global secondary index instead."
+    - "Set ConsistentRead to true on the GetItem call."
+    - "Increase the table's write capacity."
+  correct: [C]
+  why: "Reads are eventually consistent by default. A strongly consistent read returns the most recent successful write, at twice the read capacity cost. Global secondary indexes support only eventually consistent reads."
+  ref: "Amazon DynamoDB Developer Guide: Read consistency"
+  exams: [dva]
+
+- id: dva-query-vs-scan
+  kind: choice
+  en: "A table's partition key is CustomerId and its sort key is OrderDate. The application needs all orders for one customer from the last 30 days. Which operation is the MOST efficient?"
+  options:
+    - "A BatchGetItem for every possible date"
+    - "A Scan with a filter expression on CustomerId and OrderDate"
+    - "A Scan followed by sorting in the application"
+    - "A Query on CustomerId with a key condition on OrderDate"
+  correct: [D]
+  why: "Query reads only the items in one partition, and a sort key condition narrows them further. A Scan reads every item in the table and filters afterwards, consuming capacity for all of them."
+  ref: "Amazon DynamoDB Developer Guide: Querying tables"
+  exams: [dva]
+
+- id: dva-optimistic-locking
+  kind: choice
+  en: "Two instances of an application can update the same DynamoDB item at the same time, and one update sometimes silently overwrites the other. How can a developer prevent lost updates?"
+  options:
+    - "Add a global secondary index on the version."
+    - "Store a version number in the item and update with a ConditionExpression that the version is unchanged, incrementing it."
+    - "Use eventually consistent reads."
+    - "Enable DynamoDB Streams."
+  correct: [B]
+  why: "Optimistic locking: each update succeeds only if the version still matches what was read; otherwise the conditional check fails and the application retries with fresh data."
+  ref: "Amazon DynamoDB Developer Guide: Condition expressions"
+  exams: [dva]
+
+- id: dva-transactions
+  kind: choice
+  en: "When an order is placed, the application must decrement stock in one item and create an order item. Either both writes happen or neither does. Which DynamoDB feature should be used?"
+  options:
+    - "TransactWriteItems"
+    - "Two PutItem calls with retries"
+    - "DynamoDB Streams"
+    - "BatchWriteItem"
+  correct: [A]
+  why: "TransactWriteItems applies up to 100 actions atomically - all succeed or none do. BatchWriteItem is not atomic: some items can succeed while others fail."
+  ref: "Amazon DynamoDB Developer Guide: Amazon DynamoDB Transactions"
+  exams: [dva]
+
+- id: dva-streams-lambda
+  kind: choice
+  en: "Whenever an item in a DynamoDB table is modified, a Lambda function must send the old and new values to an audit service. Which solution requires the LEAST custom code?"
+  options:
+    - "Enable DynamoDB Streams with NEW_AND_OLD_IMAGES and add the stream as an event source for the function."
+    - "Use DynamoDB TTL."
+    - "Have the application call the function after every write."
+    - "Scan the table every minute and compare it with a copy."
+  correct: [A]
+  why: "DynamoDB Streams records item-level changes, with the item before and after the change when NEW_AND_OLD_IMAGES is chosen, and Lambda can read the stream through an event source mapping."
+  ref: "Amazon DynamoDB Developer Guide: Change data capture for DynamoDB Streams"
+  exams: [dva]
+
+- id: dva-rcu-calc
+  kind: choice
+  en: "An application performs 10 strongly consistent reads per second of items that are 6 KB each. How many read capacity units does the table need?"
+  options:
+    - "30"
+    - "15"
+    - "10"
+    - "20"
+  correct: [D]
+  why: "One RCU is one strongly consistent read per second of up to 4 KB. A 6 KB item rounds up to 8 KB, which is 2 RCUs per read; 10 reads per second needs 20. Eventually consistent reads would need half, 10."
+  ref: "Amazon DynamoDB Developer Guide: Read capacity units"
+  exams: [dva]
+
+- id: dva-wcu-calc
+  kind: choice
+  en: "An application writes 5 items per second to a provisioned DynamoDB table. Each item is 2.5 KB. How many write capacity units are needed?"
+  options:
+    - "15"
+    - "10"
+    - "5"
+    - "13"
+  correct: [A]
+  why: "One WCU is one write per second of an item up to 1 KB. A 2.5 KB item rounds up to 3 KB, which is 3 WCUs per write; 5 writes per second needs 15."
+  ref: "Amazon DynamoDB Developer Guide: Write capacity units"
+  exams: [dva]
+
+- id: dva-apigw-validation
+  kind: choice
+  en: "A REST API in API Gateway passes requests to a Lambda function, which spends most of its time rejecting bodies that are missing required fields. How can invalid requests be rejected before the function is invoked?"
+  options:
+    - "Enable API caching."
+    - "Use a Lambda authorizer."
+    - "Define a model for the body and enable a request validator on the method."
+    - "Add a usage plan with throttling."
+  correct: [C]
+  why: "API Gateway can validate the body against a JSON schema model (and required parameters) and return 400 itself, so invalid requests never invoke - or bill - the function."
+  ref: "Amazon API Gateway Developer Guide: Request validation for REST APIs"
+  exams: [dva]
+
+- id: dva-proxy-502
+  kind: choice
+  en: "A REST API using Lambda proxy integration returns HTTP 502 for every request, although the function runs without errors and returns the string \"ok\". What is wrong?"
+  options:
+    - "The function must return an object with statusCode, headers and body."
+    - "The function needs more memory."
+    - "The API needs a request validator."
+    - "The function's timeout is too short."
+  correct: [A]
+  why: "With proxy integration API Gateway expects the function to return a response object in a specific format; anything else produces 502 Malformed Lambda proxy response."
+  ref: "Amazon API Gateway Developer Guide: Output format of a Lambda function for proxy integration"
+  exams: [dva]
+
+- id: dva-long-polling
+  kind: choice
+  en: "Consumers poll an SQS queue in a tight loop and most receives come back empty, adding cost. What should the developer change?"
+  options:
+    - "Increase the message retention period."
+    - "Switch to a FIFO queue."
+    - "Use long polling by setting WaitTimeSeconds (or ReceiveMessageWaitTimeSeconds) to up to 20 seconds."
+    - "Shorten the visibility timeout."
+  correct: [C]
+  why: "Long polling waits for messages to arrive (up to 20 seconds) instead of returning immediately, which cuts empty responses and request charges."
+  ref: "Amazon SQS Developer Guide: Amazon SQS short and long polling"
+  exams: [dva]
+
+- id: dva-kinesis-order
+  kind: choice
+  en: "IoT devices send readings to Amazon Kinesis Data Streams. Readings from each device must be processed in order, but different devices can be processed in parallel. How should the producer write records?"
+  options:
+    - "Use a random partition key for every record."
+    - "Write every record to the same shard by using a constant partition key."
+    - "Use the device ID as the partition key."
+    - "Set the sequence number on each record."
+  correct: [C]
+  why: "Records with the same partition key go to the same shard, where order is preserved; using the device ID keeps each device in order while spreading devices across shards. A constant key serializes everything through one shard."
+  ref: "Amazon Kinesis Data Streams Developer Guide: Partition key"
+  exams: [dva]
+
+- id: dva-express-workflow
+  kind: choice
+  en: "A workflow processes about 50,000 IoT events per second. Each run takes under a second and does not need an exactly-once guarantee. Which option is the MOST cost-effective?"
+  options:
+    - "An EC2 instance running a scheduler"
+    - "Step Functions Standard workflows"
+    - "Step Functions Express workflows"
+    - "Amazon SWF"
+  correct: [C]
+  why: "Express workflows are designed for high-volume, short-duration (up to 5 minutes) event processing, billed by requests and duration, with at-least-once execution. Standard workflows suit long-running, exactly-once workflows."
+  ref: "AWS Step Functions Developer Guide: Choosing workflow type"
+  exams: [dva]
+
+- id: dva-cache-ttl
+  kind: choice
+  en: "An application uses lazy loading with ElastiCache in front of a database. Users sometimes see data that is hours out of date. Which change limits staleness with the least effort?"
+  options:
+    - "Use Memcached instead of Redis."
+    - "Remove the cache completely."
+    - "Use a larger cache node."
+    - "Set a time to live (TTL) on cached items."
+  correct: [D]
+  why: "With lazy loading, a cached item stays until evicted. A TTL makes items expire so the next read fetches fresh data; write-through caching is another way to keep the cache current."
+  ref: "Amazon ElastiCache User Guide: Caching strategies"
+  exams: [dva]
+
+- id: dva-presigned-upload
+  kind: choice
+  en: "A web application must let users upload files directly from the browser to a private S3 bucket without giving them AWS credentials. What should the backend do?"
+  options:
+    - "Generate a presigned URL for a PUT to the object key and return it to the browser."
+    - "Make the bucket public for writes."
+    - "Send the application's access keys to the browser."
+    - "Proxy every upload through the backend server only."
+  correct: [A]
+  why: "A presigned URL grants time-limited permission for one operation on one object, signed with the backend's credentials, so the browser uploads directly without credentials of its own."
+  ref: "Amazon S3 User Guide: Uploading objects with presigned URLs"
+  exams: [dva]
+
+- id: dva-pagination
+  kind: choice
+  en: "A script calls an AWS list operation and processes only the first 1,000 results, although many more exist. What is the correct fix?"
+  options:
+    - "Use a Scan instead."
+    - "Call the operation repeatedly with the same parameters."
+    - "Ask AWS Support to raise the page size limit."
+    - "Follow the NextToken (or use the SDK's paginator) until no token is returned."
+  correct: [D]
+  why: "List and describe operations return results in pages with a continuation token; the SDK paginators follow the tokens automatically."
+  ref: "AWS SDK for Python (Boto3): Paginators"
+  exams: [dva]
+
+- id: dva-opensearch
+  kind: choice
+  en: "A product catalog stored in DynamoDB needs full-text search with relevance ranking and fuzzy matching. Which service should the developer add?"
+  options:
+    - "Amazon OpenSearch Service"
+    - "Amazon ElastiCache"
+    - "Amazon Athena on the live table"
+    - "A DynamoDB global secondary index on the description"
+  correct: [A]
+  why: "OpenSearch is a search engine built for full-text search, relevance scoring and fuzzy queries; data can be fed from DynamoDB with zero-ETL integration or streams. DynamoDB indexes support exact key lookups only."
+  ref: "Amazon OpenSearch Service Developer Guide: What is Amazon OpenSearch Service"
+  exams: [dva]
+
+- id: dva-idempotency
+  kind: choice
+  en: "A Lambda function processes payment messages from an SQS standard queue. Occasionally a payment is processed twice. Which change prevents duplicate payments?"
+  options:
+    - "Make the function idempotent: record each message's unique payment ID with a conditional write and skip IDs already recorded."
+    - "Turn on long polling."
+    - "Reduce the batch size to 1."
+    - "Increase the queue's retention period."
+  correct: [A]
+  why: "Standard queues deliver at least once, so duplicates can happen. Recording a unique key with a conditional write (attribute_not_exists) lets the function detect and skip a repeat."
+  ref: "AWS Lambda Developer Guide: Using Lambda with Amazon SQS"
+  exams: [dva]
+
+- id: dva-eventbridge-decouple
+  kind: choice
+  en: "An order service currently calls three downstream services directly, so each new consumer requires changing and redeploying the order service. Which design removes this coupling? (Choose TWO.)"
+  options:
+    - "Have the order service write to each consumer's database directly."
+    - "Let each consumer create its own EventBridge rule that matches the events it needs."
+    - "Publish an OrderPlaced event to an Amazon EventBridge event bus."
+    - "Call the consumers in parallel threads instead of sequentially."
+    - "Give every consumer the order service's database credentials."
+  correct: [B, C]
+  why: "With an event bus, the producer publishes facts and consumers subscribe with their own rules - choreography - so adding a consumer needs no change to the producer."
+  ref: "Amazon EventBridge User Guide: Event buses and rules"
+  exams: [dva]
+
+- id: dva-sqs-fifo-dedup
+  kind: choice
+  en: "A producer may send the same message twice to an SQS FIFO queue when its network call times out and it retries. How can duplicates within five minutes be dropped without changing the message body?"
+  options:
+    - "Send a MessageDeduplicationId that is the same for retries of the same message."
+    - "Increase the visibility timeout."
+    - "Use a different MessageGroupId for each retry."
+    - "Enable long polling."
+  correct: [A]
+  why: "FIFO queues drop messages with a deduplication ID seen within the 5-minute deduplication interval. ContentBasedDeduplication uses a hash of the body instead, when bodies are identical."
+  ref: "Amazon SQS Developer Guide: Exactly-once processing in Amazon SQS"
+  exams: [dva]
+
+- id: dva-tmp-storage
+  kind: choice
+  en: "A Lambda function downloads a 2 GB file to process it and fails with a disk space error. What should the developer do?"
+  options:
+    - "Increase the function's ephemeral storage (/tmp) above 2 GB."
+    - "Add a layer."
+    - "Use reserved concurrency."
+    - "Increase the function's timeout."
+  correct: [A]
+  why: "Lambda's /tmp is 512 MB by default and can be configured up to 10 GB of ephemeral storage. Alternatives include streaming the file or mounting EFS."
+  ref: "AWS Lambda Developer Guide: Configure ephemeral storage for Lambda functions"
+  exams: [dva]

@@ -1,0 +1,233 @@
+- id: dva-alias-weights
+  kind: choice
+  en: "A team wants 10% of production traffic to go to a new Lambda version for a day before switching completely, without changing the callers. What should they use?"
+  options:
+    - "A Lambda alias with weighted routing between the old and new versions"
+    - "$LATEST for production"
+    - "Reserved concurrency of 10%"
+    - "Two separate functions and a Route 53 weighted record"
+  correct: [A]
+  why: "An alias can send a percentage of invocations to a second version. Callers keep invoking the alias ARN, and the weights move traffic without touching them."
+  ref: "AWS Lambda Developer Guide: Implement Lambda canary deployments using a weighted alias"
+  exams: [dva]
+
+- id: dva-codedeploy-lambda
+  kind: choice
+  en: "A team deploys Lambda functions with SAM. It wants each release to send 10% of traffic to the new version for 5 minutes, then the rest, and to roll back automatically if an error alarm fires. What should it configure?"
+  options:
+    - "Two stacks switched by Route 53"
+    - "A Linear10PercentEvery10Minutes Elastic Beanstalk policy"
+    - "An S3 lifecycle rule"
+    - "DeploymentPreference with type Canary10Percent5Minutes and the alarm, which uses CodeDeploy"
+  correct: [D]
+  why: "SAM's DeploymentPreference creates CodeDeploy deployments that shift alias traffic in canary or linear steps, with CloudWatch alarms and hooks that trigger automatic rollback."
+  ref: "AWS SAM Developer Guide: Deploying serverless applications gradually"
+  exams: [dva]
+
+- id: dva-appspec-hooks
+  kind: choice
+  en: "In a CodeDeploy in-place deployment to EC2, which lifecycle event is the right place for a script that checks the application responds correctly after it has started?"
+  options:
+    - "BeforeInstall"
+    - "DownloadBundle"
+    - "ValidateService"
+    - "ApplicationStop"
+  correct: [C]
+  why: "Hooks run in order: ApplicationStop, DownloadBundle, BeforeInstall, Install, AfterInstall, ApplicationStart, ValidateService. ValidateService is the last, for verifying the deployment."
+  ref: "AWS CodeDeploy User Guide: AppSpec 'hooks' section"
+  exams: [dva]
+
+- id: dva-beanstalk-immutable
+  kind: choice
+  en: "An Elastic Beanstalk application must deploy with no loss of capacity at any point and the quickest possible rollback if the new version fails health checks. Which deployment policy should be used?"
+  options:
+    - "Rolling"
+    - "All at once"
+    - "Rolling with additional batch"
+    - "Immutable"
+  correct: [D]
+  why: "Immutable deployments launch a full set of new instances in a temporary Auto Scaling group; if they fail, they are terminated and the original instances keep serving untouched. Rolling reduces capacity; all at once causes downtime."
+  ref: "AWS Elastic Beanstalk Developer Guide: Deployment policies and settings"
+  exams: [dva]
+
+- id: dva-stage-variables
+  kind: choice
+  en: "An API Gateway REST API has dev and prod stages. The prod stage must invoke the prod alias of a Lambda function and the dev stage the dev alias, from one API definition. What should the developer use?"
+  options:
+    - "Environment variables on the API"
+    - "A usage plan per stage"
+    - "Two separate APIs"
+    - "Stage variables referenced in the integration's function ARN (for example ...:function:orders:${stageVariables.alias})"
+  correct: [D]
+  why: "Stage variables are name-value pairs per stage that integrations can reference, so one API definition points each stage at a different alias. The function's resource policy must allow each alias to be invoked."
+  ref: "Amazon API Gateway Developer Guide: Use stage variables for a REST API"
+  exams: [dva]
+
+- id: dva-sam-local
+  kind: choice
+  en: "A developer wants to run and debug a SAM-defined Lambda function and its API on a laptop before deploying. Which commands support this?"
+  options:
+    - "sam deploy --guided"
+    - "cdk synth"
+    - "aws lambda invoke against the deployed function"
+    - "sam local invoke and sam local start-api"
+  correct: [D]
+  why: "SAM CLI's local commands run functions in containers that mimic the Lambda runtime, invoked directly or behind a local API endpoint."
+  ref: "AWS SAM Developer Guide: Locally test with sam local"
+  exams: [dva]
+
+- id: dva-buildspec
+  kind: choice
+  en: "In a CodeBuild buildspec.yml, where should unit tests run so that a failure stops the build before the artifact is packaged?"
+  options:
+    - "In the env section"
+    - "In the cache section"
+    - "In the build phase (or pre_build), before post_build packaging"
+    - "In the artifacts section"
+  correct: [C]
+  why: "Phases run in order - install, pre_build, build, post_build - and a failing command fails the phase and the build. artifacts, env and cache are settings, not steps."
+  ref: "AWS CodeBuild User Guide: Build specification reference"
+  exams: [dva]
+
+- id: dva-manual-approval
+  kind: choice
+  en: "A pipeline deploys to a staging environment and then to production. A manager must sign off before production. What should be added?"
+  options:
+    - "A CloudWatch alarm"
+    - "A CodeBuild step that sleeps for a day"
+    - "An SQS queue between the stages"
+    - "A manual approval action in a CodePipeline stage before the production deploy"
+  correct: [D]
+  why: "CodePipeline's manual approval action pauses the pipeline until someone approves or rejects it, optionally notifying through SNS."
+  ref: "AWS CodePipeline User Guide: Add a manual approval action to a stage"
+  exams: [dva]
+
+- id: dva-container-image
+  kind: choice
+  en: "A Python Lambda function needs machine learning libraries totalling 3 GB. Which packaging option allows this?"
+  options:
+    - "Split the libraries across five layers."
+    - "Upload a .zip to S3 and point the function at it."
+    - "Package the function as a container image in Amazon ECR."
+    - "Download the libraries to /tmp at every cold start."
+  correct: [C]
+  why: "Container images can be up to 10 GB. Zip deployments, including layers, are limited to 250 MB unzipped."
+  ref: "AWS Lambda Developer Guide: Create a Lambda function using a container image"
+  exams: [dva]
+
+- id: dva-appconfig-flags
+  kind: choice
+  en: "A team wants to turn a new feature on for its application gradually, with validation of the configuration and automatic rollback if an alarm fires, without redeploying code. Which service fits BEST?"
+  options:
+    - "A new Lambda version for each flag change"
+    - "AWS AppConfig feature flags with a gradual deployment strategy"
+    - "Hard-coded flags in the code"
+    - "Amazon SQS"
+  correct: [B]
+  why: "AppConfig deploys configuration and feature flags with validators, gradual deployment strategies and rollback on CloudWatch alarms, separate from code deployments."
+  ref: "AWS AppConfig User Guide: What is AWS AppConfig"
+  exams: [dva]
+
+- id: dva-rollback-alias
+  kind: choice
+  en: "Version 7 of a Lambda function, behind the prod alias, has a bug. Version 6 worked. What is the FASTEST way to roll back?"
+  options:
+    - "Edit version 7's code in the console."
+    - "Delete version 7 and wait for $LATEST to update."
+    - "Update the prod alias to point at version 6."
+    - "Redeploy the whole stack from an older commit."
+  correct: [C]
+  why: "Versions are immutable and aliases are pointers: moving the alias back is instant and needs no rebuild."
+  ref: "AWS Lambda Developer Guide: Lambda function aliases"
+  exams: [dva]
+
+- id: dva-param-paths
+  kind: choice
+  en: "The same Lambda code runs in dev, test and prod and needs different database endpoints in each. Configuration must not be in the code. Which approach is the SIMPLEST?"
+  options:
+    - "Store values in Parameter Store under /dev/, /test/ and /prod/ paths, and pass the environment name as an environment variable."
+    - "Read the values from a public S3 object."
+    - "Build a different artifact for each environment with values compiled in."
+    - "Ask the user for the endpoint at runtime."
+  correct: [A]
+  why: "One artifact, configuration per environment: hierarchical parameter paths with IAM scoped to each path keep environments separate."
+  ref: "AWS Systems Manager User Guide: Working with parameter hierarchies"
+  exams: [dva]
+
+- id: dva-codedeploy-ec2-bluegreen
+  kind: choice
+  en: "An application on EC2 behind a load balancer must be updated with no downtime, and the team wants to keep the old instances running until the new ones are proven. Which CodeDeploy deployment type should it use?"
+  options:
+    - "Canary for Lambda"
+    - "In-place with OneAtATime"
+    - "Blue/green"
+    - "In-place with AllAtOnce"
+  correct: [C]
+  why: "A blue/green deployment launches a replacement environment, reroutes the load balancer to it, and can keep the original instances for a while for quick rollback."
+  ref: "AWS CodeDeploy User Guide: Overview of a blue/green deployment"
+  exams: [dva]
+
+- id: dva-apigw-canary
+  kind: choice
+  en: "A team wants to test a new deployment of a REST API with 5% of production traffic on the existing prod stage before promoting it. Which API Gateway feature supports this?"
+  options:
+    - "A new usage plan"
+    - "Request validators"
+    - "Canary release settings on the stage"
+    - "API caching"
+  correct: [C]
+  why: "A stage's canary settings send a percentage of requests to a new deployment, which can then be promoted or rolled back."
+  ref: "Amazon API Gateway Developer Guide: Set up an API Gateway canary release deployment"
+  exams: [dva]
+
+- id: dva-cfn-changeset
+  kind: choice
+  en: "Before updating a production CloudFormation stack, a developer wants to know whether any resource will be replaced. What should the developer do?"
+  options:
+    - "Run drift detection."
+    - "Update the stack and watch the events."
+    - "Delete the stack and recreate it."
+    - "Create a change set and review the proposed changes, including the Replacement field."
+  correct: [D]
+  why: "A change set previews the update - which resources are added, modified or removed, and whether a modification needs replacement - before anything is executed."
+  ref: "AWS CloudFormation User Guide: Update CloudFormation stacks using change sets"
+  exams: [dva]
+
+- id: dva-ecs-bluegreen
+  kind: choice
+  en: "An Amazon ECS service behind an Application Load Balancer must be deployed with traffic shifted gradually to the new task set and automatic rollback on alarms. What should the developer configure?"
+  options:
+    - "Route 53 simple routing"
+    - "A rolling update with minimumHealthyPercent 0"
+    - "A new cluster for every release"
+    - "A blue/green deployment with AWS CodeDeploy (or ECS's built-in blue/green) using two target groups"
+  correct: [D]
+  why: "Blue/green for ECS uses two target groups and listener rules to shift traffic (all at once, canary or linear) to the new task set, with alarm-based rollback."
+  ref: "Amazon ECS Developer Guide: Blue/green deployments"
+  exams: [dva]
+
+- id: dva-amplify-branches
+  kind: choice
+  en: "A front-end team wants every Git feature branch of its web app deployed automatically to its own preview URL for review. Which service does this with the least setup?"
+  options:
+    - "A CloudFormation stack per developer"
+    - "Amazon S3 Transfer Acceleration"
+    - "AWS Amplify Hosting with branch deployments and pull request previews"
+    - "An EC2 instance per branch"
+  correct: [C]
+  why: "Amplify Hosting connects to a repository and builds and deploys each connected branch, with previews for pull requests."
+  ref: "AWS Amplify Hosting User Guide: Feature branch deployments"
+  exams: [dva]
+
+- id: dva-sam-transform
+  kind: choice
+  en: "What must a CloudFormation template include for AWS::Serverless::Function resources to be accepted?"
+  options:
+    - "Transform: AWS::Serverless-2016-10-31"
+    - "Nothing; CloudFormation supports them natively"
+    - "A Mappings section"
+    - "AWSTemplateFormatVersion: 2016-10-31"
+  correct: [A]
+  why: "The SAM transform tells CloudFormation to expand the serverless resource types into standard resources during deployment."
+  ref: "AWS SAM Developer Guide: AWS SAM template anatomy"
+  exams: [dva]

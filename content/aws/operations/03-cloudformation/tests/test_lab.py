@@ -65,16 +65,47 @@ def test_resources(acct):
     assert got == want, f"the stack should hold {want}; it holds {got}"
 
 
-def test_uploads_bucket(acct):
+def template_resource(acct, logical):
+    """A resource's Properties as the deployed template declares them."""
+    import yaml
+
+    class Loader(yaml.SafeLoader):
+        pass
+
+    # CloudFormation's short forms (!Ref, !GetAtt, !Sub...) become plain
+    # {"Ref": ...}-style values, enough to check what was declared.
+    def tag(loader, suffix, node):
+        key = "Ref" if suffix == "Ref" else "Fn::" + suffix
+        if isinstance(node, yaml.ScalarNode):
+            return {key: loader.construct_scalar(node)}
+        if isinstance(node, yaml.SequenceNode):
+            return {key: loader.construct_sequence(node)}
+        return {key: loader.construct_mapping(node)}
+
+    Loader.add_multi_constructor("!", tag)
+    body = acct.client("cloudformation").get_template(StackName="app-dev")["TemplateBody"]
+    doc = body if isinstance(body, dict) else yaml.load(body, Loader=Loader)
+    return (doc.get("Resources", {}).get(logical) or {}).get("Properties", {})
+
+
+def test_uploads_bucket_is_encrypted(acct):
     name = resources(acct)["Uploads"]["PhysicalResourceId"]
-    s3 = acct.client("s3")
-    assert s3.get_bucket_versioning(Bucket=name).get("Status") == "Enabled", "Uploads has versioning off"
-    algo = s3.get_bucket_encryption(Bucket=name)["ServerSideEncryptionConfiguration"]["Rules"][0]["ApplyServerSideEncryptionByDefault"]["SSEAlgorithm"]
+    rules = acct.client("s3").get_bucket_encryption(Bucket=name)["ServerSideEncryptionConfiguration"]["Rules"]
+    algo = rules[0]["ApplyServerSideEncryptionByDefault"]["SSEAlgorithm"]
     assert algo == "aws:kms", f"Uploads is encrypted with {algo}, not aws:kms"
-    pab = s3.get_public_access_block(Bucket=name)["PublicAccessBlockConfiguration"]
-    assert all(pab.get(k) for k in ["BlockPublicAcls", "IgnorePublicAcls", "BlockPublicPolicy", "RestrictPublicBuckets"]), "Uploads should block public access, all four settings"
-    tags = {t["Key"]: t["Value"] for t in s3.get_bucket_tagging(Bucket=name)["TagSet"]}
-    assert tags.get("env") == "dev", "Uploads should be tagged env with the parameter's value"
+
+
+# The emulator's CloudFormation creates the bucket and applies its encryption
+# but not every other property, so these are checked as the template
+# declares them - which is what a real stack would build.
+def test_uploads_bucket_declares_versioning_blocking_and_tag(acct):
+    props = template_resource(acct, "Uploads")
+    assert (props.get("VersioningConfiguration") or {}).get("Status") == "Enabled", "Uploads should declare VersioningConfiguration Status: Enabled"
+    pab = props.get("PublicAccessBlockConfiguration") or {}
+    missing = [k for k in ["BlockPublicAcls", "IgnorePublicAcls", "BlockPublicPolicy", "RestrictPublicBuckets"] if pab.get(k) is not True]
+    assert not missing, f"Uploads should block public access; not set to true: {', '.join(missing)}"
+    tags = {t.get("Key"): t.get("Value") for t in props.get("Tags", [])}
+    assert tags.get("env") == {"Ref": "Env"}, "Uploads should be tagged env with !Ref Env"
 
 
 def test_queues(acct):

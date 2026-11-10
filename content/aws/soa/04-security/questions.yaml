@@ -1,0 +1,155 @@
+- id: soa-access-analyzer
+  kind: choice
+  en: "Security wants a list of every S3 bucket, KMS key and IAM role in the organization that can be accessed from outside the organization. Which service provides this?"
+  options:
+    - "AWS Trusted Advisor"
+    - "IAM Access Analyzer with the organization as the zone of trust"
+    - "Amazon Inspector"
+    - "VPC Flow Logs"
+  correct: [B]
+  why: "Access Analyzer analyses resource policies and reports resources shared with principals outside the zone of trust (the account or the organization)."
+  ref: "IAM User Guide: Using AWS Identity and Access Management Access Analyzer"
+  exams: [soa]
+
+- id: soa-policy-simulator
+  kind: choice
+  en: "A user reports AccessDenied when starting EC2 instances. Before changing anything, the operator wants to test which of the user's policies allows or denies ec2:StartInstances. Which tool should be used?"
+  options:
+    - "The IAM policy simulator"
+    - "AWS Config"
+    - "Amazon Detective"
+    - "CloudWatch Logs Insights"
+  correct: [A]
+  why: "The policy simulator evaluates the identity's policies (and optionally resource policies, boundaries and SCP context) for chosen actions and shows which statement decides."
+  ref: "IAM User Guide: Testing IAM policies with the IAM policy simulator"
+  exams: [soa]
+
+- id: soa-scp-regions
+  kind: choice
+  en: "Company policy says workloads may run only in eu-west-1 and eu-central-1. How can this be enforced across all accounts in the organization?"
+  options:
+    - "A Config rule that deletes resources"
+    - "An IAM policy in each account"
+    - "A tag policy"
+    - "An SCP that denies actions when aws:RequestedRegion is not one of the two, exempting global services"
+  correct: [D]
+  why: "An SCP with a Deny on aws:RequestedRegion caps every principal in member accounts, including administrators; global services such as IAM need an exemption."
+  ref: "AWS Organizations User Guide: Deny access to AWS based on the requested AWS Region"
+  exams: [soa]
+
+- id: soa-trusted-advisor
+  kind: choice
+  en: "Which service checks the account for security groups allowing unrestricted access to specific ports, root accounts without MFA, and IAM access keys exposed in public repositories?"
+  options:
+    - "AWS Backup"
+    - "AWS Trusted Advisor"
+    - "AWS X-Ray"
+    - "Amazon Macie"
+  correct: [B]
+  why: "Trusted Advisor's security checks cover these (some require Business, Enterprise On-Ramp or Enterprise Support). It also feeds results to Security Hub and EventBridge."
+  ref: "AWS Support User Guide: AWS Trusted Advisor check reference - Security"
+  exams: [soa]
+
+- id: soa-conformance-pack
+  kind: choice
+  en: "An auditor wants a set of Config rules matching a known operational best-practice framework deployed together, with one compliance score. What should be used?"
+  options:
+    - "Trusted Advisor"
+    - "One CloudFormation stack per rule"
+    - "GuardDuty"
+    - "An AWS Config conformance pack"
+  correct: [D]
+  why: "Conformance packs bundle Config rules and remediation actions, deployable to an account or organization, with AWS-provided sample templates for common frameworks."
+  ref: "AWS Config Developer Guide: Conformance packs"
+  exams: [soa]
+
+- id: soa-ebs-kms-denied
+  kind: choice
+  en: "Instances fail to start after their EBS volumes were encrypted with a new customer managed KMS key. The launch role has full EC2 permissions. What is the MOST likely problem?"
+  options:
+    - "The instance type does not support encryption."
+    - "Encrypted volumes cannot be attached to instances."
+    - "The key policy (or IAM) does not allow the user or service role to use the key (kms:CreateGrant, Decrypt and related actions)."
+    - "The volumes must be gp2."
+  correct: [C]
+  why: "Using an encrypted volume requires permission on its KMS key; without it, EC2 cannot decrypt the volume and the instance fails to start."
+  ref: "Amazon EBS User Guide: Amazon EBS encryption - permissions for IAM users"
+  exams: [soa]
+
+- id: soa-acm-renewal
+  kind: choice
+  en: "An ACM public certificate validated by DNS failed to renew automatically. What is the MOST likely cause?"
+  options:
+    - "The CNAME validation record was removed from the domain's DNS."
+    - "The certificate has too many names."
+    - "The load balancer is in the wrong Region."
+    - "ACM certificates never renew automatically."
+  correct: [A]
+  why: "ACM renews DNS-validated certificates automatically as long as the validation CNAME stays in DNS and the certificate is in use."
+  ref: "AWS Certificate Manager User Guide: Troubleshoot managed certificate renewal problems"
+  exams: [soa]
+
+- id: soa-security-hub
+  kind: choice
+  en: "Findings from GuardDuty, Inspector, Macie and Config in 30 accounts must be seen and prioritized in one place, with checks against the AWS Foundational Security Best Practices standard. Which service fits?"
+  options:
+    - "AWS Trusted Advisor"
+    - "CloudTrail Lake"
+    - "AWS Security Hub with a delegated administrator account"
+    - "Amazon CloudWatch dashboards"
+  correct: [C]
+  why: "Security Hub aggregates findings from AWS services and partners across accounts and Regions and runs security standard checks."
+  ref: "AWS Security Hub User Guide: What is AWS Security Hub"
+  exams: [soa]
+
+- id: soa-guardduty-response
+  kind: choice
+  en: "When GuardDuty reports that an EC2 instance is communicating with a known crypto-mining pool, the team wants the instance isolated automatically. Which design works?"
+  options:
+    - "An S3 lifecycle rule"
+    - "An EventBridge rule on the GuardDuty finding type that invokes a Lambda function or SSM Automation runbook replacing the instance's security groups with an isolation group"
+    - "GuardDuty isolates instances by itself"
+    - "A CloudWatch dashboard"
+  correct: [B]
+  why: "GuardDuty sends findings to EventBridge; rules route matching findings to automation that contains the instance, for example by switching to a security group with no rules."
+  ref: "Amazon GuardDuty User Guide: Creating custom responses to GuardDuty findings with Amazon EventBridge"
+  exams: [soa]
+
+- id: soa-inspector
+  kind: choice
+  en: "The team needs continuous scanning of EC2 instances and container images in ECR for software vulnerabilities and unintended network exposure. Which service should it enable?"
+  options:
+    - "Amazon Macie"
+    - "AWS Shield"
+    - "Amazon Inspector"
+    - "AWS Config"
+  correct: [C]
+  why: "Inspector automatically discovers and continuously scans EC2 instances, ECR images and Lambda functions for vulnerabilities and network reachability."
+  ref: "Amazon Inspector User Guide: What is Amazon Inspector"
+  exams: [soa]
+
+- id: soa-mfa-condition
+  kind: choice
+  en: "Administrators may terminate production instances only if they signed in with MFA. How can this be enforced in IAM?"
+  options:
+    - "Tag the instances."
+    - "Add a condition requiring aws:MultiFactorAuthPresent to be true to the statement allowing ec2:TerminateInstances (or deny when it is false)."
+    - "Use a longer password policy."
+    - "Enable MFA on the root user only."
+  correct: [B]
+  why: "The aws:MultiFactorAuthPresent condition key is true when the request's credentials came from an MFA-authenticated session."
+  ref: "IAM User Guide: Configuring MFA-protected API access"
+  exams: [soa]
+
+- id: soa-macie-classify
+  kind: choice
+  en: "A data classification scheme requires the team to know which S3 buckets hold personal data so they can be tagged and restricted. Which service automates the discovery?"
+  options:
+    - "Amazon Macie"
+    - "AWS Systems Manager Inventory"
+    - "Amazon Inspector"
+    - "AWS WAF"
+  correct: [A]
+  why: "Macie inventories buckets and uses managed and custom data identifiers to find sensitive data such as personal information in objects."
+  ref: "Amazon Macie User Guide: Discovering sensitive data"
+  exams: [soa]

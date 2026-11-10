@@ -1,0 +1,183 @@
+- id: dva-xray-annotations
+  kind: choice
+  en: "A developer instruments code with AWS X-Ray and wants to filter traces in the console by customer tier (free or paid). How should the tier be recorded?"
+  options:
+    - "As metadata on the segment"
+    - "In the function's environment variables"
+    - "As an annotation on the segment or subsegment"
+    - "In a CloudWatch metric dimension only"
+  correct: [C]
+  why: "Annotations are indexed and can be used in filter expressions; metadata is stored with the trace but not indexed, so it cannot be searched."
+  ref: "AWS X-Ray Developer Guide: Annotations and metadata"
+  exams: [dva]
+
+- id: dva-xray-lambda
+  kind: choice
+  en: "Traces for a Lambda function do not appear in X-Ray although the code uses the X-Ray SDK. What is the MOST likely missing step?"
+  options:
+    - "The function is not in a VPC."
+    - "Active tracing is not enabled on the function (and its role lacks xray:PutTraceSegments)."
+    - "CloudWatch Logs retention is not set."
+    - "The function has too little memory."
+  correct: [B]
+  why: "Lambda sends trace data only when active tracing is turned on; the execution role needs permission to write to X-Ray (the AWSXRayDaemonWriteAccess policy)."
+  ref: "AWS Lambda Developer Guide: Visualize Lambda function invocations using AWS X-Ray"
+  exams: [dva]
+
+- id: dva-logs-insights
+  kind: choice
+  en: "A developer needs to find the 20 slowest requests in the last hour from structured JSON logs in a CloudWatch log group. What is the quickest way?"
+  options:
+    - "Create a new metric filter and wait an hour"
+    - "Enable X-Ray and wait for new requests"
+    - "A CloudWatch Logs Insights query that sorts by the duration field and limits to 20"
+    - "Download all log streams and grep them"
+  correct: [C]
+  why: "Logs Insights queries existing log data with fields, filters, sorts and aggregations, and discovers fields in JSON logs automatically."
+  ref: "Amazon CloudWatch Logs User Guide: Analyzing log data with CloudWatch Logs Insights"
+  exams: [dva]
+
+- id: dva-emf
+  kind: choice
+  en: "A high-volume Lambda function must publish a custom business metric per invocation without adding latency from synchronous API calls. Which approach is BEST?"
+  options:
+    - "Call PutMetricData at the end of every invocation."
+    - "Write the metric in CloudWatch embedded metric format (EMF) to the function's logs."
+    - "Write the metric to DynamoDB and aggregate it later."
+    - "Send the metric to an SQS queue."
+  correct: [B]
+  why: "EMF log lines are extracted into metrics by CloudWatch asynchronously, so the function only writes to its log. PutMetricData calls add latency and API throttling risk."
+  ref: "Amazon CloudWatch User Guide: Embedding metrics within logs"
+  exams: [dva]
+
+- id: dva-throttle-429
+  kind: choice
+  en: "During a traffic spike, a Lambda function returns TooManyRequestsException errors and other functions in the account are throttled too. What should the developer do? (Choose TWO.)"
+  options:
+    - "Reduce the function's memory to 128 MB."
+    - "Increase the function's timeout."
+    - "Move the function to a VPC."
+    - "Set reserved concurrency on the spiking function so it cannot use the whole account pool."
+    - "Request an increase of the account's concurrency quota if the load is legitimate."
+  correct: [D, E]
+  why: "Throttling means the concurrency limit was reached. Reserved concurrency stops one function from starving the others, and a quota increase raises the shared limit. Timeout and memory do not change concurrency limits."
+  ref: "AWS Lambda Developer Guide: Understanding Lambda function scaling"
+  exams: [dva]
+
+- id: dva-apigw-504
+  kind: choice
+  en: "An API Gateway REST API invokes a Lambda function that sometimes takes 2 minutes to generate a report, and clients receive 504 errors. What is the BEST redesign?"
+  options:
+    - "Enable API caching."
+    - "Increase the Lambda timeout to 15 minutes."
+    - "Make it asynchronous: accept the request, queue the work, return 202 with a job ID, and let clients poll or receive a notification."
+    - "Increase the function's memory."
+  correct: [C]
+  why: "API Gateway integrations time out (by default after 29 seconds), so long work belongs behind an asynchronous pattern. Raising the function's timeout does not change the API's."
+  ref: "Amazon API Gateway Developer Guide: Amazon API Gateway quotas"
+  exams: [dva]
+
+- id: dva-ddb-throttle
+  kind: choice
+  en: "An application occasionally receives ProvisionedThroughputExceededException from DynamoDB during short bursts. The partition key is well distributed. Which TWO actions help?"
+  options:
+    - "Disable the SDK's retries."
+    - "Use Scan instead of Query."
+    - "Retry with exponential backoff (the SDK does this by default; tune it)."
+    - "Switch the table to on-demand capacity or enable auto scaling."
+    - "Use strongly consistent reads everywhere."
+  correct: [C, D]
+  why: "Backoff smooths bursts, and on-demand or auto scaling gives the table capacity to match. Scans and strongly consistent reads consume more capacity, not less."
+  ref: "Amazon DynamoDB Developer Guide: Error handling with DynamoDB"
+  exams: [dva]
+
+- id: dva-cold-start
+  kind: choice
+  en: "A latency-sensitive API backed by Lambda suffers from cold starts at the beginning of each business day. Which feature removes cold starts for a known level of traffic?"
+  options:
+    - "A dead-letter queue"
+    - "Provisioned concurrency on the function's alias"
+    - "A longer timeout"
+    - "Reserved concurrency"
+  correct: [B]
+  why: "Provisioned concurrency keeps a number of execution environments initialized and ready; it can be scheduled with Application Auto Scaling. Reserved concurrency limits concurrency but does not pre-warm."
+  ref: "AWS Lambda Developer Guide: Configuring provisioned concurrency for a function"
+  exams: [dva]
+
+- id: dva-memory-tuning
+  kind: choice
+  en: "A CPU-bound Lambda function runs for 8 seconds at 128 MB. A developer suspects a larger memory setting could be both faster and cheaper. How should this be decided?"
+  options:
+    - "Memory has no effect on CPU-bound code."
+    - "Measure duration and cost at several memory settings (for example with Lambda Power Tuning) and pick the best."
+    - "Always use 10 GB, since it is fastest."
+    - "Always use the minimum memory, since it is cheapest."
+  correct: [B]
+  why: "Lambda allocates CPU in proportion to memory and bills by GB-second, so more memory can finish so much faster that it costs less. Only measurement shows the sweet spot."
+  ref: "AWS Lambda Developer Guide: Configure Lambda function memory"
+  exams: [dva]
+
+- id: dva-cloudfront-cache-key
+  kind: choice
+  en: "A CloudFront distribution's cache hit ratio is very low. Its cache policy includes all request headers and all cookies in the cache key, although the origin's responses vary only by the Accept-Language header. What should the developer change?"
+  options:
+    - "Turn off compression."
+    - "Lower the default TTL to zero."
+    - "Increase the origin's instance size."
+    - "Use a cache policy that includes only Accept-Language in the cache key."
+  correct: [D]
+  why: "Every value included in the cache key splits the cache. Including only what changes the response lets requests share cached objects; an origin request policy can still forward other values to the origin."
+  ref: "Amazon CloudFront Developer Guide: Understand cache policies"
+  exams: [dva]
+
+- id: dva-sns-filter-optimize
+  kind: choice
+  en: "A Lambda function subscribed to an SNS topic discards 90% of the messages it receives because they are for other regions. How can the developer reduce invocations and cost?"
+  options:
+    - "Add reserved concurrency."
+    - "Add a subscription filter policy so only matching messages are delivered to the function."
+    - "Increase the function's batch size."
+    - "Use a FIFO topic."
+  correct: [B]
+  why: "Filter policies on message attributes or body are evaluated by SNS, so non-matching messages are never delivered to - or billed against - the subscriber."
+  ref: "Amazon SNS Developer Guide: Amazon SNS message filtering"
+  exams: [dva]
+
+- id: dva-iterator-age
+  kind: choice
+  en: "A Lambda function consuming a Kinesis data stream falls further behind every hour; the IteratorAge metric keeps rising. Which change is MOST likely to help?"
+  options:
+    - "Turn off X-Ray."
+    - "Decrease the batch size to 1."
+    - "Increase the event source mapping's parallelization factor (or add shards) so more batches are processed concurrently."
+    - "Reduce the stream's retention period."
+  correct: [C]
+  why: "IteratorAge rises when records arrive faster than they are processed. A higher parallelization factor processes up to 10 batches per shard at once; more shards spread the load."
+  ref: "AWS Lambda Developer Guide: Using Lambda with Kinesis Data Streams"
+  exams: [dva]
+
+- id: dva-structured-logs
+  kind: choice
+  en: "Log lines from several microservices are free-form text, which makes it hard to follow one request across services. Which practice helps MOST?"
+  options:
+    - "Write structured JSON logs that include a correlation (request) ID passed between the services."
+    - "Log more lines per request."
+    - "Lower the log retention."
+    - "Store logs in separate Regions."
+  correct: [A]
+  why: "Structured logs have queryable fields, and a correlation ID carried through every call ties one request's events together across services (as tracing does)."
+  ref: "AWS Well-Architected Framework, Operational Excellence Pillar: Implement application telemetry"
+  exams: [dva]
+
+- id: dva-errors-alarm
+  kind: choice
+  en: "The team must be emailed whenever a Lambda function's error count exceeds 5 in 5 minutes. What is the SIMPLEST setup?"
+  options:
+    - "A Lambda function that scans its own logs every minute"
+    - "An S3 event notification"
+    - "A CloudWatch alarm on the function's Errors metric with an SNS topic that has an email subscription"
+    - "X-Ray groups"
+  correct: [C]
+  why: "Lambda publishes the Errors metric automatically; an alarm with a Sum over 5 minutes and an SNS action does the rest."
+  ref: "AWS Lambda Developer Guide: Using CloudWatch metrics with Lambda"
+  exams: [dva]

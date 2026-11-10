@@ -1,0 +1,169 @@
+- id: soa-egress-only-igw
+  kind: choice
+  en: "Instances in a dual-stack private subnet must reach IPv6 internet services, but nothing on the internet may start IPv6 connections to them. What should be added?"
+  options:
+    - "A NAT gateway for IPv6"
+    - "A VPC endpoint"
+    - "An egress-only internet gateway with a ::/0 route to it"
+    - "An internet gateway with a ::/0 route"
+  correct: [C]
+  why: "An egress-only internet gateway allows outbound IPv6 traffic and its replies, and blocks inbound connections. IPv6 addresses are globally unique, so NAT is not used for them."
+  ref: "Amazon VPC User Guide: Enable outbound IPv6 traffic using an egress-only internet gateway"
+  exams: [soa]
+
+- id: soa-flow-logs-reject
+  kind: choice
+  en: "VPC Flow Logs show an inbound connection to port 443 as ACCEPT but the response traffic as REJECT. Which component is MOST likely blocking it?"
+  options:
+    - "The instance's security group"
+    - "The internet gateway"
+    - "The route table's local route"
+    - "A network ACL without an outbound rule for the client's ephemeral ports"
+  correct: [D]
+  why: "Security groups are stateful, so an accepted inbound connection's response is allowed automatically. Network ACLs are stateless; a missing outbound ephemeral-port rule rejects the reply."
+  ref: "Amazon VPC User Guide: Flow log record examples"
+  exams: [soa]
+
+- id: soa-resolver-endpoints
+  kind: choice
+  en: "Servers on premises must resolve names in a Route 53 private hosted zone, and EC2 instances must resolve names in the on-premises corp.example domain. Which TWO components are needed?"
+  options:
+    - "Route 53 health checks"
+    - "A public hosted zone for corp.example"
+    - "An internet gateway"
+    - "A Route 53 Resolver inbound endpoint that on-premises DNS forwards to"
+    - "A Route 53 Resolver outbound endpoint with a forwarding rule for corp.example"
+  correct: [D, E]
+  why: "Inbound endpoints let on-premises resolvers query Route 53 Resolver; outbound endpoints with forwarding rules send queries for on-premises domains to on-premises DNS servers."
+  ref: "Amazon Route 53 Developer Guide: Resolving DNS queries between VPCs and your network"
+  exams: [soa]
+
+- id: soa-dns-firewall
+  kind: choice
+  en: "Security wants to block instances in a VPC from resolving known malicious domains, and log the attempts. Which feature should be used?"
+  options:
+    - "CloudFront geo restriction"
+    - "Security groups"
+    - "AWS Shield Advanced"
+    - "Route 53 Resolver DNS Firewall with a managed domain list and query logging"
+  correct: [D]
+  why: "DNS Firewall filters outbound DNS queries made through Route 53 Resolver against domain lists, blocking or alerting, and Resolver query logging records them."
+  ref: "Amazon Route 53 Developer Guide: Route 53 Resolver DNS Firewall"
+  exams: [soa]
+
+- id: soa-weighted-migration
+  kind: choice
+  en: "A team is migrating an application to a new stack and wants 10% of users on the new stack at first, increasing gradually, with the ability to shift back. Which Route 53 routing policy should it use?"
+  options:
+    - "Geolocation routing"
+    - "Simple routing"
+    - "Weighted routing"
+    - "Latency-based routing"
+  correct: [C]
+  why: "Weighted routing splits DNS answers between records in proportion to their weights, which can be changed at any time."
+  ref: "Amazon Route 53 Developer Guide: Weighted routing"
+  exams: [soa]
+
+- id: soa-cloudfront-stale
+  kind: choice
+  en: "After a deployment, users keep getting the old version of app.js from CloudFront for up to a day. How can future releases reach users immediately, at the lowest ongoing cost?"
+  options:
+    - "Create an invalidation for /* after every deployment."
+    - "Set the minimum TTL to one year."
+    - "Use versioned file names (for example app.3f9c.js) referenced from the HTML, so each release is a new object."
+    - "Disable caching on the distribution."
+  correct: [C]
+  why: "Versioned names never collide with cached old objects, so no invalidation is needed. Invalidations work but are charged beyond a monthly free allowance; disabling caching loses the CDN's benefit."
+  ref: "Amazon CloudFront Developer Guide: Update existing content with a CloudFront distribution"
+  exams: [soa]
+
+- id: soa-vpn-two-tunnels
+  kind: choice
+  en: "A Site-to-Site VPN connection drops whenever AWS performs maintenance on one endpoint. The customer gateway is configured with only one tunnel. What should be done?"
+  options:
+    - "Configure both tunnels on the customer gateway (with BGP for automatic failover)."
+    - "Add a NAT gateway."
+    - "Replace the VPN with VPC peering."
+    - "Increase the instance size in the VPC."
+  correct: [A]
+  why: "Each VPN connection has two tunnels on different AWS endpoints for redundancy; configuring both, with dynamic routing, keeps traffic flowing during maintenance on one."
+  ref: "AWS Site-to-Site VPN User Guide: Tunnel endpoint lifecycle control and redundancy"
+  exams: [soa]
+
+- id: soa-reachability-analyzer
+  kind: choice
+  en: "An instance cannot reach a database in another subnet, and the operator wants to know which configuration (route, NACL or security group) blocks the path, without sending traffic. Which tool should be used?"
+  options:
+    - "AWS Config timeline"
+    - "CloudTrail"
+    - "VPC Reachability Analyzer"
+    - "Trusted Advisor"
+  correct: [C]
+  why: "Reachability Analyzer analyses configuration to determine whether a path exists between a source and destination and identifies the blocking component."
+  ref: "Amazon VPC Reachability Analyzer Guide: What is Reachability Analyzer"
+  exams: [soa]
+
+- id: soa-tgw-routes
+  kind: choice
+  en: "Three VPCs are attached to a Transit Gateway. VPC A can reach VPC B, but not VPC C. All attachments use the same Transit Gateway route table. What should be checked first?"
+  options:
+    - "The NAT gateway in VPC A"
+    - "Whether VPC C has DNS hostnames on"
+    - "The internet gateway of VPC C"
+    - "Whether the Transit Gateway route table has a route (propagation or static) to VPC C's CIDR, and VPC A's subnet route table sends VPC C's range to the Transit Gateway"
+  correct: [D]
+  why: "Traffic needs routes at both levels: the VPC subnet route table to the Transit Gateway, and the Transit Gateway route table to the destination attachment. Overlapping CIDRs would also prevent routing."
+  ref: "AWS Transit Gateway Guide: Transit gateway route tables"
+  exams: [soa]
+
+- id: soa-nat-cost
+  kind: choice
+  en: "Most of a VPC's NAT gateway data processing charges come from instances reading DynamoDB and S3 in the same Region. What is the MOST cost-effective change?"
+  options:
+    - "Use interface endpoints for both."
+    - "Add gateway VPC endpoints for S3 and DynamoDB to the private route tables."
+    - "Replace the NAT gateway with one per AZ."
+    - "Move the instances to public subnets."
+  correct: [B]
+  why: "Gateway endpoints for S3 and DynamoDB are free and take that traffic off the NAT gateway. Interface endpoints would work but cost per hour and per GB."
+  ref: "Amazon VPC User Guide: Gateway endpoints"
+  exams: [soa]
+
+- id: soa-network-firewall
+  kind: choice
+  en: "All outbound traffic from a VPC must be inspected statefully and allowed only to an approved list of domain names. Which service provides this?"
+  options:
+    - "Security groups with domain names"
+    - "AWS WAF on the NAT gateway"
+    - "AWS Network Firewall with stateful domain list rules, with routes sending traffic through its endpoints"
+    - "Network ACLs"
+  correct: [C]
+  why: "Network Firewall inspects traffic at the VPC level with stateful rules, including domain allow lists for HTTP and TLS. Security groups and NACLs work only with IP ranges; WAF protects HTTP endpoints."
+  ref: "AWS Network Firewall Developer Guide: Stateful domain list rule groups"
+  exams: [soa]
+
+- id: soa-latency-routing
+  kind: choice
+  en: "An application runs in us-east-1 and ap-northeast-1. Users should be sent to whichever Region gives them the lowest network latency. Which Route 53 routing policy should be used?"
+  options:
+    - "Weighted routing"
+    - "Geolocation routing"
+    - "Latency-based routing"
+    - "Simple routing"
+  correct: [C]
+  why: "Latency-based routing answers with the Region that has the lowest measured latency from the user's resolver. Geolocation routes by where the user is, which is not always the fastest."
+  ref: "Amazon Route 53 Developer Guide: Latency-based routing"
+  exams: [soa]
+
+- id: soa-elb-access-logs
+  kind: choice
+  en: "An ALB intermittently returns 502 errors, and the team needs per-request details - target, response codes from the load balancer and the target, and processing times. What should it enable?"
+  options:
+    - "Route 53 query logs"
+    - "CloudTrail data events"
+    - "ALB access logs delivered to S3"
+    - "VPC Flow Logs"
+  correct: [C]
+  why: "Access logs record each request with the target, elb_status_code and target_status_code and timing fields, which separates load balancer errors from target errors."
+  ref: "Elastic Load Balancing User Guide: Access logs for your Application Load Balancer"
+  exams: [soa]

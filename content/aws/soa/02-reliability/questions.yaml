@@ -1,0 +1,208 @@
+- id: soa-asg-elb-health
+  kind: choice
+  en: "Instances in an Auto Scaling group keep running even after the application on them crashes and the load balancer marks them unhealthy. What should be changed so they are replaced?"
+  options:
+    - "Set the group's health check type to ELB."
+    - "Enable detailed monitoring."
+    - "Increase the group's maximum size."
+    - "Add a scheduled scaling action."
+  correct: [A]
+  why: "With the default EC2 health check, a running instance counts as healthy even if its application is dead. ELB health checks make the group replace instances the load balancer reports as unhealthy."
+  ref: "Amazon EC2 Auto Scaling User Guide: Health checks for instances in an Auto Scaling group"
+  exams: [soa]
+
+- id: soa-route53-hc-sg
+  kind: choice
+  en: "A Route 53 health check on a public endpoint always reports unhealthy, although the site works in a browser. The endpoint's security group allows HTTPS only from the company's office range. What is the fix?"
+  options:
+    - "Change the health check to TCP."
+    - "Lower the failure threshold."
+    - "Allow the Route 53 health checkers' IP ranges in the security group."
+    - "Move the endpoint to a private subnet."
+  correct: [C]
+  why: "Route 53 health checkers probe from AWS-owned IP ranges around the world; if the security group or firewall blocks them, every check fails."
+  ref: "Amazon Route 53 Developer Guide: Configuring router and firewall rules for Route 53 health checks"
+  exams: [soa]
+
+- id: soa-alb-302
+  kind: choice
+  en: "All targets in an ALB target group are unhealthy. The health check path is / and the application answers / with a 302 redirect to /login. What is the simplest fix?"
+  options:
+    - "Change the target type to IP."
+    - "Increase the healthy threshold."
+    - "Point the health check at a path that returns 200 (such as /health), or add 302 to the success codes."
+    - "Disable health checks."
+  correct: [C]
+  why: "By default the ALB treats only HTTP 200 as healthy. A redirect fails the check unless the matcher includes it or the check uses a path that returns 200."
+  ref: "Elastic Load Balancing User Guide: Health checks for Application Load Balancer target groups"
+  exams: [soa]
+
+- id: soa-rds-failover-dns
+  kind: choice
+  en: "After an RDS Multi-AZ failover, one application keeps failing to connect while others recover within a minute or two. The failing application resolved the endpoint once at startup and caches the IP address. What should be done?"
+  options:
+    - "Create a read replica."
+    - "Fail back to the original instance."
+    - "Make the application connect by the endpoint's DNS name, respect its short TTL, and reconnect on failure."
+    - "Disable Multi-AZ."
+  correct: [C]
+  why: "During failover RDS updates the endpoint's DNS record to the new primary. Clients that cache the old IP keep connecting to it."
+  ref: "Amazon RDS User Guide: Failover process for Amazon RDS"
+  exams: [soa]
+
+- id: soa-aurora-replica-scaling
+  kind: choice
+  en: "Read traffic on an Aurora MySQL cluster varies widely during the day. How can the number of read replicas follow the load automatically?"
+  options:
+    - "Create 15 replicas permanently."
+    - "Increase the writer's instance size."
+    - "Configure Aurora Auto Scaling for Aurora Replicas with a target CPU or connections metric."
+    - "Use RDS Proxy only."
+  correct: [C]
+  why: "Aurora Auto Scaling adds and removes Aurora Replicas through Application Auto Scaling based on a target metric."
+  ref: "Amazon Aurora User Guide: Amazon Aurora Auto Scaling with Aurora Replicas"
+  exams: [soa]
+
+- id: soa-backup-vault-lock
+  kind: choice
+  en: "Compliance requires that backups cannot be deleted by anyone, including administrators, for 7 years, even if an account is compromised. Which feature meets this?"
+  options:
+    - "Tagging the backups"
+    - "S3 Versioning on a bucket"
+    - "An IAM policy denying DeleteRecoveryPoint"
+    - "AWS Backup Vault Lock in compliance mode on the backup vault"
+  correct: [D]
+  why: "Vault Lock in compliance mode enforces write-once-read-many retention on recovery points; once its grace period ends, the lock cannot be removed by any user. An IAM policy can be edited by an administrator."
+  ref: "AWS Backup Developer Guide: AWS Backup Vault Lock"
+  exams: [soa]
+
+- id: soa-pitr-new-instance
+  kind: choice
+  en: "A table in an RDS database was dropped by mistake at 14:05. The team restores the database to 14:04 using point-in-time recovery. What happens?"
+  options:
+    - "Only the dropped table is restored into the existing instance."
+    - "The existing instance is rolled back in place."
+    - "A new DB instance is created with a new endpoint; the application must be pointed at it (or data copied back)."
+    - "The restore replaces the instance and keeps the endpoint automatically."
+  correct: [C]
+  why: "RDS point-in-time restore always creates a new DB instance. The team then switches the application or copies the missing data across."
+  ref: "Amazon RDS User Guide: Restoring a DB instance to a specified time"
+  exams: [soa]
+
+- id: soa-s3-delete-marker
+  kind: choice
+  en: "A user deleted an object from a versioned S3 bucket. How can the operations team bring it back?"
+  options:
+    - "It is gone; versioning does not cover deletes."
+    - "Delete the delete marker that is now the current version (or copy the previous version back)."
+    - "Ask AWS Support to restore it."
+    - "Restore it from S3 Glacier."
+  correct: [B]
+  why: "In a versioned bucket a simple delete adds a delete marker; the previous versions remain. Removing the marker makes the latest version current again."
+  ref: "Amazon S3 User Guide: Working with delete markers"
+  exams: [soa]
+
+- id: soa-dlm
+  kind: choice
+  en: "The team wants daily EBS snapshots of all volumes tagged Backup=daily, kept for 14 days, with no scripts to maintain. Which TWO services can do this?"
+  options:
+    - "AWS Backup"
+    - "S3 Lifecycle rules"
+    - "AWS Config"
+    - "Amazon Data Lifecycle Manager"
+    - "CloudWatch Logs retention"
+  correct: [A, D]
+  why: "Both Data Lifecycle Manager and AWS Backup create and expire EBS snapshots on a schedule selected by tags. S3 lifecycle and Logs retention do not manage EBS snapshots."
+  ref: "Amazon EBS User Guide: Amazon Data Lifecycle Manager"
+  exams: [soa]
+
+- id: soa-cloudfront-origin-failover
+  kind: choice
+  en: "A static website on S3 in one Region is served through CloudFront. If that bucket becomes unavailable, CloudFront should serve from a replica bucket in another Region automatically. What should be configured?"
+  options:
+    - "A longer TTL"
+    - "An origin group with the primary and secondary buckets and failover status codes"
+    - "Route 53 latency routing to the buckets"
+    - "A second distribution"
+  correct: [B]
+  why: "CloudFront origin groups fail over to a secondary origin when the primary returns specified error codes or cannot be reached. S3 replication keeps the secondary bucket current."
+  ref: "Amazon CloudFront Developer Guide: Optimize high availability with CloudFront origin failover"
+  exams: [soa]
+
+- id: soa-elasticache-cluster-mode
+  kind: choice
+  en: "A Redis OSS cache's single primary node is running out of memory and write capacity. How can it scale writes and memory horizontally?"
+  options:
+    - "Use cluster mode enabled, spreading data across multiple shards."
+    - "Enable Multi-AZ."
+    - "Add more read replicas to the single shard."
+    - "Increase the cache's TTLs."
+  correct: [A]
+  why: "Cluster mode partitions data across shards, each with its own primary, so writes and memory scale out. Replicas only add read capacity and availability."
+  ref: "Amazon ElastiCache User Guide: Scaling clusters in Redis OSS (cluster mode enabled)"
+  exams: [soa]
+
+- id: soa-warm-pool
+  kind: choice
+  en: "Instances in an Auto Scaling group take 8 minutes to initialize, so scale-out during sudden spikes is too slow. How can new capacity come into service faster without running it all the time at full cost?"
+  options:
+    - "Use a larger instance type."
+    - "Add a warm pool of pre-initialized, stopped instances to the group."
+    - "Increase the health check grace period."
+    - "Reduce the cooldown to zero."
+  correct: [B]
+  why: "A warm pool keeps instances that have already run their initialization, stopped (or hibernated), ready to be started into service far faster than launching from scratch."
+  ref: "Amazon EC2 Auto Scaling User Guide: Warm pools for Amazon EC2 Auto Scaling"
+  exams: [soa]
+
+- id: soa-lifecycle-hook
+  kind: choice
+  en: "Before an Auto Scaling group terminates an instance, the team must copy its application logs to S3. How can it make sure this happens?"
+  options:
+    - "Add a termination lifecycle hook that pauses the instance in Terminating:Wait while a script or automation copies the logs."
+    - "Use a scheduled action."
+    - "Increase the cooldown period."
+    - "Enable termination protection on all instances."
+  correct: [A]
+  why: "Lifecycle hooks pause instances during launch or termination so custom actions can run, then continue when the action completes or the timeout expires."
+  ref: "Amazon EC2 Auto Scaling User Guide: Amazon EC2 Auto Scaling lifecycle hooks"
+  exams: [soa]
+
+- id: soa-cross-region-backup
+  kind: choice
+  en: "Backups of RDS and EBS must also exist in a second Region in case the primary Region is lost. What is the simplest way to achieve this with AWS Backup?"
+  options:
+    - "Enable Multi-AZ."
+    - "Use S3 Cross-Region Replication on the backup vault."
+    - "Take manual snapshots and download them."
+    - "Add a copy rule to the backup plan that copies recovery points to a vault in the second Region."
+  correct: [D]
+  why: "Backup plans can copy each recovery point to a vault in another Region (and another account) automatically."
+  ref: "AWS Backup Developer Guide: Creating backup copies across AWS Regions"
+  exams: [soa]
+
+- id: soa-dynamodb-autoscaling
+  kind: choice
+  en: "A provisioned DynamoDB table is throttled every morning at 9:00 and idle at night. What should the operations team configure to match capacity to load?"
+  options:
+    - "DynamoDB Streams"
+    - "A global secondary index"
+    - "A larger fixed provisioned capacity all day"
+    - "DynamoDB auto scaling with a target utilization for read and write capacity (or switch to on-demand)"
+  correct: [D]
+  why: "Auto scaling adjusts provisioned capacity to keep consumption near a target utilization; on-demand removes capacity planning entirely."
+  ref: "Amazon DynamoDB Developer Guide: Managing throughput capacity automatically with DynamoDB auto scaling"
+  exams: [soa]
+
+- id: soa-pilot-light
+  kind: choice
+  en: "A company replicates its database to a second Region continuously, but keeps no application servers running there; on a disaster it launches them from AMIs and templates. Which DR strategy is this?"
+  options:
+    - "Multi-site active/active"
+    - "Backup and restore"
+    - "Warm standby"
+    - "Pilot light"
+  correct: [D]
+  why: "Pilot light keeps the core (data) live in the DR Region and provisions the rest only on failover. Warm standby would keep a scaled-down but working application running."
+  ref: "Disaster Recovery of Workloads on AWS: Pilot light"
+  exams: [soa]

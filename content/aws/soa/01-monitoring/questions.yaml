@@ -1,0 +1,208 @@
+- id: soa-cw-agent-memory
+  kind: choice
+  en: "An operations team needs memory utilization and free disk space for its Linux EC2 instances in CloudWatch. These metrics do not appear among the default EC2 metrics. What should the team do?"
+  options:
+    - "Enable CloudTrail data events."
+    - "Turn on VPC Flow Logs."
+    - "Enable detailed monitoring on the instances."
+    - "Install and configure the CloudWatch agent on the instances."
+  correct: [D]
+  why: "Memory and disk usage are inside the guest operating system, which EC2's hypervisor-level metrics cannot see. The CloudWatch agent collects them. Detailed monitoring only makes the default metrics 1-minute."
+  ref: "Amazon CloudWatch User Guide: Collect metrics and logs from EC2 instances with the CloudWatch agent"
+  exams: [soa]
+
+- id: soa-composite-alarm
+  kind: choice
+  en: "An alarm on high CPU pages the on-call engineer many times a day, but CPU spikes only matter when the application's latency is also high. How can the team reduce false pages?"
+  options:
+    - "Increase the evaluation period to one day."
+    - "Delete the CPU alarm."
+    - "Create a composite alarm that goes to ALARM only when both the CPU alarm and the latency alarm are in ALARM, and notify from it."
+    - "Raise the CPU threshold to 99%."
+  correct: [C]
+  why: "Composite alarms combine other alarms' states with AND/OR rules, so notifications fire only for the combination that matters."
+  ref: "Amazon CloudWatch User Guide: Create a composite alarm"
+  exams: [soa]
+
+- id: soa-cross-account-dashboard
+  kind: choice
+  en: "A company runs workloads in 12 accounts and 3 Regions. The operations team wants one CloudWatch dashboard showing key metrics from all of them. What should it set up?"
+  options:
+    - "CloudWatch cross-account observability (a monitoring account linked to the source accounts) and a dashboard with metrics from each account and Region"
+    - "One dashboard per account, opened in separate browser tabs"
+    - "Use CloudTrail Lake"
+    - "Copy all metrics into one account with a Lambda function every minute"
+  correct: [A]
+  why: "CloudWatch supports cross-account, cross-Region dashboards; with cross-account observability a monitoring account can view metrics, logs and traces from linked source accounts."
+  ref: "Amazon CloudWatch User Guide: Cross-account cross-Region CloudWatch console"
+  exams: [soa]
+
+- id: soa-auto-recover
+  kind: choice
+  en: "An EC2 instance occasionally fails its system status check because of underlying hardware problems. The team wants it recovered automatically, keeping its instance ID and private IP. What should it configure?"
+  options:
+    - "A CloudWatch alarm on StatusCheckFailed_System with the EC2 recover action (or rely on simplified automatic recovery)"
+    - "A larger instance type"
+    - "An Auto Scaling group with a minimum of 1"
+    - "A Lambda function that reboots the instance every hour"
+  correct: [A]
+  why: "The recover action moves the instance to healthy hardware while keeping its instance ID, private IPs, Elastic IPs and metadata. An Auto Scaling group would replace it with a new instance and new ID."
+  ref: "Amazon EC2 User Guide: Recover your instance"
+  exams: [soa]
+
+- id: soa-eventbridge-permission
+  kind: choice
+  en: "An EventBridge rule matches the events correctly (its metrics show matches) but the target Lambda function is never invoked. The rule was created with the CLI. What is the MOST likely cause?"
+  options:
+    - "The function's memory is too low."
+    - "The function's resource-based policy does not allow events.amazonaws.com to invoke it."
+    - "The rule needs a dead-letter queue."
+    - "EventBridge cannot invoke Lambda functions."
+  correct: [B]
+  why: "When a rule is created with the CLI or SDK, you must add a permission to the function's policy for the EventBridge service principal (the console does it for you). Without it, invocations fail."
+  ref: "Amazon EventBridge User Guide: Using resource-based policies for Amazon EventBridge"
+  exams: [soa]
+
+- id: soa-ssm-automation-remediate
+  kind: choice
+  en: "Whenever an EC2 instance is tagged Environment=dev and runs outside office hours, the team wants it stopped automatically, with an audit trail of each action. Which solution needs the LEAST custom code?"
+  options:
+    - "A CloudWatch dashboard"
+    - "An EventBridge scheduled rule that runs the Systems Manager Automation runbook AWS-StopEC2Instance (or Instance Scheduler) against instances with that tag"
+    - "A cron job on a bastion host using SSH"
+    - "A Config rule with no remediation"
+  correct: [B]
+  why: "Systems Manager Automation provides ready-made runbooks with execution history, and EventBridge can start them on a schedule against tagged targets."
+  ref: "AWS Systems Manager User Guide: AWS Systems Manager Automation"
+  exams: [soa]
+
+- id: soa-gp2-burst
+  kind: choice
+  en: "A database on a 100 GiB gp2 volume becomes slow every afternoon. The BurstBalance metric drops to zero at the same time. What is the MOST cost-effective fix?"
+  options:
+    - "Change the volume to io2 with 64,000 IOPS."
+    - "Change the volume to gp3 and provision the IOPS the workload needs."
+    - "Change the volume to st1."
+    - "Take more frequent snapshots."
+  correct: [B]
+  why: "A small gp2 volume has a low baseline (3 IOPS per GiB) and runs out of burst credits under sustained load. gp3 gives 3,000 IOPS baseline at any size, and more can be provisioned, usually for less than gp2."
+  ref: "Amazon EBS User Guide: General Purpose SSD volumes"
+  exams: [soa]
+
+- id: soa-performance-insights
+  kind: choice
+  en: "An Amazon RDS for PostgreSQL database's CPU is high, and the team needs to know which SQL statements and wait events are responsible. Which feature should it use?"
+  options:
+    - "VPC Flow Logs"
+    - "RDS event subscriptions"
+    - "Enhanced Monitoring alone"
+    - "Amazon RDS Performance Insights"
+  correct: [D]
+  why: "Performance Insights shows database load broken down by SQL statement, wait event, host and user. Enhanced Monitoring shows operating-system metrics, not which queries cause load."
+  ref: "Amazon RDS User Guide: Monitoring DB load with Performance Insights"
+  exams: [soa]
+
+- id: soa-rds-proxy
+  kind: choice
+  en: "A fleet of Lambda functions opens so many connections to an Amazon RDS for MySQL database that new connections fail during peaks. Which change addresses this with the least application change?"
+  options:
+    - "Enable Multi-AZ."
+    - "Increase the database's storage."
+    - "Add a read replica."
+    - "Put Amazon RDS Proxy in front of the database and point the functions at the proxy endpoint."
+  correct: [D]
+  why: "RDS Proxy pools and shares connections, absorbing bursts of short-lived clients such as Lambda."
+  ref: "Amazon RDS User Guide: Amazon RDS Proxy"
+  exams: [soa]
+
+- id: soa-subscription-filter
+  kind: choice
+  en: "Security wants every application log line containing 'AUTH_FAILURE' delivered in near real time to a Lambda function for analysis. What should the operations team configure?"
+  options:
+    - "A metric filter only"
+    - "Increase the log group's retention"
+    - "An export task to S3 every day"
+    - "A CloudWatch Logs subscription filter on the log group, with the pattern and the Lambda function as destination"
+  correct: [D]
+  why: "Subscription filters stream matching log events in near real time to Lambda, Kinesis Data Streams, Firehose or OpenSearch. Metric filters only count matches; exports are batch."
+  ref: "Amazon CloudWatch Logs User Guide: Real-time processing of log data with subscriptions"
+  exams: [soa]
+
+- id: soa-efs-lifecycle
+  kind: choice
+  en: "An Amazon EFS file system holds years of project files; most are not opened after 30 days but must stay available. How can storage cost be reduced without changing the applications?"
+  options:
+    - "Enable an EFS lifecycle policy that moves files to Infrequent Access (and Archive) after a period without access."
+    - "Move the files to an EBS volume."
+    - "Switch to Provisioned Throughput."
+    - "Delete files older than 30 days."
+  correct: [A]
+  why: "EFS lifecycle management moves files that have not been accessed to cheaper storage classes transparently; the file system path does not change."
+  ref: "Amazon EFS User Guide: Managing storage lifecycle"
+  exams: [soa]
+
+- id: soa-container-insights
+  kind: choice
+  en: "The team needs CPU, memory and network metrics per task and per service for its Amazon ECS clusters, plus performance logs, with minimal setup. What should it enable?"
+  options:
+    - "S3 server access logs"
+    - "VPC Flow Logs"
+    - "AWS X-Ray only"
+    - "CloudWatch Container Insights for the clusters"
+  correct: [D]
+  why: "Container Insights collects and aggregates metrics and logs from ECS (and EKS) at the cluster, service and task level."
+  ref: "Amazon CloudWatch User Guide: Container Insights"
+  exams: [soa]
+
+- id: soa-patch-manager
+  kind: choice
+  en: "Two hundred EC2 instances must receive operating system security patches every month inside an agreed window, with compliance reporting. Which solution should the operations team use?"
+  options:
+    - "Systems Manager Patch Manager with a patch baseline, patch groups and a maintenance window"
+    - "AWS Trusted Advisor"
+    - "A script run by hand over SSH on each instance"
+    - "Rebuilding every instance from scratch every month by hand"
+  correct: [A]
+  why: "Patch Manager applies patches defined by baselines to tagged groups of managed nodes within maintenance windows and reports compliance."
+  ref: "AWS Systems Manager User Guide: AWS Systems Manager Patch Manager"
+  exams: [soa]
+
+- id: soa-cluster-placement
+  kind: choice
+  en: "A tightly coupled HPC job on EC2 is limited by network latency between instances. How should the instances be launched?"
+  options:
+    - "In a spread placement group across Availability Zones"
+    - "In a cluster placement group, on instance types with enhanced networking"
+    - "In different Regions"
+    - "On burstable T instances"
+  correct: [B]
+  why: "A cluster placement group places instances close together in one Availability Zone for low latency and high throughput between them."
+  ref: "Amazon EC2 User Guide: Placement groups"
+  exams: [soa]
+
+- id: soa-cloudtrail-who
+  kind: choice
+  en: "A security group rule allowing SSH from anywhere appeared overnight. The team needs to know who added it and when. Where should it look?"
+  options:
+    - "CloudWatch metrics for the instance"
+    - "Trusted Advisor"
+    - "VPC Flow Logs"
+    - "CloudTrail event history for AuthorizeSecurityGroupIngress"
+  correct: [D]
+  why: "CloudTrail records API calls with the caller's identity, time and source IP. Flow logs show traffic, not configuration changes."
+  ref: "AWS CloudTrail User Guide: Viewing events with CloudTrail Event history"
+  exams: [soa]
+
+- id: soa-s3-upload-perf
+  kind: choice
+  en: "Nightly uploads of 20 GB backup files from a branch office in Asia to an S3 bucket in us-east-1 are too slow. Which TWO changes improve throughput?"
+  options:
+    - "Enable S3 Versioning."
+    - "Enable server access logging."
+    - "Use multipart upload with parallel parts."
+    - "Enable S3 Transfer Acceleration and use its endpoint."
+    - "Use S3 One Zone-IA."
+  correct: [C, D]
+  why: "Multipart upload sends parts in parallel and retries parts independently; Transfer Acceleration routes traffic through the nearest edge location over the AWS backbone."
+  ref: "Amazon S3 User Guide: Configuring fast, secure file transfers using Amazon S3 Transfer Acceleration"
+  exams: [soa]

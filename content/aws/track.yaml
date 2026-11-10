@@ -17,6 +17,31 @@ exams:
       - { kind: choice, count: 17, points: 1, from: aws/saa/02-resilient }
       - { kind: choice, count: 15, points: 1, from: aws/saa/03-performance }
       - { kind: choice, count: 13, points: 1, from: aws/saa/04-cost }
+  - id: dva
+    title: "Developer - Associate (DVA-C02)"
+    minutes: 130
+    pass: 720
+    max: 1000
+    shuffle: true
+    note: "The real exam has 65 questions, 15 of them unscored and not marked as such, and scales its score; here all 65 count equally."
+    draw:
+      - { kind: choice, count: 21, points: 1, from: aws/dva/01-development }
+      - { kind: choice, count: 17, points: 1, from: aws/dva/02-security }
+      - { kind: choice, count: 15, points: 1, from: aws/dva/03-deployment }
+      - { kind: choice, count: 12, points: 1, from: aws/dva/04-troubleshooting }
+  - id: soa
+    title: "CloudOps Engineer - Associate (SOA-C03)"
+    minutes: 130
+    pass: 720
+    max: 1000
+    shuffle: true
+    note: "SOA-C03 replaced the SysOps Administrator exam (SOA-C02) in 2025. The real exam has 65 questions, 15 of them unscored, and scales its score; here all 65 count equally."
+    draw:
+      - { kind: choice, count: 14, points: 1, from: aws/soa/01-monitoring }
+      - { kind: choice, count: 14, points: 1, from: aws/soa/02-reliability }
+      - { kind: choice, count: 14, points: 1, from: aws/soa/03-deployment }
+      - { kind: choice, count: 11, points: 1, from: aws/soa/04-security }
+      - { kind: choice, count: 12, points: 1, from: aws/soa/05-networking }
 sections:
   - id: foundations
     xp: 50
@@ -46,3 +71,9 @@ sections:
   - id: saa
     title: "Exam practice: Solutions Architect - Associate"
     description: "Multiple-choice questions by exam domain - secure, resilient, high-performing, cost-optimized - and a timed 65-question mock exam."
+  - id: dva
+    title: "Exam practice: Developer - Associate"
+    description: "Multiple-choice questions by exam domain - development, security, deployment, troubleshooting - and a timed 65-question mock exam."
+  - id: soa
+    title: "Exam practice: CloudOps Engineer - Associate"
+    description: "Multiple-choice questions by exam domain - monitoring, reliability, automation, security, networking - and a timed 65-question mock exam."

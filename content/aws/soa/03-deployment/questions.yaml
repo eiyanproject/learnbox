@@ -1,0 +1,208 @@
+- id: soa-image-builder
+  kind: choice
+  en: "The team wants a hardened, fully patched AMI built and tested automatically every month and shared with three other accounts. Which service should it use?"
+  options:
+    - "AWS Backup"
+    - "CloudFormation drift detection"
+    - "Manual snapshots of a running instance"
+    - "EC2 Image Builder with a pipeline, recipe, tests and distribution settings"
+  correct: [D]
+  why: "Image Builder automates building, testing and distributing images on a schedule, including sharing to other accounts and Regions."
+  ref: "EC2 Image Builder User Guide: What is EC2 Image Builder"
+  exams: [soa]
+
+- id: soa-stacksets
+  kind: choice
+  en: "A baseline IAM role and CloudTrail configuration must be deployed to every account in an organization in four Regions, including accounts created later. What should the team use?"
+  options:
+    - "One CloudFormation stack in the management account"
+    - "A script that logs into each account"
+    - "CloudFormation StackSets with service-managed permissions and automatic deployment to the organization's OUs"
+    - "AWS RAM"
+  correct: [C]
+  why: "StackSets deploy a template across accounts and Regions; with service-managed permissions and automatic deployment, new accounts in the target OUs get the stack too."
+  ref: "AWS CloudFormation User Guide: Managing stacks across accounts and Regions with StackSets"
+  exams: [soa]
+
+- id: soa-ram-subnets
+  kind: choice
+  en: "A central networking account owns the VPC. Application teams in other accounts must launch instances into its subnets without creating VPCs of their own. What should be used?"
+  options:
+    - "Peer every account's VPC with the central VPC."
+    - "Share the subnets with AWS Resource Access Manager (VPC sharing)."
+    - "Use a Transit Gateway with no sharing."
+    - "Copy the VPC with CloudFormation into each account."
+  correct: [B]
+  why: "VPC sharing through RAM lets participant accounts create resources in subnets owned by another account in the same organization."
+  ref: "Amazon VPC User Guide: Share your VPC subnets with other accounts"
+  exams: [soa]
+
+- id: soa-update-rollback-failed
+  kind: choice
+  en: "A CloudFormation stack is stuck in UPDATE_ROLLBACK_FAILED because a resource it tries to roll back was changed by hand outside the stack. What should the operator do?"
+  options:
+    - "Wait; it resolves itself after 24 hours."
+    - "Run a new update immediately."
+    - "Delete the AWS account."
+    - "Fix the resource if possible, then run ContinueUpdateRollback (skipping resources that cannot be rolled back if needed)."
+  correct: [D]
+  why: "ContinueUpdateRollback retries the rollback, optionally skipping resources, to return the stack to UPDATE_ROLLBACK_COMPLETE so it can be updated again."
+  ref: "AWS CloudFormation User Guide: Continue rolling back an update"
+  exams: [soa]
+
+- id: soa-deletion-policy
+  kind: choice
+  en: "A CloudFormation stack contains a production RDS instance. If the stack is deleted, a final snapshot of the database must be kept. What should be set on the resource?"
+  options:
+    - "DeletionPolicy: Snapshot"
+    - "UpdateReplacePolicy: Delete"
+    - "A stack tag"
+    - "DependsOn"
+  correct: [A]
+  why: "DeletionPolicy Snapshot makes CloudFormation take a snapshot before deleting resources that support it, such as RDS instances and EBS volumes; Retain keeps the resource itself."
+  ref: "AWS CloudFormation User Guide: DeletionPolicy attribute"
+  exams: [soa]
+
+- id: soa-creation-policy
+  kind: choice
+  en: "A stack launches an instance whose user data installs software for several minutes. The stack reports CREATE_COMPLETE before the software is ready, and dependent resources fail. How should the template be changed?"
+  options:
+    - "Add a CreationPolicy to the instance and have the user data call cfn-signal when installation finishes."
+    - "Use a DeletionPolicy."
+    - "Increase the instance size."
+    - "Add DependsOn to the instance."
+  correct: [A]
+  why: "With a CreationPolicy, CloudFormation waits for a success signal (or times out and rolls back), so the stack completes only when the instance is really ready."
+  ref: "AWS CloudFormation User Guide: CreationPolicy attribute"
+  exams: [soa]
+
+- id: soa-subnet-ips
+  kind: choice
+  en: "Scaling out fails with an error that there are not enough free IP addresses. The service runs in two /28 subnets. What is the fix?"
+  options:
+    - "Raise the Auto Scaling group's maximum."
+    - "Use a bigger instance type."
+    - "Use larger subnets (for example /22 or /24), adding CIDR ranges to the VPC if needed."
+    - "Disable public IPs."
+  correct: [C]
+  why: "A /28 has 16 addresses, of which AWS reserves 5. Services that use an IP per task, pod or instance quickly exhaust small subnets. Subnets cannot be resized, so new larger ones are needed."
+  ref: "Amazon VPC User Guide: Subnet sizing"
+  exams: [soa]
+
+- id: soa-run-command
+  kind: choice
+  en: "An operator must run the same diagnostic script on 300 Linux instances now, without SSH keys or open inbound ports, and collect the output. What should be used?"
+  options:
+    - "CloudFormation"
+    - "EC2 user data"
+    - "A bastion host and a loop over SSH"
+    - "Systems Manager Run Command with the AWS-RunShellScript document, targeting the instances by tag"
+  correct: [D]
+  why: "Run Command executes documents on managed nodes at scale through the SSM Agent, with output to S3 or CloudWatch Logs and no inbound access needed."
+  ref: "AWS Systems Manager User Guide: AWS Systems Manager Run Command"
+  exams: [soa]
+
+- id: soa-session-manager
+  kind: choice
+  en: "Security wants to remove the bastion hosts and close port 22 everywhere, but administrators still need shell access to instances, with every session logged. What should replace the bastions?"
+  options:
+    - "Run Command only"
+    - "EC2 Instance Connect with port 22 open to the internet"
+    - "A VPN with shared SSH keys"
+    - "Systems Manager Session Manager, with session logging to S3 or CloudWatch Logs"
+  correct: [D]
+  why: "Session Manager gives interactive shells through the SSM Agent, authorized by IAM, with sessions logged, and needs no inbound ports or keys."
+  ref: "AWS Systems Manager User Guide: AWS Systems Manager Session Manager"
+  exams: [soa]
+
+- id: soa-not-managed
+  kind: choice
+  en: "New instances in a private subnet with no NAT gateway do not appear as managed nodes in Systems Manager. The SSM Agent is installed. Which TWO fixes are needed?"
+  options:
+    - "Open port 22 to the internet."
+    - "Enable detailed monitoring."
+    - "Create interface VPC endpoints for ssm, ssmmessages and ec2messages."
+    - "Assign Elastic IPs to the instances."
+    - "Attach an instance profile with the AmazonSSMManagedInstanceCore policy."
+  correct: [C, E]
+  why: "The agent needs permissions (through the instance role) and a network path to the Systems Manager endpoints; in a private subnet with no NAT, interface endpoints provide it."
+  ref: "AWS Systems Manager User Guide: Troubleshooting managed node availability"
+  exams: [soa]
+
+- id: soa-state-manager
+  kind: choice
+  en: "The CloudWatch agent must stay installed and configured on every instance tagged Monitored=true, including instances launched later and any where someone removes it. What should be used?"
+  options:
+    - "An AMI built once a year"
+    - "User data only"
+    - "A one-time Run Command"
+    - "A Systems Manager State Manager association that applies the configuration on a schedule"
+  correct: [D]
+  why: "State Manager associations apply a defined state to targets repeatedly, so drift is corrected and new matching instances are configured."
+  ref: "AWS Systems Manager User Guide: AWS Systems Manager State Manager"
+  exams: [soa]
+
+- id: soa-cdk
+  kind: choice
+  en: "A team defines infrastructure in TypeScript with the AWS CDK. What does `cdk synth` produce?"
+  options:
+    - "A running stack"
+    - "A CloudFormation template"
+    - "A Terraform state file"
+    - "An AMI"
+  correct: [B]
+  why: "The CDK synthesizes CloudFormation templates; `cdk deploy` then deploys them as CloudFormation stacks."
+  ref: "AWS CDK Developer Guide: Synthesize CDK stacks"
+  exams: [soa]
+
+- id: soa-drift
+  kind: choice
+  en: "Someone changed a security group managed by CloudFormation through the console. How can the team find which resources no longer match the template?"
+  options:
+    - "Run drift detection on the stack."
+    - "Create a change set with no changes."
+    - "Look at VPC Flow Logs."
+    - "Check the stack's outputs."
+  correct: [A]
+  why: "Drift detection compares the actual configuration of supported resources with the template's expected values and reports the differences."
+  ref: "AWS CloudFormation User Guide: Detect unmanaged configuration changes to stacks and resources with drift detection"
+  exams: [soa]
+
+- id: soa-passrole
+  kind: choice
+  en: "An operator with permissions to launch EC2 instances gets an error when launching one with an instance profile. What permission is MOST likely missing?"
+  options:
+    - "iam:PassRole for the role in the instance profile"
+    - "s3:GetObject"
+    - "ec2:DescribeImages"
+    - "iam:CreateUser"
+  correct: [A]
+  why: "Handing a role to a service (EC2, Lambda, CloudFormation...) requires iam:PassRole on that role, which stops users from granting a service more permission than they have."
+  ref: "IAM User Guide: Granting a user permissions to pass a role to an AWS service"
+  exams: [soa]
+
+- id: soa-instance-refresh
+  kind: choice
+  en: "A new AMI has been added to the launch template used by an Auto Scaling group. How can the running instances be replaced gradually with ones from the new AMI while keeping capacity?"
+  options:
+    - "Start an instance refresh with a minimum healthy percentage."
+    - "Create a new Auto Scaling group by hand."
+    - "Edit each instance's AMI."
+    - "Terminate all instances at once."
+  correct: [A]
+  why: "Instance refresh replaces instances in batches, keeping at least the minimum healthy percentage in service, with optional checkpoints and rollback."
+  ref: "Amazon EC2 Auto Scaling User Guide: Use an instance refresh to update instances in an Auto Scaling group"
+  exams: [soa]
+
+- id: soa-s3-event-automation
+  kind: choice
+  en: "Whenever a CSV file lands in an S3 bucket's incoming/ prefix, it must be validated and moved. Which solution is event-driven and needs no servers?"
+  options:
+    - "A cron job on EC2 that lists the bucket every minute"
+    - "An S3 event notification (or EventBridge rule) for the prefix that invokes a Lambda function"
+    - "AWS Config"
+    - "A CloudWatch dashboard"
+  correct: [B]
+  why: "S3 event notifications (or S3 events through EventBridge) invoke a function as soon as an object is created, filtered by prefix and suffix."
+  ref: "Amazon S3 User Guide: Amazon S3 Event Notifications"
+  exams: [soa]
