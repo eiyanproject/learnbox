@@ -223,6 +223,12 @@ it, and **Check** runs it against a fresh emulator and inspects what it built.
 
 **6. Operations and infrastructure as code** (3) - Logs, metrics and alarms; An audit trail and config rules; Infrastructure as code with CloudFormation
 
+**7. Encryption, secrets and governance** (3) - KMS key policies and envelope encryption; Secrets Manager and Parameter Store; Organizations and service control policies
+
+**8. Containers, DNS and the edge** (5) - ECR repositories; An ECS service on Fargate; An EKS cluster; Route 53 routing; CloudFront in front of a private bucket
+
+**9. CI/CD** (2) - CodeBuild and CodePipeline; Lambda canaries with CodeDeploy
+
 **Exam practice** - original multiple-choice questions written from AWS
 documentation, one topic per exam domain, and a timed mock exam per
 certification, weighted like its exam guide and scored out of 1,000 - 65
@@ -265,7 +271,17 @@ invoked, so the Lambda lesson tests its handler directly.
 The CLI (1.46) and moto (5.2) are pinned and installed in their own venv,
 `/opt/learnbox-toolchain/aws`; `install.sh --no-aws` skips them (about
 450MB). `lib/awslab` is the sandbox: the `aws` and `awslab` wrappers, `lab()`
-for checks, and a small IAM policy evaluator (the emulator has none).
+for checks, and a small IAM policy evaluator (the emulator has none) that
+also judges common Condition operators against a request context and
+evaluates SCPs level by level. `lib/awslab/cli.config` makes CLI v1 treat
+URL-like parameter values as text, as v2 does.
+
+Where the emulator does not keep a setting, the lesson says so and the check
+reads the learner's own file instead (CloudFront's origin access control) or
+the step moves to a call the emulator does keep (an ECS service's
+deployment circuit breaker is set with `update-service`). Decrypting under a
+multi-Region KMS key fails in moto, so the KMS lesson replicates a second
+key rather than the one it decrypts with.
 
 
 ### Misc: Japanese driving test

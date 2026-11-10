@@ -1,0 +1,13 @@
+# What CodeDeploy deploys: which function and alias, from which version to
+# which, and the hooks it runs on the way.
+version: 0.0
+Resources:
+  - orders-api:
+      Type: AWS::Lambda::Function
+      Properties:
+        Name: orders-api
+        Alias: live
+        CurrentVersion: "1"
+        TargetVersion: "2"
+Hooks:
+  - BeforeAllowTraffic: orders-api-smoke

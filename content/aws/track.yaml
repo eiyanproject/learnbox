@@ -111,6 +111,10 @@ sections:
     xp: 125
     title: 8. Containers, DNS and the edge
     description: "ECR repositories with lifecycle rules, an ECS service on Fargate, an EKS cluster with managed nodes, Route 53 failover and weighted routing, and CloudFront in front of a private bucket."
+  - id: cicd
+    xp: 125
+    title: 9. CI/CD
+    description: "A CodeBuild project and a CodePipeline from source to an approved CloudFormation deploy, and Lambda canary releases with CodeDeploy that roll back on an alarm."
   - id: saa
     title: "Exam practice: Solutions Architect - Associate"
     description: "Multiple-choice questions by exam domain - secure, resilient, high-performing, cost-optimized - a timed 65-question mock exam, and an open bank of 325 more questions with its own mock."

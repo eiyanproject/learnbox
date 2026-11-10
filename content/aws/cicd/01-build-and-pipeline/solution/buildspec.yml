@@ -1,0 +1,27 @@
+# CodeBuild runs this, from the root of the source bundle.
+version: 0.2
+
+env:
+  secrets-manager:
+    SONAR_TOKEN: ci/sonar-token
+
+phases:
+  install:
+    runtime-versions:
+      python: "3.12"
+    commands:
+      - pip install pytest
+  build:
+    commands:
+      - python -m pytest --junitxml=reports/junit.xml
+
+reports:
+  unit-tests:
+    files:
+      - junit.xml
+    base-directory: reports
+    file-format: JUNITXML
+
+artifacts:
+  files:
+    - template.yaml

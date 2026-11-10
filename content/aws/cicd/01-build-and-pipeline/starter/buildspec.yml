@@ -1,0 +1,14 @@
+# CodeBuild runs this, from the root of the source bundle.
+version: 0.2
+
+# env: SONAR_TOKEN from Secrets Manager (ci/sonar-token)
+
+phases:
+  # install: Python 3.12
+  build:
+    commands:
+      - echo "run the tests here, writing JUnit XML to reports/junit.xml"
+
+# reports: a group unit-tests for reports/junit.xml
+
+# artifacts: template.yaml
