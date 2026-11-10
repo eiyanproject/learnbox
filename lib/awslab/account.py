@@ -110,6 +110,23 @@ class Account:
         """Whether that identity's policies allow the action on the resource."""
         return policy.decide(self.policy_documents(kind, name), action, resource).allowed
 
+    def scp_levels(self, target_id: str) -> list[list[dict]]:
+        """The SCP documents attached at each level from the root down to an
+        account or OU: [[root's], [OU's], ..., [target's]]."""
+        org = self.client("organizations")
+        path = [target_id]
+        while not path[-1].startswith("r-"):
+            path.append(org.list_parents(ChildId=path[-1])["Parents"][0]["Id"])
+        levels = []
+        for tid in reversed(path):
+            pols = org.list_policies_for_target(TargetId=tid, Filter="SERVICE_CONTROL_POLICY")["Policies"]
+            levels.append([policy.load(org.describe_policy(PolicyId=p["Id"])["Policy"]["Content"]) for p in pols])
+        return levels
+
+    def scp_allows(self, target_id: str, action: str, resource: str = "*", context: dict | None = None) -> bool:
+        """Whether the SCPs above an account (or OU) let a request through."""
+        return policy.scp_decide(self.scp_levels(target_id), action, resource, context).allowed
+
     def by_name(self, resources: list[dict]) -> dict[str, dict]:
         """EC2-style resources keyed by their Name tag."""
         out = {}

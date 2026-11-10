@@ -103,6 +103,14 @@ sections:
     xp: 100
     title: 6. Operations and infrastructure as code
     description: "Logs, metric filters and alarms, CloudTrail and Config for audit, and the same resources described once in CloudFormation."
+  - id: security
+    xp: 125
+    title: 7. Encryption, secrets and governance
+    description: "KMS key policies, grants and envelope encryption, Secrets Manager with rotation and Parameter Store, and an organization with OUs and service control policies."
+  - id: containers
+    xp: 125
+    title: 8. Containers, DNS and the edge
+    description: "ECR repositories with lifecycle rules, an ECS service on Fargate, an EKS cluster with managed nodes, Route 53 failover and weighted routing, and CloudFront in front of a private bucket."
   - id: saa
     title: "Exam practice: Solutions Architect - Associate"
     description: "Multiple-choice questions by exam domain - secure, resilient, high-performing, cost-optimized - a timed 65-question mock exam, and an open bank of 325 more questions with its own mock."

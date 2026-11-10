@@ -16,6 +16,7 @@ FAKE_CREDENTIALS = {
     "AWS_SESSION_TOKEN": "testing",
 }
 DEFAULT_REGION = "us-east-1"
+CLI_CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cli.config")
 
 # Settings for the emulator itself. AWS managed policies (ReadOnlyAccess,
 # SecurityAudit, ...) are not loaded unless asked for, and the lessons attach
@@ -57,8 +58,10 @@ def sandbox_env(endpoint: str, base: dict[str, str] | None = None) -> dict[str, 
     env["AWS_ENDPOINT_URL"] = endpoint
     env.setdefault("AWS_DEFAULT_REGION", DEFAULT_REGION)
     # No pager, no config files from the real world, no instance metadata.
+    # The config file is awslab's own: it makes CLI v1 treat URL-like values
+    # as text, as v2 does.
     env["AWS_PAGER"] = ""
-    env["AWS_CONFIG_FILE"] = os.devnull
+    env["AWS_CONFIG_FILE"] = CLI_CONFIG
     env["AWS_SHARED_CREDENTIALS_FILE"] = os.devnull
     env["AWS_EC2_METADATA_DISABLED"] = "true"
     env.pop("AWS_PROFILE", None)
