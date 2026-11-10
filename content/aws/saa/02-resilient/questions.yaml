@@ -337,3 +337,788 @@
   why: "EventBridge routes events from custom applications, AWS services and SaaS partners to targets based on rules that match event content, so producers and consumers stay decoupled."
   ref: "Amazon EventBridge User Guide: Event buses"
   exams: [saa]
+
+- id: rm-saa-res-001
+  kind: choice
+  en: "A reporting application runs on Amazon RDS for MySQL. The business has two separate complaints: overnight analytical queries slow down the transactional workload, and an AZ outage last quarter caused a four-hour outage. Which combination of RDS features addresses both complaints?"
+  options:
+    - "Increase the instance size and enable automated backups with a five-minute retention window."
+    - "Deploy Multi-AZ for automatic failover and add one or more read replicas to serve the analytical queries."
+    - "Deploy two read replicas and promote one manually if the primary AZ fails."
+    - "Enable Multi-AZ and direct the analytical queries to the standby instance."
+  correct: [B]
+  why: "The two problems need two different features. Multi-AZ maintains a synchronous standby in another AZ and fails over automatically, addressing availability. Read replicas are asynchronous copies that can serve read traffic, offloading the analytical queries from the primary. Not \"Deploy two read replicas and promote one manually if the primary AZ...\": Read replicas are for read scaling; promoting one is a manual, lossy process that does not deliver automatic failover. Not \"Enable Multi-AZ and direct the analytical queries to the standby...\": In a classic RDS Multi-AZ deployment the standby is not readable. Only a Multi-AZ DB cluster deployment offers readable standbys. Not \"Increase the instance size and enable automated backups with a...\": A larger instance may mask the contention temporarily and backups aid recovery, but neither provides automatic AZ failover or read offloading."
+  ref: "Question res-001 (RDS Multi-AZ vs read replicas) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-002
+  kind: choice
+  en: "An order-processing tier writes directly to a fleet of worker EC2 instances over HTTP. During flash sales the workers are overwhelmed and orders are lost, and when a worker crashes mid-request the order disappears. The company wants to guarantee that no order is lost and that the workers can process at their own rate. What should the architect implement?"
+  options:
+    - "Increase the worker instance size and enable detailed CloudWatch monitoring at one-minute granularity."
+    - "Write each order to an Amazon SNS topic and subscribe the workers' HTTP endpoints."
+    - "Publish each order to an Amazon SQS queue, have workers poll the queue, and configure a dead-letter queue with an appropriate visibility timeout."
+    - "Place an Application Load Balancer in front of the workers and enable connection draining."
+  correct: [C]
+  why: "A queue decouples producers from consumers: bursts accumulate in SQS instead of being dropped, and workers consume at their own pace. Because a message becomes visible again if it is not deleted before the visibility timeout expires, a crashed worker's message is redelivered rather than lost, and a dead-letter queue captures messages that repeatedly fail. Not \"Place an Application Load Balancer in front of the workers and enable...\": A load balancer distributes requests but provides no buffering. If all workers are saturated the requests still fail, and an in-flight request is still lost when the instance dies. Not \"Increase the worker instance size and enable detailed CloudWatch...\": Vertical scaling raises the ceiling but does not absorb bursts or protect in-flight work, and monitoring only observes the loss. Not \"Write each order to an Amazon SNS topic and subscribe the workers'...\": SNS is push-based fan-out with no durable buffer for slow consumers; if the HTTP endpoints are overwhelmed, delivery ultimately fails."
+  ref: "Question res-002 (Decoupling with SQS) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-003
+  kind: choice
+  en: "A SaaS provider runs an identical stack in eu-west-1 and us-east-1. Users must be sent to whichever Region responds fastest for them, and if a Region's stack becomes unhealthy all of its traffic must move to the other Region automatically. Which Route 53 configuration meets this requirement?"
+  options:
+    - "Geolocation routing based on the user's continent, with a default record for unmatched locations."
+    - "Latency-based routing records for both Regions, each associated with a Route 53 health check."
+    - "Simple routing with two IP addresses in a single record set."
+    - "Weighted routing with equal weights and TTL set to 60 seconds."
+  correct: [B]
+  why: "Latency-based routing returns the endpoint with the lowest measured network latency for the requesting resolver, which is what 'fastest for them' means. Attaching health checks to each record makes Route 53 stop returning an unhealthy Region, so its traffic shifts automatically to the surviving Region. Not \"Weighted routing with equal weights and TTL set to 60 seconds\": Weighted routing splits traffic by a fixed ratio and is blind to latency; it is for canaries and gradual migrations. Not \"Geolocation routing based on the user's continent, with a default...\": Geolocation routes by where the user is, not by which endpoint is fastest — the nearest Region geographically is not always the lowest latency. Not \"Simple routing with two IP addresses in a single record set\": Simple routing returns all values in random order with no health checking and no latency awareness."
+  ref: "Question res-003 (Route 53 routing policies) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-004
+  kind: choice
+  en: "A trading platform sets an RTO of 10 minutes and an RPO of 1 minute for its regional failover. The business rejects running a second full-capacity Region because of cost, but accepts running a scaled-down version of the environment continuously. Which disaster recovery strategy matches these constraints?"
+  options:
+    - "Multi-site active/active with both Regions serving production traffic at full capacity."
+    - "Warm standby, running a reduced-capacity but always-live copy of the stack with continuous data replication, scaled up on failover."
+    - "Pilot light, with only the database replicated and all application servers switched off."
+    - "Backup and restore using nightly snapshots copied to the secondary Region."
+  correct: [B]
+  why: "Warm standby keeps a functional, scaled-down copy of the entire stack running with continuous replication. Failover means redirecting traffic and scaling out, which fits a 10-minute RTO, while continuous replication supports a 1-minute RPO — and it costs far less than a full second Region. Not \"Backup and restore using nightly snapshots copied to the secondary...\": Nightly snapshots give an RPO measured in hours and a restore-driven RTO measured in hours; both miss the targets by orders of magnitude. Not \"Pilot light, with only the database replicated and all application...\": Pilot light replicates data but leaves the application tier off, so recovery requires provisioning and starting the stack — typically too slow for a 10-minute RTO, and it does not match 'a scaled-down version running'. Not \"Multi-site active/active with both Regions serving production traffic...\": Active/active would meet the targets but is exactly the full-capacity second Region the business rejected on cost."
+  ref: "Question res-004 (Disaster recovery strategies) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-005
+  kind: choice
+  en: "EC2 instances in an Auto Scaling group behind an Application Load Balancer occasionally enter a state where the operating system is running but the application process has died. The ALB marks them unhealthy and stops sending traffic, yet Auto Scaling leaves them in service indefinitely. What is the correct fix?"
+  options:
+    - "Attach a scaling policy based on CPU utilisation so dead instances are replaced when CPU drops."
+    - "Enable termination protection on the instances so they can be investigated."
+    - "Change the Auto Scaling group's health check type to ELB so it acts on the load balancer's health status."
+    - "Shorten the ALB health check interval so failures are detected sooner."
+  correct: [C]
+  why: "By default an Auto Scaling group uses EC2 status checks, which only verify the instance and its hypervisor — a dead application process still passes. Setting the health check type to ELB makes the group treat the load balancer's application-level health check as authoritative, so it terminates and replaces the failing instance. Not \"Shorten the ALB health check interval so failures are detected sooner\": Faster detection by the ALB changes nothing if Auto Scaling is not consulting the ALB's verdict. Not \"Enable termination protection on the instances so they can be...\": Termination protection actively prevents the replacement the architecture needs. Not \"Attach a scaling policy based on CPU utilisation so dead instances...\": A CPU-based policy adjusts capacity; it does not identify or replace a specific unhealthy instance, and an idle dead instance can even suppress scale-out by lowering average CPU."
+  ref: "Question res-005 (Auto Scaling and health checks) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-006
+  kind: choice
+  en: "A compliance team requires that objects in a production S3 bucket be copied automatically to a bucket in a second Region, and that an accidental overwrite can be undone. Which TWO configurations are required?"
+  options:
+    - "Configure a Lifecycle rule to transition objects to S3 Glacier Flexible Retrieval after one day."
+    - "Enable S3 Transfer Acceleration on the source bucket."
+    - "Enable requester-pays on the destination bucket."
+    - "Enable versioning on both the source and destination buckets."
+    - "Configure S3 Cross-Region Replication with an IAM role that S3 can assume to read the source and write the destination."
+  correct: [D, E]
+  why: "S3 replication requires versioning on both source and destination buckets, and a replication rule with an IAM role that S3 assumes to read source objects and write them to the destination. Versioning also satisfies the second requirement: a previous version can be restored after an accidental overwrite. Not \"Enable S3 Transfer Acceleration on the source bucket\": Transfer Acceleration speeds long-distance uploads from clients via edge locations; it has nothing to do with replication. Not \"Enable requester-pays on the destination bucket\": Requester Pays shifts data-transfer billing to the requester and does not affect replication. Not \"Configure a Lifecycle rule to transition objects to S3 Glacier...\": A lifecycle transition changes storage class; it neither replicates data nor helps recover an overwritten object."
+  ref: "Question res-006 (S3 durability and replication) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-007
+  kind: choice
+  en: "A subscription service runs Amazon Aurora MySQL with a single writer and no replicas. During a recent AZ impairment the database was unavailable for several minutes while AWS recovered the writer. The team wants the fastest possible automatic recovery from a writer failure and also wants to scale read traffic. What should they do?"
+  options:
+    - "Take more frequent automated snapshots and restore from the latest snapshot on failure."
+    - "Enable Aurora Serverless v2 scaling so capacity is added automatically during a failure."
+    - "Add at least one Aurora Replica in a different Availability Zone and set failover priority tiers."
+    - "Enable Multi-AZ on the Aurora cluster from the RDS console, which creates a synchronous standby."
+  correct: [C]
+  why: "Aurora fails over fastest when there is an existing replica to promote — promotion is typically well under a minute, versus a slower recreate when the cluster has no replicas. Replicas simultaneously serve read traffic via the cluster reader endpoint, so a single change addresses both goals. Failover tiers let you control which replica is promoted first. Not \"Enable Multi-AZ on the Aurora cluster from the RDS console, which...\": Aurora's storage is already replicated across three AZs and there is no separate Multi-AZ toggle as in RDS; high availability comes from adding replicas. Not \"Take more frequent automated snapshots and restore from the latest...\": Snapshot restore is a recovery-of-last-resort measured in tens of minutes or more and loses data since the last snapshot. Not \"Enable Aurora Serverless v2 scaling so capacity is added...\": Serverless v2 adjusts capacity for load. It does not create a second instance to promote, and it does not add read scaling on its own."
+  ref: "Question res-007 (Aurora high availability) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-008
+  kind: choice
+  en: "A web application stores user session data in memory on each EC2 instance behind an Application Load Balancer. Users are logged out whenever an instance is replaced by Auto Scaling, and enabling sticky sessions has caused uneven load. The team wants session data to survive instance replacement with single-digit-millisecond reads. Which change should they make?"
+  options:
+    - "Increase the sticky session cookie duration to 24 hours."
+    - "Store sessions in an Amazon EFS file system mounted by all instances."
+    - "Store sessions in Amazon ElastiCache for Redis and make the instances stateless."
+    - "Store sessions in Amazon S3 using one object per session."
+  correct: [C]
+  why: "Externalising session state to a shared in-memory store makes the instances stateless, so any instance can serve any request and instance replacement is invisible to users. ElastiCache for Redis delivers the sub-millisecond to single-digit-millisecond latency a session lookup on every request demands. Not \"Store sessions in an Amazon EFS file system mounted by all instances\": EFS is a shared file system with far higher per-operation latency than an in-memory store, and file-based session locking scales poorly. Not \"Increase the sticky session cookie duration to 24 hours\": Longer stickiness deepens the load imbalance already reported and still loses sessions when the pinned instance is replaced. Not \"Store sessions in Amazon S3 using one object per session\": S3 is durable but its request latency is tens of milliseconds and it is not designed for the read-and-write-per-request pattern of session state."
+  ref: "Question res-008 (Stateless application design) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-009
+  kind: choice
+  en: "An order service currently calls the invoicing, analytics and notification services synchronously over HTTP. Adding a fourth consumer means changing the order service again, and one slow consumer delays the whole request. The team wants consumers to be added without touching the producer, and a failed delivery to be retried and eventually captured. What should they adopt?"
+  options:
+    - "Publish order events to Amazon EventBridge and let each consumer subscribe with its own rule, retry policy and dead-letter queue."
+    - "Put an Application Load Balancer in front of the consumers and have the order service call it."
+    - "Have the order service write to a shared Amazon RDS table that each consumer polls."
+    - "Increase the order service's HTTP client timeout and add a retry loop for each consumer."
+  correct: [A]
+  why: "EventBridge inverts the dependency: the producer emits an event once and knows nothing about consumers. Each consumer attaches its own rule, so a fourth one is added with no producer change, and EventBridge retries failed deliveries and sends exhausted events to a dead-letter queue. Not \"Have the order service write to a shared Amazon RDS table that each...\": A shared database as an integration point couples every consumer to the producer's schema and turns into a polling and locking problem. Not \"Put an Application Load Balancer in front of the consumers and have...\": A load balancer distributes calls to one pool of targets; it does not fan a single event out to several independent consumers. Not \"Increase the order service's HTTP client timeout and add a retry loop...\": This keeps the synchronous coupling and makes the latency problem worse, since the producer now waits through retries."
+  ref: "Question res-009 (Event-driven patterns with EventBridge) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-010
+  kind: choice
+  en: "A financial data feed must be load balanced across EC2 targets. Requirements: a static IP address per Availability Zone that clients can allowlist in their firewalls, TCP pass-through so the application terminates TLS itself, and the ability to sustain millions of requests per second with very low latency. Which load balancer fits?"
+  options:
+    - "Classic Load Balancer"
+    - "Network Load Balancer"
+    - "Gateway Load Balancer"
+    - "Application Load Balancer"
+  correct: [B]
+  why: "The Network Load Balancer operates at layer 4, provides a static IP per Availability Zone (and supports Elastic IPs), passes TCP through without terminating TLS, and is designed for millions of requests per second at very low latency. Every requirement points at it. Not \"Application Load Balancer\": An ALB works at layer 7, terminates the connection, and has no static IP — clients would have to allowlist a changing set of addresses. Not \"Gateway Load Balancer\": A Gateway Load Balancer is for inserting third-party virtual network appliances such as firewalls into the traffic path, not for balancing application targets. Not \"Classic Load Balancer\": The Classic Load Balancer is the previous generation, offers no static IP, and is not recommended for new designs."
+  ref: "Question res-010 (Load balancer selection) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-011
+  kind: choice
+  en: "An application is deployed across three Availability Zones in one Region with Multi-AZ RDS and an Auto Scaling group. Leadership asks what this design protects against and what it does not. Which statement is correct?"
+  options:
+    - "It survives Region failure only if the RDS instance has read replicas in the same Region."
+    - "It survives both Availability Zone and Region failures, because Availability Zones are physically separate data centres."
+    - "It provides no protection beyond a single Availability Zone unless a Global Accelerator is added."
+    - "It survives the loss of an Availability Zone, but a Region-wide service impairment would still take the application down; surviving that requires a second Region."
+  correct: [D]
+  why: "Multi-AZ is the standard protection against the loss of one Availability Zone: the standby is in another AZ and Auto Scaling replaces capacity elsewhere. It does nothing for an event affecting the whole Region, which is why a genuine Regional failure requirement forces a multi-Region design with cross-Region data replication and a routing mechanism. Not \"It survives both Availability Zone and Region failures, because...\": Availability Zones are separate facilities but they are within one Region and share Regional service endpoints, so a Regional impairment can affect all of them. Not \"It survives Region failure only if the RDS instance has read replicas...\": Read replicas in the same Region share the Region's fate; only a cross-Region replica helps with Regional loss. Not \"It provides no protection beyond a single Availability Zone unless a...\": Multi-AZ genuinely does protect against single-AZ failure. Global Accelerator affects traffic routing, not the resilience of the deployment itself."
+  ref: "Question res-011 (Multi-AZ vs multi-Region design) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-012
+  kind: choice
+  en: "A regulated company must apply one retention policy to EBS volumes, RDS databases, EFS file systems and DynamoDB tables across 20 accounts, copy the backups to a second Region, and make it impossible for anyone to delete a backup before its retention period expires. What should the architect use?"
+  options:
+    - "Amazon Data Lifecycle Manager policies in each account, with a Lambda function copying snapshots to the second Region."
+    - "AWS Backup with organization-wide backup policies, cross-Region copy, and AWS Backup Vault Lock in compliance mode."
+    - "S3 Cross-Region Replication with Object Lock on a bucket holding exported data."
+    - "A scheduled Lambda function per account calling each service's native snapshot API."
+  correct: [B]
+  why: "AWS Backup is the single control plane across those services, backup policies can be applied through Organizations to all accounts, backup plans handle cross-Region copies, and Vault Lock in compliance mode makes recovery points immutable — nobody, including the root user, can delete them before expiry. Not \"Amazon Data Lifecycle Manager policies in each account, with a Lambda...\": Data Lifecycle Manager covers EBS snapshots and AMIs, not RDS, EFS and DynamoDB, and the custom copy function reintroduces the operational burden. Not \"A scheduled Lambda function per account calling each service's native...\": Hand-rolled per-service scripts in 20 accounts is exactly the fragmented approach the requirement is trying to replace, and gives no immutability guarantee. Not \"S3 Cross-Region Replication with Object Lock on a bucket holding...\": Object Lock protects objects in S3, but the sources here are EBS, RDS, EFS and DynamoDB, which would first have to be exported by something else."
+  ref: "Question res-012 (Backup and restore with AWS Backup) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-013
+  kind: choice
+  en: "A multi-tenant SaaS processes tenant jobs from a single SQS queue with a Lambda function. When one large tenant submits tens of thousands of jobs, every other tenant's jobs sit behind them and the shared function consumes the account's entire concurrency. What change best limits the blast radius?"
+  options:
+    - "Switch the queue to FIFO so jobs are processed strictly in order."
+    - "Give each tenant tier its own queue and Lambda function with reserved concurrency, so one tenant's backlog cannot consume the others' capacity."
+    - "Increase the Lambda function's memory so each job finishes faster."
+    - "Raise the account concurrency quota and set a longer visibility timeout."
+  correct: [B]
+  why: "This is the bulkhead pattern. Partitioning the workload into separate queues with reserved concurrency per partition means a flood from one tenant fills only its own queue and can only use its own reserved concurrency, so other tenants are unaffected. Reserved concurrency both guarantees and caps a function's share. Not \"Increase the Lambda function's memory so each job finishes faster\": Faster jobs shorten the backlog but do not stop one tenant from monopolising a shared queue and shared concurrency. Not \"Switch the queue to FIFO so jobs are processed strictly in order\": FIFO enforces ordering, which would make head-of-line blocking worse, not better. Not \"Raise the account concurrency quota and set a longer visibility...\": A bigger shared pool is still a shared pool — the same tenant can consume it, just at a higher number."
+  ref: "Question res-013 (Fault isolation and blast radius) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-014
+  kind: choice
+  en: "A payment reconciliation pipeline must process messages for a given account number in the exact order they were produced, and must never process the same message twice within a five-minute window. Throughput is roughly 200 messages per second. Which queue configuration meets this?"
+  options:
+    - "An SQS FIFO queue using a unique message group ID per message."
+    - "An SQS standard queue with a visibility timeout longer than the processing time."
+    - "An SQS FIFO queue using the account number as the message group ID, with content-based deduplication enabled."
+    - "An SQS standard queue with the consumer sorting messages by timestamp before processing."
+  correct: [C]
+  why: "FIFO queues guarantee ordering within a message group, so using the account number as the group ID orders each account's messages while still allowing different accounts to be processed in parallel. Deduplication removes duplicates sent within a five-minute window, and 200 messages per second is within the FIFO limit. Not \"An SQS standard queue with a visibility timeout longer than the...\": Standard queues offer best-effort ordering and at-least-once delivery, so neither requirement is met. Not \"An SQS standard queue with the consumer sorting messages by timestamp...\": Sorting in the consumer cannot reconstruct order across separate receives, and does nothing about duplicates. Not \"An SQS FIFO queue using a unique message group ID per message\": A unique group ID per message means every message is in its own group, which removes all ordering guarantees — the opposite of the requirement."
+  ref: "Question res-014 (Decoupling with SQS) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-015
+  kind: choice
+  en: "During scale-in, users occasionally see errors because instances are terminated while still finishing in-flight requests. The team needs terminating instances to stop receiving new requests and be given up to two minutes to finish existing ones. What should they configure?"
+  options:
+    - "An Auto Scaling lifecycle hook on instance termination, combined with target group deregistration delay on the load balancer."
+    - "Instance scale-in protection on every instance in the group."
+    - "A longer Auto Scaling cooldown period between scaling activities."
+    - "A step scaling policy instead of target tracking."
+  correct: [A]
+  why: "Deregistration delay (connection draining) makes the load balancer stop sending new requests while allowing in-flight ones to complete. A termination lifecycle hook holds the instance in a wait state so that draining, and any custom cleanup, finishes before the instance is actually terminated. Not \"A longer Auto Scaling cooldown period between scaling activities\": Cooldown controls how soon the next scaling activity may start; it does not protect requests already in flight on an instance being removed. Not \"Instance scale-in protection on every instance in the group\": Scale-in protection prevents instances from being chosen for termination at all, which blocks scale-in rather than making it graceful. Not \"A step scaling policy instead of target tracking\": The choice of scaling policy determines when and how much to scale, not how gracefully an instance leaves the group."
+  ref: "Question res-015 (Auto Scaling and health checks) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-016
+  kind: choice
+  en: "A registration platform runs on Amazon ECS with an Amazon RDS Multi-AZ database. The team is documenting which conditions cause RDS to fail over to the standby automatically. Which TWO of the following trigger an automatic failover?"
+  options:
+    - "Storage failure on the standby database instance."
+    - "Loss of availability in the primary Availability Zone."
+    - "Failure of a read replica in another Region."
+    - "Compute unit failure on the standby database instance."
+    - "Storage failure on the primary database instance."
+  correct: [B, E]
+  why: "Multi-AZ failover is triggered by conditions that make the primary unable to serve the workload — losing the primary's Availability Zone, losing network connectivity to the primary, a compute failure on the primary, or a storage failure on the primary. The standby is promoted and the DNS endpoint is repointed. Not \"Compute unit failure on the standby database instance\": A problem on the standby does not affect the primary, which is still serving traffic; AWS repairs or replaces the standby instead. Not \"Failure of a read replica in another Region\": Read replicas are a separate feature for scaling reads. Their failure has no bearing on the Multi-AZ pair. Not \"Storage failure on the standby database instance\": As with a standby compute failure, a storage problem on the standby does not interrupt the primary and so does not cause failover."
+  ref: "Question res-016 (RDS Multi-AZ vs read replicas) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-017
+  kind: choice
+  en: "An application writes errors to CloudWatch Logs. The operations team needs to be paged when the phrase \"OutOfMemoryError\" appears more than five times in any five-minute window. What is the correct configuration?"
+  options:
+    - "A CloudWatch dashboard widget showing the log group, reviewed by the team."
+    - "A metric filter on the log group that increments a custom metric, with a CloudWatch alarm on that metric publishing to an SNS topic."
+    - "A CloudWatch alarm applied directly to the log group's text content."
+    - "A CloudWatch Logs subscription filter delivering to Amazon S3, with Athena queried on a schedule."
+  correct: [B]
+  why: "Alarms act on metrics, not on raw log text. A metric filter scans incoming log events for the pattern and publishes a numeric metric, and an alarm on that metric with a five-minute period and a threshold of five sends a notification through SNS. Not \"A CloudWatch alarm applied directly to the log group's text content\": CloudWatch alarms cannot be attached to log text directly; a metric must exist first. Not \"A CloudWatch Logs subscription filter delivering to Amazon S3, with...\": This builds a slow batch pipeline for something that should notify in near real time, and adds storage and query cost. Not \"A CloudWatch dashboard widget showing the log group, reviewed by the...\": A dashboard requires a human to be looking. It is not alerting."
+  ref: "Question res-017 (Monitoring and alarms with CloudWatch) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-018
+  kind: choice
+  en: "A game backend runs containerised servers on AWS Fargate and must load balance incoming TCP traffic at the transport layer, sustaining millions of requests per second at very low latency for players worldwide. What should be placed in front of the tasks?"
+  options:
+    - "An Application Load Balancer."
+    - "A custom load-balancing microservice on Fargate, because ELB cannot target Fargate tasks."
+    - "A Network Load Balancer."
+    - "Route 53 weighted records pointing at each task's IP address."
+  correct: [C]
+  why: "The requirement is explicitly layer 4 TCP at very high throughput and low latency, which is what the Network Load Balancer is built for. NLBs support IP-mode target groups, which is how Fargate tasks are registered. Not \"An Application Load Balancer\": An ALB works at layer 7 for HTTP and HTTPS. It adds request parsing the workload does not need and does not target the stated performance profile. Not \"A custom load-balancing microservice on Fargate, because ELB cannot...\": Both ALB and NLB support Fargate through IP target groups, so building a custom balancer solves a problem that does not exist. Not \"Route 53 weighted records pointing at each task's IP address\": Route 53 distributes by DNS responses with no health-aware connection handling at this scale, and task IP addresses change constantly."
+  ref: "Question res-018 (Load balancer selection) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-019
+  kind: choice
+  en: "GPS files land in an S3 bucket continuously. Each file needs roughly three minutes of processing and 128 MB of memory, and processing must begin as soon as a file arrives. Occasional processing failures must not lose the file. What is the most appropriate design?"
+  options:
+    - "A scheduled Lambda function that lists the bucket every five minutes and processes new objects."
+    - "An S3 event notification to a Kinesis data stream, with an EC2 Spot Fleet polling the stream nightly."
+    - "An S3 event notification to an SNS topic with an EC2 Auto Scaling group subscribed by HTTP."
+    - "An S3 event notification to an SQS queue, with a Lambda function consuming the queue and a dead-letter queue for repeated failures."
+  correct: [D]
+  why: "Three minutes and 128 MB sit comfortably within Lambda's limits, so serverless processing fits. Putting a queue between the bucket and the function buffers bursts, gives automatic retries, and a dead-letter queue captures anything that fails repeatedly rather than losing it. Not \"An S3 event notification to an SNS topic with an EC2 Auto Scaling...\": SNS pushes to endpoints with no durable buffer for slow consumers, and instances would be running and billed continuously between files. Not \"A scheduled Lambda function that lists the bucket every five minutes...\": Polling adds up to five minutes of latency and repeatedly lists a growing bucket, which is both slower and more expensive than event-driven delivery. Not \"An S3 event notification to a Kinesis data stream, with an EC2 Spot...\": A nightly batch contradicts the requirement to process files as they arrive, and Kinesis suits high-volume record streams rather than per-file processing."
+  ref: "Question res-019 (Event-driven patterns with EventBridge) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-020
+  kind: choice
+  en: "An operations team accidentally ran a script that corrupted rows in a DynamoDB table at approximately 14:20. They need the table restored to its exact state just before that moment, and the table had continuous backups enabled. What should they do?"
+  options:
+    - "Restore the most recent on-demand backup, which is taken nightly."
+    - "Replay DynamoDB Streams records from the last 24 hours in reverse."
+    - "Use DynamoDB point-in-time recovery to restore the table to a timestamp just before 14:20, into a new table."
+    - "Enable a global table in a second Region and fail over to it."
+  correct: [C]
+  why: "Point-in-time recovery keeps continuous backups covering the last 35 days and can restore to any second within that window, which is exactly what recovering to just before 14:20 requires. Restores always create a new table, so the corrupted one remains available for comparison. Not \"Restore the most recent on-demand backup, which is taken nightly\": A nightly backup loses everything written since the snapshot, which is far more data loss than necessary when PITR is available. Not \"Replay DynamoDB Streams records from the last 24 hours in reverse\": Streams retain records for 24 hours and are not a restore mechanism; reversing writes by hand is error-prone and does not reconstruct deleted state reliably. Not \"Enable a global table in a second Region and fail over to it\": Global tables replicate changes, so the corruption would already have propagated to the other Region."
+  ref: "Question res-020 (Backup and restore with AWS Backup) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-021
+  kind: choice
+  en: "Worker instances consume jobs from an SQS queue. Scaling on CPU responds poorly: the queue backs up long before CPU rises, and instances stay running after the queue drains. What scaling signal should the team use?"
+  options:
+    - "Target tracking on a custom metric of backlog per instance — queue depth divided by the number of in-service instances."
+    - "Target tracking on the ALB request count per target."
+    - "Scheduled scaling based on the historical busiest hours."
+    - "Simple scaling on the queue's ApproximateNumberOfMessagesVisible with a fixed threshold."
+  correct: [A]
+  why: "Backlog per instance expresses how much work each worker has waiting, which is the quantity the fleet size should track. Because the metric is normalised by fleet size, the same target holds whether there are 3 workers or 300, so the group scales out as the backlog grows and back in as it clears. Not \"Target tracking on the ALB request count per target\": The workers are not behind a load balancer — they poll a queue — so request count per target is not a signal here. Not \"Simple scaling on the queue's ApproximateNumberOfMessagesVisible with...\": A raw queue depth threshold is not normalised: 1,000 messages means something very different for 3 workers than for 300, so the threshold is wrong at most fleet sizes. Not \"Scheduled scaling based on the historical busiest hours\": Scheduled scaling suits predictable patterns, but the problem described is responsiveness to actual backlog."
+  ref: "Question res-021 (Auto Scaling and health checks) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-022
+  kind: choice
+  en: "A company wants visitors to see a static maintenance page hosted in Amazon S3 automatically whenever its primary application endpoint becomes unhealthy, and to return to the application when it recovers. What should be configured?"
+  options:
+    - "Route 53 weighted routing with 99 percent to the application and 1 percent to the S3 site."
+    - "Route 53 failover routing with a health check on the primary record and the S3 website endpoint as the secondary record."
+    - "A CloudFront distribution with the S3 bucket as a second origin and no origin group."
+    - "Latency-based routing between the application endpoint and the S3 website endpoint."
+  correct: [B]
+  why: "Failover routing is designed for exactly this active-passive pattern: Route 53 returns the primary record while its health check passes, and switches to the secondary when it fails, reverting automatically on recovery. An S3 website endpoint is a valid secondary target. Not \"Route 53 weighted routing with 99 percent to the application and 1...\": Weighted routing splits traffic by ratio regardless of health, so 1 percent of users would always land on the maintenance page and 99 percent would still hit a broken application during an outage. Not \"A CloudFront distribution with the S3 bucket as a second origin and...\": Two origins without an origin group gives CloudFront no failover rule; origin failover requires the origin group configuration. Not \"Latency-based routing between the application endpoint and the S3...\": Latency routing picks the fastest endpoint, and the static page would often win, serving maintenance content to healthy users."
+  ref: "Question res-022 (Route 53 routing policies) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-023
+  kind: choice
+  en: "A back-office system has an RTO of four hours and an RPO of 15 minutes. Finance will not pay to run duplicate application servers continuously, but continuous database replication is acceptable. Which strategy fits?"
+  options:
+    - "Backup and restore from nightly snapshots copied cross-Region."
+    - "Warm standby with a scaled-down but always-running copy of the full stack."
+    - "Multi-site active/active across both Regions."
+    - "Pilot light: replicate the database continuously to the second Region and keep application infrastructure defined but switched off until needed."
+  correct: [D]
+  why: "Pilot light keeps the data layer live and current — satisfying a 15-minute RPO — while application servers exist only as definitions until a disaster, which is what avoids paying to run them. Provisioning and starting them fits comfortably inside a four-hour RTO. Not \"Warm standby with a scaled-down but always-running copy of the full...\": Warm standby would meet the targets easily but runs application servers continuously, which finance has ruled out. Not \"Backup and restore from nightly snapshots copied cross-Region\": Nightly snapshots give an RPO measured in hours, far outside the 15-minute requirement. Not \"Multi-site active/active across both Regions\": Active/active is the most expensive option and duplicates everything continuously."
+  ref: "Question res-023 (Disaster recovery strategies) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-024
+  kind: choice
+  en: "A regulator requires that objects replicated to a second Region arrive within 15 minutes of being written, with evidence that the target is being met. What should the architect enable?"
+  options:
+    - "Standard S3 Cross-Region Replication, which already guarantees delivery within 15 minutes."
+    - "A Lambda function triggered on object creation that copies each object to the second Region."
+    - "S3 Transfer Acceleration on the destination bucket."
+    - "S3 Replication Time Control on the replication rule, with its replication metrics and events monitored in CloudWatch."
+  correct: [D]
+  why: "Replication Time Control adds a service level agreement that 99.99 percent of objects replicate within 15 minutes, and it publishes replication metrics and events so you can demonstrate compliance and alarm when objects fall behind. Not \"Standard S3 Cross-Region Replication, which already guarantees...\": Standard replication is typically fast but carries no time commitment and no metrics, so neither the guarantee nor the evidence exists. Not \"S3 Transfer Acceleration on the destination bucket\": Transfer Acceleration speeds uploads from distant clients into a bucket; it plays no part in bucket-to-bucket replication. Not \"A Lambda function triggered on object creation that copies each...\": A custom copier reimplements replication with worse retry semantics and no SLA, and needs its own monitoring."
+  ref: "Question res-024 (S3 durability and replication) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-025
+  kind: choice
+  en: "Consumers of an SQS queue occasionally process the same message twice, and the logs show the duplicate starting about 30 seconds after the first attempt while the original consumer is still working. What should be changed?"
+  options:
+    - "Reduce the message retention period."
+    - "Increase the queue's visibility timeout so it exceeds the longest processing time, or have the consumer extend it while working."
+    - "Increase the number of consumers so messages are handled faster."
+    - "Enable long polling on the queue."
+  correct: [B]
+  why: "A message becomes visible again when its visibility timeout expires, so if processing routinely takes longer than the timeout another consumer picks it up while the first is still working. Raising the timeout past the worst-case processing time — or calling ChangeMessageVisibility to extend it in flight — removes the duplicate delivery. Not \"Enable long polling on the queue\": Long polling reduces empty receive responses and their cost; it has no effect on when an in-flight message becomes visible again. Not \"Reduce the message retention period\": Retention controls how long an unconsumed message survives, which is unrelated to redelivery during processing. Not \"Increase the number of consumers so messages are handled faster\": More consumers increases the chance of a second consumer grabbing the redelivered message sooner, making the symptom more frequent."
+  ref: "Question res-025 (Decoupling with SQS) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-026
+  kind: choice
+  en: "A bad migration script corrupted data in an Aurora MySQL cluster twenty minutes ago. The team needs the cluster returned to its state just before the script ran, as quickly as possible, and Backtrack was enabled on the cluster. What should they do?"
+  options:
+    - "Perform a point-in-time restore into a new cluster and migrate the data back."
+    - "Promote an Aurora Replica to writer."
+    - "Restore the most recent automated snapshot to a new cluster and repoint the application."
+    - "Backtrack the cluster to a timestamp immediately before the script ran."
+  correct: [D]
+  why: "Backtrack rewinds an Aurora MySQL cluster in place to a prior point in time without restoring from a backup, typically completing in minutes. Because it operates on the existing cluster, there is no new endpoint and no application reconfiguration. Not \"Restore the most recent automated snapshot to a new cluster and...\": A snapshot restore creates a new cluster, takes considerably longer, and loses everything written since the snapshot. Not \"Promote an Aurora Replica to writer\": Replicas contain the same corrupted data, since the corruption replicated to them. Not \"Perform a point-in-time restore into a new cluster and migrate the...\": Point-in-time restore also builds a new cluster and is slower than an in-place rewind when Backtrack is available."
+  ref: "Question res-026 (Aurora high availability) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-033
+  kind: choice
+  en: "A web tier must always have at least six EC2 instances running, and the design must tolerate the complete loss of one of three Availability Zones without dropping below six. Which layout is the most cost-effective that still meets this?"
+  options:
+    - "6 instances in each of the three Availability Zones (18 total)."
+    - "2 instances in each of the three Availability Zones (6 total)."
+    - "6 instances in each of two Availability Zones and none in the third (12 total)."
+    - "3 instances in each of the three Availability Zones (9 total)."
+  correct: [D]
+  why: "Losing one zone must still leave six running. With 3 per zone across three zones, an outage removes 3 and leaves 6 — exactly the minimum — at a total of 9 instances. This is the smallest fleet that satisfies the constraint. Not \"2 instances in each of the three Availability Zones (6 total)\": Losing one zone leaves only 4 instances, below the required minimum, so this is not fault tolerant despite being the cheapest. Not \"6 instances in each of the three Availability Zones (18 total)\": 18 instances survives an outage comfortably but costs twice as much as necessary. Not \"6 instances in each of two Availability Zones and none in the third...\": 12 instances also survives, leaving 6 after a zone loss, but it costs more than the 9-instance layout that meets the same requirement."
+  ref: "Question res-033 (Multi-AZ vs multi-Region design) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-034
+  kind: choice
+  en: "A reporting workload is overwhelming an Amazon RDS primary instance with read queries. An architect proposes read replicas rather than relying on Multi-AZ. Which TWO statements correctly describe what read replicas provide?"
+  options:
+    - "They accept both reads and writes, complementing the primary instance."
+    - "They scale read capacity beyond the limits of a single database instance for read-heavy workloads."
+    - "They use asynchronous replication and relieve the primary by absorbing read traffic."
+    - "They use synchronous replication and fail over automatically when an Availability Zone fails."
+    - "They increase the primary instance's provisioned IOPS."
+  correct: [B, C]
+  why: "Read replicas are asynchronous copies that serve read-only traffic, so aggregate read throughput scales past what one instance can deliver and the primary is freed to handle writes. They are a scaling feature, not an availability feature. Not \"They use synchronous replication and fail over automatically when an...\": Synchronous replication with automatic failover describes Multi-AZ, which is a different feature; replicas are asynchronous. Not \"They accept both reads and writes, complementing the primary instance\": A read replica accepts read-only connections. It must be promoted to a standalone instance before it can accept writes. Not \"They increase the primary instance's provisioned IOPS\": Replicas do not change the primary's provisioned IOPS; they reduce the load reaching it."
+  ref: "Question res-034 (RDS Multi-AZ vs read replicas) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-035
+  kind: choice
+  en: "A content management system runs on an Auto Scaling fleet of Linux EC2 instances across several Availability Zones. User-uploaded documents are currently written to an EBS volume attached to one instance, so other instances cannot see them and performance is poor. What should replace it?"
+  options:
+    - "Larger Provisioned IOPS SSD EBS volumes on each instance."
+    - "An Amazon S3 bucket used as the file system for the application."
+    - "Amazon EFS, providing a POSIX-compliant file system that every instance can mount concurrently across Availability Zones."
+    - "Amazon ElastiCache to cache the uploaded documents."
+  correct: [C]
+  why: "The requirement is shared, concurrent, POSIX file-system access from many instances spanning Availability Zones — which is exactly what EFS provides. Moving the documents off the individual instances also makes the fleet stateless, so instances can be replaced freely. Not \"An Amazon S3 bucket used as the file system for the application\": S3 is object storage without POSIX semantics or file locking; using it requires application changes and it cannot be mounted as a normal file system. Not \"Larger Provisioned IOPS SSD EBS volumes on each instance\": An EBS volume attaches to a single instance, so faster volumes do not make the documents visible to the rest of the fleet. Not \"Amazon ElastiCache to cache the uploaded documents\": ElastiCache is an in-memory cache, not durable file storage."
+  ref: "Question res-035 (Stateless application design) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-036
+  kind: choice
+  en: "An operations team must track memory utilisation and disk space used on a mixed fleet of Linux and Windows EC2 instances, and view those figures alongside the existing CPU metrics. What is required?"
+  options:
+    - "Nothing — memory and disk utilisation are included in the default EC2 metrics."
+    - "Enable Enhanced Monitoring on the EC2 instances."
+    - "Install the unified CloudWatch agent on the instances to publish memory and disk metrics as custom metrics."
+    - "Install the Amazon Inspector agent on all instances."
+  correct: [C]
+  why: "EC2 publishes CPU, network and disk I/O metrics from the hypervisor, but memory utilisation and disk space used are visible only from inside the operating system. The unified CloudWatch agent runs on both Linux and Windows and publishes them as custom metrics. Not \"Nothing — memory and disk utilisation are included in the default EC2...\": Memory and disk space are specifically absent from the default EC2 metric set — this is one of the most commonly tested gaps. Not \"Enable Enhanced Monitoring on the EC2 instances\": Enhanced Monitoring is an Amazon RDS feature that reports OS metrics for database instances; it does not apply to EC2. Not \"Install the Amazon Inspector agent on all instances\": Inspector performs security and vulnerability assessment, not performance metric collection."
+  ref: "Question res-036 (Monitoring and alarms with CloudWatch) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-037
+  kind: choice
+  en: "A weekly sales promotion causes brief downtime because instances take several minutes to initialise and reactive scaling starts too late. The traffic pattern repeats reliably each week. Which solution launches capacity ahead of the load with the least effort?"
+  options:
+    - "Enable predictive scaling on the Auto Scaling group."
+    - "Create a dynamic scaling policy on average CPU utilisation."
+    - "Analyse the pattern with a machine learning service and build scheduled policies from the predictions."
+    - "Schedule an EventBridge rule that invokes a Lambda function to resize the group every night."
+  correct: [A]
+  why: "Predictive scaling uses machine learning over the group's own CloudWatch history to forecast load and provision capacity in advance. It is designed for exactly this combination — regular recurring patterns plus long initialisation times — and is a setting rather than something to build. Not \"Create a dynamic scaling policy on average CPU utilisation\": Dynamic scaling is reactive: it acts only after utilisation has already risen, which is the problem when instances need minutes to start. Not \"Schedule an EventBridge rule that invokes a Lambda function to resize...\": A nightly resize is crude, needs maintaining, and breaks whenever the promotion schedule changes. Not \"Analyse the pattern with a machine learning service and build...\": This reimplements predictive scaling by hand, with far more effort and no better result."
+  ref: "Question res-037 (Auto Scaling and health checks) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-038
+  kind: choice
+  en: "A company needs to decouple components of an application where some processing runs on EC2 instances in AWS and some still runs on servers in its own data centre. Which service allows both sides to exchange work reliably without being directly connected?"
+  options:
+    - "VPC peering between the on-premises network and the VPC."
+    - "Amazon SQS, which both on-premises servers and EC2 instances can send to and poll from over the API."
+    - "Amazon DynamoDB, with both sides polling a shared items table."
+    - "Amazon RDS, with both sides reading and writing a shared work table."
+  correct: [B]
+  why: "SQS is a fully managed queue reachable over its public API from anywhere with credentials, so on-premises producers and EC2 consumers can exchange messages without any network-level coupling. Buffering in the queue is what decouples the two sides. Not \"VPC peering between the on-premises network and the VPC\": VPC peering connects two VPCs; it cannot peer with an on-premises network, and network connectivity is not decoupling. Not \"Amazon RDS, with both sides reading and writing a shared work table\": A shared relational table couples both sides to one schema and turns into a polling and locking problem — a database is not a queue. Not \"Amazon DynamoDB, with both sides polling a shared items table\": The same applies to DynamoDB: it is a database, and using it as a queue means building retries, visibility and ordering yourself."
+  ref: "Question res-038 (Decoupling with SQS) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-039
+  kind: choice
+  en: "An Aurora cluster's single read replica cannot keep up with read traffic during unpredictable peak periods, but the load is light for most of the day. Which solution handles the peaks most cost-effectively?"
+  options:
+    - "Enable Aurora Auto Scaling so replicas are added during peaks and removed afterwards."
+    - "Convert the cluster to an Aurora Global Database and read from the secondary Region."
+    - "Add a cross-Region read replica and send peak read traffic to it."
+    - "Increase the instance size of every member of the Aurora DB cluster."
+  correct: [A]
+  why: "Aurora Auto Scaling adds and removes Aurora Replicas based on a target metric such as average CPU or connections, so extra read capacity exists only while the peak lasts. Because the load is light most of the day, paying only during peaks is what makes it the cheapest option. Not \"Increase the instance size of every member of the Aurora DB cluster\": Scaling up bills for the larger capacity around the clock, including the long quiet periods. Not \"Convert the cluster to an Aurora Global Database and read from the...\": A Global Database is for cross-Region availability and low-latency global reads; it adds replication and data transfer cost that this single-Region problem does not need. Not \"Add a cross-Region read replica and send peak read traffic to it\": A cross-Region replica adds inter-Region data transfer charges and latency to solve a problem that is entirely within one Region."
+  ref: "Question res-039 (Aurora high availability) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-040
+  kind: choice
+  en: "Microservices run on an Amazon EKS cluster and requests must be routed to different services based on the URL path. Which option achieves this with the least setup?"
+  options:
+    - "Put an AWS Lambda function in front of the cluster to proxy requests."
+    - "Provision a Network Load Balancer through the AWS Load Balancer Controller."
+    - "Deploy an NGINX Ingress controller into the cluster."
+    - "Provision an Application Load Balancer through the AWS Load Balancer Controller add-on, driven by Kubernetes Ingress resources."
+  correct: [D]
+  why: "Path-based routing is a layer 7 function, which is what an ALB does. The AWS Load Balancer Controller is the supported EKS add-on that watches Ingress resources and provisions the ALB and its target groups automatically, so the setup is an add-on plus an Ingress manifest. Not \"Deploy an NGINX Ingress controller into the cluster\": NGINX Ingress reaches the same outcome but you then own the controller pods, their scaling, upgrades and the load balancer in front of them. Not \"Provision a Network Load Balancer through the AWS Load Balancer...\": An NLB operates at layer 4 on IP and port. It cannot see URL paths. Not \"Put an AWS Lambda function in front of the cluster to proxy requests\": A Lambda proxy means writing routing logic by hand, and it still needs an ingress path into the cluster."
+  ref: "Question res-040 (Load balancer selection) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-041
+  kind: choice
+  en: "A Kubernetes Service of type LoadBalancer on Amazon EKS must expose a TCP-based protocol to clients that require a static IP address per Availability Zone. Which load balancer should the AWS Load Balancer Controller provision?"
+  options:
+    - "An Application Load Balancer."
+    - "A Gateway Load Balancer."
+    - "A Network Load Balancer."
+    - "A Classic Load Balancer."
+  correct: [C]
+  why: "The requirements are layer 4 TCP and a static IP per Availability Zone, both of which are Network Load Balancer characteristics. The AWS Load Balancer Controller provisions an NLB for Services of type LoadBalancer, and an ALB for Ingress resources. Not \"An Application Load Balancer\": An ALB handles HTTP and HTTPS at layer 7 and has no static IP; it is what the controller provisions for Ingress, not for a TCP Service. Not \"A Gateway Load Balancer\": Gateway Load Balancers insert third-party network appliances into the traffic path. Not \"A Classic Load Balancer\": The Classic Load Balancer is the previous generation and is not the controller's target for new workloads."
+  ref: "Question res-041 (Load balancer selection) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-042
+  kind: choice
+  en: "An API Gateway endpoint invokes a Lambda function that writes each 5 KB payload to Aurora. The endpoint only needs to acknowledge receipt, not completion, but throttling errors keep appearing and the concurrency limit has been raised repeatedly. What is the correct fix?"
+  options:
+    - "Move the data store to DynamoDB with a DAX cluster in front of it."
+    - "Split into two functions and use Amazon SNS to signal the second function."
+    - "Rewrite the function as a Go application on EC2 using native database drivers."
+    - "Split into two functions — one that accepts the request and writes to an SQS queue, and one triggered by the queue that persists to the database."
+  correct: [D]
+  why: "Because the caller only needs an acknowledgement, the write can be deferred. A queue absorbs bursts, so the accepting function returns immediately while the processing function drains the backlog at whatever rate its concurrency allows — and Lambda backs off and retries on throttling rather than failing the caller. Not \"Split into two functions and use Amazon SNS to signal the second...\": SNS pushes each message to subscribers with no durable buffer for a slow consumer, so bursts still overwhelm the processing function. Not \"Move the data store to DynamoDB with a DAX cluster in front of it\": DAX accelerates DynamoDB reads. The bottleneck here is concurrency on writes, which caching does not address. Not \"Rewrite the function as a Go application on EC2 using native database...\": This abandons serverless for a server fleet, replacing one scaling problem with instance management."
+  ref: "Question res-042 (Decoupling with SQS) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-043
+  kind: choice
+  en: "An operations team needs one place to schedule, monitor and report on backups of EC2 instances, EBS volumes, EFS file systems and DynamoDB tables, with a single retention policy applied to all of them. What should they use?"
+  options:
+    - "AWS Backup with a backup plan and resource assignments covering all four resource types."
+    - "Amazon Data Lifecycle Manager policies for each resource type."
+    - "AWS Config rules that create snapshots when resources drift."
+    - "A scheduled Lambda function calling each service's native snapshot API."
+  correct: [A]
+  why: "AWS Backup is the single control plane across those services: one backup plan defines the schedule, lifecycle and retention, and resource assignments select what it applies to, with centralised monitoring and reporting. Not \"Amazon Data Lifecycle Manager policies for each resource type\": Data Lifecycle Manager covers EBS snapshots and AMIs only — EFS and DynamoDB fall outside it entirely. Not \"A scheduled Lambda function calling each service's native snapshot...\": Bespoke scripting means owning scheduling, retries, retention and reporting for four different APIs. Not \"AWS Config rules that create snapshots when resources drift\": Config detects configuration drift; it is not a backup scheduler."
+  ref: "Question res-043 (Backup and restore with AWS Backup) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-044
+  kind: choice
+  en: "A Lambda function reads from a queue and writes to an RDS database that supports a fixed number of connections. During spikes the function scales out far enough to exhaust the database's connections, taking down other applications that share it. Which control most directly prevents that?"
+  options:
+    - "Set reserved concurrency on the function so it can never exceed a safe number of simultaneous executions."
+    - "Increase the account's concurrent execution limit."
+    - "Add a dead-letter queue to the function."
+    - "Increase the function's memory so each invocation finishes sooner."
+  correct: [A]
+  why: "Reserved concurrency both guarantees and caps how many instances of a function can run at once. Capping it below the database's connection budget means the function can never exhaust the shared resource, no matter how deep the queue grows. Not \"Increase the function's memory so each invocation finishes sooner\": Faster invocations reduce how long each connection is held but place no ceiling on how many open at once. Not \"Increase the account's concurrent execution limit\": Raising the account limit lets the function scale further, making the exhaustion worse. Not \"Add a dead-letter queue to the function\": A dead-letter queue captures messages that fail repeatedly; it does nothing to limit concurrency."
+  ref: "Question res-044 (Fault isolation and blast radius) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-045
+  kind: choice
+  en: "Objects are written to a bucket by an application in one Region. A second team in another Region needs read access to the same objects with low latency, and the copy must stay current automatically as new objects arrive. What should be configured?"
+  options:
+    - "S3 Cross-Region Replication into a bucket in the second Region, with versioning enabled on both."
+    - "An S3 Multi-Region Access Point routing all reads back to the source bucket."
+    - "A nightly S3 Batch Operations copy job to the second Region."
+    - "A CloudFront distribution with the source bucket as origin."
+  correct: [A]
+  why: "Cross-Region Replication copies new objects to the destination bucket automatically as they are written, giving the second team a local copy in their own Region. Versioning on both buckets is a prerequisite for replication. Not \"An S3 Multi-Region Access Point routing all reads back to the source...\": A Multi-Region Access Point routes requests intelligently but does not by itself create a second copy — without replication, reads still travel to the source Region. Not \"A CloudFront distribution with the source bucket as origin\": CloudFront caches at edge locations and helps repeat reads, but the objects still originate from one Region and nothing is stored in the second. Not \"A nightly S3 Batch Operations copy job to the second Region\": A nightly job leaves the copy up to a day stale, which fails the requirement to stay current automatically."
+  ref: "Question res-045 (S3 durability and replication) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-046
+  kind: choice
+  en: "A relational workload needs cross-Region disaster recovery with an RPO of roughly one second and an RTO under one minute, managed by AWS rather than the application. Which data tier should be selected?"
+  options:
+    - "Amazon Aurora Global Database."
+    - "Amazon DynamoDB global tables."
+    - "Amazon RDS for PostgreSQL with a cross-Region read replica."
+    - "Amazon RDS Multi-AZ with automated backups copied cross-Region."
+  correct: [A]
+  why: "Aurora Global Database replicates at the storage layer with typical cross-Region lag under a second, and a secondary Region can be promoted in well under a minute. That combination of RPO and RTO, with AWS managing the replication, is what the requirement describes. Not \"Amazon RDS for PostgreSQL with a cross-Region read replica\": Cross-Region read replicas replicate asynchronously at the logical level with higher, more variable lag, and promotion takes several minutes. Not \"Amazon DynamoDB global tables\": Global tables meet the replication targets but are non-relational, so they do not fit a relational workload. Not \"Amazon RDS Multi-AZ with automated backups copied cross-Region\": Multi-AZ protects against Availability Zone loss only, and restoring cross-Region backups takes hours."
+  ref: "Question res-046 (Multi-AZ vs multi-Region design) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-048
+  kind: choice
+  en: "After an engineer accidentally deleted objects from a production bucket, the team must protect against both accidental deletion and overwriting. Which TWO settings together achieve this?"
+  options:
+    - "Move the objects to S3 Intelligent-Tiering."
+    - "Serve all objects through pre-signed URLs only."
+    - "Enable MFA Delete on the bucket."
+    - "Enable S3 Versioning on the bucket."
+    - "Attach a bucket policy denying s3:DeleteObject to everyone."
+  correct: [C, D]
+  why: "Versioning keeps every variant of an object, so an overwrite creates a new version and a delete only adds a delete marker — both are recoverable. MFA Delete adds a second factor before anyone can permanently remove a version or change the versioning state. Not \"Serve all objects through pre-signed URLs only\": Pre-signed URLs grant temporary access to an object; they do not prevent an authorised principal from deleting it. Not \"Attach a bucket policy denying s3:DeleteObject to everyone\": A blanket deny blocks legitimate deletions too. The goal is preventing accidents, not removing the capability. Not \"Move the objects to S3 Intelligent-Tiering\": Intelligent-Tiering optimises storage cost by access pattern and offers no protection against deletion."
+  ref: "Question res-048 (S3 durability and replication) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-049
+  kind: choice
+  en: "When a vehicle listing is deleted from an Aurora MySQL table, the record must be forwarded to a distributed processing system. Which approach captures that row-level change?"
+  options:
+    - "Use an Aurora MySQL native function to invoke a Lambda function on delete, and have it publish to an SQS queue."
+    - "Create an RDS event subscription targeting Lambda directly, which fans out to SQS."
+    - "Create an RDS event subscription to SNS, fanning out to SQS queues processed by Lambda."
+    - "Create an RDS event subscription to SQS, which fans out to SNS topics."
+  correct: [A]
+  why: "RDS event subscriptions report operational events about the instance — failovers, backups, configuration changes — not changes to rows. Aurora MySQL can invoke a Lambda function directly from a stored procedure or trigger, which is how you react to a specific row being deleted. Not \"Create an RDS event subscription to SNS, fanning out to SQS queues...\": RDS events are instance-level notifications; a deleted row never generates one. Not \"Create an RDS event subscription targeting Lambda directly, which...\": Same limitation — the subscription would never fire for a data change, regardless of its target. Not \"Create an RDS event subscription to SQS, which fans out to SNS topics\": Besides the same problem, SQS queues do not fan out to SNS topics; the relationship runs the other way."
+  ref: "Question res-049 (Event-driven patterns with EventBridge) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-050
+  kind: choice
+  en: "An Auto Scaling group spans three Availability Zones with default settings. A scale-in event is triggered. Which instance does the group terminate first?"
+  options:
+    - "In the Availability Zone with the most instances, the one launched from the oldest launch template."
+    - "An instance chosen entirely at random."
+    - "The instance that has been running the longest, regardless of zone."
+    - "The instance with the fewest active user sessions."
+  correct: [A]
+  why: "The default termination policy first rebalances across Availability Zones by choosing the zone with the most instances, then within that zone selects instances using the oldest launch template or configuration. Randomness only breaks a final tie. Not \"The instance that has been running the longest, regardless of zone\": Uptime is not the criterion — a long-running instance on the newest template in a sparse zone is not chosen first. Not \"The instance with the fewest active user sessions\": Auto Scaling has no visibility into application sessions; that is why connection draining and lifecycle hooks exist. Not \"An instance chosen entirely at random\": Random selection is the last tie-breaker, not the first rule."
+  ref: "Question res-050 (Auto Scaling and health checks) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-051
+  kind: choice
+  en: "A compliance rule requires 90 days of daily backups for an Amazon Aurora cluster. What is the simplest way to meet it?"
+  options:
+    - "Configure RDS automated backups with a 90-day retention period."
+    - "Create an AWS Backup plan taking daily snapshots with a 90-day retention period."
+    - "Schedule a Lambda function to copy the automated snapshot to S3 daily and archive to Glacier after 90 days."
+    - "Export automated snapshots to S3 automatically and expire them with a lifecycle rule."
+  correct: [B]
+  why: "RDS automated backups cap out at 35 days of retention, so a 90-day requirement cannot be met that way. An AWS Backup plan schedules the snapshots and applies whatever retention you specify, with central monitoring and reporting. Not \"Configure RDS automated backups with a 90-day retention period\": The maximum retention for RDS automated backups is 35 days — well short of 90. Not \"Schedule a Lambda function to copy the automated snapshot to S3 daily...\": Automated snapshots cannot be downloaded or copied to S3 directly; they must first be copied into manual snapshots, and the custom pipeline is unnecessary work. Not \"Export automated snapshots to S3 automatically and expire them with a...\": There is no automatic export of automated snapshots to S3; exporting is a manual operation on a manual snapshot."
+  ref: "Question res-051 (Backup and restore with AWS Backup) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-052
+  kind: choice
+  en: "An order-processing system on a standard SQS queue occasionally processes the same order twice, and ordering matters for a given customer account. What should be changed?"
+  options:
+    - "Increase the queue's message retention period."
+    - "Shorten the visibility timeout so messages are retried sooner."
+    - "Move to an SQS FIFO queue, which provides exactly-once processing and ordering within a message group."
+    - "Increase the maximum message size."
+  correct: [C]
+  why: "Standard queues give at-least-once delivery and best-effort ordering, which is exactly the behaviour producing duplicates and out-of-order processing. FIFO queues deduplicate within a five-minute window and preserve order within each message group. Not \"Increase the queue's message retention period\": Retention controls how long an unconsumed message survives and has no bearing on duplicates or ordering. Not \"Increase the maximum message size\": Message size is unrelated to delivery semantics. Not \"Shorten the visibility timeout so messages are retried sooner\": A shorter visibility timeout makes redelivery more likely while processing is still in flight, increasing duplicates."
+  ref: "Question res-052 (Decoupling with SQS) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-053
+  kind: choice
+  en: "A media company runs about 120 virtual machines on VMware in its own data centre. Management wants an AWS-based disaster recovery capability with a recovery point objective measured in minutes and a recovery time objective under one hour. The finance team refuses to fund a permanently running duplicate of the production fleet, and the operations team does not want to rewrite the applications. Which solution meets these requirements MOST cost-effectively?"
+  options:
+    - "Use AWS Elastic Disaster Recovery to replicate the source machines continuously into a low-cost staging area, launching full recovery instances only at failover."
+    - "Use AWS Database Migration Service with ongoing change data capture to replicate the workloads into the target Region and promote the replicas during a failover."
+    - "Build a warm standby environment in the target Region with scaled-down but permanently running copies of every virtual machine, keep them patched in step with production, and scale them up when a disaster is declared."
+    - "Use AWS Backup with a scheduled daily backup plan that copies recovery points to the target Region, and restore the machines into EC2 when a disaster is declared."
+  correct: [A]
+  why: "Elastic Disaster Recovery replicates block-level changes continuously into an inexpensive staging area that uses low-cost storage and small replication servers rather than full production instances. That yields an RPO of minutes, allows conversion and launch within the RTO, and needs no application changes. Not \"Use AWS Backup with a scheduled daily backup plan that copies...\": Daily backups give a recovery point up to twenty-four hours old, which misses an RPO measured in minutes, and restoring 120 machines is unlikely to complete within an hour. Not \"Build a warm standby environment in the target Region with...\": Warm standby can meet both objectives but requires running duplicate infrastructure continuously, which is the cost the finance team rejected. Not \"Use AWS Database Migration Service with ongoing change data capture...\": Database Migration Service replicates databases, not whole virtual machines, so the application and operating system layers would be left unprotected."
+  ref: "Question res-053 (Disaster recovery strategies) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-054
+  kind: choice
+  en: "A research institute keeps 40 TB of instrument output on an on-premises NFS share. Scientists must continue to read and write the newest files from the existing share with low latency, while all data is durably stored in Amazon S3 so that a future analytics pipeline can read the files directly as S3 objects. The institute wants to avoid rewriting the instrument software. Which solution meets these requirements?"
+  options:
+    - "Deploy a Tape Gateway, point the existing backup application at the virtual tape library, and store the resulting virtual tapes in the S3 bucket so that the institute keeps the retention schedules it already operates."
+    - "Deploy an Amazon S3 File Gateway on premises, expose it to the instruments as an NFS mount, and let it store each file as a native object in an S3 bucket."
+    - "Run a scheduled AWS DataSync task that copies the NFS share to the S3 bucket every night and have the analytics pipeline read the copied objects."
+    - "Deploy a Volume Gateway in cached mode, present iSCSI volumes to the instrument hosts, and take EBS snapshots of those volumes into the S3 bucket on a schedule."
+  correct: [B]
+  why: "S3 File Gateway presents an NFS or SMB mount and writes each file through to S3 as a discrete object, keeping a local cache for low-latency access to recent data. Because the files land as native objects, the future analytics pipeline can read them directly without an intermediate extraction step. Not \"Deploy a Volume Gateway in cached mode, present iSCSI volumes to the...\": Volume Gateway stores data as EBS snapshots rather than individual objects, so an analytics pipeline cannot read the files from S3 without restoring a volume first. Not \"Deploy a Tape Gateway, point the existing backup application at the...\": Tape Gateway writes virtual tape images intended for backup software. The contents are not addressable as individual objects for analytics. Not \"Run a scheduled AWS DataSync task that copies the NFS share to the S3...\": A nightly DataSync copy duplicates the data rather than providing the low-latency working share, and files written after the last run would be missing."
+  ref: "Question res-054 (Backup and restore with AWS Backup) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-055
+  kind: choice
+  en: "A gaming company is launching a multiplayer backend that communicates with clients over UDP. At peak the service is expected to hold several million concurrent connections, and partner studios need a small set of fixed IP addresses to place in their own firewall allow-lists. The backend runs on EC2 instances in an Auto Scaling group across three Availability Zones. Which load balancing solution should the architect choose?"
+  options:
+    - "A Gateway Load Balancer that distributes the UDP flows to the instances while preserving the original source and destination addresses."
+    - "A Classic Load Balancer configured with a TCP listener and cross-zone load balancing enabled across the three Availability Zones."
+    - "A Network Load Balancer with a UDP listener, which provides one static IP address per Availability Zone and can optionally take Elastic IP addresses for the allow-list requirement."
+    - "An Application Load Balancer with a listener rule that forwards traffic to the Auto Scaling group, fronted by Elastic IP addresses assigned to each of its nodes."
+  correct: [C]
+  why: "Network Load Balancer operates at layer 4, supports UDP listeners, scales to millions of connections and exposes one static IP per Availability Zone, with the option to assign Elastic IPs. That matches every stated requirement. Not \"An Application Load Balancer with a listener rule that forwards...\": Application Load Balancer works only with HTTP and HTTPS, so it cannot carry UDP, and its addresses are not static. Not \"A Gateway Load Balancer that distributes the UDP flows to the...\": Gateway Load Balancer exists to insert third-party virtual appliances into the traffic path. It is not the entry point for an application's own clients. Not \"A Classic Load Balancer configured with a TCP listener and cross-zone...\": Classic Load Balancer supports TCP and SSL but not UDP, and it is a previous-generation option that AWS no longer recommends for new designs."
+  ref: "Question res-055 (Load balancer selection) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-056
+  kind: choice
+  en: "An insurance company processes claims through five sequential stages, each implemented as an AWS Lambda function. Some stages call a third-party service that intermittently times out and must be retried with exponential backoff, and one stage can take up to twenty minutes. Operations staff need to see exactly which stage a given claim reached when something fails. Which solution meets these requirements with the LEAST operational overhead?"
+  options:
+    - "Place an Amazon SQS queue between each pair of stages and rely on the queue's visibility timeout and redrive policy to retry failures."
+    - "Model the workflow as an AWS Step Functions state machine with Retry and Catch on the failing states."
+    - "Publish an EventBridge event at the end of each stage and subscribe the next Lambda function to it, using a dead-letter queue on each rule."
+    - "Chain the Lambda functions by having each one invoke the next asynchronously, implementing retry and backoff logic inside each function."
+  correct: [B]
+  why: "Step Functions is purpose-built for multi-stage workflows: retries with backoff and catch handlers are declarative, execution history shows precisely which state a given claim reached, and a Standard workflow runs for up to a year, so a twenty-minute stage is not a constraint. Not \"Chain the Lambda functions by having each one invoke the next...\": Every function ends up carrying orchestration code, and there is no single place to see how far a claim progressed. Not \"Publish an EventBridge event at the end of each stage and subscribe...\": EventBridge decouples the stages but provides no execution view of an individual claim, so tracing one through five rules means correlating logs by hand. Not \"Place an Amazon SQS queue between each pair of stages and rely on the...\": Queues give retry and buffering but no workflow state, and a twenty-minute stage forces careful visibility-timeout tuning at every hop."
+  ref: "Question res-056 (Event-driven patterns with EventBridge) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-057
+  kind: choice
+  en: "A manufacturer is migrating a plant monitoring system to AWS. The existing application uses Apache ActiveMQ and depends on JMS features including message selectors and durable topic subscriptions. The company wants to move with as few application changes as possible and does not want to operate broker infrastructure. Which service should the architect choose?"
+  options:
+    - "Amazon MQ running ActiveMQ, which the existing JMS client can connect to unchanged."
+    - "Amazon SNS topics with SQS subscriptions, reproducing durable topic behaviour through queue subscriptions per consumer."
+    - "Amazon Managed Streaming for Apache Kafka, with the JMS producers and consumers ported to the Kafka client libraries."
+    - "Amazon SQS FIFO queues, with the application's JMS calls rewritten to use the SQS API and message group identifiers."
+  correct: [A]
+  why: "Amazon MQ is a managed broker that runs ActiveMQ or RabbitMQ and supports the standard protocols, including JMS with selectors and durable subscriptions. Migrating usually means repointing the connection string, which is the smallest possible change, with AWS operating the broker. Not \"Amazon SQS FIFO queues, with the application's JMS calls rewritten to...\": SQS has no JMS semantics: message selectors and durable topic subscriptions do not exist, so the messaging layer would have to be rewritten. Not \"Amazon SNS topics with SQS subscriptions, reproducing durable topic...\": SNS with SQS fan-out can approximate topics, but it is a different programming model and still requires rewriting the application. Not \"Amazon Managed Streaming for Apache Kafka, with the JMS producers and...\": Kafka is a log-based streaming platform with its own client API and no JMS compatibility, making this the largest rewrite of the four."
+  ref: "Question res-057 (Decoupling with SQS) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-058
+  kind: choice
+  en: "An order service reads from an Amazon SQS standard queue and occasionally receives a malformed message that causes the consumer to throw an exception. The message becomes visible again after the visibility timeout and is reprocessed indefinitely, blocking throughput and filling the logs. The team wants poison messages set aside for inspection without losing them. Which TWO actions address this? (Select TWO.)"
+  options:
+    - "Switch the source queue to FIFO so that a failing message blocks its message group and stops interfering with other orders."
+    - "Create a separate SQS queue to serve as the dead-letter queue and set an appropriate retention period on it for later inspection."
+    - "Reduce the visibility timeout on the source queue so failing messages return to the queue sooner and drain more quickly."
+    - "Enable server-side encryption on the queue so that malformed payloads are rejected by SQS before a consumer receives them."
+    - "Configure a redrive policy on the source queue with a maxReceiveCount that sends repeat failures to a dead-letter queue."
+  correct: [B, E]
+  why: "A dead-letter queue plus a redrive policy is the standard poison-message pattern: SQS tracks the receive count and, once it exceeds maxReceiveCount, moves the message to the DLQ where it is retained for investigation instead of cycling forever. Not \"Reduce the visibility timeout on the source queue so failing messages...\": A shorter visibility timeout makes the message reappear faster, which increases the reprocessing rate rather than stopping it. Not \"Switch the source queue to FIFO so that a failing message blocks its...\": FIFO would make matters worse: a poison message blocks its entire message group until it is removed or expires. Not \"Enable server-side encryption on the queue so that malformed payloads...\": Encryption protects data at rest and has no bearing on whether a payload is well formed."
+  ref: "Question res-058 (Decoupling with SQS) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-059
+  kind: choice
+  en: "A payments company runs an active deployment behind an Application Load Balancer in eu-west-1 and a passive, permanently running copy behind an ALB in us-east-1. All traffic should reach eu-west-1 while it is healthy, and move to us-east-1 automatically within a few minutes if the primary becomes unavailable. Traffic must return to eu-west-1 once it recovers. Which Route 53 configuration meets this requirement?"
+  options:
+    - "Latency-based routing with a record for each Region, so that clients are always sent to whichever endpoint currently responds fastest."
+    - "Multivalue answer routing returning both ALB addresses, with health checks so unhealthy endpoints are omitted from the response."
+    - "Failover routing with eu-west-1 as primary and us-east-1 as secondary, each with a health check."
+    - "Weighted routing with the eu-west-1 record at weight 100 and the us-east-1 record at weight 0, adjusted manually during an incident."
+  correct: [C]
+  why: "Failover routing expresses exactly this active-passive intent. Route 53 returns the primary while its health check passes and switches to the secondary when it fails, reverting automatically on recovery. Health check interval and threshold determine how quickly that happens. Not \"Latency-based routing with a record for each Region, so that clients...\": Latency routing optimises for proximity, so European clients could be sent to us-east-1 whenever it happens to be faster, which is not active-passive. Not \"Weighted routing with the eu-west-1 record at weight 100 and the...\": A weight of zero does suppress traffic, but changing weights during an incident is a manual step and the requirement was automatic failover. Not \"Multivalue answer routing returning both ALB addresses, with health...\": Multivalue answer returns several healthy records for client-side selection. It spreads traffic rather than preferring one Region."
+  ref: "Question res-059 (Route 53 routing policies) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-060
+  kind: choice
+  en: "A gaming company serves players in Europe and North America from a single Region. Player profile data lives in an Amazon DynamoDB table, and the company wants players on both continents to read and write their profiles with single-digit millisecond latency. The design must also keep the service available if one Region becomes unreachable. Which approach meets these requirements?"
+  options:
+    - "Enable point-in-time recovery on the table and restore it into the second Region whenever a Regional failure is detected."
+    - "Keep the single table and create cross-Region read replicas of it, promoting a replica if the primary Region becomes unreachable."
+    - "Convert the table to a DynamoDB global table with a replica in each of the two Regions."
+    - "Keep the single table and add DynamoDB Accelerator clusters in both Regions so that reads and writes are served from the local cache."
+  correct: [C]
+  why: "Global tables give a multi-active replica in each selected Region with last-writer-wins conflict resolution, so players read and write locally at low latency, and the surviving replica continues serving if a Region is lost. Not \"Keep the single table and add DynamoDB Accelerator clusters in both...\": DAX accelerates reads only and must sit in the same Region as the table, so remote writes still cross the ocean and a Regional failure still takes the table out. Not \"Keep the single table and create cross-Region read replicas of it...\": DynamoDB has no cross-Region read replica construct; replication between Regions is what global tables provide. Not \"Enable point-in-time recovery on the table and restore it into the...\": Point-in-time recovery is a backup mechanism. Restoring a table takes far longer than a failover and loses recent writes."
+  ref: "Question res-060 (Multi-AZ vs multi-Region design) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-061
+  kind: choice
+  en: "An Auto Scaling group sits behind an Application Load Balancer. A memory leak causes the application process on some instances to stop answering HTTP requests while the operating system continues running normally. The load balancer stops sending those instances traffic, but the Auto Scaling group leaves them in service and capacity quietly degrades. What should the architect change?"
+  options:
+    - "Set the Auto Scaling group's health check type to ELB rather than EC2."
+    - "Add a target tracking scaling policy on average CPU utilisation so the group launches replacements when throughput drops."
+    - "Shorten the load balancer's health check interval and lower its unhealthy threshold so failures are detected sooner."
+    - "Enable instance scale-in protection on the group so that healthy instances are never terminated during a scaling event."
+  correct: [A]
+  why: "By default an Auto Scaling group uses EC2 status checks, which pass as long as the instance and its hypervisor are healthy. Switching the health check type to ELB makes the group act on the load balancer's application-level result and replace instances failing it. Not \"Shorten the load balancer's health check interval and lower its...\": Faster detection changes only how quickly the load balancer stops routing; the Auto Scaling group still never replaces the instance. Not \"Add a target tracking scaling policy on average CPU utilisation so...\": A CPU-based policy may add capacity but leaves the broken instances in the group consuming cost and skewing metrics. Not \"Enable instance scale-in protection on the group so that healthy...\": Scale-in protection prevents termination, which is the opposite of what is needed here."
+  ref: "Question res-061 (Auto Scaling and health checks) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-062
+  kind: choice
+  en: "A reporting workload issues heavy read-only queries against an Amazon RDS for MySQL instance that also serves a transactional application. The queries slow down order processing during business hours. The company additionally requires that the database survive the loss of an Availability Zone with automatic failover and no data loss. Which combination meets both requirements?"
+  options:
+    - "Enable Multi-AZ and direct the reporting queries at the standby instance in the second Availability Zone."
+    - "Enable Multi-AZ and add a read replica, pointing reporting at the replica endpoint."
+    - "Increase the instance class and enable Performance Insights to identify and tune the slow reporting queries."
+    - "Add two read replicas in different Availability Zones and promote one automatically if the primary instance fails."
+  correct: [B]
+  why: "Multi-AZ maintains a synchronous standby and fails over automatically, giving zero data loss for zone failure. A read replica is asynchronous and separately addressable, so reporting can be pointed at it and stops competing with transactions. Not \"Add two read replicas in different Availability Zones and promote one...\": Read replicas replicate asynchronously, so promoting one can lose recent transactions, and promotion is not automatic. Not \"Enable Multi-AZ and direct the reporting queries at the standby...\": The Multi-AZ standby is not readable in RDS for MySQL; it exists purely for failover. Not \"Increase the instance class and enable Performance Insights to...\": A larger instance may mask the contention for a while but adds no availability, and the requirement for automatic failover is unmet."
+  ref: "Question res-062 (RDS Multi-AZ vs read replicas) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-063
+  kind: choice
+  en: "An insurer must be able to recover its core platform in a second Region within 15 minutes of a Regional failure, losing no more than one minute of data. The platform is a stateless web tier on EC2 plus an Amazon Aurora MySQL cluster. Finance will fund a scaled-down permanent footprint in the second Region but not a full duplicate. Which strategy fits?"
+  options:
+    - "Pilot light: an Aurora global database secondary with the web tier defined in CloudFormation and launched only when failover is declared."
+    - "Multi-site active-active: full production capacity running in both Regions with traffic split between them at all times."
+    - "Backup and restore: automated Aurora snapshots copied to the second Region and infrastructure rebuilt from templates on declaration."
+    - "Warm standby: an Aurora global database with a secondary cluster, plus a reduced always-on web tier scaled up at failover."
+  correct: [D]
+  why: "Aurora global database replicates with typical lag under a second, satisfying the one-minute RPO. A warm standby keeps a reduced web tier already running, so recovery is a scale-out and a DNS change rather than a cold build, which fits inside 15 minutes at partial cost. Not \"Pilot light: an Aurora global database secondary with the web tier...\": Pilot light keeps the data layer warm but launches compute from nothing, and provisioning plus application start-up typically overruns a 15-minute RTO. Not \"Backup and restore: automated Aurora snapshots copied to the second...\": Snapshot restore of an Aurora cluster takes far longer than 15 minutes and the snapshot interval breaches the one-minute RPO. Not \"Multi-site active-active: full production capacity running in both...\": Active-active would meet the objectives comfortably but is the full duplicate cost that finance declined."
+  ref: "Question res-063 (Disaster recovery strategies) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-064
+  kind: choice
+  en: "A media company must keep a copy of every object uploaded to a bucket in eu-west-1 in a second Region for disaster recovery, and compliance requires that 99.99 per cent of new objects replicate within 15 minutes with a report proving it. Existing objects uploaded before the requirement must also be copied. What should the architect configure?"
+  options:
+    - "Cross-Region Replication with default settings, relying on replication metrics in Amazon CloudWatch to evidence the timings."
+    - "A scheduled AWS DataSync task that copies the bucket to the destination Region every 15 minutes and reports on transferred files."
+    - "S3 Same-Region Replication to a second bucket, then a lifecycle rule transitioning those objects to the second Region."
+    - "Cross-Region Replication with S3 Replication Time Control enabled, plus a one-off S3 Batch Replication job for the existing objects."
+  correct: [D]
+  why: "Replication Time Control carries an SLA to replicate 99.99 per cent of objects within 15 minutes and publishes the metrics and events that evidence it. Replication applies only to objects written after it is enabled, so Batch Replication handles the existing ones. Not \"Cross-Region Replication with default settings, relying on...\": Default replication is best-effort with no time commitment, so it cannot satisfy a contractual 15-minute requirement. Not \"A scheduled AWS DataSync task that copies the bucket to the...\": A 15-minute batch cycle means an object uploaded just after a run waits almost a full cycle, and DataSync provides no such SLA. Not \"S3 Same-Region Replication to a second bucket, then a lifecycle rule...\": Same-Region Replication copies within one Region, and lifecycle rules change storage class rather than move objects between Regions."
+  ref: "Question res-064 (S3 durability and replication) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-065
+  kind: choice
+  en: "A web application stores session state in memory on each EC2 instance behind an Application Load Balancer, which forces sticky sessions. When the Auto Scaling group removes an instance during scale-in, users on that instance are logged out and lose their shopping baskets. The team wants scale-in to be transparent to users and sub-millisecond session lookups. What should they do?"
+  options:
+    - "Store session state in an Amazon RDS table read by every instance, keeping sticky sessions as a fallback."
+    - "Enable scale-in protection on all instances so the Auto Scaling group never terminates one carrying sessions."
+    - "Move session state to an Amazon ElastiCache for Redis cluster shared by all instances and disable sticky sessions."
+    - "Enable connection draining on the target group so in-flight sessions complete before an instance is removed."
+  correct: [C]
+  why: "Externalising session state makes the instances genuinely stateless, so any instance can serve any request and termination is invisible to users. ElastiCache for Redis provides the sub-millisecond lookups a per-request session read demands. Not \"Enable connection draining on the target group so in-flight sessions...\": Draining lets existing connections finish but the session still disappears with the instance, so the user is logged out on their next request. Not \"Store session state in an Amazon RDS table read by every instance...\": A relational database can hold sessions but adds milliseconds per request and puts transactional load on a database sized for business data. Not \"Enable scale-in protection on all instances so the Auto Scaling group...\": Blocking scale-in defeats Auto Scaling and simply defers the problem to the next instance replacement or failure."
+  ref: "Question res-065 (Stateless application design) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-066
+  kind: choice
+  en: "An operations team is paged whenever a single CloudWatch alarm on request latency breaches, but most pages are transient spikes that resolve unaided. They want to be paged only when raised latency coincides with a genuine rise in application errors, and they do not want to build an alerting service of their own. What should the architect configure?"
+  options:
+    - "A CloudWatch composite alarm whose rule requires both the latency alarm and the error-rate alarm to be in ALARM before notifying."
+    - "An increased datapoints-to-alarm setting on the latency alarm so that brief spikes no longer trigger a notification."
+    - "A metric math expression dividing errors by requests, with a single alarm on the resulting ratio and a longer evaluation period."
+    - "An EventBridge rule matching alarm state-change events, with a Lambda function that correlates the two alarms before paging."
+  correct: [A]
+  why: "Composite alarms exist for this: a rule combines child alarm states with AND, OR and NOT, and only the composite sends the notification. Nothing has to be built or maintained, and the child alarms remain individually visible. Not \"A metric math expression dividing errors by requests, with a single...\": An error-ratio alarm ignores latency entirely, so it does not express the coincidence the team described. Not \"An EventBridge rule matching alarm state-change events, with a Lambda...\": This works but means writing and operating correlation code, which is exactly the custom alerting service they wanted to avoid. Not \"An increased datapoints-to-alarm setting on the latency alarm so that...\": Requiring more datapoints suppresses short spikes but still pages for sustained latency with no errors."
+  ref: "Question res-066 (Monitoring and alarms with CloudWatch) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-res-067
+  kind: choice
+  en: "An Aurora MySQL cluster serves a payments service from a writer and two readers spread across three Availability Zones. During a recent failover the application continued sending writes to the old writer's instance endpoint and failed for several minutes until it was restarted. The team wants failover to be handled without application restarts or code that tracks which instance is writer. What should they change?"
+  options:
+    - "Add a third reader instance so that Aurora has more candidates available when it selects a new writer."
+    - "Point the application at the reader endpoint, which load-balances across the available instances in the cluster."
+    - "Reduce the DNS time-to-live on the instance endpoint so clients pick up the new writer address sooner."
+    - "Point the application at the cluster endpoint, which always resolves to the current writer after a failover."
+  correct: [D]
+  why: "The cluster endpoint is the writer endpoint: Aurora repoints it at whichever instance holds the writer role, so an application using it follows a failover automatically. Instance endpoints address one specific instance and never move. Not \"Point the application at the reader endpoint, which load-balances...\": The reader endpoint distributes read-only connections and rejects writes, so a payments service could not use it for transactions. Not \"Reduce the DNS time-to-live on the instance endpoint so clients pick...\": Lowering TTL on an instance endpoint does not help, because that endpoint continues to point at the same instance regardless of role. Not \"Add a third reader instance so that Aurora has more candidates...\": More readers shorten nothing about how the application discovers the writer; the endpoint choice is the problem."
+  ref: "Question res-067 (Aurora high availability) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]

@@ -257,3 +257,646 @@
   why: "EBS Snapshots Archive costs much less to store, for snapshots kept 90 days or more and rarely restored; restores take up to 72 hours."
   ref: "Amazon EBS User Guide: Archive Amazon EBS snapshots"
   exams: [saa]
+
+- id: rm-saa-cost-001
+  kind: choice
+  en: "A company stores 90 TB of analytics exports in S3 Standard. Access patterns are genuinely unpredictable: some objects are read daily for months, others are never read again, and the pattern changes without notice. The team wants automatic cost reduction without risking retrieval delays or writing lifecycle logic. Which storage class should they use?"
+  options:
+    - "S3 One Zone-IA with Cross-Region Replication for durability."
+    - "S3 Standard-IA, with a lifecycle rule moving objects back to Standard when accessed."
+    - "S3 Glacier Flexible Retrieval with expedited retrievals enabled."
+    - "S3 Intelligent-Tiering."
+  correct: [D]
+  why: "S3 Intelligent-Tiering is designed precisely for unpredictable or unknown access patterns. It moves objects between frequent and infrequent access tiers automatically based on observed access, charges a small per-object monitoring fee, and imposes no retrieval fees or delays in those tiers. Not \"S3 Standard-IA, with a lifecycle rule moving objects back to Standard...\": Standard-IA charges a retrieval fee and a 30-day minimum duration; frequently read objects would become more expensive, and lifecycle rules cannot move objects back on access. Not \"S3 Glacier Flexible Retrieval with expedited retrievals enabled\": Glacier Flexible Retrieval introduces retrieval time and fees, which the requirement rules out for objects that may be read daily. Not \"S3 One Zone-IA with Cross-Region Replication for durability\": One Zone-IA stores data in a single AZ, and adding replication to compensate reintroduces the cost the design was meant to save."
+  ref: "Question cost-001 (S3 storage class selection) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-002
+  kind: choice
+  en: "A company runs a steady baseline of 40 EC2 instances continuously, plus a nightly batch job on 200 instances that can be interrupted and restarted safely. Management wants the lowest total compute cost over the next three years while retaining the freedom to change instance families as the platform evolves. Which purchasing combination should the architect recommend?"
+  options:
+    - "Compute Savings Plans for the 40-instance baseline and Spot Instances for the nightly batch."
+    - "Standard Reserved Instances for all 240 instances."
+    - "On-Demand for the baseline and Convertible Reserved Instances for the batch."
+    - "Dedicated Hosts for the baseline and On-Demand for the batch."
+  correct: [A]
+  why: "The baseline is predictable and always running, so a Compute Savings Plan buys a deep discount while remaining flexible across instance family, size, Region, and even Fargate and Lambda — matching the requirement to change families later. The batch is interruption-tolerant, which is the textbook case for Spot Instances and their far larger discount. Not \"Standard Reserved Instances for all 240 instances\": Standard RIs lock you to an instance family, conflicting with the flexibility requirement, and committing to 200 batch instances wastes the discount on capacity used only a few hours a night. Not \"On-Demand for the baseline and Convertible Reserved Instances for the...\": This inverts the correct mapping: the steady baseline is what deserves a commitment, and reserving capacity for an interruptible nightly job is wasteful. Not \"Dedicated Hosts for the baseline and On-Demand for the batch\": Dedicated Hosts are the most expensive option and are chosen for licensing or compliance isolation, not cost optimisation."
+  ref: "Question cost-002 (Compute pricing models) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-003
+  kind: choice
+  en: "A cost review reveals a large monthly charge for NAT gateway data processing. Investigation shows that the traffic is EC2 instances in private subnets across three AZs pulling several terabytes of objects per day from an S3 bucket in the same Region. What is the most effective change?"
+  options:
+    - "Replace the NAT gateways with NAT instances on t4g.micro."
+    - "Create a gateway VPC endpoint for S3 so the traffic bypasses the NAT gateway entirely."
+    - "Enable S3 Requester Pays on the bucket."
+    - "Consolidate to a single NAT gateway shared by all three AZs."
+  correct: [B]
+  why: "In-Region traffic to S3 does not need a NAT gateway at all. A gateway VPC endpoint routes it privately, carries no hourly or per-GB charge, and removes both the NAT data-processing fee and the associated data-transfer charge for that traffic. This is the single highest-impact change. Not \"Consolidate to a single NAT gateway shared by all three AZs\": One NAT gateway saves two hourly charges but leaves the per-GB processing fee — the dominant cost here — untouched, and it introduces cross-AZ data transfer charges plus an AZ-level single point of failure. Not \"Replace the NAT gateways with NAT instances on t4g.micro\": NAT instances shift the cost to EC2 and become a throughput bottleneck at terabytes per day, while adding patching and HA burden. Not \"Enable S3 Requester Pays on the bucket\": Requester Pays moves the bill to the requester, who in this case is the same company; it does not reduce total cost."
+  ref: "Question cost-003 (Data transfer and NAT cost) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-004
+  kind: choice
+  en: "An internal API receives about 60,000 requests per month, arriving in short bursts during business hours and none overnight. It currently runs on two m5.large EC2 instances behind an ALB, sized for peak. Each request completes in roughly 200 ms. What is the most cost-effective architecture?"
+  options:
+    - "Keep the EC2 instances but purchase three-year Standard Reserved Instances."
+    - "Move to a single larger EC2 instance and remove the load balancer."
+    - "Move the API to ECS on Fargate with a minimum of two always-running tasks."
+    - "Move the API to AWS Lambda behind Amazon API Gateway."
+  correct: [D]
+  why: "The workload is low volume, spiky, and idle for large parts of the day, with short execution times — the profile Lambda's per-request, per-millisecond billing suits best. At roughly 60,000 short invocations a month the compute cost is negligible, and nothing is paid for the overnight idle period. Not \"Move the API to ECS on Fargate with a minimum of two always-running...\": Fargate with two always-running tasks still bills continuously for idle capacity overnight; it removes instance management but not the idle cost. Not \"Keep the EC2 instances but purchase three-year Standard Reserved...\": A three-year commitment locks in payment for capacity that is unused most of the time, optimising the price of the wrong architecture. Not \"Move to a single larger EC2 instance and remove the load balancer\": A single instance removes redundancy and still runs, and bills, 24 hours a day for a workload used a few hours a day."
+  ref: "Question cost-004 (Serverless vs container cost) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-005
+  kind: choice
+  en: "A regulated firm must retain audit logs in S3 for seven years. Logs are queried frequently during their first 30 days, occasionally for the rest of the first year, and after that only during a rare audit where a 12-hour retrieval window is acceptable. Which lifecycle configuration minimises cost?"
+  options:
+    - "Standard for 30 days, then Standard-IA until day 365, then Glacier Deep Archive until expiry at seven years."
+    - "Standard for 30 days, then Glacier Instant Retrieval for seven years."
+    - "Standard-IA immediately, then Glacier Flexible Retrieval after one year."
+    - "Intelligent-Tiering for the full seven years with no lifecycle rules."
+  correct: [A]
+  why: "The lifecycle should track the described access pattern. Standard covers the hot first 30 days, Standard-IA suits occasional access for the remainder of the year, and Glacier Deep Archive — the cheapest S3 storage — fits data touched only in a rare audit where a 12-hour standard retrieval is acceptable. Not \"Standard for 30 days, then Glacier Instant Retrieval for seven years\": Glacier Instant Retrieval costs more than Deep Archive and buys millisecond retrieval that the 12-hour tolerance makes unnecessary for six of the seven years. Not \"Standard-IA immediately, then Glacier Flexible Retrieval after one...\": Moving to Standard-IA immediately incurs retrieval fees during the frequently queried first 30 days, and Flexible Retrieval is more expensive than Deep Archive for the long tail. Not \"Intelligent-Tiering for the full seven years with no lifecycle rules\": Intelligent-Tiering avoids retrieval fees but pays per-object monitoring for seven years and, without archive access tiers configured, will not reach Deep Archive pricing for a fully predictable pattern."
+  ref: "Question cost-005 (Lifecycle policies and archival) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-006
+  kind: choice
+  en: "A CFO asks which EC2 instances across five linked accounts are consistently over-provisioned, and wants specific downsizing recommendations with projected savings, without installing third-party tooling. Which AWS capability should the architect use?"
+  options:
+    - "Amazon CloudWatch dashboards showing average CPU per instance."
+    - "AWS Config rules checking that instances match an approved instance-type list."
+    - "AWS Compute Optimizer, reviewed from the management account for the organisation."
+    - "AWS Budgets with an alert at 80 percent of forecast spend."
+  correct: [C]
+  why: "Compute Optimizer analyses utilisation metrics with machine learning and returns explicit right-sizing recommendations — including the suggested instance type and estimated savings — and can be enabled across an organisation so the management account sees all linked accounts. Not \"Amazon CloudWatch dashboards showing average CPU per instance\": CloudWatch shows raw utilisation but produces no recommendation or savings projection; the analysis would be manual. Not \"AWS Budgets with an alert at 80 percent of forecast spend\": Budgets alerts on spend thresholds; it says nothing about which instances are oversized. Not \"AWS Config rules checking that instances match an approved...\": Config enforces configuration compliance against rules you define; it does not evaluate utilisation or recommend sizes."
+  ref: "Question cost-006 (Right-sizing and cost visibility) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-007
+  kind: choice
+  en: "Development and test environments consisting of EC2 instances and RDS databases run 24 hours a day but are only used between 08:00 and 19:00 on weekdays. The team wants to cut the cost of these environments with minimal engineering effort and no change to the environments themselves. What should they do?"
+  options:
+    - "Reduce the instance sizes by one step across all development resources."
+    - "Purchase one-year Reserved Instances for the development environments."
+    - "Use AWS Systems Manager to stop the instances and databases outside working hours on a schedule."
+    - "Move the development environments to Spot Instances."
+  correct: [C]
+  why: "Non-production environments used 55 hours out of 168 per week are idle roughly two-thirds of the time. Scheduling automated stop and start with Systems Manager eliminates compute charges during idle hours with no architectural change, and stopped EC2 and RDS instances do not incur instance-hour charges. Not \"Purchase one-year Reserved Instances for the development environments\": Reserved Instances commit to paying for capacity around the clock, which is the opposite of what a part-time environment needs. Not \"Move the development environments to Spot Instances\": Spot can be cheap but interruptions disrupt developers mid-task, and it does not address the fundamental problem of paying for idle hours. Not \"Reduce the instance sizes by one step across all development...\": Downsizing yields a modest, one-off saving while still paying 24 hours a day for environments used a third of the time."
+  ref: "Question cost-007 (Environment scheduling and idle resources) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-008
+  kind: choice
+  en: "An audit finds 12 TB of EBS snapshots, many years old, and 4 TB of unattached gp2 volumes left behind by terminated instances. The company wants to reduce storage spend while keeping a defensible retention policy for snapshots going forward. Which combination should the architect implement?"
+  options:
+    - "Convert the unattached gp2 volumes to gp3 and keep all snapshots indefinitely for safety."
+    - "Move the snapshots to S3 Glacier Deep Archive using a lifecycle rule on the snapshot bucket."
+    - "Enable EBS encryption on all volumes, which compresses the data and reduces stored size."
+    - "Delete unattached volumes after verification, and use Amazon Data Lifecycle Manager to create and expire snapshots on a defined retention schedule."
+  correct: [D]
+  why: "Unattached volumes bill continuously for provisioned capacity and are pure waste once verified as unneeded. Data Lifecycle Manager automates snapshot creation and, crucially, deletion on a retention schedule, so old snapshots stop accumulating while the policy remains documented and enforceable. Not \"Convert the unattached gp2 volumes to gp3 and keep all snapshots...\": gp3 is cheaper per GiB, but an unattached volume delivers no value at any price, and keeping every snapshot forever is the behaviour that created the 12 TB problem. Not \"Move the snapshots to S3 Glacier Deep Archive using a lifecycle rule...\": Snapshots are stored in S3 managed by EBS; you do not have a bucket to apply lifecycle rules to. Snapshot Archive is the EBS-native tier for rarely used snapshots. Not \"Enable EBS encryption on all volumes, which compresses the data and...\": EBS encryption does not compress data and does not change the amount of storage billed."
+  ref: "Question cost-008 (EBS snapshot and volume cost) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-009
+  kind: choice
+  en: "A development Aurora PostgreSQL cluster is provisioned for peak load but is idle overnight and at weekends, and its usage during the day is unpredictable. The team wants capacity to follow demand automatically without managing instance classes. What should they use?"
+  options:
+    - "Aurora with storage auto-scaling enabled."
+    - "A smaller provisioned instance class with a read replica for peaks."
+    - "Reserved Instances covering the current provisioned capacity."
+    - "Aurora Serverless v2, with a low minimum and a suitable maximum capacity."
+  correct: [D]
+  why: "Aurora Serverless v2 scales capacity in fine-grained increments in response to load, so an unpredictable daytime workload is met without over-provisioning and idle periods scale down to the configured minimum. That matches the described pattern far better than sizing for peak. Not \"A smaller provisioned instance class with a read replica for peaks\": This still runs fixed capacity around the clock and adds a replica, increasing cost rather than following demand. Not \"Reserved Instances covering the current provisioned capacity\": Reserved Instances commit to paying for capacity continuously, which is the worst fit for a workload that is idle most of the week. Not \"Aurora with storage auto-scaling enabled\": Storage auto-scaling grows the storage layer as data grows; it has no effect on compute capacity or its cost."
+  ref: "Question cost-009 (Database cost optimization) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-010
+  kind: choice
+  en: "A finance team must attribute AWS spend to each of eight product teams sharing one account, and be alerted when any team's monthly spend exceeds its allocation. What should the architect set up?"
+  options:
+    - "A consistent cost allocation tag activated in the Billing console, with an AWS Budget filtered by that tag value per team."
+    - "AWS Compute Optimizer recommendations grouped by resource owner."
+    - "A separate AWS account per team, with consolidated billing."
+    - "AWS Cost Explorer reports reviewed manually at month end."
+  correct: [A]
+  why: "Cost allocation tags are the mechanism for splitting spend within an account, but they only appear in cost reports once activated in the Billing console. AWS Budgets can then be filtered by tag value, giving each team its own budget with threshold alerts. Not \"A separate AWS account per team, with consolidated billing\": Separate accounts are a clean way to divide spend and often the better long-term answer, but it is a substantial re-architecture rather than a reporting change, and the question keeps the shared account. Not \"AWS Cost Explorer reports reviewed manually at month end\": Cost Explorer shows the spend but a manual month-end review provides no alerting when a team goes over. Not \"AWS Compute Optimizer recommendations grouped by resource owner\": Compute Optimizer recommends right-sizing; it does not attribute spend to teams or alert on budgets."
+  ref: "Question cost-010 (Cost allocation tags and budgets) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-011
+  kind: choice
+  en: "A retail application's traffic follows a highly predictable daily curve: near zero from 01:00 to 06:00, climbing sharply from 08:00, and peaking every weekday between 12:00 and 14:00. The fleet is currently fixed at peak size. Which approach cuts cost while keeping the peak covered?"
+  options:
+    - "Scheduled scaling to set capacity ahead of the known daily pattern, combined with target tracking to handle variation around it."
+    - "Manual resizing of the Auto Scaling group each morning and evening."
+    - "Purchasing Reserved Instances for the full peak fleet size."
+    - "Target tracking scaling alone, with a low CPU target."
+  correct: [A]
+  why: "When demand is predictable, scheduled scaling puts capacity in place before it is needed rather than reacting after metrics rise, which avoids the lag inherent in reactive scaling. Layering target tracking on top absorbs day-to-day variation, so the two together cover the peak without paying for it overnight. Not \"Target tracking scaling alone, with a low CPU target\": Target tracking alone reacts only after load has already increased, so the sharp 08:00 climb is met late; a low target also keeps excess capacity running. Not \"Manual resizing of the Auto Scaling group each morning and evening\": Manual resizing is toil, does not happen reliably, and cannot respond if the pattern shifts. Not \"Purchasing Reserved Instances for the full peak fleet size\": Reservations reduce the rate paid but still commit to peak capacity 24 hours a day, so the idle overnight capacity is still bought."
+  ref: "Question cost-011 (Elastic scaling to match demand) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-012
+  kind: choice
+  en: "A cost review finds a large and growing spend on unused EBS volumes and old snapshots. The company wants the problem fixed and prevented from recurring, with the least ongoing operational overhead. What should they do?"
+  options:
+    - "Write a custom CDK application that monitors disk usage and shrinks volumes with Elastic Volumes."
+    - "Review CloudWatch metrics monthly and resize volumes by hand."
+    - "Delete the expired and unused snapshots and volumes, then use Amazon Data Lifecycle Manager to create and expire snapshots on a policy."
+    - "Delete all expired and unused snapshots using a scheduled AWS CLI script."
+  correct: [C]
+  why: "Deleting the existing waste addresses today's bill, and Data Lifecycle Manager prevents recurrence by managing snapshot creation and expiry on a schedule you define — a managed feature rather than code the team must maintain. Not \"Delete all expired and unused snapshots using a scheduled AWS CLI...\": A CLI script is a one-off clean-up unless someone maintains and schedules it, and it does nothing about newly created snapshots accumulating. Not \"Write a custom CDK application that monitors disk usage and shrinks...\": This is substantial custom code to own, and EBS Elastic Volumes cannot shrink a volume — only grow it. Not \"Review CloudWatch metrics monthly and resize volumes by hand\": Manual monthly review is exactly the ongoing overhead the requirement seeks to avoid, and it will lapse."
+  ref: "Question cost-012 (EBS snapshot and volume cost) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-013
+  kind: choice
+  en: "A retail website is migrating to AWS. Its transactional workload is intermittent, sporadic and genuinely unpredictable through the day. The company needs a relational database that scales up for surges and back down afterwards, at the lowest cost. What should be deployed?"
+  options:
+    - "An Amazon Redshift cluster with concurrency scaling."
+    - "A DynamoDB global table with auto scaling."
+    - "An Amazon Aurora Serverless cluster with a configured minimum and maximum capacity."
+    - "An Aurora provisioned cluster using burstable instance classes."
+  correct: [C]
+  why: "Aurora Serverless adjusts database capacity automatically in response to load and scales back down when the surge passes, so an unpredictable workload does not require provisioning for peak. Setting a capacity range bounds both performance and spend. Not \"An Aurora provisioned cluster using burstable instance classes\": Burstable instances rely on CPU credits and still run continuously at a fixed size; sustained surges exhaust credits and idle periods still cost money. Not \"An Amazon Redshift cluster with concurrency scaling\": Redshift is an analytics warehouse, not a transactional database. Not \"A DynamoDB global table with auto scaling\": DynamoDB is non-relational, and a global table adds cross-Region replication cost that the scenario does not call for."
+  ref: "Question cost-013 (Database cost optimization) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-014
+  kind: choice
+  en: "A batch process runs for about four hours every night, is fully fault tolerant, and can be stopped and resumed from a checkpoint at any point. The team wants the lowest possible compute cost. What should they run it on?"
+  options:
+    - "AWS Lambda functions invoked in parallel."
+    - "EC2 On-Demand Instances started and stopped by a schedule."
+    - "EC2 Spot Instances, with the job checkpointing so it can resume after an interruption."
+    - "Three-year Standard Reserved Instances sized for the job."
+  correct: [C]
+  why: "Spot capacity offers the steepest discount off On-Demand and is intended precisely for interruption-tolerant work. A job that checkpoints and resumes loses nothing when an instance is reclaimed, so the discount comes at no practical cost. Not \"EC2 On-Demand Instances started and stopped by a schedule\": On-Demand with a schedule avoids idle charges but pays full rate for every hour the job runs. Not \"AWS Lambda functions invoked in parallel\": Lambda caps a single invocation at 15 minutes, so a four-hour batch does not fit without substantial re-architecture. Not \"Three-year Standard Reserved Instances sized for the job\": A three-year commitment for four hours a night pays for roughly 20 hours of idle capacity every day."
+  ref: "Question cost-014 (Serverless vs container cost) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-015
+  kind: choice
+  en: "Log files are written to S3 and read heavily for the first week, occasionally during the following month, and then effectively never — though compliance requires keeping them for five years and they must be retrievable within 12 hours if an auditor asks. Which lifecycle configuration is cheapest?"
+  options:
+    - "Standard for 7 days, then Glacier Instant Retrieval for the remaining 5 years."
+    - "Intelligent-Tiering for the full 5 years."
+    - "Standard-IA immediately, then Glacier Flexible Retrieval after 37 days."
+    - "Standard for 7 days, Standard-IA to day 37, then Glacier Deep Archive until expiry at 5 years."
+  correct: [D]
+  why: "The lifecycle should follow the access pattern. Standard covers the hot first week, Standard-IA suits the occasional access over the following month, and Deep Archive — the cheapest storage class — fits data that is effectively never read, since its standard retrieval completes within 12 hours. Not \"Standard for 7 days, then Glacier Instant Retrieval for the remaining...\": Glacier Instant Retrieval costs considerably more than Deep Archive and buys millisecond retrieval that the 12-hour tolerance makes unnecessary. Not \"Intelligent-Tiering for the full 5 years\": Intelligent-Tiering charges a monitoring fee per object for five years to solve unpredictability that does not exist here — this access pattern is entirely predictable. Not \"Standard-IA immediately, then Glacier Flexible Retrieval after 37...\": Moving to Standard-IA on day one incurs retrieval charges during the heavy first week, and Flexible Retrieval is more expensive than Deep Archive for the long tail."
+  ref: "Question cost-015 (S3 storage class selection) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-016
+  kind: choice
+  en: "A company runs a stable fleet of m6i instances in one Region and is confident the instance family will not change for three years. It wants the deepest possible discount on that steady usage. Which commitment should it choose?"
+  options:
+    - "On-Demand Capacity Reservations."
+    - "EC2 Instance Savings Plans committed to the m6i family in that Region."
+    - "Spot Instances with a capacity-optimised allocation strategy."
+    - "Compute Savings Plans."
+  correct: [B]
+  why: "EC2 Instance Savings Plans offer a larger discount than Compute Savings Plans in exchange for committing to a specific instance family in a specific Region. When the family genuinely will not change, that trade is worth taking; size, operating system and tenancy remain flexible within the family. Not \"Compute Savings Plans\": Compute Savings Plans are more flexible — across family, Region, Fargate and Lambda — but discount less deeply, so they are the wrong choice when the flexibility is not needed. Not \"On-Demand Capacity Reservations\": Capacity Reservations guarantee capacity in an Availability Zone; on their own they carry no discount at all. Not \"Spot Instances with a capacity-optimised allocation strategy\": Spot is for interruption-tolerant workloads, not a stable production fleet."
+  ref: "Question cost-016 (Compute pricing models) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-017
+  kind: choice
+  en: "A popular site serves large images and video directly from EC2 instances to users worldwide, and data transfer out to the internet dominates the bill. Which change reduces that cost most effectively?"
+  options:
+    - "Serve the static assets through Amazon CloudFront, whose data transfer out is cheaper and whose cached hits do not return to the origin."
+    - "Move the instances to a Region with lower compute prices."
+    - "Compress responses more aggressively on the instances."
+    - "Attach Elastic IP addresses to reduce per-request overhead."
+  correct: [A]
+  why: "CloudFront's data transfer out to the internet is priced lower than EC2's, and once an object is cached at an edge location subsequent requests are served without returning to the origin at all. For a static-heavy, globally distributed workload that is the largest available saving, and it improves latency too. Not \"Move the instances to a Region with lower compute prices\": Regional price differences apply mainly to compute; the dominant cost here is egress, and moving does not remove it. Not \"Compress responses more aggressively on the instances\": Compression helps at the margin and is worth doing, but it does not change the price per gigabyte or eliminate origin fetches. Not \"Attach Elastic IP addresses to reduce per-request overhead\": Elastic IPs are addresses, not a transfer discount; an unattached one actually incurs a charge."
+  ref: "Question cost-017 (Data transfer and NAT cost) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-018
+  kind: choice
+  en: "An audit of a bucket used for large uploads shows storage billed well above the total size of the visible objects. Many uploads are interrupted by unreliable client connections. What should the architect configure?"
+  options:
+    - "A lifecycle rule transitioning objects to S3 Standard-IA after 30 days."
+    - "S3 Intelligent-Tiering on the bucket."
+    - "S3 Versioning with a rule expiring noncurrent versions."
+    - "A lifecycle rule that aborts incomplete multipart uploads after a set number of days."
+  correct: [D]
+  why: "Parts of a multipart upload that never completes remain stored and billable but do not appear as objects, which is precisely the discrepancy described. A lifecycle rule with AbortIncompleteMultipartUpload cleans them up automatically after the configured number of days. Not \"A lifecycle rule transitioning objects to S3 Standard-IA after 30...\": Transitioning storage class changes the rate for visible objects and does nothing about invisible orphaned parts. Not \"S3 Versioning with a rule expiring noncurrent versions\": Noncurrent version expiry addresses old versions, which only exist if versioning is enabled — a different cause of hidden storage. Not \"S3 Intelligent-Tiering on the bucket\": Intelligent-Tiering optimises access-pattern costs for real objects and never touches incomplete uploads."
+  ref: "Question cost-018 (Lifecycle policies and archival) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-019
+  kind: choice
+  en: "Finance wants to be told automatically when spend deviates from its normal pattern — for example a service that suddenly costs three times its usual daily amount — rather than discovering it at month end. Setting a fixed threshold per service is not practical. What should be enabled?"
+  options:
+    - "An AWS Budget set at 100 percent of last month's total spend."
+    - "AWS Compute Optimizer recommendations reviewed weekly."
+    - "A daily Cost Explorer report emailed to the finance team."
+    - "AWS Cost Anomaly Detection with monitors and alert subscriptions."
+  correct: [D]
+  why: "Cost Anomaly Detection learns each service's normal spend pattern and alerts when actual spend deviates significantly, which is exactly the requirement when fixed thresholds per service are impractical. Monitors scope what is watched and subscriptions define who is alerted. Not \"An AWS Budget set at 100 percent of last month's total spend\": A single total-spend budget catches only aggregate overruns; a tripling in one small service can hide inside an unchanged total. Not \"A daily Cost Explorer report emailed to the finance team\": A daily report still requires someone to read and interpret it, and provides no notion of what is anomalous. Not \"AWS Compute Optimizer recommendations reviewed weekly\": Compute Optimizer recommends right-sizing for utilisation; it does not detect spend anomalies."
+  ref: "Question cost-019 (Right-sizing and cost visibility) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-020
+  kind: choice
+  en: "A cost review of a mostly dormant account finds several charges for resources nobody is using. Which TWO of the following continue to incur charges even when nothing is actively using them?"
+  options:
+    - "An Application Load Balancer that exists but receives no requests."
+    - "An empty S3 bucket."
+    - "An IAM role that is never assumed."
+    - "An Elastic IP address that is allocated but not associated with a running instance."
+    - "A stopped EC2 instance's instance hours."
+  correct: [A, D]
+  why: "Both are charged for existing rather than for being used. An idle or unassociated Elastic IP address incurs an hourly charge, and a load balancer bills an hourly rate for as long as it is provisioned regardless of traffic. Hunting these down is standard practice in a cost review. Not \"A stopped EC2 instance's instance hours\": A stopped instance stops accruing instance hours — though its attached EBS volumes continue to be billed. Not \"An empty S3 bucket\": S3 charges for stored data and requests, so an empty bucket costs nothing. Not \"An IAM role that is never assumed\": IAM roles, users and policies are free."
+  ref: "Question cost-020 (Environment scheduling and idle resources) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-028
+  kind: choice
+  en: "A pipeline writes temporary log files to Amazon S3 that are deleted after roughly 12 hours. The volume is unpredictable. Which storage class costs least for this pattern?"
+  options:
+    - "S3 Standard"
+    - "S3 Glacier Deep Archive"
+    - "S3 Standard-IA"
+    - "S3 One Zone-IA"
+  correct: [A]
+  why: "The infrequent-access and archive classes impose minimum storage durations — 30 days for Standard-IA and One Zone-IA, 180 days for Deep Archive — and an object deleted earlier is still billed for the full minimum. S3 Standard has no minimum duration, so 12 hours of data is billed as 12 hours. Not \"S3 Standard-IA\": Deleting after 12 hours still incurs the 30-day minimum charge, making it far more expensive than Standard for this pattern. Not \"S3 One Zone-IA\": One Zone-IA carries the same 30-day minimum, and it also stores data in a single Availability Zone. Not \"S3 Glacier Deep Archive\": Deep Archive has the lowest per-GB rate but a 180-day minimum, so 12-hour objects would be billed for 180 days."
+  ref: "Question cost-028 (S3 storage class selection) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-029
+  kind: choice
+  en: "A video transcoding fleet pulls jobs from a queue; if an instance disappears mid-job the message becomes visible again and another instance picks it up. The team wants to add temporary capacity to clear a large backlog as cheaply as possible, then release it. Which purchasing option fits?"
+  options:
+    - "Standard Reserved Instances"
+    - "Spot Instances"
+    - "On-Demand Instances"
+    - "Dedicated Instances"
+  correct: [B]
+  why: "The queue already makes the work interruption-tolerant — an interrupted job is simply redelivered — and the capacity is temporary. That is precisely the Spot use case, at the steepest discount off On-Demand, with a two-minute interruption notice. Not \"On-Demand Instances\": On-Demand works but costs substantially more for work that tolerates interruption. Not \"Standard Reserved Instances\": Reserved Instances commit for one or three years, which is absurd for capacity needed until a backlog clears. Not \"Dedicated Instances\": Dedicated Instances are the most expensive option and exist for licensing and isolation requirements."
+  ref: "Question cost-029 (Compute pricing models) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-030
+  kind: choice
+  en: "A company runs Multi-AZ RDS MySQL for its production, test and development environments, and Reserved EC2 web servers behind a load balancer that sit at 90 percent CPU. Which change reduces cost without affecting the availability or performance of mission-critical systems?"
+  options:
+    - "Remove the Elastic Load Balancer."
+    - "Replace the Reserved web server instances with On-Demand instances."
+    - "Run the development and test databases as Single-AZ deployments."
+    - "Replace the Reserved web server instances with Spot Instances."
+  correct: [C]
+  why: "Multi-AZ roughly doubles database cost by running a standby, and non-production environments rarely justify that. Dropping it for development and test cuts spend while leaving the production database, the web tier and availability untouched. Not \"Replace the Reserved web server instances with On-Demand instances\": On-Demand is more expensive than Reserved for steady long-running instances, so this increases cost. Not \"Replace the Reserved web server instances with Spot Instances\": Spot instances can be reclaimed at two minutes' notice, which is unacceptable for production web servers already running at 90 percent CPU. Not \"Remove the Elastic Load Balancer\": The load balancer provides the distribution and health checking the production tier depends on; removing it damages availability."
+  ref: "Question cost-030 (Database cost optimization) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-031
+  kind: choice
+  en: "A team is building an internal tool that must programmatically retrieve historical AWS usage costs for specific services and obtain forecasts of future spend. Which approach involves the least operational overhead?"
+  options:
+    - "Download Cost Explorer reports as CSV files and parse them, using AWS Budgets for forecasts."
+    - "Configure AWS Budgets to publish usage cost data to an Amazon SNS topic."
+    - "Call the AWS Cost Explorer API, paginating through the results."
+    - "Generate AWS Budgets reports and deliver them through an Amazon SQS queue."
+  correct: [C]
+  why: "Cost Explorer exposes an API for both historical cost and usage data and for forecasting, at whatever granularity is needed, with pagination for large result sets. A tool can consume it directly with no files to move or parse. Not \"Download Cost Explorer reports as CSV files and parse them, using AWS...\": Manually downloading and parsing CSVs is exactly the operational overhead an API removes, and it is not programmatic in any meaningful sense. Not \"Configure AWS Budgets to publish usage cost data to an Amazon SNS...\": Budgets notifies when a threshold is crossed; it is not a source of detailed cost and usage data. Not \"Generate AWS Budgets reports and deliver them through an Amazon SQS...\": Budgets does not produce the detailed dataset the tool needs, and routing it through a queue does not change that."
+  ref: "Question cost-031 (Right-sizing and cost visibility) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-032
+  kind: choice
+  en: "Transaction logs are written to an S3 bucket and are only useful for troubleshooting during the month after they are created, after which they should be removed automatically. What should be configured?"
+  options:
+    - "An S3 Lifecycle rule with an expiration action that deletes objects 30 days after creation."
+    - "CORS configuration on the bucket to enable monthly deletion."
+    - "An IAM policy that deletes objects older than 30 days."
+    - "A bucket policy that denies access to objects older than 30 days."
+  correct: [A]
+  why: "Lifecycle configuration supports expiration actions, where S3 deletes objects on your behalf once they reach the specified age. It is the native mechanism for time-based deletion and requires no code. Not \"A bucket policy that denies access to objects older than 30 days\": A bucket policy controls access, not object lifetime; the objects would remain and keep costing money. Not \"An IAM policy that deletes objects older than 30 days\": IAM policies grant or deny permissions. They cannot perform actions such as deleting objects. Not \"CORS configuration on the bucket to enable monthly deletion\": CORS governs cross-origin browser requests and has nothing to do with retention."
+  ref: "Question cost-032 (Lifecycle policies and archival) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-033
+  kind: choice
+  en: "EC2 instances are being moved into private subnets for compliance, and they exchange large volumes of data with Amazon S3 in the same Region. The company wants the lowest possible cost for this traffic. Which option should be chosen?"
+  options:
+    - "A transit gateway routed to Amazon S3."
+    - "An interface VPC endpoint for Amazon S3."
+    - "A gateway VPC endpoint for Amazon S3."
+    - "A NAT gateway in a public subnet."
+  correct: [C]
+  why: "Gateway endpoints for S3 carry no hourly charge and no per-GB processing charge, and they keep traffic on the AWS network. For in-Region S3 access from private subnets they are both the cheapest and the most private option. Not \"An interface VPC endpoint for Amazon S3\": Interface endpoints work and are private, but they bill per hour per endpoint and per GB processed, so they cost more than a gateway endpoint for the same traffic. Not \"A NAT gateway in a public subnet\": A NAT gateway bills hourly even when idle plus per GB processed, making it the most expensive of the workable options. Not \"A transit gateway routed to Amazon S3\": Transit Gateway connects VPCs and on-premises networks; S3 is not in a VPC, so it cannot be reached this way."
+  ref: "Question cost-033 (Data transfer and NAT cost) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-034
+  kind: choice
+  en: "An internal application runs on EC2 with an Amazon RDS for PostgreSQL database, and is used only during working hours on weekdays. The company wants to cut cost with minimal operational overhead. Which solution fits best?"
+  options:
+    - "Create a CloudWatch alarm on low CPU that invokes a Lambda function to stop the instances."
+    - "Purchase Reserved Instances for both EC2 and RDS."
+    - "Deploy the Instance Scheduler on AWS solution and configure start and stop schedules for the EC2 and RDS instances."
+    - "Purchase a Compute Savings Plan covering EC2 and RDS."
+  correct: [C]
+  why: "Instance Scheduler on AWS is a published CloudFormation solution that starts and stops EC2 and RDS instances on a schedule you define. For a weekday, working-hours application it removes roughly two-thirds of the running hours, and it is deployed rather than built. Not \"Purchase Reserved Instances for both EC2 and RDS\": Reserved Instances commit to paying around the clock, which forfeits the benefit for something running about 50 hours a week. Not \"Purchase a Compute Savings Plan covering EC2 and RDS\": Savings Plans likewise assume continuous usage, and Compute Savings Plans do not apply to RDS instances at all. Not \"Create a CloudWatch alarm on low CPU that invokes a Lambda function...\": Stopping on low CPU is a proxy for a schedule and a dangerous one — a quiet mid-morning could shut the database down during working hours."
+  ref: "Question cost-034 (Environment scheduling and idle resources) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-035
+  kind: choice
+  en: "A cost report shows a sharp rise in spending on io2 Block Express volumes attached to production instances. The team wants to right-size the volumes using real usage data, without application downtime. Which TWO actions achieve this?"
+  options:
+    - "Change volume size, type or provisioned performance with the EC2 ModifyVolume operation."
+    - "Create a CloudWatch billing alarm for EBS charges."
+    - "Apply an S3 Lifecycle policy to archive infrequently accessed backups."
+    - "Lower EBS performance through the EC2 ModifyInstanceAttribute operation."
+    - "Review IOPS and throughput metrics for the volumes with CloudWatch."
+  correct: [A, E]
+  why: "Right-sizing needs evidence and then a change. CloudWatch exposes the per-volume IOPS and throughput actually consumed, which shows how much provisioned performance is being paid for and not used. Elastic Volumes then applies the change through ModifyVolume while the volume stays attached and in service. Not \"Lower EBS performance through the EC2 ModifyInstanceAttribute...\": Instance attributes govern the instance, not the provisioned performance of an attached EBS volume. Not \"Apply an S3 Lifecycle policy to archive infrequently accessed backups\": S3 lifecycle rules apply to objects in S3 and have no effect on EBS spending. Not \"Create a CloudWatch billing alarm for EBS charges\": A billing alarm reports that costs rose. It provides no per-volume evidence and changes nothing."
+  ref: "Question cost-035 (EBS snapshot and volume cost) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-036
+  kind: choice
+  en: "A finance team wants to be alerted when spending on any service deviates from its normal pattern — for example a service that suddenly costs several times its usual daily amount — without setting a fixed threshold per service. Which option meets this?"
+  options:
+    - "Create a CloudWatch alarm on the EstimatedCharges metric."
+    - "Create a zero-spend budget template in AWS Budgets."
+    - "Use Cost Explorer with multi-year data at monthly granularity."
+    - "Create a cost monitor with AWS Cost Anomaly Detection and subscribe the team to its alerts."
+  correct: [D]
+  why: "Cost Anomaly Detection applies machine learning to each monitored dimension's spending history, accounting for seasonality and growth, and alerts only when actual spend deviates meaningfully. That is what removes the need for a hand-set threshold per service. Not \"Create a zero-spend budget template in AWS Budgets\": A zero-spend budget alerts when spending exceeds the Free Tier. It is a fixed threshold and unrelated to anomaly detection. Not \"Use Cost Explorer with multi-year data at monthly granularity\": Cost Explorer is for analysis after the fact and does not alert. Not \"Create a CloudWatch alarm on the EstimatedCharges metric\": An EstimatedCharges alarm fires on a fixed dollar threshold and cannot distinguish an anomaly from ordinary growth."
+  ref: "Question cost-036 (Right-sizing and cost visibility) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-037
+  kind: choice
+  en: "An Auto Scaling group is over-provisioned, and the manager wants capacity reduced without hurting performance. Which dynamic scaling policy keeps a chosen metric near a target and adjusts continuously?"
+  options:
+    - "Scheduled scaling."
+    - "Simple scaling."
+    - "Target tracking scaling."
+    - "Suspend and resume scaling processes."
+  correct: [C]
+  why: "Target tracking keeps a metric such as average CPU close to a value you choose, adding and removing capacity as load moves. That is what removes over-provisioning without the thresholds and cooldown delays of the older policy types. Not \"Simple scaling\": Simple scaling must wait out a cooldown after each activity before responding again, so it reacts more slowly and less precisely. Not \"Scheduled scaling\": Scheduled scaling suits predictable calendar patterns, not continuous right-sizing against actual load. Not \"Suspend and resume scaling processes\": Suspending scaling processes pauses automation entirely, which is the opposite of the goal."
+  ref: "Question cost-037 (Elastic scaling to match demand) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-038
+  kind: choice
+  en: "Performance testing runs against a large MySQL RDS instance twice a week. Between tests the database is unused. What is the most cost-effective way to run the tests without compromising them?"
+  options:
+    - "Snapshot the database and delete the instance after each test, restoring from the snapshot when the next test is due."
+    - "Run the tests against a local copy taken with mysqldump."
+    - "Downgrade to a smaller instance class."
+    - "Stop the instance after each test and start it again when needed."
+  correct: [A]
+  why: "A stopped RDS instance still bills for its provisioned storage, and RDS restarts stopped instances automatically after seven days. Snapshotting and deleting leaves only the much cheaper snapshot storage between runs, and restoring reproduces the same instance for the next test. Not \"Stop the instance after each test and start it again when needed\": Stopping removes the instance-hour charge but keeps paying for storage, and the seven-day automatic restart means it will not stay stopped between weekly tests anyway. Not \"Downgrade to a smaller instance class\": A smaller instance changes the performance characteristics being measured, compromising the tests. Not \"Run the tests against a local copy taken with mysqldump\": A laptop does not reproduce RDS behaviour, so the results would not be trustworthy."
+  ref: "Question cost-038 (Database cost optimization) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-039
+  kind: choice
+  en: "An application on Reserved Instances has been decommissioned, and the company wants to stop paying for the reservations as quickly as possible. Which TWO actions should be taken?"
+  options:
+    - "Terminate the running instances so they are not billed at On-Demand rates when the reservation expires."
+    - "Stop the instances rather than terminating them."
+    - "Sell the reservations on the Amazon.com retail site."
+    - "List the Standard Reserved Instances for sale on the AWS Reserved Instance Marketplace."
+    - "Contact AWS to cancel the account subscription."
+  correct: [A, D]
+  why: "Standard Reserved Instances can be sold on the Reserved Instance Marketplace, which recovers value from the remaining term. The running instances should be terminated because once the reservation lapses they would bill at full On-Demand rates, and the workload is gone. Not \"Stop the instances rather than terminating them\": A stopped instance can be restarted and still carries charges for attached storage and any associated Elastic IP addresses. Not \"Contact AWS to cancel the account subscription\": Closing the whole account is drastic and unnecessary for retiring one application. Not \"Sell the reservations on the Amazon.com retail site\": Reservations are sold through the AWS Reserved Instance Marketplace, not the retail site."
+  ref: "Question cost-039 (Compute pricing models) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-040
+  kind: choice
+  en: "Easily reproducible files are read frequently for one month. After that, most are rarely read with no retrieval-time requirement, except those under a specific prefix which must still return in milliseconds. Which lifecycle design is cheapest?"
+  options:
+    - "After 30 days, move the objects under that prefix to S3 Standard-IA and everything else to Glacier."
+    - "After 30 days, move the whole bucket to S3 Standard-IA."
+    - "Move the whole bucket to S3 Intelligent-Tiering."
+    - "After 30 days, move the objects under that prefix to S3 One Zone-IA and everything else to Glacier."
+  correct: [D]
+  why: "Lifecycle rules can be scoped by prefix, so the millisecond-retrieval subset goes to an instant-access class while the rest goes to Glacier. Because the files are easily reproducible, One Zone-IA is acceptable and costs less than Standard-IA — losing an Availability Zone means regenerating rather than losing data. Not \"After 30 days, move the objects under that prefix to S3 Standard-IA...\": Standard-IA works but costs more than One Zone-IA, and the reproducibility of the data is exactly what makes the cheaper class safe here. Not \"After 30 days, move the whole bucket to S3 Standard-IA\": This leaves the rarely-read majority in an infrequent-access class when Glacier would be far cheaper. Not \"Move the whole bucket to S3 Intelligent-Tiering\": Intelligent-Tiering charges monitoring per object to discover an access pattern that is already known."
+  ref: "Question cost-040 (S3 storage class selection) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-041
+  kind: choice
+  en: "Audit logs must be retained for five years, and the compliance team requires that nobody — including administrators — can delete them before that. Which mechanism enforces this?"
+  options:
+    - "Store the logs in an S3 Glacier vault and apply a Vault Lock policy denying deletion until the retention period elapses."
+    - "Store the logs on an EBS volume and take monthly snapshots."
+    - "Store the logs in S3 with MFA Delete enabled on the bucket."
+    - "Store the logs on EFS and rely on NFSv4 file locking."
+  correct: [A]
+  why: "A Vault Lock policy becomes immutable once locked — it cannot be changed or removed even by the account owner, so a deny on deletion until the retention period elapses is genuinely enforceable against everyone. Not \"Store the logs in S3 with MFA Delete enabled on the bucket\": MFA Delete adds a factor but anyone holding the MFA device can still delete, so it is not an absolute control. Not \"Store the logs on an EBS volume and take monthly snapshots\": Anyone with EBS permissions can delete the volume and its snapshots. Not \"Store the logs on EFS and rely on NFSv4 file locking\": NFS file locking coordinates concurrent access; it is not a retention control and can be overridden."
+  ref: "Question cost-041 (Lifecycle policies and archival) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-042
+  kind: choice
+  en: "A Windows application with an attached FSx file system is stopped overnight to save money, but takes several minutes to become usable after each restart. How can start-up time be cut without raising cost materially?"
+  options:
+    - "Move the workload to an instance launched with hibernation enabled, so memory state is preserved between stops."
+    - "Disable the Instance Metadata Service to shorten boot."
+    - "Migrate the application to a Linux instance."
+    - "Enable hibernation on the existing running instance."
+  correct: [A]
+  why: "Hibernation writes the instance's memory contents to the root volume on stop and restores them on start, so applications resume where they left off instead of initialising from scratch. While hibernated you pay only for storage and any Elastic IP, so the overnight saving is preserved. Not \"Enable hibernation on the existing running instance\": Hibernation must be enabled at launch; it cannot be turned on for an instance that already exists. Not \"Migrate the application to a Linux instance\": Changing operating system is a large, risky change with no guarantee of faster start-up. Not \"Disable the Instance Metadata Service to shorten boot\": The Instance Metadata Service is a network endpoint, not a boot-time task, so disabling it saves nothing."
+  ref: "Question cost-042 (Environment scheduling and idle resources) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-043
+  kind: choice
+  en: "A analytics platform runs on EC2 instances in private subnets that reach Amazon S3 and Amazon DynamoDB through a NAT gateway. A cost review shows that NAT gateway data processing charges have become one of the three largest line items on the monthly bill, and almost all of the traffic is reads from an S3 bucket and queries against DynamoDB tables in the same Region. Which TWO changes reduce this cost MOST effectively? (Select TWO.)"
+  options:
+    - "Create a gateway VPC endpoint for Amazon S3 and add it to the private subnet route tables."
+    - "Move the EC2 instances into public subnets and assign each one an Elastic IP address so that they reach the services directly."
+    - "Replace the NAT gateway with a NAT instance on a smaller instance type, route all private subnet traffic through it, and add health checks so a failed instance is replaced automatically."
+    - "Create a gateway VPC endpoint for Amazon DynamoDB and associate it with those same route tables."
+    - "Enable S3 Transfer Acceleration on the bucket so that requests from the private subnets take a shorter network path."
+  correct: [A, D]
+  why: "Gateway endpoints for S3 and DynamoDB are free of charge and keep traffic to those services inside the AWS network, removing both the NAT gateway data processing charge and the associated data transfer for that traffic. Not \"Replace the NAT gateway with a NAT instance on a smaller instance...\": A NAT instance shifts cost to an instance you must patch, scale and make highly available, and it still processes the same traffic volume. Not \"Move the EC2 instances into public subnets and assign each one an...\": Placing analytics instances in public subnets undermines the security posture that motivated private subnets, and data transfer charges still apply. Not \"Enable S3 Transfer Acceleration on the bucket so that requests from...\": Transfer Acceleration is intended for long-distance uploads over the internet and adds a per-gigabyte premium, so it would raise cost rather than lower it."
+  ref: "Question cost-043 (Data transfer and NAT cost) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-044
+  kind: choice
+  en: "A software company runs a steady baseline of production workloads split across EC2 instances, AWS Fargate tasks and AWS Lambda functions. Over the next year the team expects to keep total compute spend roughly constant but to shift a growing share of it from EC2 to Fargate as services are containerised, and it may change instance families and Regions along the way. The company wants the largest discount it can commit to without constraining those changes. Which purchasing option should it choose?"
+  options:
+    - "Purchase one-year EC2 Instance Savings Plans covering the current instance families in the current Regions, and buy additional plans as workloads move to Fargate."
+    - "Run the baseline workloads on Spot Instances with a capacity-optimized allocation strategy and keep On-Demand capacity in reserve for interruptions."
+    - "Purchase a one-year Compute Savings Plan for the baseline hourly spend, which applies automatically across EC2, Fargate and Lambda regardless of instance family or Region."
+    - "Purchase one-year Standard Reserved Instances for the current EC2 footprint and rely on On-Demand pricing for the Fargate and Lambda usage."
+  correct: [C]
+  why: "Compute Savings Plans commit to an hourly spend rather than to specific resources and apply automatically across EC2, Fargate and Lambda, in any Region and any instance family. That preserves the flexibility to containerise and relocate workloads while still discounting the committed baseline. Not \"Purchase one-year EC2 Instance Savings Plans covering the current...\": EC2 Instance Savings Plans deliver a deeper discount but lock the commitment to an instance family in one Region, and they do not apply to Fargate or Lambda at all. Not \"Purchase one-year Standard Reserved Instances for the current EC2...\": Standard Reserved Instances are the least flexible option, cannot be applied to Fargate or Lambda, and would leave the growing container spend undiscounted. Not \"Run the baseline workloads on Spot Instances with a...\": Spot capacity can be reclaimed at short notice, which is unsuitable for a steady production baseline, and Spot is a capacity choice rather than a commitment discount."
+  ref: "Question cost-044 (Compute pricing models) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-045
+  kind: choice
+  en: "A finance team must produce a monthly chargeback report that breaks spend down to individual resource level across 30 accounts in an organization, joins it against internal project codes held in a separate system, and retains three years of history for auditors. Cost Explorer's granularity has proved insufficient. Which approach should the architect recommend?"
+  options:
+    - "Schedule monthly exports of Cost Explorer reports to CSV from each of the 30 accounts and combine them in a spreadsheet with the project codes."
+    - "Query the AWS Price List API for each resource type in use and multiply by resource counts collected from AWS Config."
+    - "Deliver the AWS Cost and Usage Report to Amazon S3 in Parquet and query it with Amazon Athena."
+    - "Create an AWS Budget per project with cost filters on the relevant tags, and use the budget reports as the chargeback record."
+  correct: [C]
+  why: "The Cost and Usage Report is the most granular billing data AWS publishes, down to the hour and the individual resource, covering every account in the organization. Delivered to S3 it can be queried with Athena and joined to any other dataset, and S3 handles the three-year retention cheaply. Not \"Schedule monthly exports of Cost Explorer reports to CSV from each of...\": Cost Explorer exports are aggregated, and repeating a manual process across 30 accounts every month is both error-prone and slow. Not \"Create an AWS Budget per project with cost filters on the relevant...\": Budgets are a forecasting and alerting tool. They do not produce a resource-level record suitable for chargeback or audit. Not \"Query the AWS Price List API for each resource type in use and...\": Price List data gives list prices, ignoring discounts, Savings Plans and actual usage, so the result would not reconcile to the bill."
+  ref: "Question cost-045 (Cost allocation tags and budgets) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-046
+  kind: choice
+  en: "A company stores 90 TB of customer documents in Amazon S3. Some documents are opened many times a week for years, while others are never opened again after the first fortnight, and the pattern for any given document cannot be predicted in advance. Every document must remain retrievable in milliseconds, and the team does not want to build or maintain analysis of access patterns. Which storage approach is MOST cost-effective?"
+  options:
+    - "Store documents in S3 Standard and run a monthly job that inspects S3 access logs and copies cold objects to S3 Glacier Instant Retrieval."
+    - "Store all documents in S3 Intelligent-Tiering and let it move each object between frequent and infrequent access tiers automatically."
+    - "Store documents in S3 Standard-IA from the outset, accepting the retrieval charge on the frequently opened documents."
+    - "Store documents in S3 Standard and add a lifecycle rule transitioning them to S3 Standard-IA after 30 days."
+  correct: [B]
+  why: "Intelligent-Tiering exists precisely for unpredictable access. It monitors each object and moves it between access tiers for a small per-object monitoring fee, with no retrieval charges and millisecond access in both frequent and infrequent tiers. Not \"Store documents in S3 Standard and add a lifecycle rule transitioning...\": A fixed 30-day rule penalises the documents that stay hot, since reading from Standard-IA incurs a per-gigabyte retrieval charge. Not \"Store documents in S3 Standard-IA from the outset, accepting the...\": Putting everything in Standard-IA immediately means paying retrieval charges on the busiest documents and a minimum 30-day storage duration. Not \"Store documents in S3 Standard and run a monthly job that inspects S3...\": This rebuilds what Intelligent-Tiering already does, adds a job to maintain, and copying objects changes their keys and modification times."
+  ref: "Question cost-046 (S3 storage class selection) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-047
+  kind: choice
+  en: "A studio renders video thumbnails in batches that arrive unpredictably. Each batch is a set of independent ECS tasks that take about fifteen minutes, and the studio is content for a task to be stopped and retried later, because the batch has no completion deadline beyond the end of the day. The studio wants the lowest possible compute cost and does not want to manage EC2 capacity. Which option should the architect choose?"
+  options:
+    - "Run each thumbnail conversion as an AWS Lambda function invoked in parallel for every item in the batch."
+    - "Run the tasks on ECS with the EC2 launch type on an Auto Scaling group of Spot Instances managed by the team."
+    - "Run the tasks on ECS using a Fargate Spot capacity provider, with a Fargate capacity provider as fallback for any interrupted task."
+    - "Run the tasks on ECS with the standard Fargate capacity provider and purchase a Compute Savings Plan sized to the average batch."
+  correct: [C]
+  why: "Fargate Spot offers a steep discount on spare capacity and suits interruptible, deadline-free work. Tasks may be reclaimed with a two-minute warning, which this workload tolerates, and no EC2 capacity has to be managed. Not \"Run the tasks on ECS with the standard Fargate capacity provider and...\": A Savings Plan discounts a committed baseline, but unpredictable batch arrivals make a commitment risky and it will not beat Spot pricing for interruptible work. Not \"Run the tasks on ECS with the EC2 launch type on an Auto Scaling...\": EC2 Spot can be cheaper still but reintroduces the instance fleet the studio said it does not want to manage. Not \"Run each thumbnail conversion as an AWS Lambda function invoked in...\": Lambda is billed per millisecond at a higher unit rate for sustained compute, and a fifteen-minute task sits at the very edge of its timeout."
+  ref: "Question cost-047 (Serverless vs container cost) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-048
+  kind: choice
+  en: "A cost review of a production fleet finds several hundred gp2 volumes, most sized well above the capacity actually used because the team had provisioned extra gigabytes purely to obtain the IOPS the applications needed. The team wants to lower storage spend while keeping at least the current performance, and cannot take the applications offline. Which TWO actions achieve this? (Select TWO.)"
+  options:
+    - "Enable EBS fast snapshot restore on the volumes so that read performance no longer depends on provisioned capacity."
+    - "Modify the volumes to io2 Block Express and provision the measured IOPS against a smaller capacity for each volume."
+    - "Take snapshots of each volume, delete the originals, and restore smaller volumes from the snapshots during a maintenance window."
+    - "Once on gp3, reduce provisioned IOPS and throughput to the levels the applications actually use, measured from CloudWatch."
+    - "Modify the volumes to gp3, which decouples IOPS and throughput from provisioned capacity."
+  correct: [D, E]
+  why: "gp3 provides a 3,000 IOPS and 125 MB/s baseline independent of size and is cheaper per gigabyte than gp2, so oversized volumes exist only to buy performance that gp3 supplies directly. Modification is online, and trimming provisioned performance to measured need removes the remaining premium. Not \"Modify the volumes to io2 Block Express and provision the measured...\": io2 Block Express is a high-durability, high-IOPS class priced well above gp3; moving general-purpose volumes to it would raise cost. Not \"Take snapshots of each volume, delete the originals, and restore...\": Volume size cannot be reduced by restoring a snapshot into a smaller volume, and the approach requires the downtime the team ruled out. Not \"Enable EBS fast snapshot restore on the volumes so that read...\": Fast snapshot restore speeds up volumes created from snapshots and has its own hourly charge; it does not change a volume's performance model."
+  ref: "Question cost-048 (EBS snapshot and volume cost) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-049
+  kind: choice
+  en: "A company has run the same 40 m5.xlarge instances in eu-west-1 continuously for two years and expects no change for at least another year. Finance wants the largest available discount and is willing to pay the full amount at the start of the term. The platform team confirms the instance family and Region are fixed by a vendor support agreement. Which purchase gives the deepest discount?"
+  options:
+    - "One-year all-upfront Convertible Reserved Instances, which allow the family to be exchanged later if the vendor agreement changes."
+    - "On-Demand Capacity Reservations for the 40 instances, combined with a Compute Savings Plan covering the reserved capacity."
+    - "A one-year all-upfront Compute Savings Plan sized to the same hourly spend, which also covers Fargate and Lambda usage elsewhere in the account."
+    - "A one-year all-upfront EC2 Instance Savings Plan committed to the m5 family in eu-west-1."
+  correct: [D]
+  why: "EC2 Instance Savings Plans and Standard RIs offer the deepest discounts because the commitment is narrowest — a specific family in a specific Region. Since the family and Region are contractually fixed, there is no value in paying for flexibility, and all-upfront maximises the discount. Not \"A one-year all-upfront Compute Savings Plan sized to the same hourly...\": Compute Savings Plans trade discount for flexibility across families, Regions and compute services, so the rate is lower than an Instance plan for the same commitment. Not \"One-year all-upfront Convertible Reserved Instances, which allow the...\": Convertible RIs discount less than Standard RIs or Instance Savings Plans precisely because they can be exchanged, and that flexibility is not needed here. Not \"On-Demand Capacity Reservations for the 40 instances, combined with a...\": Capacity Reservations guarantee capacity but carry no discount of their own; they bill at On-Demand rates unless a separate commitment applies."
+  ref: "Question cost-049 (Compute pricing models) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-050
+  kind: choice
+  en: "A three-tier application runs across three Availability Zones. The web tier calls the application tier through an internal Application Load Balancer, and monitoring shows a large and growing inter-Availability Zone data transfer charge. Availability requirements mean the application must keep running instances in all three zones. Which change reduces the charge while preserving that availability?"
+  options:
+    - "Disable cross-zone load balancing on the internal load balancer so that requests stay within the caller's Availability Zone."
+    - "Consolidate the application tier into a single Availability Zone and rely on rapid replacement if that zone becomes unavailable."
+    - "Replace the internal Application Load Balancer with a Network Load Balancer, which does not charge for data it processes."
+    - "Route the internal traffic through a NAT gateway in each Availability Zone so that flows stay zonal."
+  correct: [A]
+  why: "With cross-zone load balancing off, an internal ALB node sends requests only to targets in its own Availability Zone, so traffic no longer crosses zone boundaries and the inter-AZ charge falls. Instances remain in all three zones, so availability is unchanged. Not \"Consolidate the application tier into a single Availability Zone and...\": Collapsing the tier into one zone removes the inter-AZ charge but abandons the multi-zone availability requirement the question fixes. Not \"Replace the internal Application Load Balancer with a Network Load...\": NLB still bills for processed capacity, and switching type does not stop traffic crossing Availability Zones. Not \"Route the internal traffic through a NAT gateway in each Availability...\": NAT gateways handle outbound internet traffic from private subnets and add cost; they play no part in internal load-balanced calls."
+  ref: "Question cost-050 (Data transfer and NAT cost) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-051
+  kind: choice
+  en: "A software vendor runs 60 small Amazon Aurora PostgreSQL clusters, one per customer. Most see traffic only during their own business hours and sit idle overnight and at weekends, but a handful spike unpredictably. The vendor currently provisions every cluster for its peak and wants to stop paying for idle capacity without rewriting the application or managing capacity by hand. What should the architect recommend?"
+  options:
+    - "Consolidate the 60 clusters onto a small number of larger provisioned clusters, separating customers by schema."
+    - "Schedule a Lambda function to stop each cluster outside its customer's business hours and start it again each morning."
+    - "Migrate the clusters to Aurora Serverless v2 with a wide capacity unit range."
+    - "Purchase Reserved Instances for all 60 clusters based on the average capacity each one uses across the month."
+  correct: [C]
+  why: "Aurora Serverless v2 scales capacity in fine-grained increments in response to load and bills per ACU-second, so idle clusters cost little and spiky ones absorb bursts without pre-provisioning. The endpoint and SQL interface are unchanged, so the application is untouched. Not \"Purchase Reserved Instances for all 60 clusters based on the average...\": Reserved capacity commits to a fixed size, which still pays for the idle overnight hours and cannot absorb the unpredictable spikes. Not \"Consolidate the 60 clusters onto a small number of larger provisioned...\": Consolidation introduces noisy-neighbour risk between customers and is a substantial migration with tenancy implications. Not \"Schedule a Lambda function to stop each cluster outside its...\": Stopping an Aurora cluster still bills storage, the cluster restarts automatically after seven days, and this does nothing for the unpredictable spikes."
+  ref: "Question cost-051 (Database cost optimization) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-052
+  kind: choice
+  en: "An API currently runs as an AWS Lambda function behind Amazon API Gateway. Traffic has grown to a steady 400 requests per second around the clock, each invocation runs for roughly 700 milliseconds at 1 GB of memory, and the monthly bill has climbed sharply. The team is happy to containerise the handler if it lowers cost, and the workload is stateless. What should the architect evaluate first?"
+  options:
+    - "Adding an API Gateway cache so that repeated requests are served without invoking the function."
+    - "Switching the function to an ARM-based Graviton2 architecture and enabling Lambda SnapStart."
+    - "Moving the handler to ECS on Fargate with a Compute Savings Plan on the baseline."
+    - "Increasing the Lambda memory allocation so each invocation completes faster and the total billed duration falls."
+  correct: [C]
+  why: "Lambda's per-millisecond pricing is excellent for spiky or low-volume work but loses to container compute once load is high and continuous. At a sustained 400 requests per second the duty cycle is effectively constant, so long-running Fargate tasks with a Savings Plan on the baseline are the obvious comparison. Not \"Increasing the Lambda memory allocation so each invocation completes...\": More memory can reduce duration but raises the per-millisecond rate proportionally, so it rarely produces a large saving for a CPU-bound handler. Not \"Adding an API Gateway cache so that repeated requests are served...\": Caching helps only if requests repeat; nothing in the scenario suggests the responses are cacheable. Not \"Switching the function to an ARM-based Graviton2 architecture and...\": Graviton2 and SnapStart trim perhaps twenty per cent and cold starts respectively, which does not address the structural cost of constant load."
+  ref: "Question cost-052 (Serverless vs container cost) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-053
+  kind: choice
+  en: "A bank keeps trade confirmations in Amazon S3. Regulation requires them to be retained for seven years. In practice they are read constantly for the first 90 days, occasionally in the following nine months, and after that only if a regulator asks, in which case they may be produced within 12 hours. The bank wants the lowest storage cost consistent with those access patterns. Which lifecycle configuration should be used?"
+  options:
+    - "Standard for 90 days, then Standard-IA, then Glacier Deep Archive at one year, expiring at seven years."
+    - "Standard for 90 days, then One Zone-IA, then Glacier Instant Retrieval at one year, expiring at seven years."
+    - "Intelligent-Tiering from upload with the Deep Archive access tier enabled, expiring the objects at seven years."
+    - "Standard for 90 days, then Standard-IA, then Glacier Flexible Retrieval at one year, expiring at seven years."
+  correct: [D]
+  why: "Glacier Flexible Retrieval offers standard retrievals in three to five hours and bulk in five to twelve, both inside the 12-hour window, at a lower storage rate than Instant Retrieval. Standard then Standard-IA matches the first year's access profile. Not \"Standard for 90 days, then Standard-IA, then Glacier Deep Archive at...\": Deep Archive is cheaper to store but standard retrieval takes up to 12 hours and bulk up to 48, which risks breaching the deadline. Not \"Standard for 90 days, then One Zone-IA, then Glacier Instant...\": One Zone-IA keeps a single Availability Zone copy, which is inappropriate for regulated records, and Instant Retrieval costs more to store than the access pattern justifies. Not \"Intelligent-Tiering from upload with the Deep Archive access tier...\": Intelligent-Tiering charges a monitoring fee per object and its archive tiers must be restored anyway, so it adds cost without benefit for a known pattern."
+  ref: "Question cost-053 (Lifecycle policies and archival) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-054
+  kind: choice
+  en: "A cost review of a development account finds resources left running after project work finished. The team wants to identify and stop paying for anything genuinely unused, and wants recommendations rather than raw metrics. Which TWO AWS capabilities directly surface idle or unused resources for this purpose? (Select TWO.)"
+  options:
+    - "AWS CloudTrail data events recording every API call made against resources in the account."
+    - "AWS Compute Optimizer, which classifies EC2 instances, EBS volumes and Lambda functions as over-provisioned or idle with a recommended change."
+    - "AWS Budgets with a monthly cost budget and an alert threshold at 80 per cent of forecast spend for the account."
+    - "AWS Trusted Advisor cost optimization checks, which flag idle load balancers, unassociated Elastic IPs and low-utilisation instances."
+    - "Amazon CloudWatch dashboards showing CPU utilisation graphs for each running instance in the account."
+  correct: [B, D]
+  why: "Trusted Advisor and Compute Optimizer both produce explicit recommendations. Trusted Advisor's cost checks name idle load balancers, unattached addresses and under-used instances, while Compute Optimizer analyses utilisation and returns a recommended resource change with projected savings. Not \"AWS Budgets with a monthly cost budget and an alert threshold at 80...\": Budgets alerts on total spend against a threshold and never identifies which particular resource is idle. Not \"AWS CloudTrail data events recording every API call made against...\": CloudTrail records control-plane and data-plane calls for audit; deriving idleness from it would be a substantial analysis project. Not \"Amazon CloudWatch dashboards showing CPU utilisation graphs for each...\": Dashboards display raw metrics, leaving a human to decide what counts as idle, which is the manual work the team wants to avoid."
+  ref: "Question cost-054 (Environment scheduling and idle resources) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-055
+  kind: choice
+  en: "A company stores 3 PB across several hundred S3 buckets in 12 accounts. The storage team must find which prefixes hold objects that have not been read for over a year, compare storage class distribution across every bucket in the organization, and track those figures month on month. They want this without writing an inventory pipeline. Which service should they use?"
+  options:
+    - "Amazon S3 Inventory reports delivered daily to a central bucket and queried with Amazon Athena."
+    - "AWS Cost Explorer filtered by the S3 service with the usage type dimension broken out per account."
+    - "Amazon S3 Storage Lens with advanced metrics enabled and the organization-level dashboard turned on."
+    - "Amazon CloudWatch storage metrics for each bucket, aggregated into a cross-account dashboard."
+  correct: [C]
+  why: "Storage Lens is built for exactly this: an organization-wide view of usage and activity, with advanced metrics adding prefix-level detail, activity such as retrieval patterns, and month-on-month trending, all without building a pipeline. Not \"Amazon S3 Inventory reports delivered daily to a central bucket and...\": S3 Inventory does list objects and their storage classes, but assembling trend analysis across 12 accounts from it is the pipeline the team wants to avoid. Not \"AWS Cost Explorer filtered by the S3 service with the usage type...\": Cost Explorer reports spend by usage type, not which prefixes are cold or how storage classes are distributed per bucket. Not \"Amazon CloudWatch storage metrics for each bucket, aggregated into a...\": CloudWatch daily storage metrics give bucket size and object count only, with no prefix or activity detail."
+  ref: "Question cost-055 (Right-sizing and cost visibility) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-cost-056
+  kind: choice
+  en: "A genomics team runs nightly analysis jobs on Amazon EMR. Each job takes between two and six hours, checkpoints its progress every ten minutes, and can restart from the last checkpoint if a node disappears. The team wants the lowest compute cost and accepts that a run may occasionally take longer. How should the cluster be configured?"
+  options:
+    - "Run the entire cluster On-Demand and purchase an EC2 Instance Savings Plan covering the nightly window."
+    - "Run the core and task nodes on a diversified Spot fleet, keeping the primary On-Demand."
+    - "Run the entire cluster, including the primary node, on Spot Instances using a capacity-optimized allocation strategy."
+    - "Run the cluster on Reserved Instances sized to the largest nightly job so capacity is always guaranteed."
+  correct: [B]
+  why: "Task and core nodes are the bulk of an EMR cluster and suit Spot when work is checkpointed and restartable. Keeping the primary node On-Demand protects the cluster from being terminated outright, and a diversified instance fleet reduces the chance of simultaneous reclamation. Not \"Run the entire cluster, including the primary node, on Spot Instances...\": Losing the primary node to reclamation terminates the whole cluster and the job with it, which no amount of checkpointing recovers cheaply. Not \"Run the entire cluster On-Demand and purchase an EC2 Instance Savings...\": Savings Plans discount a committed hourly spend but cannot approach Spot pricing for interruption-tolerant batch work. Not \"Run the cluster on Reserved Instances sized to the largest nightly...\": Reserved Instances bill continuously, so a cluster running a few hours a night would pay for the twenty idle hours as well."
+  ref: "Question cost-056 (Compute pricing models) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]

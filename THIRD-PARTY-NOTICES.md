@@ -9,7 +9,7 @@ and explanations reformatted to fit learnbox's question format.
 |---|---|---|---|---|
 | [aws-saa-tips](https://github.com/BerkayCakibey/aws-saa-tips) | Berkay Cakibey | 0c2d2e8 | `content/aws/saa/05-open-bank` (325) | `open-saa-q001`... |
 | [aws-cloudops-engineer-associate](https://github.com/zghanw/aws-cloudops-engineer-associate) | zghanw | c2e7acc | `content/aws/soa/*` (325) | `zg-soa-...` |
-| [aws-trainer](https://github.com/renehmj/aws-trainer) | Reneh Majnounian | 842dc87 | `content/aws/dva/*` (8), `sap/*` (16), `dop/*` (17) | `rm-dva-...`, `rm-sap-...`, `rm-dop-...` |
+| [aws-trainer](https://github.com/renehmj/aws-trainer) | Reneh Majnounian | 842dc87 | `content/aws/saa/01-04` (229), `dva/*` (8), `sap/*` (16), `dop/*` (17) | `rm-saa-...`, `rm-dva-...`, `rm-sap-...`, `rm-dop-...` |
 
 All three are under the MIT licence, reproduced below with each copyright
 line.

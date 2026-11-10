@@ -310,3 +310,722 @@
   why: "A Network Load Balancer works at layer 4 for TCP and UDP, scales to millions of requests per second with ultra-low latency, and supports a static or Elastic IP address per AZ."
   ref: "Elastic Load Balancing User Guide: Network Load Balancers"
   exams: [saa]
+
+- id: rm-saa-perf-001
+  kind: choice
+  en: "A self-managed PostgreSQL instance on EC2 uses a 500 GiB gp2 volume and is saturating IOPS during month-end processing. The team measures a sustained requirement of 12,000 IOPS and 400 MB/s throughput, and wants the lowest-cost EBS volume that meets it without over-provisioning capacity. Which volume type should they choose?"
+  options:
+    - "Use a gp3 volume and provision 12,000 IOPS and 400 MB/s independently of the 500 GiB size."
+    - "Grow the gp2 volume to 4 TiB so it reaches the required baseline IOPS."
+    - "Use an st1 throughput-optimised HDD volume sized at 500 GiB."
+    - "Use two 500 GiB gp2 volumes in a RAID 0 stripe."
+  correct: [A]
+  why: "gp3 decouples performance from capacity: it starts at 3,000 IOPS and 125 MB/s and lets you provision up to 16,000 IOPS and 1,000 MB/s regardless of volume size. Provisioning exactly 12,000 IOPS and 400 MB/s on a 500 GiB gp3 volume meets the requirement without paying for unnecessary capacity, and gp3 is cheaper per GiB than gp2. Not \"Grow the gp2 volume to 4 TiB so it reaches the required baseline IOPS\": gp2 ties IOPS to size at 3 IOPS/GiB, so reaching 12,000 IOPS means paying for 4 TiB of unneeded capacity — the definition of over-provisioning. Not \"Use an st1 throughput-optimised HDD volume sized at 500 GiB\": st1 is a throughput-oriented HDD designed for large sequential workloads. Its IOPS characteristics are unsuitable for a transactional database. Not \"Use two 500 GiB gp2 volumes in a RAID 0 stripe\": RAID 0 across gp2 volumes doubles both cost and failure surface and is operationally complex compared with simply provisioning gp3 performance."
+  ref: "Question perf-001 (EBS volume type selection) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-002
+  kind: choice
+  en: "A gaming leaderboard on DynamoDB serves a read-heavy workload where the same few hundred items are requested constantly. Read capacity costs are climbing and the team needs to cut read latency from single-digit milliseconds to microseconds with no application rewrite beyond changing the client endpoint. What should they implement?"
+  options:
+    - "Switch the table to on-demand capacity mode."
+    - "A global secondary index on the leaderboard sort key."
+    - "Amazon ElastiCache for Memcached with cache-aside logic in the application."
+    - "Amazon DynamoDB Accelerator (DAX) in front of the table."
+  correct: [D]
+  why: "DAX is a write-through, DynamoDB-API-compatible in-memory cache that delivers microsecond reads for cached items and reduces read capacity consumption on the table. Because it is API-compatible, adopting it is largely a matter of pointing the DynamoDB client at the DAX cluster endpoint. Not \"Amazon ElastiCache for Memcached with cache-aside logic in the...\": Memcached would work but requires writing and maintaining cache-aside logic, invalidation, and serialisation — more than the endpoint change described. Not \"A global secondary index on the leaderboard sort key\": A GSI creates an alternative access pattern; it does not cache and it adds cost, since the index consumes its own capacity. Not \"Switch the table to on-demand capacity mode\": On-demand changes the billing model and can raise costs for steady heavy traffic; it does nothing for latency."
+  ref: "Question perf-002 (DynamoDB performance and caching) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-003
+  kind: choice
+  en: "A media company serves large video files from an S3 bucket in eu-central-1. Viewers in South America and Asia report slow start times, and S3 data-transfer-out charges are high. The company wants to improve playback start time globally and reduce origin egress. What should the architect do?"
+  options:
+    - "Create a CloudFront distribution with the S3 bucket as the origin, using an origin access control."
+    - "Place an Application Load Balancer in front of the S3 bucket in each Region."
+    - "Replicate the bucket to Regions in South America and Asia and ask viewers to choose the nearest URL."
+    - "Enable S3 Transfer Acceleration on the bucket."
+  correct: [A]
+  why: "CloudFront caches objects at edge locations close to viewers, cutting start-up latency worldwide, and cached hits are served from the edge rather than the origin, which reduces S3 data transfer out. Origin access control keeps the bucket private so content is only reachable through the distribution. Not \"Enable S3 Transfer Acceleration on the bucket\": Transfer Acceleration optimises uploads into S3 over long distances; it is not a download caching layer and does not reduce origin egress for viewers. Not \"Replicate the bucket to Regions in South America and Asia and ask...\": Cross-Region Replication multiplies storage cost and pushes Region selection onto users, which is both worse for them and unnecessary when a CDN solves it transparently. Not \"Place an Application Load Balancer in front of the S3 bucket in each...\": An ALB cannot use an S3 bucket as a target, and load balancing does not address geographic latency or caching."
+  ref: "Question perf-003 (CloudFront and content delivery) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-004
+  kind: choice
+  en: "An IoT platform ingests telemetry from 200,000 sensors. Requirements: records from a given sensor must be processed in the order they were produced, three independent teams must each consume the full stream for different purposes, and any consumer must be able to reprocess the last seven days of data after a bug fix. Which service best meets all three requirements?"
+  options:
+    - "Amazon SQS standard queues, one per consuming team."
+    - "Amazon Kinesis Data Streams with the sensor ID as the partition key and a seven-day retention period."
+    - "Amazon MQ with three durable topic subscriptions."
+    - "Amazon SNS with three subscribed SQS FIFO queues."
+  correct: [B]
+  why: "Kinesis Data Streams preserves order within a shard, so using the sensor ID as the partition key guarantees per-sensor ordering. Multiple independent consumers can read the same stream simultaneously, each with its own position, and because records are retained (up to 365 days, with seven days easily configured) a consumer can rewind and reprocess after a fix. Not \"Amazon SQS standard queues, one per consuming team\": Standard SQS is best-effort ordering, and once a message is consumed and deleted it cannot be replayed. Three separate queues also means fanning out at the producer. Not \"Amazon SNS with three subscribed SQS FIFO queues\": SNS to FIFO queues preserves ordering per message group, but SQS provides no replay of already-processed messages, which the seven-day reprocessing requirement demands. Not \"Amazon MQ with three durable topic subscriptions\": Amazon MQ suits migration of existing JMS/AMQP applications; it is not designed for 200,000-producer telemetry scale and replay of a multi-day window."
+  ref: "Question perf-004 (Streaming ingestion with Kinesis) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-005
+  kind: choice
+  en: "A computational fluid dynamics workload runs across 40 EC2 instances that exchange large volumes of data with each other using MPI. The team needs the lowest possible inter-node network latency and highest packet-per-second performance. Which configuration should they use?"
+  options:
+    - "Instances distributed across three Availability Zones behind a Network Load Balancer."
+    - "A cluster placement group in a single Availability Zone with instances using Elastic Fabric Adapter."
+    - "A spread placement group across three Availability Zones for maximum isolation."
+    - "A partition placement group with each instance in its own partition."
+  correct: [B]
+  why: "A cluster placement group packs instances close together on the same high-bisection-bandwidth network segment within one AZ, giving the lowest latency and highest packet-per-second performance — the right choice for tightly coupled HPC. Elastic Fabric Adapter adds OS-bypass networking that MPI applications use directly. Not \"A spread placement group across three Availability Zones for maximum...\": Spread placement groups deliberately separate instances onto distinct hardware to reduce correlated failure, which increases latency — the opposite of the goal, and they are limited to seven instances per AZ per group. Not \"A partition placement group with each instance in its own partition\": Partition placement groups isolate groups of instances across racks for large distributed data stores such as HDFS or Cassandra; they do not minimise latency. Not \"Instances distributed across three Availability Zones behind a...\": Spreading across AZs adds inter-AZ latency, and a load balancer is irrelevant to node-to-node MPI traffic."
+  ref: "Question perf-005 (Placement groups and HPC networking) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-006
+  kind: choice
+  en: "A genomics pipeline runs on hundreds of Linux EC2 instances that must all read and write the same working data set at very high aggregate throughput, with sub-millisecond latency, for the duration of a compute run. The data is staged from and written back to Amazon S3. Which storage service is the best fit for the working data set?"
+  options:
+    - "Amazon FSx for Windows File Server with a multi-AZ deployment."
+    - "An io2 EBS volume attached to each instance."
+    - "Amazon EFS in General Purpose performance mode."
+    - "Amazon FSx for Lustre, linked to the S3 bucket."
+  correct: [D]
+  why: "FSx for Lustre is purpose-built for HPC and machine-learning workloads needing sub-millisecond latency and hundreds of GB/s of aggregate throughput from many clients. Its native S3 integration lets the file system present objects from a linked bucket and write results back, which matches the staging pattern described. Not \"Amazon EFS in General Purpose performance mode\": EFS is a general-purpose NFS file system with higher latency than Lustre and is not aimed at the extreme aggregate throughput of an HPC run. Not \"An io2 EBS volume attached to each instance\": EBS volumes are attached to a single instance (multi-attach is limited and not a shared file system), so hundreds of instances cannot share the working set. Not \"Amazon FSx for Windows File Server with a multi-AZ deployment\": FSx for Windows File Server serves SMB to Windows workloads; these are Linux instances and it is not an HPC file system."
+  ref: "Question perf-006 (Shared file storage selection) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-007
+  kind: choice
+  en: "A multiplayer game backend uses a UDP-based protocol served by Network Load Balancers in three Regions. The studio needs two static IP addresses for client configuration, traffic to enter the AWS backbone as close to the player as possible, and failover between Regions within seconds. Which service should they put in front of the NLBs?"
+  options:
+    - "An Application Load Balancer in each Region with cross-zone load balancing enabled."
+    - "AWS Global Accelerator with an endpoint group per Region."
+    - "Amazon CloudFront with the NLBs as custom origins."
+    - "Amazon Route 53 latency-based routing with health checks."
+  correct: [B]
+  why: "Global Accelerator provides two static anycast IP addresses, moves traffic onto the AWS global network at the nearest edge, and supports TCP and UDP. Because failover is handled at the network layer rather than by DNS, unhealthy endpoints are bypassed within seconds without waiting for client DNS caches to expire. Not \"Amazon CloudFront with the NLBs as custom origins\": CloudFront is an HTTP/HTTPS content delivery network and cannot proxy a UDP game protocol. Not \"Amazon Route 53 latency-based routing with health checks\": Route 53 can route by latency and health, but it is DNS-based: client and resolver caching makes seconds-level failover unreliable, and it provides no static IPs. Not \"An Application Load Balancer in each Region with cross-zone load...\": ALBs are layer 7 HTTP/HTTPS only, have no static IPs, and do nothing for cross-Region routing."
+  ref: "Question perf-007 (Global Accelerator vs CloudFront) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-008
+  kind: choice
+  en: "A product catalogue API backed by Amazon RDS shows CPU consistently above 90 percent. Analysis shows that roughly 85 percent of queries are identical reads for popular products, and the data changes only a few times per day. The team wants the largest latency and load improvement with minimal schema change. What should they implement first?"
+  options:
+    - "RDS Proxy in front of the database to pool connections."
+    - "An ElastiCache for Redis cluster holding query results, with the application using a cache-aside pattern."
+    - "A larger RDS instance class with more vCPUs."
+    - "Partitioning the catalogue table by product category."
+  correct: [B]
+  why: "When a large majority of reads are identical and the underlying data is nearly static, caching removes most of the load at source. A cache-aside pattern with ElastiCache serves repeat reads from memory in sub-millisecond time and cuts database CPU dramatically, without changing the schema. Not \"A larger RDS instance class with more vCPUs\": Scaling up buys headroom at higher cost while the database still executes the same repeated queries; it treats the symptom. Not \"RDS Proxy in front of the database to pool connections\": RDS Proxy helps with connection churn and failover, not with repeated query execution cost — CPU at 90 percent from query volume will remain. Not \"Partitioning the catalogue table by product category\": Partitioning is a schema change with modest benefit here, since the problem is repeated identical reads rather than table scan volume."
+  ref: "Question perf-008 (Read scaling with ElastiCache) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-009
+  kind: choice
+  en: "A video transcoding service runs continuously at 85–95 percent CPU on t3.large instances. Throughput is inconsistent and the bill includes recurring charges the team does not understand. What is the correct instance choice?"
+  options:
+    - "Move to a compute-optimised family such as C-series, sized to the sustained CPU requirement."
+    - "Move to a burstable t3.micro and scale out horizontally."
+    - "Stay on T-series but enable unlimited mode to remove throttling."
+    - "Move to a memory-optimised R-series instance for more headroom."
+  correct: [A]
+  why: "Burstable T instances are designed for workloads that idle most of the time and burst occasionally; they earn CPU credits while idle and spend them while busy. A sustained 85–95 percent CPU load exhausts credits, which explains both the inconsistent throughput and the surprise charges. A compute-optimised family gives full sustained CPU with predictable performance. Not \"Stay on T-series but enable unlimited mode to remove throttling\": Unlimited mode removes the throttling but bills for surplus credits — that is the recurring charge already appearing on the bill, so this makes cost worse. Not \"Move to a memory-optimised R-series instance for more headroom\": The bottleneck is CPU, not memory. Memory-optimised instances cost more per vCPU and do not address it. Not \"Move to a burstable t3.micro and scale out horizontally\": A smaller burstable instance has the same credit problem in a more acute form, and scaling out multiplies it."
+  ref: "Question perf-009 (Compute selection for workloads) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-010
+  kind: choice
+  en: "Analysts want to run occasional ad-hoc SQL over 40 TB of JSON logs already sitting in Amazon S3. Queries run a few times a week, there is no team to operate a cluster, and query cost must be kept low. What should the architect recommend?"
+  options:
+    - "An Amazon EMR cluster running Hive, started and stopped around each query."
+    - "An Amazon Redshift provisioned cluster with the data loaded via COPY."
+    - "Amazon Athena, with the data converted to partitioned Parquet."
+    - "An Amazon RDS for PostgreSQL instance with the logs imported."
+  correct: [C]
+  why: "Athena is serverless SQL directly over S3 with nothing to operate, which suits infrequent ad-hoc analysis. Because it bills per byte scanned, converting the JSON to columnar Parquet and partitioning it cuts both query time and cost substantially — often by an order of magnitude. Not \"An Amazon Redshift provisioned cluster with the data loaded via COPY\": A provisioned Redshift cluster bills continuously and needs operating, which is poor value for a few queries a week. Not \"An Amazon EMR cluster running Hive, started and stopped around each...\": EMR is powerful but is a cluster to configure, tune and manage — the opposite of the no-operations requirement. Not \"An Amazon RDS for PostgreSQL instance with the logs imported\": Loading 40 TB of logs into a relational database is a large ETL and storage exercise, and RDS is not designed as an analytics engine at that scale."
+  ref: "Question perf-010 (Analytics with Athena and Redshift) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-011
+  kind: choice
+  en: "Instances in an Auto Scaling group take about eight minutes to boot because of a long application initialisation. Traffic spikes arrive within two minutes, so scale-out consistently arrives too late. Keeping the full fleet running permanently is too expensive. What should the architect implement?"
+  options:
+    - "A warm pool of pre-initialised, stopped instances that the group can bring into service quickly."
+    - "A shorter health check grace period so instances enter service sooner."
+    - "Scheduled scaling that adds capacity every hour."
+    - "A more aggressive target tracking policy with a lower CPU target."
+  correct: [A]
+  why: "Warm pools hold instances that have already completed initialisation in a stopped (or hibernated) state, charged only for storage rather than compute. When the group scales out, it starts them instead of building from scratch, collapsing an eight-minute boot into seconds. Not \"A shorter health check grace period so instances enter service sooner\": The grace period only delays health checks; the application still needs eight minutes to initialise, and cutting it short risks terminating healthy instances. Not \"A more aggressive target tracking policy with a lower CPU target\": A lower CPU target triggers scaling earlier but the new instance still takes eight minutes to arrive, so it does not close a two-minute gap. Not \"Scheduled scaling that adds capacity every hour\": Scheduled scaling suits predictable patterns. These spikes are not on a schedule, and hourly capacity additions would waste money without guaranteeing coverage."
+  ref: "Question perf-011 (Auto Scaling policies and warm pools) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-012
+  kind: choice
+  en: "A media company must move 600 TB from an on-premises NAS into Amazon S3. The site has a 200 Mbps internet connection that is also used by the business, and the migration must complete within a few weeks. What is the appropriate approach?"
+  options:
+    - "Order AWS Snowball Edge devices, load the data locally, and ship them to AWS."
+    - "Use the S3 multipart upload API with Transfer Acceleration enabled."
+    - "Use AWS DataSync over the existing internet connection."
+    - "Set up AWS Direct Connect and copy the data over it."
+  correct: [A]
+  why: "At 200 Mbps, and sharing that link with the business, 600 TB would take many months — the arithmetic rules out any online transfer. Snowball Edge is the offline path: load locally at LAN speed, ship the devices, and AWS imports the data into S3, which fits a few-week window. Not \"Use AWS DataSync over the existing internet connection\": DataSync is an excellent online transfer service, but it is still bounded by the same 200 Mbps link and would take far too long. Not \"Use the S3 multipart upload API with Transfer Acceleration enabled\": Transfer Acceleration improves long-distance throughput to S3 but cannot exceed the site's own upload bandwidth. Not \"Set up AWS Direct Connect and copy the data over it\": Provisioning Direct Connect typically takes weeks to months before any data moves, so it does not meet the deadline for a one-time migration."
+  ref: "Question perf-012 (Data transfer and migration services) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-013
+  kind: choice
+  en: "A site serves the same product pages to everyone but appends a unique tracking query string per visitor. Cache hit ratio at CloudFront is close to zero and the origin is overloaded. What should the architect change?"
+  options:
+    - "Increase the distribution's default TTL to 24 hours."
+    - "Add more origin servers behind the load balancer."
+    - "Use a cache policy that excludes the tracking query string from the cache key, forwarding it to the origin only if needed."
+    - "Disable caching for the pages and rely on origin capacity."
+  correct: [C]
+  why: "Anything included in the cache key creates a separate cache entry, so a per-visitor query string guarantees a miss for every visitor. Removing it from the cache key means all visitors share one cached object, which is what lifts the hit ratio and relieves the origin. Not \"Increase the distribution's default TTL to 24 hours\": A longer TTL does not help when every request generates a distinct cache key — the object is never reused regardless of how long it is kept. Not \"Add more origin servers behind the load balancer\": More origin capacity absorbs the load rather than fixing the cause, at ongoing cost. Not \"Disable caching for the pages and rely on origin capacity\": Disabling caching sends every request to the origin, making the overload worse."
+  ref: "Question perf-013 (CloudFront and content delivery) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-014
+  kind: choice
+  en: "A team is moving a containerised web API to AWS. They have no need to tune the operating system, want no EC2 instances to patch or scale, and want to pay only for the vCPU and memory their tasks request. Which option fits?"
+  options:
+    - "Amazon ECS with the EC2 launch type using a managed capacity provider."
+    - "Amazon ECS with the AWS Fargate launch type."
+    - "Containers on EC2 instances managed by an Auto Scaling group and Docker Compose."
+    - "Amazon EKS with self-managed EC2 node groups."
+  correct: [B]
+  why: "Fargate is the serverless compute engine for containers: there are no instances to provision, patch or scale, and billing is per vCPU-second and GB-second of the resources each task requests. That maps directly onto every stated requirement. Not \"Amazon ECS with the EC2 launch type using a managed capacity provider\": The EC2 launch type means you own the instances, including patching and capacity, even when a capacity provider automates scaling. Not \"Amazon EKS with self-managed EC2 node groups\": Self-managed node groups add both EC2 management and Kubernetes control-plane concepts the team has not asked for. Not \"Containers on EC2 instances managed by an Auto Scaling group and...\": This is the most operational effort of all — instance fleet, container runtime and orchestration all managed by the team."
+  ref: "Question perf-014 (Containers on ECS, EKS and Fargate) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-015
+  kind: choice
+  en: "A nightly job currently runs on an EC2 Spot Fleet, takes about three minutes per file and needs 64 MB of memory. The company wants to process each file the moment it is uploaded to S3, in the most cost-effective way. What should replace the Spot Fleet?"
+  options:
+    - "An EMR cluster started by an EventBridge schedule."
+    - "An AWS Lambda function triggered by S3 event notifications."
+    - "An ECS on EC2 service polling the bucket every minute."
+    - "An Auto Scaling group of t3.micro instances kept warm for uploads."
+  correct: [B]
+  why: "The workload is short, small and event-driven — three minutes is well inside Lambda's 15-minute limit and 64 MB is below its minimum memory allocation. Lambda runs only when a file arrives and bills per millisecond, so idle time costs nothing at all. Not \"An ECS on EC2 service polling the bucket every minute\": A polling service runs and bills continuously, and adds up to a minute of latency for something that should start on arrival. Not \"An EMR cluster started by an EventBridge schedule\": EMR is a cluster for large-scale distributed data processing; spinning one up per file would be dramatically more expensive and slower to start. Not \"An Auto Scaling group of t3.micro instances kept warm for uploads\": Keeping instances warm means paying around the clock for a job that runs a few minutes at a time."
+  ref: "Question perf-015 (Serverless compute with Lambda) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-016
+  kind: choice
+  en: "A business intelligence team runs complex joins across billions of rows, all day, from a dashboard used by 200 analysts who expect consistent sub-second response. The data is currently in S3. Which service is the better fit?"
+  options:
+    - "Amazon DynamoDB with a global secondary index for each dashboard query."
+    - "Amazon Redshift, loading the data into the cluster and using its columnar storage and result caching."
+    - "Amazon Athena querying the S3 data directly."
+    - "Amazon RDS for PostgreSQL with a large instance class."
+  correct: [B]
+  why: "Redshift is a data warehouse built for sustained, concurrent, complex analytical queries over very large datasets, with columnar storage, compiled query plans and result caching that deliver consistent low latency for many simultaneous users. Not \"Amazon Athena querying the S3 data directly\": Athena is superb for occasional ad-hoc queries with no infrastructure, but per-query scanning and variable latency make it a poor fit for 200 users expecting sub-second dashboards all day. Not \"Amazon RDS for PostgreSQL with a large instance class\": A relational OLTP engine is not designed for analytical joins across billions of rows, regardless of instance size. Not \"Amazon DynamoDB with a global secondary index for each dashboard...\": DynamoDB serves known key-based access patterns at scale; it cannot perform ad-hoc analytical joins."
+  ref: "Question perf-016 (Analytics with Athena and Redshift) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-017
+  kind: choice
+  en: "A DynamoDB table is throttling reads. Investigation shows that 90 percent of requests target a single partition key representing one very popular product, while overall table capacity is barely used. What is the correct remedy?"
+  options:
+    - "Put DynamoDB Accelerator in front of the table so repeated reads of the hot item are served from cache."
+    - "Increase the table's provisioned read capacity units substantially."
+    - "Add a local secondary index on the popular attribute."
+    - "Switch the table to eventually consistent reads only."
+  correct: [A]
+  why: "This is a hot partition: capacity is spread across partitions, so raising table-wide capacity does not fix concentration on one key. A cache in front of the table absorbs the repeated reads of that item, and DAX is purpose-built for DynamoDB with microsecond reads and no application rewrite. Not \"Increase the table's provisioned read capacity units substantially\": Extra capacity is distributed across partitions, so the hot partition still saturates while you pay for unused capacity everywhere else. Not \"Add a local secondary index on the popular attribute\": An LSI provides an alternative sort key within the same partition — it does not spread or reduce load on a hot key. Not \"Switch the table to eventually consistent reads only\": Eventually consistent reads halve the capacity cost per read, which softens the symptom slightly but leaves the concentration on one partition intact."
+  ref: "Question perf-017 (DynamoDB performance and caching) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-018
+  kind: choice
+  en: "An on-premises application must keep writing to an NFS share, but the company wants that data continuously available as objects in Amazon S3 without changing the application. What should the architect deploy?"
+  options:
+    - "An AWS Snowball Edge device shipped monthly."
+    - "AWS DataSync running a nightly transfer task."
+    - "Amazon EFS mounted over a VPN from on-premises."
+    - "AWS Storage Gateway in File Gateway mode, presenting an NFS share backed by S3."
+  correct: [D]
+  why: "File Gateway gives on-premises applications a standard NFS or SMB mount while storing the data as objects in S3, with a local cache for recently used files. The application keeps writing to a file share unchanged and the data appears in S3. Not \"AWS DataSync running a nightly transfer task\": DataSync is excellent for scheduled or one-off transfers, but a nightly task is not continuous availability and the source remains the authoritative store. Not \"An AWS Snowball Edge device shipped monthly\": Snowball is for bulk offline migration, not for ongoing file access. Not \"Amazon EFS mounted over a VPN from on-premises\": EFS over VPN keeps the data in EFS rather than S3, and adds latency to every file operation without meeting the object-storage requirement."
+  ref: "Question perf-018 (Data transfer and migration services) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-019
+  kind: choice
+  en: "A team needs a cache that survives node failure without losing its contents, supports sorted sets for a leaderboard, and can replicate across Availability Zones. Which engine should they choose?"
+  options:
+    - "ElastiCache for Memcached with multiple nodes."
+    - "DynamoDB Accelerator."
+    - "ElastiCache for Redis with a replication group across multiple AZs."
+    - "An EC2 fleet running a self-managed cache."
+  correct: [C]
+  why: "Redis provides replication with automatic failover across Availability Zones, optional persistence, and rich data structures including sorted sets — which is what a leaderboard needs. Memcached has none of those. Not \"ElastiCache for Memcached with multiple nodes\": Memcached is a simple multi-threaded key-value cache with no replication, no persistence and no sorted sets; losing a node loses its data. Not \"DynamoDB Accelerator\": DAX caches DynamoDB API calls specifically and offers no general-purpose data structures. Not \"An EC2 fleet running a self-managed cache\": Self-managing a cache fleet adds patching, failover and monitoring work that ElastiCache already provides."
+  ref: "Question perf-019 (Read scaling with ElastiCache) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-020
+  kind: choice
+  en: "A latency-sensitive database on EC2 needs sustained 80,000 IOPS on a single volume with consistent sub-millisecond latency, and the highest available volume durability. Which EBS volume type should be attached?"
+  options:
+    - "st1 throughput-optimised HDD"
+    - "io2 Block Express"
+    - "Multiple gp2 volumes in a RAID 0 stripe"
+    - "gp3 with maximum provisioned IOPS"
+  correct: [B]
+  why: "gp3 tops out at 16,000 IOPS per volume, so 80,000 IOPS on a single volume requires Provisioned IOPS. io2 Block Express supports far higher IOPS with sub-millisecond latency and offers higher durability than the general purpose types, which matches every stated requirement. Not \"gp3 with maximum provisioned IOPS\": gp3 cannot reach 80,000 IOPS on one volume regardless of how much is provisioned. Not \"st1 throughput-optimised HDD\": st1 is a throughput-oriented HDD for large sequential workloads and is entirely unsuited to low-latency random database I/O. Not \"Multiple gp2 volumes in a RAID 0 stripe\": Striping increases aggregate IOPS but multiplies failure exposure and adds management complexity, and gp2's per-volume ceiling still applies."
+  ref: "Question perf-020 (EBS volume type selection) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-021
+  kind: choice
+  en: "A media site serves content through CloudFront from an origin in one Region. The business wants viewers to keep receiving content if that origin becomes unavailable, without changing DNS or waiting for a manual switch. What should be configured?"
+  options:
+    - "A second CloudFront distribution pointing at a backup origin, with Route 53 failover between the distributions."
+    - "A longer cache TTL so cached objects survive an origin outage."
+    - "Lambda@Edge functions that retry the origin on failure."
+    - "A CloudFront origin group with a primary and secondary origin, and failover criteria on the relevant HTTP status codes."
+  correct: [D]
+  why: "An origin group defines a primary and a secondary origin plus the status codes that constitute a failure. CloudFront retries the secondary automatically within the same request, so viewers are served without any DNS change or human intervention. Not \"A second CloudFront distribution pointing at a backup origin, with...\": This works but relies on DNS propagation and resolver caching, so failover is slower, and it doubles the distributions to manage. Not \"A longer cache TTL so cached objects survive an origin outage\": A longer TTL only helps for objects already cached at that edge location; anything not cached, or newly requested, still fails. Not \"Lambda@Edge functions that retry the origin on failure\": Lambda@Edge could implement retry logic by hand, but it duplicates a built-in feature and adds execution cost to every request."
+  ref: "Question perf-021 (CloudFront and content delivery) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-022
+  kind: choice
+  en: "A Windows-based application must be migrated to AWS. It requires a shared file system accessible over SMB, with Active Directory integration for file and folder permissions, and Multi-AZ availability. Which service should be used?"
+  options:
+    - "An EBS Multi-Attach io2 volume shared between the instances."
+    - "Amazon FSx for Windows File Server in a Multi-AZ deployment."
+    - "Amazon S3 with a mounted file gateway on each instance."
+    - "Amazon EFS mounted on the Windows instances."
+  correct: [B]
+  why: "FSx for Windows File Server provides a fully managed native Windows file system over SMB, integrates with Active Directory so NTFS permissions work as they do on premises, and offers a Multi-AZ deployment with automatic failover. Not \"Amazon EFS mounted on the Windows instances\": EFS is an NFS file system and is not supported for Windows instances. Not \"Amazon S3 with a mounted file gateway on each instance\": File Gateway is designed for hybrid access from on premises and does not provide AD-integrated NTFS permissions for a Windows application fleet. Not \"An EBS Multi-Attach io2 volume shared between the instances\": Multi-Attach allows a volume to attach to several instances but provides no shared file system semantics; a clustered file system would be required, and it is single-AZ."
+  ref: "Question perf-022 (Shared file storage selection) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-023
+  kind: choice
+  en: "Clickstream events must be delivered continuously into Amazon S3 in Parquet format for later analysis. There is no requirement for multiple independent consumers or replay, and the team wants no code to maintain. Which service fits best?"
+  options:
+    - "Amazon Kinesis Data Streams with a custom consumer application writing to S3."
+    - "Amazon SQS with a Lambda consumer batching writes to S3."
+    - "Amazon MSK with a Kafka Connect S3 sink."
+    - "Amazon Kinesis Data Firehose, with format conversion to Parquet and delivery to S3."
+  correct: [D]
+  why: "Firehose is the fully managed delivery path: it buffers incoming records, can convert them to Parquet, partitions and writes them to S3, and requires no consumer application. With no need for multiple consumers or replay, its simplicity is exactly right. Not \"Amazon Kinesis Data Streams with a custom consumer application...\": Data Streams is the right choice when you need replay or several independent consumers, but here it means writing and operating a consumer for no benefit. Not \"Amazon SQS with a Lambda consumer batching writes to S3\": SQS plus Lambda works but is code to own, and it provides no native Parquet conversion or partitioned delivery. Not \"Amazon MSK with a Kafka Connect S3 sink\": MSK is a managed Kafka cluster — substantial operational surface for a requirement Firehose satisfies with configuration alone."
+  ref: "Question perf-023 (Streaming ingestion with Kinesis) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-024
+  kind: choice
+  en: "A containerised Java service runs on x86 instances at steady load. The team compiles from source, has no native x86-only dependencies, and wants the best price-performance available without changing the application's behaviour. What should they evaluate first?"
+  options:
+    - "Moving to memory-optimised instances for extra headroom."
+    - "Enabling hibernation on the instances between requests."
+    - "Moving to AWS Graviton-based instances, rebuilding the container image for arm64."
+    - "Moving to burstable T-family instances to reduce the hourly rate."
+  correct: [C]
+  why: "Graviton processors generally deliver better price-performance than comparable x86 instances for scale-out workloads such as containerised Java services. The prerequisite is an arm64 build, which a team compiling from source with no x86-only dependencies can produce readily. Not \"Moving to burstable T-family instances to reduce the hourly rate\": Burstable instances suit intermittent load; at steady load they exhaust CPU credits and either throttle or incur surplus charges. Not \"Moving to memory-optimised instances for extra headroom\": Memory-optimised instances cost more per vCPU and address a bottleneck the scenario does not describe. Not \"Enabling hibernation on the instances between requests\": Hibernation is for instances that are idle for long periods, not for a service under steady load."
+  ref: "Question perf-024 (Compute selection for workloads) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-032
+  kind: choice
+  en: "Sales data of unknown and varying structure accumulates in Amazon S3. Analysts need to run ad-hoc SQL against it to answer business questions. Which approach has the least operational overhead?"
+  options:
+    - "Run an AWS Glue crawler to populate tables in the Glue Data Catalog, then query the data with Amazon Athena."
+    - "Crawl the data with AWS Glue and query it using Amazon Managed Service for Apache Flink."
+    - "Load the data into Amazon Redshift and query it there with Redshift SQL."
+    - "Run a Spark job on Amazon EMR Serverless with an external Hive metastore on Amazon Aurora MySQL."
+  correct: [A]
+  why: "The crawler infers the schema and registers tables in the Glue Data Catalog, which Athena uses natively. Nothing is provisioned, nothing is loaded and no ETL is written — analysts point Athena at the catalogue and run SQL. Not \"Load the data into Amazon Redshift and query it there with Redshift...\": Loading S3 data into Redshift is an ETL exercise requiring schema design and ongoing cluster operation, which is significant overhead for ad-hoc questions. Not \"Run a Spark job on Amazon EMR Serverless with an external Hive...\": Running an external Hive metastore on Aurora is extra infrastructure to configure and operate when the Glue Data Catalog already fills that role. Not \"Crawl the data with AWS Glue and query it using Amazon Managed...\": Managed Service for Apache Flink processes streaming data from sources such as Kinesis or MSK, not static objects sitting in S3."
+  ref: "Question perf-032 (Analytics with Athena and Redshift) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-033
+  kind: choice
+  en: "A daily AWS Glue ETL job reads from an S3 prefix and has grown steadily slower because each run reprocesses all the data written on previous days as well as the new data. What is the most operationally efficient fix?"
+  options:
+    - "Split the dataset into partitions and process them in parallel on multiple EC2 instances."
+    - "Increase the number of workers allocated to the Glue job."
+    - "Delete already-processed objects with a Lambda function triggered when the job succeeds."
+    - "Enable job bookmarks on the Glue job so each run processes only data that has arrived since the last successful run."
+  correct: [D]
+  why: "Job bookmarks persist state about what a Glue job has already processed, so subsequent runs pick up only new data. That removes the reprocessing entirely and is a setting on the job rather than new infrastructure. Not \"Delete already-processed objects with a Lambda function triggered...\": Deleting source data is risky — a failed run that needs rerunning would find its input gone — and it adds a Lambda and event rule to maintain. Not \"Split the dataset into partitions and process them in parallel on...\": Parallelism makes the job process everything faster; it does not stop it processing old data repeatedly. Not \"Increase the number of workers allocated to the Glue job\": More workers has the same flaw and increases cost while the root cause remains."
+  ref: "Question perf-033 (Analytics with Athena and Redshift) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-034
+  kind: choice
+  en: "An application on ECS connects to an Aurora cluster that has two Aurora Replicas. Read queries are all landing on one replica while the other sits idle. Which change distributes read connections across both replicas with no additional infrastructure?"
+  options:
+    - "Point read queries at the cluster's built-in cluster (writer) endpoint."
+    - "Put a Network Load Balancer in front of the two replicas and connect through it."
+    - "Point read queries at the cluster's built-in reader endpoint."
+    - "Enable Aurora Parallel Query on the cluster."
+  correct: [C]
+  why: "Every Aurora cluster has a reader endpoint that load balances connections across the available Aurora Replicas. Pointing read traffic at it spreads connections without any load balancer or client-side logic. Not \"Point read queries at the cluster's built-in cluster (writer)...\": The cluster endpoint always resolves to the current writer, so all read traffic would land on the primary instance instead. Not \"Put a Network Load Balancer in front of the two replicas and connect...\": An NLB balances traffic to servers but is not the mechanism Aurora provides for replica connections, and it adds cost and a component to operate. Not \"Enable Aurora Parallel Query on the cluster\": Parallel Query pushes parts of a single query down into the storage layer to speed it up. It does not distribute connections across replicas."
+  ref: "Question perf-034 (Aurora endpoints and read scaling) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-035
+  kind: choice
+  en: "A serverless mobile game backend uses a DynamoDB table that was created with the AWS CLI, plus Lambda behind API Gateway. Millions of daily users are causing latency and rising cost. Which TWO changes improve performance and scalability while keeping cost controlled?"
+  options:
+    - "Manually raise the provisioned read and write capacity to a high fixed value."
+    - "Enable DynamoDB Accelerator (DAX) and turn on DynamoDB auto scaling with an appropriate maximum capacity."
+    - "Put CloudFront in front of the DynamoDB table as its origin."
+    - "Rely on DynamoDB auto scaling being enabled by default and simply add DAX."
+    - "Enable caching in API Gateway for frequently requested responses."
+  correct: [B, E]
+  why: "DAX puts an in-memory, DynamoDB-API-compatible cache in front of the table, cutting read latency to microseconds and reducing consumed read capacity. Auto scaling then matches provisioned capacity to demand instead of a fixed ceiling. Caching responses at API Gateway removes repeat work from the whole stack. Not \"Rely on DynamoDB auto scaling being enabled by default and simply add...\": Auto scaling is not enabled by default for a table created through the CLI or API — only the console's default settings turn it on — so it must be enabled explicitly. Not \"Put CloudFront in front of the DynamoDB table as its origin\": CloudFront cannot use a DynamoDB table as an origin; the two do not integrate that way. Not \"Manually raise the provisioned read and write capacity to a high...\": A high fixed capacity bills around the clock regardless of traffic, which is the cost problem rather than the solution."
+  ref: "Question perf-035 (DynamoDB performance and caching) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-036
+  kind: choice
+  en: "An application is packaged as a Docker image in Amazon ECR, must run on a fully managed serverless compute service, and needs 5 GB of ephemeral scratch space for temporary processing during each invocation. Which option meets all three requirements?"
+  options:
+    - "An Amazon ECS service on AWS Fargate running the container image."
+    - "An Amazon ECS cluster on EC2 worker nodes with a 5 GB EBS volume attached."
+    - "An AWS Lambda function using container image support, with ephemeral storage configured to 5 GB."
+    - "An AWS Lambda function using container image support, with an Amazon EFS file system attached."
+  correct: [C]
+  why: "Lambda supports container images up to 10 GB and its per-invocation ephemeral storage under /tmp is configurable from 512 MB up to 10 GB. That covers the packaging, the serverless requirement and the scratch space in one service with nothing to manage. Not \"An Amazon ECS service on AWS Fargate running the container image\": Fargate removes instance management but still requires defining and operating clusters, services and task definitions, so it is not the fully managed serverless option here. Not \"An AWS Lambda function using container image support, with an Amazon...\": EFS provides persistent shared storage that survives invocations; the requirement is temporary scratch space, which Lambda's configurable ephemeral storage already provides more simply. Not \"An Amazon ECS cluster on EC2 worker nodes with a 5 GB EBS volume...\": EC2 worker nodes are explicitly not serverless — the team would own the instances."
+  ref: "Question perf-036 (Serverless compute with Lambda) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-037
+  kind: choice
+  en: "An EBS-backed EC2 instance also has instance store volumes attached and an Elastic IP address associated. A scheduled automation stops the instance overnight and starts it again in the morning. Which TWO things happen as a result of that stop and start?"
+  options:
+    - "The Elastic IP address is disassociated from the instance."
+    - "Nothing changes; the instance resumes exactly as it was."
+    - "The elastic network interface is detached from the instance."
+    - "All data on the attached instance store volumes is lost."
+    - "The instance may be moved to a different underlying host computer."
+  correct: [D, E]
+  why: "Instance store volumes are physically attached to the host, so their contents do not survive a stop. Stopping also releases the instance from its host, and starting it again typically places it on different hardware — which is why instance store data cannot persist. Not \"The Elastic IP address is disassociated from the instance\": In a VPC an Elastic IP address remains associated with the instance across a stop and start. Not \"The elastic network interface is detached from the instance\": The elastic network interface stays attached to the instance. Not \"Nothing changes; the instance resumes exactly as it was\": Two significant things do change — the ephemeral storage is wiped and the underlying host may differ."
+  ref: "Question perf-037 (Compute selection for workloads) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-038
+  kind: choice
+  en: "A MySQL-compatible database is being moved from on-premises to a managed AWS service. Its memory consumption ranges from 2 GiB to 16 GiB, and application traffic is unpredictable with spikes and periods of no activity. Capacity must scale automatically. Which configuration fits?"
+  options:
+    - "Amazon RDS for MySQL sized with 4 GiB of memory."
+    - "Aurora Serverless v2 with a minimum of 2 and a maximum of 16 Aurora capacity units."
+    - "Aurora Serverless v2 with a minimum of 1 and a maximum of 8 Aurora capacity units."
+    - "Aurora with a memory-optimised provisioned DB instance class."
+  correct: [C]
+  why: "An Aurora capacity unit is roughly 2 GiB of memory plus the matching CPU and networking, so a 2–16 GiB range maps to 1–8 ACUs. Serverless v2 then scales within that band in fine increments, which suits traffic that spikes and falls to nothing. Not \"Aurora Serverless v2 with a minimum of 2 and a maximum of 16 Aurora...\": This reads the GiB figures as if they were ACUs. 2–16 ACUs is 4–32 GiB, so the floor never scales down as far as it should and the ceiling is double what is needed. Not \"Aurora with a memory-optimised provisioned DB instance class\": A provisioned instance class is a fixed size, which either over-provisions during quiet periods or under-provisions during spikes. Not \"Amazon RDS for MySQL sized with 4 GiB of memory\": RDS for MySQL has fixed compute and memory too, and 4 GiB is below the workload's 16 GiB peak."
+  ref: "Question perf-038 (Aurora Serverless capacity planning) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-039
+  kind: choice
+  en: "An Aurora Serverless v2 cluster is configured with a minimum of 8 ACUs. The workload is idle overnight, yet the bill shows steady charges through those hours. What explains this and what should change?"
+  options:
+    - "Serverless v2 cannot scale down at all; migrate to a provisioned instance and stop it overnight."
+    - "Storage charges dominate; enable a lifecycle policy on the cluster volume."
+    - "The minimum capacity sets a floor the cluster never scales below; lower the minimum so it can scale down when idle."
+    - "Serverless v2 always bills the maximum capacity; lower the maximum."
+  correct: [C]
+  why: "Serverless v2 bills for the capacity actually in use, but never scales below the configured minimum. A minimum of 8 ACUs means roughly 16 GiB of memory is held and billed continuously, so the floor is what to lower. Not \"Serverless v2 always bills the maximum capacity; lower the maximum\": The maximum is a ceiling, not a billing basis; capacity is billed as consumed between the floor and ceiling. Not \"Serverless v2 cannot scale down at all; migrate to a provisioned...\": Scaling down is exactly what Serverless v2 does — down to the configured minimum. Not \"Storage charges dominate; enable a lifecycle policy on the cluster...\": Storage is billed separately by volume and has no lifecycle policy; it does not explain steady compute charges."
+  ref: "Question perf-039 (Aurora Serverless capacity planning) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-040
+  kind: choice
+  en: "A team is moving container-based Java services to AWS Lambda but is concerned about cold starts and tail latency. Invocation volume is uneven, with long quiet periods. Which option minimises cold starts most cost-effectively?"
+  options:
+    - "Configure response streaming on the function."
+    - "Enable provisioned concurrency on the function."
+    - "Enable Lambda SnapStart."
+    - "Move dependencies into Lambda layers."
+  correct: [C]
+  why: "SnapStart takes an encrypted snapshot of the initialised execution environment when a version is published and restores from that cache on invocation, so the expensive JVM initialisation is skipped. There is no charge for idle capacity, which matters when the function is quiet for long stretches. Not \"Enable provisioned concurrency on the function\": Provisioned concurrency removes cold starts by keeping environments warm, but you pay for that capacity continuously — poor value when invocations drop to zero for long periods. Not \"Configure response streaming on the function\": Response streaming improves time to first byte for large responses. It does nothing about initialisation time, which is what dominates here. Not \"Move dependencies into Lambda layers\": Layers help with packaging and reuse; they may trim startup slightly but do not address JVM initialisation."
+  ref: "Question perf-040 (Serverless compute with Lambda) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-041
+  kind: choice
+  en: "A Python Lambda function behind a customer-facing API must never serve a cold start during business hours, when traffic is steady and predictable. Cost outside those hours is not a concern because the function is barely invoked. What should be configured?"
+  options:
+    - "Lambda SnapStart on the function."
+    - "Provisioned concurrency, scheduled to apply during business hours via Application Auto Scaling."
+    - "A larger memory allocation."
+    - "Reserved concurrency set to the expected peak."
+  correct: [B]
+  why: "Provisioned concurrency keeps a set number of environments initialised and ready, which is the only way to guarantee no cold start. Scheduling it through Application Auto Scaling means paying for warm capacity only during the hours that need it. Not \"Lambda SnapStart on the function\": SnapStart is a Java runtime feature; it does not apply to a Python function. Not \"Reserved concurrency set to the expected peak\": Reserved concurrency caps and guarantees how many executions may run concurrently. It pre-initialises nothing, so cold starts remain. Not \"A larger memory allocation\": More memory speeds execution and can shorten initialisation slightly, but it does not eliminate cold starts."
+  ref: "Question perf-041 (Serverless compute with Lambda) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-042
+  kind: choice
+  en: "A high-traffic static site on S3 behind CloudFront has its default TTL set to 10 seconds, so almost nothing is cached. The company wants real caching but must not serve stale content for more than a few minutes after a deployment. What should be configured?"
+  options:
+    - "Raise the CloudFront default TTL to about 4 minutes and set Cache-Control headers on the S3 objects to match."
+    - "Add a Lambda@Edge function on viewer response that injects an Expires header."
+    - "Set a default TTL of 4 minutes on the S3 bucket."
+    - "Use an S3 Lifecycle policy that deletes objects older than 7 days so edge caches are purged."
+  correct: [A]
+  why: "Cache duration is governed by the distribution's TTL settings together with the origin's Cache-Control headers. Setting both to a few minutes gives genuine caching while bounding how long a deployment can go unnoticed — and an invalidation can still flush immediately when needed. Not \"Set a default TTL of 4 minutes on the S3 bucket\": S3 has no TTL setting. Cache behaviour is expressed through object headers and the CloudFront distribution. Not \"Add a Lambda@Edge function on viewer response that injects an Expires...\": Lambda@Edge could inject headers, but it adds an execution on every response to do what the distribution and origin headers already do. Not \"Use an S3 Lifecycle policy that deletes objects older than 7 days so...\": Lifecycle policies delete objects from the bucket. They neither expire CloudFront's cache nor relate to content freshness."
+  ref: "Question perf-042 (CloudFront and content delivery) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-043
+  kind: choice
+  en: "An on-premises SMB file server holds large files that are accessed heavily for their first 10 days and then effectively never — though they must remain retrievable within 12 hours. The company wants the storage moved to AWS while the application keeps using an SMB share. Which solution fits?"
+  options:
+    - "Run an AWS DataSync task that transfers files older than 10 days to AWS."
+    - "Deploy an Amazon FSx File Gateway and apply an S3 Lifecycle rule transitioning objects to Glacier Deep Archive after 10 days."
+    - "Give users direct access to Amazon S3 and transition objects to Glacier Flexible Retrieval after 10 days."
+    - "Deploy an Amazon S3 File Gateway and apply an S3 Lifecycle rule transitioning objects to S3 Glacier Deep Archive after 10 days."
+  correct: [D]
+  why: "S3 File Gateway presents an SMB or NFS share on premises while storing the data as S3 objects, so the application is unchanged and lifecycle rules apply. Deep Archive is the cheapest class whose standard retrieval completes within 12 hours, which is exactly the stated tolerance. Not \"Deploy an Amazon FSx File Gateway and apply an S3 Lifecycle rule...\": FSx File Gateway provides low-latency access to Amazon FSx file systems, not to S3, so S3 lifecycle rules do not apply to it. Not \"Give users direct access to Amazon S3 and transition objects to...\": S3 is object storage and cannot be mounted as an SMB share, and Glacier Flexible Retrieval costs more than Deep Archive for a 12-hour tolerance. Not \"Run an AWS DataSync task that transfers files older than 10 days to...\": DataSync transfers data on a schedule but cannot select files by age, and it leaves the application without its SMB share."
+  ref: "Question perf-043 (Data transfer and migration services) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-051
+  kind: choice
+  en: "An Aurora cluster contains instances of different sizes. Production traffic must be routed to the high-capacity instances while internal reporting queries go to the low-capacity ones. What should be configured?"
+  options:
+    - "The cluster endpoint for production traffic and the instance endpoint for reporting."
+    - "The reader endpoint for both, letting Aurora load balance across all replicas."
+    - "Nothing — Aurora routes heavy traffic to larger instances automatically."
+    - "Two custom endpoints, one associated with the high-capacity instances and one with the low-capacity instances."
+  correct: [D]
+  why: "Custom endpoints load balance across a subset of instances that you define by criteria other than read/write role — such as instance class. Defining one for the high-capacity instances and another for the low-capacity ones gives each workload its own connection target. Not \"The cluster endpoint for production traffic and the instance endpoint...\": The cluster endpoint always points at the writer, and an instance endpoint targets exactly one instance with no load balancing or failover. Not \"The reader endpoint for both, letting Aurora load balance across all...\": The reader endpoint spreads connections across all replicas indiscriminately, so reporting queries would land on the production instances. Not \"Nothing — Aurora routes heavy traffic to larger instances...\": Aurora has no notion of which traffic is 'production'; endpoint selection is how you express that."
+  ref: "Question perf-051 (Aurora endpoints and read scaling) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-044
+  kind: choice
+  en: "A banking portal uses ElastiCache for Redis for session state. Engineers must authenticate with a password before running Redis commands, and the credential must be long-lived. What should be configured?"
+  options:
+    - "Enable at-rest encryption on the replication group."
+    - "Enable in-transit encryption on its own."
+    - "Generate an IAM authentication token from AWS credentials and use it as the password."
+    - "Create the Redis cluster with --transit-encryption-enabled and --auth-token to require Redis AUTH."
+  correct: [D]
+  why: "Redis AUTH requires a password before commands are accepted, and ElastiCache requires in-transit encryption to be enabled alongside it so the token is not sent in clear text. The two parameters are set together at cluster creation. Not \"Enable at-rest encryption on the replication group\": At-rest encryption protects the stored data on disk and imposes no authentication on connecting clients. Not \"Enable in-transit encryption on its own\": In-transit encryption protects the channel but does not require a password, so any client that can reach the endpoint can issue commands. Not \"Generate an IAM authentication token from AWS credentials and use it...\": IAM authentication tokens for ElastiCache expire after a short period, which conflicts with the long-lived credential requirement here."
+  ref: "Question perf-044 (Read scaling with ElastiCache) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-045
+  kind: choice
+  en: "A subscription site serves many private media files through CloudFront and must restrict them to paying members. The existing URLs must not change. Which mechanism fits?"
+  options:
+    - "CloudFront signed cookies, set for members after they authenticate."
+    - "Setting the origin protocol policy to Match Viewer."
+    - "Field-level encryption on the distribution."
+    - "CloudFront signed URLs generated for each file."
+  correct: [A]
+  why: "Signed cookies and signed URLs grant the same controlled access, but cookies are the choice when you need to authorise many files at once and cannot change the URLs — the browser presents the cookie on every request to the distribution. Not \"CloudFront signed URLs generated for each file\": Signed URLs authorise one file each and rewrite the URL, which the requirement rules out. Not \"Field-level encryption on the distribution\": Field-level encryption protects specific form fields submitted by viewers; it does not restrict who may download content. Not \"Setting the origin protocol policy to Match Viewer\": Match Viewer controls whether CloudFront contacts the origin over HTTP or HTTPS and has nothing to do with authorisation."
+  ref: "Question perf-045 (CloudFront and content delivery) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-046
+  kind: choice
+  en: "A DynamoDB table throttles writes even though overall provisioned capacity is barely used. Analysis shows most writes concentrate on a handful of partition key values. What is the correct design change?"
+  options:
+    - "Reduce the number of distinct partition key values in the table."
+    - "Avoid composite primary keys that combine a partition key and a sort key."
+    - "Choose a partition key with low cardinality to keep related items together."
+    - "Choose a partition key with high cardinality so requests spread across many partitions."
+  correct: [D]
+  why: "Provisioned throughput is divided across physical partitions, and partitions are determined by the partition key. The more distinct key values a workload touches, the more evenly requests spread — which is why a high-cardinality partition key is the fix for a hot partition. Not \"Choose a partition key with low cardinality to keep related items...\": Low cardinality concentrates requests on fewer partitions, which is the cause of the throttling rather than the cure. Not \"Reduce the number of distinct partition key values in the table\": Fewer distinct values makes concentration worse. Not \"Avoid composite primary keys that combine a partition key and a sort...\": A composite key gives more distinct partitions to work with and is generally helpful, not something to avoid."
+  ref: "Question perf-046 (DynamoDB performance and caching) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-047
+  kind: choice
+  en: "A Linux rendering engine writes to an NFS share while a Windows editing application reads the same data over SMB. Today the company synchronises two file systems, doubling storage. Which AWS service removes the duplication with the fewest changes?"
+  options:
+    - "Amazon FSx for NetApp ONTAP, which serves the same data over NFS, SMB and iSCSI."
+    - "Amazon EFS for the Linux side and FSx for Windows File Server for the Windows side."
+    - "An Amazon S3 bucket accessed by both applications through the SDK."
+    - "Amazon FSx for Lustre linked to an S3 bucket."
+  correct: [A]
+  why: "FSx for NetApp ONTAP is multi-protocol: the same volume can be presented over NFS to Linux clients and SMB to Windows clients. One copy of the data serves both applications, and neither has to change protocol. Not \"Amazon EFS for the Linux side and FSx for Windows File Server for the...\": This is the existing arrangement in AWS form — two file systems and the same synchronisation and duplication problem. Not \"Amazon FSx for Lustre linked to an S3 bucket\": FSx for Lustre is a Linux HPC file system and does not serve SMB to Windows clients. Not \"An Amazon S3 bucket accessed by both applications through the SDK\": S3 is object storage with no file semantics; both applications would need rewriting."
+  ref: "Question perf-047 (Shared file storage selection) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-048
+  kind: choice
+  en: "A REST API on API Gateway and Lambda expects a sudden surge of traffic after a product announcement. What protects the backend from request spikes?"
+  options:
+    - "Put CloudFront in front of API Gateway to act as the backend cache."
+    - "Configure throttling limits and caching on the API Gateway stage."
+    - "Move the Lambda function into a VPC."
+    - "Nothing — API Gateway scales automatically and needs no configuration."
+  correct: [B]
+  why: "API Gateway supports rate and burst throttling per stage and per method, returning 429 above the limit, and stage caching serves repeated requests without invoking the backend. Together they shield the backend from spikes. Not \"Nothing — API Gateway scales automatically and needs no configuration\": API Gateway does scale, but without limits the traffic passes straight through to the backend, which is what needs protecting. Not \"Put CloudFront in front of API Gateway to act as the backend cache\": API Gateway already runs at edge locations for edge-optimised endpoints, and CloudFront does not throttle per-method request rates. Not \"Move the Lambda function into a VPC\": Putting a function in a VPC affects its network path, not its exposure to traffic volume."
+  ref: "Question perf-048 (Serverless compute with Lambda) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-049
+  kind: choice
+  en: "A .NET application on Windows Server with an Oracle Standard Edition backend must move to AWS with minimal development change and improved availability. Which TWO actions fit?"
+  options:
+    - "Migrate the Oracle database to Amazon RDS for Oracle in a Multi-AZ deployment using AWS DMS."
+    - "Refactor the application to .NET Core and run it on Amazon EKS with Fargate."
+    - "Replatform onto ECS with EC2 worker nodes using a Windows AMI and ECS Anywhere."
+    - "Convert the schema with AWS Schema Conversion Tool before migrating."
+    - "Rehost the .NET application on AWS Elastic Beanstalk in a Multi-AZ environment."
+  correct: [A, E]
+  why: "Elastic Beanstalk supports ASP.NET on IIS and provisions a Multi-AZ environment without code changes, which is the definition of a rehost. Moving Oracle to RDS for Oracle is a homogeneous migration that DMS handles directly, and Multi-AZ supplies the availability. Not \"Refactor the application to .NET Core and run it on Amazon EKS with...\": Refactoring to .NET Core is a significant code change, which the requirement explicitly excludes. Not \"Replatform onto ECS with EC2 worker nodes using a Windows AMI and ECS...\": Replatforming onto ECS with EC2 workers means managing the instances and reworking deployment — more change and more operations. Not \"Convert the schema with AWS Schema Conversion Tool before migrating\": SCT is for heterogeneous migrations. Oracle to Oracle needs no schema conversion."
+  ref: "Question perf-049 (Data transfer and migration services) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-050
+  kind: choice
+  en: "Raw 2 GB CSV files arrive hourly in S3 and must be converted to Apache Parquet in another bucket, with the conversion starting as soon as each file lands. Which design has the least operational overhead?"
+  options:
+    - "A Lambda function triggered by S3 events, with AWS Transfer Family moving the output."
+    - "A Glue crawler scheduled hourly to find new files and convert them."
+    - "An AWS Glue ETL job that writes Parquet output, triggered by an EventBridge rule on S3 Object Created events."
+    - "An Apache Spark job on EC2, invoked through a Lambda Function URL on each upload."
+  correct: [C]
+  why: "Glue handles the conversion to Parquet natively and is serverless, and an EventBridge rule on Object Created starts the job the moment a file arrives. Nothing is provisioned and no polling or scheduling logic is written. Not \"A Glue crawler scheduled hourly to find new files and convert them\": A crawler catalogues data on a schedule; it neither converts formats nor reacts to an upload immediately. Not \"A Lambda function triggered by S3 events, with AWS Transfer Family...\": A 2 GB conversion risks Lambda's memory and 15-minute limits, and Transfer Family is an SFTP service with no role in moving output between buckets. Not \"An Apache Spark job on EC2, invoked through a Lambda Function URL on...\": Running Spark on EC2 means provisioning, patching and scaling a cluster — the opposite of least overhead."
+  ref: "Question perf-050 (Analytics with Athena and Redshift) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-052
+  kind: choice
+  en: "A broadcaster must move a 500 TB video archive from its data centre into Amazon S3. The site has a 1 Gbps internet connection that is also carrying production traffic, and the migration must finish within a few weeks. After the bulk archive has landed, roughly 2 TB of newly produced footage per day must continue to flow into the same bucket. Which TWO actions together meet these requirements? (Select TWO.)"
+  options:
+    - "Enable S3 Transfer Acceleration on the destination bucket and upload the archive through the accelerated endpoint from the existing internet connection."
+    - "Copy the entire 500 TB archive over the existing internet connection using multipart uploads from a script running on several on-premises hosts in parallel, throttled so that production traffic keeps priority during business hours."
+    - "Deploy AWS DataSync with an on-premises agent and schedule daily tasks for the new footage."
+    - "Provision an AWS Direct Connect dedicated connection and transfer both the archive and the daily footage across it once the circuit has been installed."
+    - "Order AWS Snowball Edge devices, copy the archive onto them locally, and ship them to AWS for import."
+  correct: [C, E]
+  why: "Physically shipping the bulk archive on Snowball Edge devices removes the constraint of a shared 1 Gbps link, and DataSync then handles the recurring daily transfer with scheduling, integrity checking and retries built in. Together they cover the one-off migration and the steady-state flow. Not \"Copy the entire 500 TB archive over the existing internet connection...\": A 500 TB transfer over a shared 1 Gbps link would take months even at full utilisation, and saturating the link would damage production traffic. Not \"Provision an AWS Direct Connect dedicated connection and transfer...\": A dedicated connection is useful long term, but provisioning typically takes weeks before any data moves, so the deadline is at risk. Not \"Enable S3 Transfer Acceleration on the destination bucket and upload...\": Transfer Acceleration improves throughput over long distances but is still bounded by the same 1 Gbps local circuit, so the bulk copy remains too slow."
+  ref: "Question perf-052 (Data transfer and migration services) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-053
+  kind: choice
+  en: "A logistics company is moving a 4 TB Oracle database that backs a warehouse system to Amazon Aurora PostgreSQL. The application can tolerate only a few minutes of downtime at cutover, and the schema makes heavy use of Oracle-specific stored procedures and data types that have no direct PostgreSQL equivalent. The team wants to validate the converted schema before any production data is moved. Which approach should the architect recommend?"
+  options:
+    - "Run an AWS Database Migration Service full load task against the target Aurora cluster and allow DMS to create the target schema automatically as part of that task, then cut over when the load finishes."
+    - "Create an Aurora PostgreSQL read replica of the Oracle database and promote it to a standalone cluster once replication has caught up at the cutover point."
+    - "Export the Oracle database with Data Pump, copy the dump file to Amazon S3, and import it into the Aurora PostgreSQL cluster during an extended maintenance window."
+    - "Convert the schema with AWS Schema Conversion Tool, fix the objects its assessment report flags, then run a DMS task in full load plus change data capture mode."
+  correct: [D]
+  why: "Schema Conversion Tool performs the heterogeneous conversion and produces an assessment report identifying objects that require manual work, which is exactly the pre-migration validation the team wants. DMS with full load and change data capture then keeps the target current while the source stays online, holding cutover downtime to minutes. Not \"Run an AWS Database Migration Service full load task against the...\": DMS creates only a basic target schema of tables and primary keys. Stored procedures, custom types and secondary indexes are not converted, so the application would not work. Not \"Export the Oracle database with Data Pump, copy the dump file to...\": A Data Pump export and import is an offline operation whose duration scales with database size, breaching the few-minute downtime limit, and it does not translate Oracle-specific objects. Not \"Create an Aurora PostgreSQL read replica of the Oracle database and...\": Read replicas exist only within the same engine family. Aurora PostgreSQL cannot be made a replica of an Oracle database."
+  ref: "Question perf-053 (Data transfer and migration services) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-054
+  kind: choice
+  en: "An engineering firm is migrating a Windows-based document management application to EC2 instances in two Availability Zones. The application requires an SMB file share, and access to individual folders must be controlled by Active Directory group membership using standard Windows ACLs. The share must remain available if one Availability Zone fails. Which storage solution should the architect select?"
+  options:
+    - "Amazon FSx for Windows File Server in a Multi-AZ deployment, joined to AWS Managed Microsoft AD."
+    - "Amazon FSx for Lustre with a persistent deployment type linked to an S3 bucket holding the document repository."
+    - "Amazon Elastic File System with mount targets in both Availability Zones and POSIX permissions mapped to the corporate group identifiers."
+    - "An Amazon S3 File Gateway on an EC2 instance in each Availability Zone, exposing an SMB share backed by a shared S3 bucket."
+  correct: [A]
+  why: "FSx for Windows File Server is a native Windows file system that speaks SMB and enforces NTFS ACLs against Active Directory identities. A Multi-AZ deployment maintains a standby file server in a second Availability Zone with automatic failover, meeting the availability requirement. Not \"Amazon Elastic File System with mount targets in both Availability...\": EFS presents NFS with POSIX permissions. A Windows application expecting SMB and NTFS ACLs cannot use it without substantial change. Not \"An Amazon S3 File Gateway on an EC2 instance in each Availability...\": File Gateway offers SMB but is a caching appliance rather than a highly available file system, and running one per Availability Zone over the same bucket does not give consistent locking or failover. Not \"Amazon FSx for Lustre with a persistent deployment type linked to an...\": FSx for Lustre targets high-throughput compute workloads over POSIX clients. It does not provide SMB access or NTFS permissions."
+  ref: "Question perf-054 (Shared file storage selection) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-055
+  kind: choice
+  en: "A team is containerising a stateless web API that receives unpredictable, spiky traffic. They want to run it on Amazon ECS without managing, patching or scaling any EC2 capacity, and they want to pay only for the resources each task consumes while it runs. The application has no requirement for GPUs, custom kernel parameters or persistent instance storage. Which launch configuration meets these requirements with the LEAST operational overhead?"
+  options:
+    - "Run the service on EC2 instances with Docker installed and an Application Load Balancer distributing across them."
+    - "Run the service on Amazon EKS with self-managed node groups and the Kubernetes Cluster Autoscaler."
+    - "Run the service on ECS with the Fargate launch type, sizing CPU and memory per task definition."
+    - "Run the service on ECS with the EC2 launch type, backed by an Auto Scaling group using a cluster capacity provider."
+  correct: [C]
+  why: "Fargate removes the instance layer entirely: AWS provisions the compute for each task, billing is per vCPU and gigabyte-second for the task's lifetime, and there is no host to patch or scale. The workload has none of the characteristics that would force EC2. Not \"Run the service on ECS with the EC2 launch type, backed by an Auto...\": Capacity providers automate scaling but the EC2 instances remain the team's to patch, right-size and secure. Not \"Run the service on Amazon EKS with self-managed node groups and the...\": EKS with self-managed nodes adds both the Kubernetes control plane concepts and node maintenance, which is more overhead rather than less. Not \"Run the service on EC2 instances with Docker installed and an...\": Running Docker on plain EC2 gives no orchestration, so placement, health and scaling all become the team's responsibility."
+  ref: "Question perf-055 (Containers on ECS, EKS and Fargate) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-056
+  kind: choice
+  en: "A research group runs a tightly coupled computational fluid dynamics simulation across 40 EC2 instances. The processes exchange messages continuously using MPI, and profiling shows that internode latency dominates the run time. The team can tolerate the loss of the whole job if a rack fails, because a failed run is simply restarted. Which configuration gives the best network performance?"
+  options:
+    - "Launch the instances into a cluster placement group with an Elastic Fabric Adapter attached."
+    - "Launch the instances across three Availability Zones and enable enhanced networking with an Elastic Network Adapter."
+    - "Launch the instances into a partition placement group with one partition per rack of the simulation."
+    - "Launch the instances into a spread placement group so that each runs on distinct underlying hardware."
+  correct: [A]
+  why: "A cluster placement group packs instances into a single Availability Zone on hardware chosen for low-latency, high-bandwidth interconnect. Elastic Fabric Adapter adds OS-bypass for MPI traffic, which is the specific accelerator for tightly coupled HPC. Not \"Launch the instances into a spread placement group so that each runs...\": Spread placement deliberately separates instances to reduce correlated failure, which increases the latency this workload is bound by. Not \"Launch the instances into a partition placement group with one...\": Partition placement isolates groups from each other for large distributed data stores; it does not minimise latency between all nodes. Not \"Launch the instances across three Availability Zones and enable...\": Spreading across Availability Zones adds inter-AZ latency, and ENA alone lacks the OS-bypass path that EFA provides."
+  ref: "Question perf-056 (Placement groups and HPC networking) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-057
+  kind: choice
+  en: "A voice-over-IP provider runs media servers behind Network Load Balancers in three Regions. Traffic is UDP, entirely dynamic and not cacheable, and customers report variable quality attributed to internet routing. The provider wants clients to enter the AWS network as close to themselves as possible and needs two fixed anycast IP addresses to publish to enterprise customers for firewall allow-listing. Which service is MOST appropriate?"
+  options:
+    - "AWS Global Accelerator with an endpoint group per Region, providing two static anycast addresses."
+    - "AWS Direct Connect from each enterprise customer's premises into the nearest Region hosting a media server."
+    - "Amazon CloudFront with the Network Load Balancers as origins and caching disabled, using its global edge network for entry."
+    - "Amazon Route 53 latency-based routing across the three Network Load Balancers, with health checks on each Region."
+  correct: [A]
+  why: "Global Accelerator is the right tool for non-HTTP, non-cacheable traffic: it supports TCP and UDP, provides two static anycast IPs suited to firewall allow-listing, and routes from the nearest edge over the AWS backbone with fast failover between Regional endpoint groups. Not \"Amazon CloudFront with the Network Load Balancers as origins and...\": CloudFront handles HTTP and HTTPS only, so it cannot carry UDP media traffic regardless of caching settings. Not \"Amazon Route 53 latency-based routing across the three Network Load...\": Latency routing picks a Region at DNS resolution time but leaves the packets on the public internet and provides no static addresses. Not \"AWS Direct Connect from each enterprise customer's premises into the...\": Direct Connect is a private circuit per customer site; it does not help consumer clients and would be disproportionate for allow-listing."
+  ref: "Question perf-057 (Global Accelerator vs CloudFront) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-058
+  kind: choice
+  en: "A media company's Auto Scaling group runs an application whose instances take about eight minutes to become useful because they download a large model file and warm a local cache at boot. Traffic rises sharply and predictably each weekday at 19:00, and the current target tracking policy reacts too slowly, leaving requests queued for several minutes. The company wants the delay removed without paying for full capacity all day. Which change should the architect make?"
+  options:
+    - "Replace target tracking with a simple scaling policy that adds a larger fixed number of instances on each CloudWatch alarm breach."
+    - "Increase the group's desired capacity permanently to the evening peak so that instances are always ready when the traffic arrives."
+    - "Add a warm pool of pre-initialised instances held in a stopped state for scale-out to draw from."
+    - "Shorten the group's default cooldown period so successive scaling activities can launch instances more frequently."
+  correct: [C]
+  why: "A warm pool keeps instances that have finished the expensive initialisation in a stopped state, where only storage is billed. On scale-out they are started rather than launched from scratch, which removes most of the eight-minute delay without running full capacity continuously. Not \"Replace target tracking with a simple scaling policy that adds a...\": Adding more instances per step does not shorten how long each one takes to become useful, so the queue still forms. Not \"Increase the group's desired capacity permanently to the evening peak...\": Permanently sizing for peak solves the latency but is exactly the all-day cost the company wants to avoid. Not \"Shorten the group's default cooldown period so successive scaling...\": Cooldown governs the gap between scaling activities, not instance start-up time; shortening it can cause over-scaling instead."
+  ref: "Question perf-058 (Auto Scaling policies and warm pools) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-059
+  kind: choice
+  en: "A transactional database on EC2 needs sustained 40,000 IOPS at under one millisecond latency on a 2 TB volume, and the business requires the storage itself to offer higher durability than a standard volume because a rebuild would take days. Cost matters but is secondary to meeting these figures. Which EBS volume type should the architect choose?"
+  options:
+    - "st1 throughput-optimized HDD, sized so that the volume's baseline throughput covers the workload."
+    - "gp3 with the maximum provisioned IOPS and throughput settings applied to the volume."
+    - "Two gp3 volumes of 1 TB each, striped with RAID 0 to combine their IOPS."
+    - "io2 Block Express, provisioned at 40,000 IOPS."
+  correct: [D]
+  why: "io2 Block Express supports up to 256,000 IOPS per volume with sub-millisecond latency and is rated at 99.999 per cent durability, an order of magnitude above other EBS types. It is the only option meeting the latency, IOPS and durability requirements together. Not \"gp3 with the maximum provisioned IOPS and throughput settings applied...\": gp3 tops out at 16,000 IOPS per volume, well short of the requirement, and carries standard EBS durability. Not \"Two gp3 volumes of 1 TB each, striped with RAID 0 to combine their...\": Striping two gp3 volumes reaches 32,000 IOPS at best, still short, and RAID 0 lowers effective durability rather than raising it. Not \"st1 throughput-optimized HDD, sized so that the volume's baseline...\": st1 is a magnetic type optimised for large sequential throughput and is entirely unsuited to low-latency transactional IOPS."
+  ref: "Question perf-059 (EBS volume type selection) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-060
+  kind: choice
+  en: "A machine learning team trains models on a 20 TB dataset held in Amazon S3. Training runs across a fleet of GPU instances that must read the data as a POSIX file system at hundreds of gigabytes per second, and the cluster is created for each run and destroyed afterwards. The team wants the file system to present the S3 data without a manual copy step. Which storage should the architect select?"
+  options:
+    - "Amazon FSx for OpenZFS provisioned with high throughput and populated from S3 at the start of each run."
+    - "Amazon FSx for Lustre with a data repository association linked to the S3 bucket."
+    - "Amazon EBS io2 volumes attached to each GPU instance and hydrated from the bucket before training begins."
+    - "Amazon Elastic File System in General Purpose mode with Elastic Throughput enabled for the training fleet."
+  correct: [B]
+  why: "FSx for Lustre is the high-performance parallel file system for HPC and ML, reaching hundreds of gigabytes per second. Linking it to an S3 bucket presents the objects as files and loads them lazily on access, so no separate copy step is needed. Not \"Amazon Elastic File System in General Purpose mode with Elastic...\": EFS is a general-purpose NFS file system whose throughput ceiling is far below what a GPU training fleet demands. Not \"Amazon FSx for OpenZFS provisioned with high throughput and populated...\": FSx for OpenZFS has no native S3 integration, so each run would begin with the manual load the team wants to avoid. Not \"Amazon EBS io2 volumes attached to each GPU instance and hydrated...\": EBS volumes attach to a single instance, so a shared dataset would have to be duplicated per instance and hydrated every run."
+  ref: "Question perf-060 (Shared file storage selection) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-061
+  kind: choice
+  en: "A telemetry pipeline uses a Kinesis data stream with 20 shards. Five consumer applications each read the full stream, and operators report rising millisecond-level iterator age and occasional read throughput exceptions. Each shard's 2 MB per second read limit is being shared across all five consumers. The team wants each consumer to get full throughput without adding shards. What should they configure?"
+  options:
+    - "Register each consumer for enhanced fan-out."
+    - "Increase the stream's retention period so that consumers have longer to catch up on the backlog."
+    - "Switch the stream to on-demand capacity mode so that shard count is managed automatically."
+    - "Have the five consumers share a single application that fans records out through Amazon SNS."
+  correct: [A]
+  why: "Enhanced fan-out gives each registered consumer its own 2 MB per second per shard read throughput and pushes records over HTTP/2, which also cuts propagation delay. Five consumers therefore stop competing for the shared limit without changing shard count. Not \"Increase the stream's retention period so that consumers have longer...\": Retention controls how long records remain available, not how fast consumers may read them, so the contention is unchanged. Not \"Switch the stream to on-demand capacity mode so that shard count is...\": On-demand mode scales shards with write throughput; the constraint here is read contention among consumers. Not \"Have the five consumers share a single application that fans records...\": Introducing an SNS fan-out layer adds a hop, cost and a second delivery model, when Kinesis provides the capability directly."
+  ref: "Question perf-061 (Streaming ingestion with Kinesis) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-perf-062
+  kind: choice
+  en: "A product catalogue in Amazon DynamoDB serves a read-heavy storefront. A small number of popular items are read thousands of times per second, producing throttling on a single partition while overall table capacity sits well below its provisioned level. The team wants microsecond reads for those hot items without changing the application's DynamoDB API calls. What should the architect add?"
+  options:
+    - "On-demand capacity mode on the table so that DynamoDB absorbs the spikes on the hot partition automatically."
+    - "A global secondary index on the popular attribute so reads are distributed across additional partitions."
+    - "An Amazon ElastiCache for Redis cluster, with the application checking the cache before falling back to the table."
+    - "An Amazon DynamoDB Accelerator cluster in front of the table, with the application pointed at the DAX endpoint."
+  correct: [D]
+  why: "DAX is an in-memory cache that speaks the DynamoDB API, so the application changes only its endpoint. It serves cached reads in microseconds and absorbs the hot-key traffic before it reaches the table, removing the partition throttling. Not \"An Amazon ElastiCache for Redis cluster, with the application...\": ElastiCache would work but requires cache-aside logic in the application, which the requirement to leave API calls unchanged rules out. Not \"A global secondary index on the popular attribute so reads are...\": A global secondary index creates another copy with its own partitions; the same hot key still concentrates on one of them. Not \"On-demand capacity mode on the table so that DynamoDB absorbs the...\": On-demand adapts total table capacity but does not lift the per-partition throughput ceiling that a hot key runs into."
+  ref: "Question perf-062 (DynamoDB performance and caching) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]

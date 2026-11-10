@@ -231,7 +231,7 @@ in 180 minutes with a pass at 750 for the professionals:
 
 | Exam | Questions | Domains (questions in the bank) |
 |---|---|---|
-| Solutions Architect - Associate (SAA-C03) | 100 | secure 30, resilient 26, high-performing 24, cost-optimized 20 |
+| Solutions Architect - Associate (SAA-C03) | 329 + 325 | secure 95, resilient 86, high-performing 79, cost-optimized 69, plus the open practice bank |
 | Developer - Associate (DVA-C02) | 84 | development 27, security 21, deployment 20, troubleshooting 16 |
 | CloudOps Engineer - Associate (SOA-C03) | 398 | monitoring 81, reliability 81, automation 81, security 77, networking 78 |
 | Solutions Architect - Professional (SAP-C02) | 97 | organizational complexity 25, new solutions 29, continuous improvement 24, migration 19 |
@@ -248,7 +248,7 @@ credited on its topic page and in its reference, with the licences in
 - SOA-C03: 325 questions from
   [aws-cloudops-engineer-associate](https://github.com/zghanw/aws-cloudops-engineer-associate)
   (zghanw), 65 per domain, merged into the domains and the mock exam.
-- DVA-C02, SAP-C02, DOP-C02: 8, 16 and 17 questions from
+- SAA-C03, DVA-C02, SAP-C02, DOP-C02: 229, 8, 16 and 17 questions from
   [aws-trainer](https://github.com/renehmj/aws-trainer) (Reneh Majnounian),
   merged into the domains and the mock exams.
 

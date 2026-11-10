@@ -70,3 +70,9 @@ databases, networks, and data ingestion and transformation.
 
 Source: AWS Certified Solutions Architect - Associate (SAA-C03) exam guide,
 Content Domain 3; AWS service documentation.
+
+## Questions from open banks
+
+- 55 questions by **Reneh Majnounian** from github.com/renehmj/aws-trainer (commit 842dc87), MIT licence. Their ids start with `rm-`; each one's reference names the original question.
+
+They are written by their authors as original practice questions, not copied from the exam, and are drawn by the mock exam alongside the questions above. Their wording is unchanged; the answer options are shuffled, and the explanations of the wrong options are joined into one explanation. THIRD-PARTY-NOTICES.md in the repository holds the licences.

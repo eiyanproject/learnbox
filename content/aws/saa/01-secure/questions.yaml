@@ -390,3 +390,854 @@
   why: "A security group rule can reference another security group, so any instance in the web tier's group is allowed whatever its address, and nothing else is. The VPC CIDR would let every resource in the VPC in."
   ref: "Amazon VPC User Guide: Security group rules"
   exams: [saa]
+
+- id: rm-saa-sec-001
+  kind: choice
+  en: "A logistics company attaches an IAM identity-based policy to a developer group that explicitly allows s3:GetObject on arn:aws:s3:::freight-reports/*. The account is in an AWS Organizations OU whose SCP allows all S3 actions. The freight-reports bucket policy contains an explicit Deny for s3:GetObject when aws:SourceVpce does not match the account's VPC endpoint. A developer working from a corporate laptop over the public internet calls GetObject on an object in that bucket. What happens?"
+  options:
+    - "The request is denied, but only if the developer's group also lacks s3:ListBucket permission."
+    - "The request succeeds, because the SCP allows all S3 actions and SCPs are evaluated last."
+    - "The request is denied, because an explicit Deny in any applicable policy overrides every Allow."
+    - "The request succeeds, because the identity-based policy explicitly allows the action and identity policies take precedence over resource policies."
+  correct: [C]
+  why: "IAM evaluation logic is fixed: an explicit Deny anywhere in the evaluated policy set always wins, then an explicit Allow, and anything not allowed is an implicit deny. The bucket policy's Deny is conditioned on aws:SourceVpce, and a request over the public internet carries no VPC endpoint key, so the condition matches and the Deny applies. Neither the identity policy nor the SCP can override it. Not \"The request succeeds, because the identity-based policy explicitly...\": Identity-based policies do not take precedence over resource-based policies. Both are evaluated together, and a Deny in either one is decisive. Not \"The request succeeds, because the SCP allows all S3 actions and SCPs...\": SCPs never grant permissions — they only set the maximum available permissions. An SCP that allows all S3 actions cannot override a bucket policy Deny. Not \"The request is denied, but only if the developer's group also lacks...\": ListBucket is a separate bucket-level action and has no bearing on whether the GetObject Deny applies."
+  ref: "Question sec-001 (IAM policy evaluation) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-002
+  kind: choice
+  en: "A media analytics firm runs its data platform in account B and needs a batch job running on EC2 in account A to read objects from an S3 bucket in account B. Security requires that no long-lived credentials exist anywhere in account A, and that account B retains the ability to revoke access unilaterally. Which approach meets these requirements?"
+  options:
+    - "Make the bucket in account B public and restrict access using a bucket policy condition on the account A VPC CIDR."
+    - "Create an IAM user in account B with S3 read permissions and store its access keys in AWS Secrets Manager in account A."
+    - "Create an IAM role in account B whose trust policy trusts the EC2 instance role in account A, and have the batch job call sts:AssumeRole."
+    - "Enable S3 Cross-Region Replication from account B into a bucket in account A and read the replica locally."
+  correct: [C]
+  why: "The standard cross-account pattern is a role in the resource-owning account (B) with a trust policy naming the principal in account A, assumed via STS. Credentials are temporary, nothing long-lived lands in account A, and account B can revoke access at any time by editing the trust policy or the role's permissions. Not \"Create an IAM user in account B with S3 read permissions and store...\": This creates long-lived access keys, which the requirement explicitly forbids. Storing them in Secrets Manager protects them but does not eliminate them. Not \"Make the bucket in account B public and restrict access using a...\": Making a bucket public is a serious exposure, and a VPC CIDR condition is meaningless for traffic arriving over the internet since private CIDRs are not preserved as the source. Not \"Enable S3 Cross-Region Replication from account B into a bucket in...\": Replication copies the data rather than granting access, doubling storage cost, adding lag, and handing account A a copy that account B can no longer revoke."
+  ref: "Question sec-002 (Cross-account access with IAM roles) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-003
+  kind: choice
+  en: "A healthcare records platform must store documents in S3 under an audit rule requiring that every decryption event be attributable to a named principal in AWS CloudTrail, and that the security team be able to disable all decryption of the archive within minutes during an incident. Which encryption configuration satisfies both requirements with the least operational effort?"
+  options:
+    - "SSE-C, with the application supplying the key on every request."
+    - "SSE-S3 with S3 server access logging enabled on the bucket."
+    - "SSE-KMS using a customer managed key, with CloudTrail logging KMS Decrypt calls."
+    - "Client-side encryption with keys held in an on-premises HSM."
+  correct: [C]
+  why: "SSE-KMS with a customer managed key records each Decrypt call in CloudTrail with the calling principal, satisfying attribution. Because the key is customer managed, the security team can disable the key (or revoke grants) to stop all decryption almost immediately — a control that AWS managed keys and SSE-S3 do not provide. Not \"SSE-S3 with S3 server access logging enabled on the bucket\": SSE-S3 keys are managed entirely by AWS with no per-decryption CloudTrail attribution and no customer-controlled kill switch. Not \"SSE-C, with the application supplying the key on every request\": SSE-C requires the application to supply and manage the key material on every request; AWS never logs a KMS event for it and there is no central way to disable decryption. Not \"Client-side encryption with keys held in an on-premises HSM\": Client-side encryption with an on-premises HSM can meet the control requirement but adds substantial operational effort and gives no CloudTrail record of decryption, which happens outside AWS."
+  ref: "Question sec-003 (S3 encryption options) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-004
+  kind: choice
+  en: "An architect is documenting the differences between security groups and network ACLs for a new VPC design. Which TWO statements are correct?"
+  options:
+    - "Security group rules are evaluated in numbered order, and the first match wins."
+    - "Network ACLs support explicit deny rules; security groups support allow rules only."
+    - "Network ACLs are stateful and evaluate rules in numerical order until a match is found."
+    - "Security groups are attached to subnets, while network ACLs are attached to elastic network interfaces."
+    - "Security groups are stateful: return traffic for an allowed inbound flow is automatically permitted outbound."
+  correct: [B, E]
+  why: "Security groups are stateful and contain only allow rules — all rules are evaluated together and there is no ordering. Network ACLs are stateless, apply at the subnet boundary, are evaluated in rule-number order, and support both allow and deny rules, which is why they are the tool for blocking a specific IP. Not \"Network ACLs are stateful and evaluate rules in numerical order until...\": Network ACLs are stateless, not stateful. Return traffic must be permitted by an explicit outbound rule (typically on ephemeral ports). Not \"Security groups are attached to subnets, while network ACLs are...\": This is reversed: security groups attach to ENIs, network ACLs attach to subnets. Not \"Security group rules are evaluated in numbered order, and the first...\": Security group rules are not ordered or numbered; the whole rule set is evaluated as a union of allows."
+  ref: "Question sec-004 (Security groups vs NACLs) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-005
+  kind: choice
+  en: "A payments team stores an Amazon RDS for PostgreSQL master password as a SecureString in Systems Manager Parameter Store. A new compliance rule requires the credential to be rotated automatically every 30 days without application downtime or custom scheduling code. What should the team do?"
+  options:
+    - "Enable Parameter Store advanced parameters, which adds native 30-day credential rotation."
+    - "Store the password in an encrypted S3 object and use an S3 Lifecycle rule to expire and regenerate it every 30 days."
+    - "Move the credential to AWS Secrets Manager and enable managed rotation with the built-in RDS rotation configuration."
+    - "Keep the parameter and create an EventBridge rule that triggers a custom Lambda function to change the password every 30 days."
+  correct: [C]
+  why: "Secrets Manager provides managed rotation for supported databases including RDS: it deploys and schedules the rotation logic for you, updates the secret, and applications retrieving the current version continue working. This meets the requirement without custom scheduling code. Not \"Keep the parameter and create an EventBridge rule that triggers a...\": This works technically but is exactly the custom scheduling and rotation code the requirement rules out, and the team owns the failure modes. Not \"Enable Parameter Store advanced parameters, which adds native 30-day...\": Advanced parameters raise size and throughput limits and add policies such as expiration notification, but Parameter Store has no built-in credential rotation. Not \"Store the password in an encrypted S3 object and use an S3 Lifecycle...\": Lifecycle rules expire objects; they cannot generate or rotate credentials, and an S3 object is not a credential store."
+  ref: "Question sec-005 (Secrets management and rotation) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-006
+  kind: choice
+  en: "An insurance company runs an application on EC2 instances in private subnets. The instances currently reach Amazon S3 and Amazon DynamoDB through a NAT gateway. Security now requires that this traffic never traverse the public internet, and finance wants the associated NAT data-processing charges eliminated. Which change meets both goals?"
+  options:
+    - "Create interface VPC endpoints for S3 and DynamoDB and keep the NAT gateway for failover."
+    - "Configure an AWS Site-to-Site VPN between the VPC and the S3 and DynamoDB service endpoints."
+    - "Create gateway VPC endpoints for S3 and DynamoDB and add the endpoints to the private subnets' route tables."
+    - "Move the instances to public subnets with Elastic IPs so traffic goes directly to the AWS service endpoints."
+  correct: [C]
+  why: "S3 and DynamoDB are the two services supported by gateway VPC endpoints. A gateway endpoint adds a route table prefix-list entry so traffic to those services stays on the AWS network, and gateway endpoints carry no hourly or per-GB charge — removing both the internet path and the NAT processing cost. Not \"Create interface VPC endpoints for S3 and DynamoDB and keep the NAT...\": An interface endpoint for S3 is possible but bills hourly plus per-GB, and DynamoDB is reached via gateway endpoints; keeping the NAT gateway also preserves the cost the requirement asks to eliminate. Not \"Move the instances to public subnets with Elastic IPs so traffic goes...\": Public subnets with Elastic IPs send the traffic over the public internet, which is precisely what the security requirement forbids. Not \"Configure an AWS Site-to-Site VPN between the VPC and the S3 and...\": Site-to-Site VPN connects a VPC to on-premises networks. You cannot terminate a VPN on an AWS service endpoint."
+  ref: "Question sec-006 (VPC endpoints and private connectivity) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-007
+  kind: choice
+  en: "A retail site fronted by Application Load Balancer and Amazon CloudFront is being hit by two problems at once: a volumetric UDP and SYN flood against the edge, and application-layer requests attempting SQL injection against the checkout API. The company wants layered protection with a 24/7 response team available during attacks. Which combination should the architect deploy?"
+  options:
+    - "Amazon Inspector on the ALB, plus Shield Standard, which includes the AWS Shield Response Team."
+    - "Network ACLs denying the attacking source ranges, plus Amazon GuardDuty for the injection attempts."
+    - "AWS Shield Advanced for the network and transport layer flood, plus AWS WAF with a SQL injection rule group for the application layer."
+    - "AWS WAF with the SQL database managed rule group only, since WAF inspects all packet types."
+  correct: [C]
+  why: "The two attacks sit at different layers. Shield (Advanced) addresses layers 3 and 4 volumetric floods and includes access to the AWS Shield Response Team plus cost protection. AWS WAF operates at layer 7 and its managed SQL database rule group blocks injection attempts. Together they provide the layered defence described. Not \"AWS WAF with the SQL database managed rule group only, since WAF...\": WAF inspects HTTP/HTTPS requests only; it cannot mitigate a UDP or SYN flood, and it has no 24/7 response team. Not \"Network ACLs denying the attacking source ranges, plus Amazon...\": NACLs cannot keep up with a distributed volumetric flood, and GuardDuty is a detection service — it does not block SQL injection. Not \"Amazon Inspector on the ALB, plus Shield Standard, which includes the...\": Inspector scans workloads for vulnerabilities rather than filtering traffic, and Shield Standard is automatic and free but does not include Shield Response Team access."
+  ref: "Question sec-007 (Edge protection with WAF and Shield) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-008
+  kind: choice
+  en: "A data science account (account D) must decrypt objects in an S3 bucket owned by a platform account (account P). The objects are encrypted with a customer managed KMS key in account P. The bucket policy already grants account D s3:GetObject, and account D's role has an identity policy allowing both s3:GetObject and kms:Decrypt on the key ARN. Requests still fail with an access denied error from KMS. What is the most likely cause?"
+  options:
+    - "The role in account D must be in the same Region as the S3 bucket for KMS to resolve the key."
+    - "The KMS key policy in account P does not grant account D permission to use the key."
+    - "KMS keys cannot be used across accounts; the data must be re-encrypted with a key in account D."
+    - "The S3 bucket is missing a Requester Pays configuration."
+  correct: [B]
+  why: "KMS access is governed by the key policy first. For cross-account use, the key policy in the owning account must grant the external account (or principal) permission, and the external account must then delegate that permission to its principals via IAM. Having only the IAM side configured is the classic cause of an access denied from KMS. Not \"KMS keys cannot be used across accounts; the data must be...\": KMS keys explicitly support cross-account use through key policies and grants; re-encryption is unnecessary. Not \"The S3 bucket is missing a Requester Pays configuration\": Requester Pays governs who is billed for data transfer and requests, not whether a KMS decrypt is authorised. Not \"The role in account D must be in the same Region as the S3 bucket for...\": KMS keys are regional and the key must be in the bucket's Region, but the calling principal's account has no Region, so this does not explain the denial."
+  ref: "Question sec-008 (KMS key policies and grants) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-009
+  kind: choice
+  en: "An enterprise with 40 AWS accounts under AWS Organizations wants its 900 staff to sign in with their existing corporate directory credentials and receive different permissions depending on which account they are entering. Creating IAM users per account is explicitly ruled out. What should the architect implement?"
+  options:
+    - "An IAM SAML identity provider configured separately in each of the 40 accounts, with one role per employee."
+    - "Amazon Cognito user pools federated to the corporate directory, with users assuming roles per account."
+    - "AWS IAM Identity Center connected to the corporate identity provider, with permission sets assigned to groups per account."
+    - "An IAM user in the management account for each employee, with cross-account roles they can assume."
+  correct: [C]
+  why: "IAM Identity Center is the workforce access service for Organizations. It federates to an external identity provider so staff keep their existing credentials, and permission sets are assigned to groups and applied across whichever accounts they need — one place to manage, no per-account IAM users. Not \"An IAM user in the management account for each employee, with...\": This still creates 900 long-lived IAM users, which the requirement rules out, and leaves credential lifecycle managed separately from the corporate directory. Not \"Amazon Cognito user pools federated to the corporate directory, with...\": Cognito is for application end users, not workforce access to the AWS console and CLI. Not \"An IAM SAML identity provider configured separately in each of the 40...\": Configuring the identity provider and per-employee roles 40 times is exactly the administrative burden Identity Center exists to remove."
+  ref: "Question sec-009 (Identity federation and IAM Identity Center) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-010
+  kind: choice
+  en: "A security team must guarantee that no one — including account administrators — can stop or delete CloudTrail logging in any of the organization's member accounts. Administrators must otherwise keep their existing permissions. What is the most effective control?"
+  options:
+    - "A permissions boundary applied to the administrator roles in each member account."
+    - "An AWS Config rule that detects a disabled trail and raises a finding."
+    - "A service control policy attached to the organizational root that denies cloudtrail:StopLogging, cloudtrail:DeleteTrail and cloudtrail:UpdateTrail."
+    - "An IAM policy attached to every administrator in every account denying those CloudTrail actions."
+  correct: [C]
+  why: "An SCP sets the maximum permissions available in member accounts, and nothing an account administrator does can exceed it. A deny on the CloudTrail mutation actions at the root therefore makes disabling logging impossible in member accounts while leaving all other permissions intact. Not \"An IAM policy attached to every administrator in every account...\": An account administrator can edit or detach an IAM policy in their own account, so this is advisory rather than a guarantee. Not \"An AWS Config rule that detects a disabled trail and raises a finding\": Config detects the change after it happens. It does not prevent it, and the requirement is prevention. Not \"A permissions boundary applied to the administrator roles in each...\": Permissions boundaries constrain individual identities and must be applied and maintained per identity per account; an administrator with IAM rights can alter them."
+  ref: "Question sec-010 (Organizations SCPs and guardrails) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-011
+  kind: choice
+  en: "After an audit found two buckets unintentionally readable by anyone on the internet, a company wants a control that prevents any bucket in the account from being made public, regardless of what bucket policies or ACLs individual teams write in future. What should be applied?"
+  options:
+    - "Enable default SSE-S3 encryption on all buckets."
+    - "Turn on S3 Versioning and server access logging for all buckets."
+    - "Add an explicit deny for s3:GetObject to every existing bucket policy."
+    - "Enable S3 Block Public Access at the account level."
+  correct: [D]
+  why: "Account-level Block Public Access overrides bucket policies and ACLs that would otherwise grant public access, and it applies to buckets created later as well. That makes it a preventative guardrail rather than a per-bucket fix. Not \"Add an explicit deny for s3:GetObject to every existing bucket policy\": This only covers buckets that exist today, and a team can edit its own bucket policy tomorrow. Not \"Enable default SSE-S3 encryption on all buckets\": Encryption at rest protects stored data; it has no bearing on who is authorised to read an object. Not \"Turn on S3 Versioning and server access logging for all buckets\": Versioning and logging aid recovery and investigation after the fact. Neither prevents public exposure."
+  ref: "Question sec-011 (S3 access controls and Block Public Access) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-012
+  kind: choice
+  en: "A public website is served through Amazon CloudFront with an Application Load Balancer origin. The company wants HTTPS on its custom domain with certificates that renew automatically and cost nothing. Where must the certificates be requested?"
+  options:
+    - "A single ACM certificate in the ALB's Region, referenced by both CloudFront and the ALB."
+    - "A certificate stored in AWS Secrets Manager and referenced by both services."
+    - "An ACM certificate in us-east-1 for the CloudFront distribution, and a separate ACM certificate in the ALB's own Region for the ALB."
+    - "A certificate imported into ACM from a third-party certificate authority, in any Region."
+  correct: [C]
+  why: "CloudFront only accepts certificates from ACM in us-east-1, because it is a global service managed from that Region. An ALB, being regional, needs a certificate in its own Region. Two ACM certificates are therefore required, and ACM public certificates are free and renew automatically when DNS validation is in place. Not \"A single ACM certificate in the ALB's Region, referenced by both...\": CloudFront cannot use a certificate from an arbitrary Region — the us-east-1 requirement is specific and enforced. Not \"A certificate imported into ACM from a third-party certificate...\": Imported certificates are supported but AWS cannot renew them automatically, which the requirement demands. Not \"A certificate stored in AWS Secrets Manager and referenced by both...\": Secrets Manager stores secrets; it is not a certificate source for CloudFront or ALB listeners."
+  ref: "Question sec-012 (Certificate management and encryption in transit) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-013
+  kind: choice
+  en: "A company wants continuous detection of compromised credentials, cryptocurrency-mining activity and communication with known-malicious IP addresses across 25 accounts, with all findings visible in one place and no agents to deploy. What should the architect enable?"
+  options:
+    - "VPC Flow Logs delivered to CloudWatch Logs, with metric filters for suspicious ports."
+    - "AWS Config conformance packs applied to all accounts."
+    - "Amazon Inspector in every account, with results exported to Amazon S3."
+    - "Amazon GuardDuty across the organization with a delegated administrator account, and AWS Security Hub to aggregate findings."
+  correct: [D]
+  why: "GuardDuty analyses CloudTrail events, VPC flow logs and DNS logs continuously with no agents, and detects exactly the categories named — credential misuse, mining, and traffic to known-bad destinations. Enabling it organization-wide with a delegated administrator, and aggregating in Security Hub, gives the single view required. Not \"Amazon Inspector in every account, with results exported to Amazon S3\": Inspector scans workloads for software vulnerabilities and unintended network exposure; it does not detect credential compromise or malicious network activity. Not \"VPC Flow Logs delivered to CloudWatch Logs, with metric filters for...\": Flow logs are raw data. Writing and maintaining detection logic over them is precisely the work GuardDuty removes, and DNS and CloudTrail signals would still be missing. Not \"AWS Config conformance packs applied to all accounts\": Config evaluates resource configuration against rules. It reports non-compliance, not active threats."
+  ref: "Question sec-013 (Threat detection with GuardDuty and Security Hub) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-014
+  kind: choice
+  en: "An investigator needs to answer two questions about a production security group: which principal changed it and when, and what its rules looked like on each day of the past month. Which TWO services provide these answers?"
+  options:
+    - "AWS Config, for the configuration timeline showing the security group's state over time."
+    - "Amazon CloudWatch metrics, for a per-rule change counter."
+    - "VPC Flow Logs, for the historical rule set applied to each flow."
+    - "AWS Trusted Advisor, for a daily snapshot of security group configuration."
+    - "AWS CloudTrail, for the API call that modified the security group and the identity that made it."
+  correct: [A, E]
+  why: "The two services answer different halves of the question. CloudTrail records API activity — who called AuthorizeSecurityGroupIngress, from where, and when. Config records resource configuration over time, so it can show the security group's exact rules on any given day and how they changed. Not \"Amazon CloudWatch metrics, for a per-rule change counter\": CloudWatch collects metrics and logs; it does not maintain resource configuration history. Not \"VPC Flow Logs, for the historical rule set applied to each flow\": Flow logs record traffic that was accepted or rejected, not the rule set itself or who changed it. Not \"AWS Trusted Advisor, for a daily snapshot of security group...\": Trusted Advisor gives current best-practice checks, not a historical configuration timeline."
+  ref: "Question sec-014 (Auditing with CloudTrail and Config) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-015
+  kind: choice
+  en: "A platform team lets application teams create their own IAM roles, but must guarantee that no role they create can ever exceed a fixed set of permissions — even though the application teams hold iam:CreateRole and iam:AttachRolePolicy. Which mechanism enforces this?"
+  options:
+    - "Apply a service control policy that denies iam:CreateRole in the account."
+    - "Attach the maximum permission set as a managed policy to every role the application teams create."
+    - "Enable IAM Access Analyzer to report roles that exceed the intended permissions."
+    - "Attach a permissions boundary policy and require, via a condition in the application team's own policy, that any role they create has that boundary attached."
+  correct: [D]
+  why: "A permissions boundary caps the maximum permissions an identity can have — the effective permissions are the intersection of the boundary and the attached policies. Conditioning the team's iam:CreateRole on iam:PermissionsBoundary means every role they create is born capped, no matter what policies they attach later. Not \"Attach the maximum permission set as a managed policy to every role...\": Attaching a policy grants permissions; it does not cap them. The team could attach an additional, broader policy afterwards. Not \"Apply a service control policy that denies iam:CreateRole in the...\": Denying role creation outright removes the delegation the platform team wants to provide. Not \"Enable IAM Access Analyzer to report roles that exceed the intended...\": Access Analyzer reports findings after the fact. It is detection, not enforcement."
+  ref: "Question sec-015 (IAM policy evaluation) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-016
+  kind: choice
+  en: "An application writes several million small objects per day to a bucket encrypted with SSE-KMS using a customer managed key. The KMS request charges have become a significant line item, but the security team requires that the customer managed key remain in use. What reduces the cost with the least change?"
+  options:
+    - "Enable S3 Bucket Keys on the bucket."
+    - "Batch the objects into larger archives before upload."
+    - "Switch the bucket to SSE-S3 encryption."
+    - "Move the objects to S3 Glacier Instant Retrieval."
+  correct: [A]
+  why: "S3 Bucket Keys have S3 generate a short-lived bucket-level data key from the KMS key and reuse it for many objects, which cuts KMS request traffic — and therefore request charges — dramatically, by up to 99 percent. The customer managed key stays in use and no application change is needed. Not \"Switch the bucket to SSE-S3 encryption\": SSE-S3 would remove the KMS charges but abandons the customer managed key the security team requires. Not \"Batch the objects into larger archives before upload\": Batching changes the application and the access pattern, which is a far larger change than a bucket setting. Not \"Move the objects to S3 Glacier Instant Retrieval\": Storage class affects storage pricing and retrieval, not the number of KMS requests made when objects are written or read."
+  ref: "Question sec-016 (S3 encryption options) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-017
+  kind: choice
+  en: "Lambda functions attached to private subnets must retrieve database credentials from AWS Secrets Manager. There is no NAT gateway and the security team will not add internet egress. What is required?"
+  options:
+    - "An internet gateway attached to the VPC with a route from the private subnets."
+    - "An interface VPC endpoint for Secrets Manager in the subnets the functions use, with a security group allowing HTTPS."
+    - "Copying the secrets into Lambda environment variables at deployment time."
+    - "A gateway VPC endpoint for Secrets Manager added to the subnets' route tables."
+  correct: [B]
+  why: "Secrets Manager is reached through an interface VPC endpoint, which places an elastic network interface with a private IP into your subnets and routes the API calls privately over PrivateLink. The endpoint's security group must permit HTTPS from the function's security group. Not \"A gateway VPC endpoint for Secrets Manager added to the subnets'...\": Gateway endpoints exist only for Amazon S3 and DynamoDB. Every other service uses interface endpoints. Not \"An internet gateway attached to the VPC with a route from the private...\": A route to an internet gateway would give the subnets internet egress, which the security team has ruled out — and would also make them public subnets. Not \"Copying the secrets into Lambda environment variables at deployment...\": Baking secrets into environment variables defeats the purpose of Secrets Manager, breaks rotation, and exposes the values to anyone who can read the function configuration."
+  ref: "Question sec-017 (VPC endpoints and private connectivity) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-018
+  kind: choice
+  en: "A media company stores private videos in Amazon S3. Paying customers must be able to download a specific video directly from S3 for up to 15 minutes after they click a link, without the bucket being public and without the company proxying the file through its own servers. What should the architect implement?"
+  options:
+    - "Generate a presigned URL for the object with a 15-minute expiry, created by a backend role that can read the object."
+    - "Add a bucket policy allowing s3:GetObject to everyone, with a condition on the customer's IP address."
+    - "Give each paying customer an IAM user with read access to the bucket."
+    - "Turn off Block Public Access and rely on obscure object key names."
+  correct: [A]
+  why: "A presigned URL carries a time-limited signature created with the credentials of a principal that already has access. The object stays private, the link stops working when it expires, and the download goes straight from S3 to the customer without touching the company's servers. Not \"Add a bucket policy allowing s3:GetObject to everyone, with a...\": This makes the object public to anyone who learns the URL, and IP conditions break for mobile users and shared networks. Not \"Give each paying customer an IAM user with read access to the bucket\": IAM users are for workloads and staff, not application end users; provisioning one per customer does not scale and hands out long-lived credentials. Not \"Turn off Block Public Access and rely on obscure object key names\": Unlisted object names are not access control — anyone who obtains the URL keeps access indefinitely."
+  ref: "Question sec-018 (S3 access controls and Block Public Access) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-019
+  kind: choice
+  en: "A company uses a gateway VPC endpoint so private instances can reach Amazon S3. Auditors now require that instances in this VPC can only reach the company's own buckets, and cannot copy data to any bucket outside the organization. What should the architect configure?"
+  options:
+    - "A VPC endpoint policy restricting access to the specific bucket ARNs, plus a condition on aws:PrincipalOrgID."
+    - "A network ACL denying outbound traffic to the S3 service prefix list except for the company's buckets."
+    - "An IAM policy on each instance role allowing s3:PutObject only on company buckets."
+    - "A security group on the gateway endpoint allowing only the S3 prefix list."
+  correct: [A]
+  why: "An endpoint policy is a resource policy on the endpoint itself, evaluated for every request that passes through it, so it can restrict which buckets are reachable regardless of what the instance's own IAM policy permits. Adding an organization condition prevents copying data into buckets outside the organization. Not \"A security group on the gateway endpoint allowing only the S3 prefix...\": Gateway endpoints are route-table constructs and do not have security groups; only interface endpoints do. Not \"A network ACL denying outbound traffic to the S3 service prefix list...\": Network ACLs filter by IP ranges, and the S3 prefix list covers all buckets in the Region indiscriminately — it cannot distinguish one bucket from another. Not \"An IAM policy on each instance role allowing s3:PutObject only on...\": An IAM policy is a strong control but applies only to that role; anyone who launches an instance with a different role bypasses it, whereas the endpoint policy covers everything using the endpoint."
+  ref: "Question sec-019 (VPC endpoints and private connectivity) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-020
+  kind: choice
+  en: "A security team must retain an immutable record of API activity for all 30 accounts in an organization, stored centrally, and must be certain that no member account can turn logging off or alter past logs. What should be configured?"
+  options:
+    - "CloudWatch Logs subscriptions in each account forwarding to a central log group."
+    - "AWS Config aggregators collecting configuration items into the management account."
+    - "A separate CloudTrail trail in each account, each delivering to its own bucket with versioning enabled."
+    - "An organization trail created in the management account, delivering to a central S3 bucket with Object Lock enabled."
+  correct: [D]
+  why: "An organization trail is created once in the management account and automatically applies to every member account, including accounts added later; member accounts cannot modify or delete it. Delivering to a central bucket with S3 Object Lock makes the delivered logs immutable for their retention period. Not \"A separate CloudTrail trail in each account, each delivering to its...\": Per-account trails can be stopped or reconfigured by that account's administrators, which is exactly the risk the requirement addresses. Not \"CloudWatch Logs subscriptions in each account forwarding to a central...\": Subscriptions move log data but do not create the trail, do not cover accounts uniformly, and provide no immutability. Not \"AWS Config aggregators collecting configuration items into the...\": Config records resource configuration, not API activity, and an aggregator is read-only reporting rather than an immutable audit trail."
+  ref: "Question sec-020 (Auditing with CloudTrail and Config) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-021
+  kind: choice
+  en: "A company must discover whether any of its several thousand S3 buckets contain customer credit card numbers or national identity numbers, and be alerted when new sensitive data appears. What should the architect use?"
+  options:
+    - "Amazon GuardDuty with S3 protection enabled."
+    - "Amazon Inspector scanning the buckets for vulnerabilities."
+    - "AWS Config rules checking bucket encryption and public access settings."
+    - "Amazon Macie, with sensitive data discovery jobs across the buckets."
+  correct: [D]
+  why: "Macie is the service that inspects S3 object content and classifies sensitive data such as payment card numbers and national identifiers, using managed data identifiers, and reports findings as data is discovered. Not \"Amazon GuardDuty with S3 protection enabled\": GuardDuty S3 protection detects suspicious access patterns and API activity against buckets; it does not inspect object contents for sensitive data. Not \"AWS Config rules checking bucket encryption and public access...\": Config evaluates bucket configuration such as encryption and public access. It never looks inside the objects. Not \"Amazon Inspector scanning the buckets for vulnerabilities\": Inspector assesses workloads such as EC2 instances, containers and Lambda for software vulnerabilities, not S3 object content."
+  ref: "Question sec-021 (Threat detection with GuardDuty and Security Hub) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-022
+  kind: choice
+  en: "A policy grants a group permission to terminate EC2 instances, but the security team requires that terminations only succeed when the caller authenticated with multi-factor authentication. What is the correct way to express this?"
+  options:
+    - "Enable MFA on the root user of the account."
+    - "Add a condition to the policy requiring aws:MultiFactorAuthPresent to be true."
+    - "Require MFA at the identity provider and rely on session length."
+    - "Attach an SCP that denies ec2:TerminateInstances outright."
+  correct: [B]
+  why: "IAM condition keys evaluate properties of the request. Requiring aws:MultiFactorAuthPresent means the TerminateInstances call is only authorised when the caller's session was established with MFA, which is precisely the stated control. Not \"Enable MFA on the root user of the account\": Root MFA protects the root user only and has no bearing on what other principals may do. Not \"Attach an SCP that denies ec2:TerminateInstances outright\": A blanket deny removes the ability entirely rather than conditioning it on MFA. Not \"Require MFA at the identity provider and rely on session length\": Enforcing MFA at the identity provider does not make AWS aware of it per request unless the condition key is checked; the session could also outlive the intent."
+  ref: "Question sec-022 (IAM policy evaluation) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-023
+  kind: choice
+  en: "Several web applications, each with its own fully qualified domain name, run behind Application Load Balancers. They must present publicly trusted TLS certificates, and the company wants the least ongoing operational effort. What should the architect do?"
+  options:
+    - "Request public certificates from AWS Certificate Manager and attach them to the HTTPS listeners."
+    - "Generate self-signed certificates with OpenSSL and import them into ACM."
+    - "Issue certificates from AWS Private Certificate Authority and attach them to the listeners."
+    - "Run a private certificate authority on EC2 and issue certificates with a certbot job."
+  correct: [A]
+  why: "ACM public certificates are free, trusted by browsers out of the box, and renew automatically while DNS validation remains in place. Attaching them to the load balancer listener is the whole task, which is the lowest possible ongoing effort. Not \"Run a private certificate authority on EC2 and issue certificates...\": Running your own CA means operating servers, renewing certificates and distributing trust — the highest operational burden of the options. Not \"Generate self-signed certificates with OpenSSL and import them into...\": Self-signed certificates are not publicly trusted, so browsers will warn users regardless of where the certificate is stored. Not \"Issue certificates from AWS Private Certificate Authority and attach...\": AWS Private CA issues certificates trusted only inside your organisation, and it carries a significant monthly charge. It is for internal workloads, not public websites."
+  ref: "Question sec-023 (Certificate management and encryption in transit) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-024
+  kind: choice
+  en: "A company hires a third-party monitoring vendor that needs read-only access to its AWS account. The vendor serves many customers and will assume a role in each. What must the architect require in the role's trust policy to protect against the confused deputy problem?"
+  options:
+    - "A condition restricting the vendor's source IP address range."
+    - "A condition requiring a unique sts:ExternalId value agreed with the vendor."
+    - "An IAM user for the vendor with an access key rotated every 30 days."
+    - "A permissions boundary on the role limiting it to read-only actions."
+  correct: [B]
+  why: "The confused deputy risk is that the vendor, holding the ability to assume roles in many customer accounts, could be tricked into using one customer's role identifier on another customer's behalf. An external ID is a secret shared only between you and the vendor, and requiring it in the trust policy means the vendor must present your specific value to assume your role. Not \"A condition restricting the vendor's source IP address range\": IP conditions are brittle for a SaaS vendor whose egress addresses change, and they do not address the confused deputy scenario at all. Not \"An IAM user for the vendor with an access key rotated every 30 days\": An IAM user reintroduces long-lived credentials for an external party, which is exactly what role assumption avoids. Not \"A permissions boundary on the role limiting it to read-only actions\": A boundary limits what the role can do once assumed — useful, but it does not control who can assume it or prevent misuse on another customer's behalf."
+  ref: "Question sec-024 (Cross-account access with IAM roles) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-025
+  kind: choice
+  en: "A single external IP address is repeatedly probing an application in a public subnet. The team needs to block that one address for the whole subnet while leaving all other traffic unchanged. What should they use?"
+  options:
+    - "Removing the allow-all inbound rule from the instances' security group."
+    - "A route table entry sending that IP's traffic to a blackhole target."
+    - "A security group rule denying traffic from that IP address."
+    - "A network ACL rule denying traffic from that IP address, with a rule number lower than the allow rules."
+  correct: [D]
+  why: "Security groups only express allow rules, so blocking one specific source requires a network ACL, which supports deny and applies at the subnet boundary. NACL rules are evaluated in ascending rule-number order and the first match wins, so the deny must be numbered below the allow rules that would otherwise permit the traffic. Not \"A security group rule denying traffic from that IP address\": Security groups have no deny rules — there is no way to express \"everyone except this address\" in one. Not \"Removing the allow-all inbound rule from the instances' security...\": This blocks all legitimate traffic as well, taking the application offline. Not \"A route table entry sending that IP's traffic to a blackhole target\": Route tables direct outbound traffic by destination; they cannot filter inbound traffic by source address."
+  ref: "Question sec-025 (Security groups vs NACLs) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-026
+  kind: choice
+  en: "A compliance rule states that every object written to a bucket must be encrypted with a specific KMS key, and any upload that is not must be rejected at write time rather than corrected later. What should the architect configure?"
+  options:
+    - "A bucket policy denying s3:PutObject when s3:x-amz-server-side-encryption-aws-kms-key-id does not match the required key ARN."
+    - "Default bucket encryption set to that KMS key, with no bucket policy."
+    - "An S3 Batch Operations job that re-encrypts objects nightly."
+    - "An AWS Config rule that flags objects encrypted with the wrong key."
+  correct: [A]
+  why: "Only a bucket policy can reject a request as it is made. Denying PutObject unless the request specifies the required KMS key ARN causes non-compliant uploads to fail with access denied, which is the stated requirement of rejection at write time. Not \"Default bucket encryption set to that KMS key, with no bucket policy\": Default encryption silently applies the key when the caller specifies none, but a caller who explicitly requests a different key still succeeds — nothing is rejected. Not \"An S3 Batch Operations job that re-encrypts objects nightly\": Nightly re-encryption is correction after the fact, leaving a window where objects sit encrypted incorrectly. Not \"An AWS Config rule that flags objects encrypted with the wrong key\": Config evaluates and reports; it does not block the write, and it does not track individual S3 objects."
+  ref: "Question sec-026 (S3 encryption options) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-027
+  kind: choice
+  en: "A login endpoint is being hit with credential-stuffing attempts from a large, constantly changing set of IP addresses. Legitimate users must not be blocked. What is the most appropriate control?"
+  options:
+    - "Reducing the ALB idle timeout so attack connections are dropped sooner."
+    - "An AWS WAF rate-based rule on the login URI that blocks source IPs exceeding a request threshold in a five-minute window."
+    - "An AWS WAF IP set blocking the attacking addresses observed so far."
+    - "A network ACL denying the attacking address ranges."
+  correct: [B]
+  why: "A rate-based rule counts requests per source IP over a rolling window and blocks addresses that exceed the threshold, then releases them when the rate drops. Because it reacts to behaviour rather than to a fixed list, it copes with attackers rotating addresses while leaving normal users, who never approach the threshold, unaffected. Not \"An AWS WAF IP set blocking the attacking addresses observed so far\": A static IP set is always behind an attacker who changes addresses, and it grows unmanageably. Not \"A network ACL denying the attacking address ranges\": NACLs are stateless subnet filters with a limited rule count and no rate awareness; they cannot keep pace with a rotating source set. Not \"Reducing the ALB idle timeout so attack connections are dropped...\": Idle timeout affects connection lifetime, not the volume of authentication attempts."
+  ref: "Question sec-027 (Edge protection with WAF and Shield) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-028
+  kind: choice
+  en: "An application needs about 400 configuration values — feature flags, endpoint URLs, timeouts — plus 3 database passwords that must rotate automatically. The team wants to minimise cost without losing rotation on the passwords. What should they do?"
+  options:
+    - "Store everything in an encrypted S3 object read at application start."
+    - "Put all 403 values in Parameter Store and write a Lambda function to rotate the passwords."
+    - "Keep the 400 configuration values as Systems Manager Parameter Store standard parameters and put the 3 passwords in AWS Secrets Manager with managed rotation."
+    - "Put all 403 values in AWS Secrets Manager for a single consistent interface."
+  correct: [C]
+  why: "Secrets Manager bills per secret per month, so storing 400 non-secret configuration values there is needless cost. Parameter Store standard parameters are free and well suited to configuration, while the three credentials that genuinely need managed rotation justify Secrets Manager. Not \"Put all 403 values in AWS Secrets Manager for a single consistent...\": This pays a per-secret charge 400 times over for values that are configuration, not secrets requiring rotation. Not \"Put all 403 values in Parameter Store and write a Lambda function to...\": It saves the Secrets Manager charge but hands the team rotation logic to build, test and own for a trivial saving on three secrets. Not \"Store everything in an encrypted S3 object read at application start\": A single object gives no per-value access control, no rotation, and requires a restart or custom refresh to pick up changes."
+  ref: "Question sec-028 (Secrets management and rotation) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-029
+  kind: choice
+  en: "A company runs Active Directory on premises and wants staff to sign in to AWS with their existing AD credentials, without replicating the directory into AWS and without managing domain controllers in the cloud. Which approach fits?"
+  options:
+    - "Use AD Connector to proxy authentication to the on-premises directory, with IAM Identity Center assigning permission sets."
+    - "Deploy AWS Managed Microsoft AD and establish a two-way trust with the on-premises forest."
+    - "Create IAM users mirroring the AD user list and synchronise passwords with a scheduled script."
+    - "Deploy self-managed domain controllers on EC2 instances replicating from on-premises."
+  correct: [A]
+  why: "AD Connector is a directory gateway: it redirects authentication requests to the existing on-premises Active Directory without caching or replicating directory data, and without any domain controllers running in AWS. Identity Center then maps AD groups to permission sets. Not \"Deploy AWS Managed Microsoft AD and establish a two-way trust with...\": Managed Microsoft AD is a genuine directory running in AWS, which is more than required and involves managing a trust relationship. Not \"Create IAM users mirroring the AD user list and synchronise passwords...\": Mirroring users as IAM users creates a second identity store with synchronised passwords — a security and operational liability. Not \"Deploy self-managed domain controllers on EC2 instances replicating...\": Self-managed domain controllers on EC2 is the highest-effort option and explicitly involves running directory infrastructure in the cloud."
+  ref: "Question sec-029 (Identity federation and IAM Identity Center) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-030
+  kind: choice
+  en: "Objects uploaded to a shared bucket by several other accounts cannot be read by the bucket-owning account, even though its administrators have full S3 permissions. What is the cleanest fix going forward?"
+  options:
+    - "Ask each uploading account to grant the bucket owner read access on every object with an ACL."
+    - "Enable default encryption with SSE-KMS on the bucket."
+    - "Add s3:GetObject for the bucket owner to the bucket policy."
+    - "Set the bucket's Object Ownership to Bucket owner enforced, which disables ACLs and makes the bucket owner the owner of every object."
+  correct: [D]
+  why: "By default an object is owned by the account that uploaded it, and the bucket owner's own permissions do not automatically extend to another account's objects. Bucket owner enforced disables ACLs entirely and makes the bucket owner the owner of all objects, so bucket policies and IAM alone govern access. Not \"Ask each uploading account to grant the bucket owner read access on...\": Per-object ACLs work but depend on every uploader remembering to set them correctly on every upload — fragile, and AWS now recommends disabling ACLs. Not \"Add s3:GetObject for the bucket owner to the bucket policy\": A bucket policy cannot grant the bucket owner rights over objects owned by another account; ownership is the blocker, not the policy. Not \"Enable default encryption with SSE-KMS on the bucket\": Encryption settings do not change object ownership, and an SSE-KMS key would add a second permission problem on top."
+  ref: "Question sec-030 (IAM policy evaluation) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-036
+  kind: choice
+  en: "An EC2 instance sits in a subnet whose network ACL allows all inbound traffic and denies all outbound traffic. Its security group allows SSH inbound from anywhere and has no outbound rules. An administrator cannot establish an SSH session to the instance. What must change?"
+  options:
+    - "The network ACL must be modified to allow outbound traffic, because network ACLs are stateless and the SSH response is outbound traffic."
+    - "Nothing — the instance is already reachable over SSH from any address."
+    - "The security group must be modified to allow outbound traffic."
+    - "Both the security group and the network ACL must be modified to allow outbound traffic."
+  correct: [A]
+  why: "Network ACLs are stateless, so the reply packets of an allowed inbound connection are evaluated separately against the outbound rules. Denying all outbound traffic means the SSH response never leaves, and the session never establishes. Security groups are stateful, so the empty outbound rule set is irrelevant — return traffic for an allowed inbound flow is permitted automatically. Not \"The security group must be modified to allow outbound traffic\": A security group with no outbound rules still returns traffic for allowed inbound connections, because it is stateful. Changing it is unnecessary. Not \"Both the security group and the network ACL must be modified to allow...\": Only the network ACL needs changing. Adding an outbound rule to the security group would be harmless but is not what is blocking the session. Not \"Nothing — the instance is already reachable over SSH from any address\": The connection fails, because the outbound half of the flow is denied at the subnet boundary."
+  ref: "Question sec-036 (Security groups vs NACLs) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-037
+  kind: choice
+  en: "A subnet's network ACL has inbound rule 100 allowing all traffic from 0.0.0.0/0, and inbound rule 200 denying TCP port 3306 from 203.0.113.25. A request arrives from 203.0.113.25 on port 3306. What happens, and why?"
+  options:
+    - "It is denied, because the default rule at the end of every network ACL denies all traffic."
+    - "It is allowed, because network ACL rules are evaluated in ascending rule-number order and the first match wins — rule 100 matches first."
+    - "It is denied, because an explicit deny always overrides an allow."
+    - "It is allowed at first and then denied once rule 200 is evaluated."
+  correct: [B]
+  why: "Network ACLs evaluate rules in numerical order and stop at the first match. Rule 100 allows everything and is evaluated before rule 200, so the request is permitted and rule 200 is never reached. Deny rules must be numbered lower than the allow rules they are meant to override. Not \"It is denied, because an explicit deny always overrides an allow\": That precedence rule applies to IAM policy evaluation, not to network ACLs, which are strictly first-match-wins by rule number. Not \"It is allowed at first and then denied once rule 200 is evaluated\": Evaluation happens once per packet; there is no re-evaluation or delayed change of decision. Not \"It is denied, because the default rule at the end of every network...\": The default deny only applies when no numbered rule matches, and here rule 100 matched."
+  ref: "Question sec-037 (Security groups vs NACLs) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-038
+  kind: choice
+  en: "A dual-stack VPC has both IPv4 and IPv6 CIDR blocks, and its IPv4 address space is nearly exhausted. A new EC2 instance cannot launch because no IPv4 addresses remain in the subnet. Which change resolves this and scales for the future?"
+  options:
+    - "Remove all IPv4 CIDR blocks so the VPC uses IPv6 exclusively."
+    - "Create an additional IPv4 subnet with a larger CIDR range and launch the instance there."
+    - "Create an IPv6-only subnet with a large CIDR range in the VPC and launch the instance there."
+    - "Disable IPv4 support on the VPC and use the available IPv6 addresses."
+  correct: [C]
+  why: "IPv6 address space is effectively unlimited, so placing new workloads in an IPv6-only subnet stops consuming the scarce IPv4 space and keeps scaling indefinitely. The VPC remains dual-stack, so existing IPv4 workloads are untouched. Not \"Create an additional IPv4 subnet with a larger CIDR range and launch...\": This buys time by consuming more of the same limited IPv4 space; the exhaustion returns, so it does not meet the scalability requirement. Not \"Remove all IPv4 CIDR blocks so the VPC uses IPv6 exclusively\": A VPC cannot be IPv6-only. Every VPC requires an IPv4 CIDR block, which cannot be removed. Not \"Disable IPv4 support on the VPC and use the available IPv6 addresses\": IPv4 support cannot be disabled on a VPC; it is mandatory, and doing so would break existing IPv4 workloads."
+  ref: "Question sec-038 (VPC subnet and IP addressing design) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-039
+  kind: choice
+  en: "An architect is documenting VPC subnet behaviour for a new design. Which TWO statements are correct?"
+  options:
+    - "A newly created subnet is associated with the VPC's main route table by default."
+    - "A subnet resides entirely within a single Availability Zone and cannot span zones."
+    - "Each subnet spans two Availability Zones for redundancy."
+    - "The allowed VPC CIDR block size ranges from /16 down to /27."
+    - "Instances in a private subnet can reach the internet only if they have an Elastic IP address."
+  correct: [A, B]
+  why: "A subnet is bound to exactly one Availability Zone, which is why spreading across zones means creating multiple subnets. Any subnet you create is implicitly associated with the VPC's main route table until you associate it with a custom one. Not \"The allowed VPC CIDR block size ranges from /16 down to /27\": The permitted range is /16 through /28, not /27 — a /28 subnet is the smallest allowed. Not \"Each subnet spans two Availability Zones for redundancy\": A subnet never spans Availability Zones; the VPC spans them, the subnet does not. Not \"Instances in a private subnet can reach the internet only if they...\": Private subnet instances typically reach the internet through a NAT gateway or NAT instance, using no public address of their own."
+  ref: "Question sec-039 (VPC subnet and IP addressing design) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-040
+  kind: choice
+  en: "Worker instances in a private subnet process sensitive financial records and then write them to Amazon S3. Compliance requires that this traffic never traverse the public internet. What should be configured?"
+  options:
+    - "An internet gateway attached to the VPC with a route directing S3 traffic through it."
+    - "A transit gateway with a route directing S3 traffic to Amazon S3."
+    - "A VPC endpoint for Amazon S3, with a matching entry in the subnet's route table."
+    - "A NAT gateway in the private subnet with a route directing S3 traffic through it."
+  correct: [C]
+  why: "By default, traffic from a VPC to Amazon S3 leaves over the public internet even though both are inside AWS. A VPC endpoint keeps that traffic on the AWS network, requiring no internet gateway, NAT device or public IP address on the instances. Not \"A NAT gateway in the private subnet with a route directing S3 traffic...\": A NAT gateway provides outbound access to the internet, so the traffic still traverses the public internet — the opposite of the requirement. Not \"An internet gateway attached to the VPC with a route directing S3...\": An internet gateway is explicitly the public path, and it would also require the instances to sit in a public subnet. Not \"A transit gateway with a route directing S3 traffic to Amazon S3\": Transit Gateway interconnects VPCs and on-premises networks. Amazon S3 sits outside any VPC, so it cannot be reached privately this way."
+  ref: "Question sec-040 (VPC endpoints and private connectivity) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-041
+  kind: choice
+  en: "A company running Amazon EKS must ensure that Kubernetes Secrets — database passwords and API keys — are encrypted at rest inside the cluster's etcd key-value store, using a key the company controls. What should be configured?"
+  options:
+    - "Store the values in AWS Secrets Manager encrypted with a customer managed KMS key."
+    - "Enable envelope encryption of Kubernetes Secrets on the EKS cluster using a customer managed KMS key."
+    - "Enable default EBS volume encryption for the account with a customer managed KMS key."
+    - "Install the EBS CSI driver add-on and use encrypted persistent volumes for the workloads."
+  correct: [B]
+  why: "EKS supports envelope encryption of Kubernetes Secrets, where a KMS key encrypts the data encryption key that protects Secret values before they are written to etcd. That is the only option that encrypts the Secrets inside etcd itself, which is exactly what the requirement states. Not \"Store the values in AWS Secrets Manager encrypted with a customer...\": Secrets Manager is an excellent external secret store, but it does not encrypt anything already held as a Kubernetes Secret in etcd — it moves the secret somewhere else entirely. Not \"Enable default EBS volume encryption for the account with a customer...\": EBS encryption protects the worker nodes' block storage. The control plane's etcd store is managed by EKS and is not on your EBS volumes. Not \"Install the EBS CSI driver add-on and use encrypted persistent...\": The EBS CSI driver provides persistent volumes for pods; it has no bearing on how Secrets are stored in etcd."
+  ref: "Question sec-041 (KMS key policies and grants) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-042
+  kind: choice
+  en: "Accounts are grouped into organizational units in AWS Organizations. Stakeholders must be notified when the OU hierarchy changes — an account moved between OUs, or removed from one — and want to subscribe to those alerts. Which option meets this with the least administrative overhead?"
+  options:
+    - "Provision the accounts with AWS Control Tower and set up AWS Config aggregated rules."
+    - "Use CloudFormation StackSets across the organization and run drift detection on the stacks."
+    - "Create the accounts with AWS Service Catalog and configure a CloudTrail organization trail."
+    - "Provision the accounts with AWS Control Tower and enable account drift notifications."
+  correct: [D]
+  why: "Control Tower already watches for governance drift, and moving or removing an account from its OU is exactly what account drift means. Enabling drift notifications publishes those events for stakeholders to subscribe to, with nothing to build. Not \"Provision the accounts with AWS Control Tower and set up AWS Config...\": Config rules evaluate resource configuration across accounts. The OU hierarchy is an Organizations structure, not a resource configuration. Not \"Create the accounts with AWS Service Catalog and configure a...\": An organization trail logs every API call in every account. Isolating OU-hierarchy changes from that volume means building the filtering and alerting yourself. Not \"Use CloudFormation StackSets across the organization and run drift...\": StackSet drift detection compares deployed resources against their templates; it says nothing about where an account sits in the OU tree."
+  ref: "Question sec-042 (Multi-account governance with Control Tower) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-043
+  kind: choice
+  en: "A company with a handful of accounts wants a governed multi-account environment quickly: separate log archive and audit accounts, preventive and detective guardrails applied consistently, and a repeatable way for teams to request new compliant accounts. Which approach involves the least engineering?"
+  options:
+    - "Deploy AWS Control Tower, which builds the landing zone and provides Account Factory for new accounts."
+    - "Use AWS Service Catalog products that each team launches into its own account."
+    - "Use AWS Config conformance packs deployed organization-wide."
+    - "Build the landing zone by hand with Organizations, SCPs, a logging account and StackSets."
+  correct: [A]
+  why: "Control Tower orchestrates Organizations, Service Catalog and IAM Identity Center to stand up a landing zone — log archive and audit accounts, guardrails, and Account Factory for self-service provisioning — in about an hour, rather than as a build project. Not \"Build the landing zone by hand with Organizations, SCPs, a logging...\": This is exactly what Control Tower automates. Doing it by hand is a substantial project and drifts over time. Not \"Use AWS Config conformance packs deployed organization-wide\": Conformance packs give detective controls but no landing zone, no account structure and no provisioning path. Not \"Use AWS Service Catalog products that each team launches into its own...\": Service Catalog distributes approved products; on its own it does not create the account structure or the guardrails."
+  ref: "Question sec-043 (Multi-account governance with Control Tower) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-044
+  kind: choice
+  en: "A healthcare provider runs each application in its own isolated VPC. All of them must reach a central shared-services VPC and also communicate with each other, and dozens more application VPCs will be added over the next year. Which design minimises administrative overhead?"
+  options:
+    - "AWS Direct Connect between the application VPCs and the shared-services VPC."
+    - "VPC peering connections between the shared-services VPC and each application VPC, and between application VPCs."
+    - "Site-to-Site VPN tunnels from each application VPC to the shared-services VPC."
+    - "An AWS Transit Gateway attached to every VPC, with route tables directing traffic through the hub."
+  correct: [D]
+  why: "Transit Gateway is a hub: each VPC attaches once and can then reach any other attachment allowed by the route tables. Adding the fiftieth VPC is one attachment, whereas mesh approaches grow quadratically — which is precisely the overhead the requirement targets. Not \"VPC peering connections between the shared-services VPC and each...\": Peering is non-transitive, so every pair that must talk needs its own connection. Dozens of VPCs means hundreds of connections and route entries to maintain. Not \"Site-to-Site VPN tunnels from each application VPC to the...\": VPN tunnels between VPCs add encryption overhead, throughput limits and per-tunnel management, and scale no better than peering. Not \"AWS Direct Connect between the application VPCs and the...\": Direct Connect links on-premises networks to AWS. It is not a mechanism for VPC-to-VPC routing."
+  ref: "Question sec-044 (VPC connectivity: peering, Transit Gateway and VPN) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-045
+  kind: choice
+  en: "Two VPCs in the same Region must exchange traffic between a small number of instances. There is no requirement for transitive routing to other VPCs or on-premises networks, and the team wants the lowest cost. What should be used?"
+  options:
+    - "A VPC peering connection between the two VPCs, with routes added on both sides."
+    - "A Site-to-Site VPN between the two VPCs."
+    - "A PrivateLink endpoint service in each VPC."
+    - "A Transit Gateway with both VPCs attached."
+  correct: [A]
+  why: "For a simple pair of VPCs with no transitive requirement, peering is the right tool: there is no hourly charge for the connection itself, only data transfer, and the configuration is two route entries. Not \"A Transit Gateway with both VPCs attached\": Transit Gateway bills per attachment per hour plus data processing. That overhead is worth paying at scale, not for a single pair. Not \"A Site-to-Site VPN between the two VPCs\": A VPN adds encryption processing and bandwidth limits for traffic that already stays on the AWS network. Not \"A PrivateLink endpoint service in each VPC\": PrivateLink exposes a specific service endpoint rather than general connectivity between the VPCs."
+  ref: "Question sec-045 (VPC connectivity: peering, Transit Gateway and VPN) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-046
+  kind: choice
+  en: "An organisation exposes RESTful APIs through Amazon API Gateway to millions of end users. Users must sign in, and each API call must be verified against that sign-in. Which approach is the most operationally efficient?"
+  options:
+    - "Authenticate users with an Amazon Cognito user pool and attach a Cognito user pool authorizer to the API methods."
+    - "Write a Lambda authorizer that validates credentials on every request."
+    - "Use an Amazon Cognito identity pool for federated identities and secure the API with an IAM authorizer."
+    - "Create an IAM user per end user and secure the API with an IAM authorizer."
+  correct: [A]
+  why: "A user pool is a managed user directory that handles registration, sign-in and token issuance, and API Gateway has a built-in COGNITO_USER_POOLS authorizer that validates the resulting token on every call. It is configuration rather than code, and scales to millions of users. Not \"Use an Amazon Cognito identity pool for federated identities and...\": Identity pools exchange an existing identity for temporary AWS credentials to call AWS services directly. They are not the authentication directory for API users. Not \"Write a Lambda authorizer that validates credentials on every request\": A Lambda authorizer is the right answer for a custom or third-party token scheme, but here it means writing, testing and operating code that the built-in authorizer already provides. Not \"Create an IAM user per end user and secure the API with an IAM...\": IAM users are for workloads and staff, capped well below millions, and would be an unmanageable way to represent application end users."
+  ref: "Question sec-046 (Application authentication with Cognito) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-047
+  kind: choice
+  en: "A corporation is migrating applications to AWS across many accounts under Organizations. The security team must sign in with their existing on-premises Active Directory credentials, and user and group management must stay in that on-premises directory. Which approach meets this?"
+  options:
+    - "Deploy AWS Managed Microsoft AD and migrate all users and groups into it."
+    - "Create IAM users in each account mirroring the Active Directory user list."
+    - "Use an Amazon Cognito user pool federated to Active Directory for console access."
+    - "Enable IAM Identity Center, deploy AWS Managed Microsoft AD, and establish a two-way forest trust with the on-premises Active Directory."
+  correct: [D]
+  why: "A two-way forest trust between AWS Managed Microsoft AD and the on-premises forest lets AWS authenticate the existing accounts while the on-premises directory stays authoritative for users and groups. Identity Center then maps those directory groups to permission sets across every account. Not \"Create IAM users in each account mirroring the Active Directory user...\": Mirrored IAM users create a second identity store to keep in sync, with long-lived credentials, in every account. Not \"Use an Amazon Cognito user pool federated to Active Directory for...\": Cognito serves application end users, not workforce access to the AWS console and CLI. Not \"Deploy AWS Managed Microsoft AD and migrate all users and groups into...\": Migrating the users into AWS moves the source of truth, which the requirement explicitly forbids."
+  ref: "Question sec-047 (Identity federation and IAM Identity Center) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-048
+  kind: choice
+  en: "A company must prevent accidental deletion of KMS keys and email administrators whenever someone attempts one. Deletion attempts should be reversed automatically. Which solution does this with the least operational overhead?"
+  options:
+    - "A Lambda function that blocks key deletion, invoked by a CloudWatch alarm, plus an SNS topic."
+    - "An EventBridge rule targeting an AWS Config rule that reverses the deletion, plus an SNS topic."
+    - "CloudTrail delivering to CloudWatch Logs with a metric filter on DeleteKey that triggers an SNS notification."
+    - "An EventBridge rule matching KMS key-deletion scheduling, targeting an SSM Automation runbook that cancels the pending deletion, plus an SNS topic for notification."
+  correct: [D]
+  why: "Scheduling a KMS key for deletion starts a waiting period rather than deleting immediately, which leaves room to cancel. EventBridge detects the event, an SSM Automation runbook cancels the pending deletion, and the same rule notifies through SNS — managed components, no custom code. Not \"An EventBridge rule targeting an AWS Config rule that reverses the...\": Config evaluates and reports compliance; it does not intercept or reverse an API action. Not \"CloudTrail delivering to CloudWatch Logs with a metric filter on...\": This detects and notifies but never cancels the deletion, so the key still disappears after the waiting period. Not \"A Lambda function that blocks key deletion, invoked by a CloudWatch...\": Nothing can block the API call itself, and a CloudWatch alarm on an API event is the wrong trigger — EventBridge matches events directly."
+  ref: "Question sec-048 (KMS key policies and grants) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-049
+  kind: choice
+  en: "Nightly virtual machine backups are copied to Amazon S3. They must be protected against overwriting or deletion for 20 days, then removed automatically. Which TWO actions together meet this?"
+  options:
+    - "Add an S3 Lifecycle rule that expires the objects after 20 days."
+    - "Enable versioning on the bucket as a separate, explicit step."
+    - "Tag each object so a retention policy can select it."
+    - "Create the bucket with S3 Object Lock enabled and set a 20-day default retention period."
+    - "Create the bucket with S3 Object Lock enabled and apply a 20-day legal hold."
+  correct: [A, D]
+  why: "Object Lock with a retention period makes objects immutable for those 20 days — write-once-read-many, so nothing can overwrite or delete them. A lifecycle expiration rule then removes them once the retention has elapsed, which is what makes the deletion automatic. Not \"Create the bucket with S3 Object Lock enabled and apply a 20-day...\": A legal hold has no expiry — it stays until someone with permission removes it explicitly, so the backups would never age out on their own. Not \"Enable versioning on the bucket as a separate, explicit step\": Enabling Object Lock on a new bucket turns versioning on implicitly, so this is not a separate step. Not \"Tag each object so a retention policy can select it\": Every backup needs identical protection, so selective tagging adds machinery for no benefit."
+  ref: "Question sec-049 (S3 access controls and Block Public Access) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-050
+  kind: choice
+  en: "A global company stores data across S3 buckets in several Regions and needs to identify every bucket that does not have versioning enabled, with recommendations on data protection. Which service reports this directly?"
+  options:
+    - "AWS CloudTrail events."
+    - "Amazon S3 Storage Lens."
+    - "An S3 Multi-Region Access Point."
+    - "IAM Access Analyzer."
+  correct: [B]
+  why: "Storage Lens gives organisation-wide visibility into S3 usage and configuration, including data-protection metrics such as which buckets lack versioning, together with recommendations — across accounts and Regions from one dashboard. Not \"AWS CloudTrail events\": CloudTrail records API calls. It would show a bucket's versioning being changed but cannot report the current state of every bucket. Not \"IAM Access Analyzer\": Access Analyzer finds resources shared with external principals; it does not evaluate versioning. Not \"An S3 Multi-Region Access Point\": Multi-Region Access Points route requests to buckets across Regions. They are an access mechanism, not an analytics tool."
+  ref: "Question sec-050 (Auditing with CloudTrail and Config) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-051
+  kind: choice
+  en: "Clinical trial records must be stored in S3 so that no object can be overwritten or deleted for one year — including by the account's root user. Which configuration meets this?"
+  options:
+    - "S3 Object Lock in compliance mode with a one-year retention period."
+    - "S3 Versioning with MFA Delete enabled on the bucket."
+    - "S3 Object Lock in compliance mode with a one-year legal hold."
+    - "S3 Object Lock in governance mode with a one-year retention period."
+  correct: [A]
+  why: "Compliance mode is the only Object Lock mode that no one can override — not an administrator, not the root user. The retention period cannot be shortened and the mode cannot be changed for the duration, which is exactly what \"including the root user\" requires. Not \"S3 Object Lock in governance mode with a one-year retention period\": Governance mode can be bypassed by a principal holding s3:BypassGovernanceRetention, and the root user has it. It is for testing retention settings or protecting against accidents, not regulators. Not \"S3 Object Lock in compliance mode with a one-year legal hold\": A legal hold has no duration — you cannot set it for one year. It stays until someone with permission removes it, so it neither expires nor satisfies a fixed one-year requirement. Not \"S3 Versioning with MFA Delete enabled on the bucket\": MFA Delete raises the bar for deletion but does not make objects immutable, and someone with the MFA device can still delete."
+  ref: "Question sec-051 (S3 access controls and Block Public Access) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-052
+  kind: choice
+  en: "A regulated business must encrypt data at rest with keys whose material it controls entirely, must be able to remove the key material from AWS KMS immediately, and must audit key usage independently of AWS CloudTrail. Which option meets all three?"
+  options:
+    - "Create a customer managed KMS key with automatic annual rotation enabled."
+    - "Use an AWS managed key and store a copy of the material in AWS CloudHSM."
+    - "Create a KMS key in a custom key store backed by an AWS CloudHSM cluster."
+    - "Create a KMS key in a custom key store and hold the key material in Amazon S3."
+  correct: [C]
+  why: "A custom key store backs KMS with a CloudHSM cluster you own. The key material is generated and stays in your HSMs, you can disconnect the store to make it immediately unusable, and because the HSMs are yours, CloudHSM audit logs give you key-usage auditing independent of CloudTrail. Not \"Create a customer managed KMS key with automatic annual rotation...\": A standard customer managed key is stored in KMS's own HSMs. You control policy and rotation, but not the hardware, and auditing is through CloudTrail only. Not \"Use an AWS managed key and store a copy of the material in AWS...\": AWS managed keys are controlled by AWS, and their material cannot be exported to or held in CloudHSM. Not \"Create a KMS key in a custom key store and hold the key material in...\": Key material is never stored in S3 — a custom key store is backed by CloudHSM, and putting key material in object storage would defeat the point."
+  ref: "Question sec-052 (KMS key policies and grants) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-053
+  kind: choice
+  en: "A medical system must store records in S3 under a rule that neither the master key nor any unencrypted data may ever be transmitted to AWS. Which encryption approach satisfies this?"
+  options:
+    - "Server-side encryption with an AWS KMS key (SSE-KMS)."
+    - "Client-side encryption using a client-side master key that never leaves the application."
+    - "Server-side encryption with a customer-provided key (SSE-C)."
+    - "Client-side encryption using an AWS KMS key."
+  correct: [B]
+  why: "Only client-side encryption with a client-side master key keeps both conditions. The data is encrypted before it leaves the application, so AWS never sees plaintext, and the master key is held entirely by the client, so it is never sent either. Not \"Client-side encryption using an AWS KMS key\": Client-side encryption with a KMS key keeps plaintext data local, but the key identifier is sent to KMS and the key lives in AWS — the master key requirement fails. Not \"Server-side encryption with a customer-provided key (SSE-C)\": With SSE-C you transmit the key with every request, and S3 performs the encryption, meaning plaintext reaches AWS too. Not \"Server-side encryption with an AWS KMS key (SSE-KMS)\": SSE-KMS sends plaintext to S3 for encryption and the key is managed by AWS, failing both conditions."
+  ref: "Question sec-053 (S3 encryption options) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-054
+  kind: choice
+  en: "Architects at a pharmaceutical company must access AWS resources using their existing on-premises Active Directory credentials. The identity provider supports SAML 2.0, and creating IAM users per person is unacceptable. What should be configured?"
+  options:
+    - "SAML 2.0-based federation with Active Directory Federation Services as the identity provider."
+    - "IAM users mirroring the Active Directory account list."
+    - "An Amazon Cognito identity pool federated to the directory."
+    - "Web identity federation with a public provider such as Google or Facebook."
+  correct: [A]
+  why: "AD FS speaks SAML 2.0, and AWS supports SAML federation directly: users authenticate against the corporate directory and receive temporary credentials for an IAM role. No IAM users are created and the directory stays the source of truth. Not \"Web identity federation with a public provider such as Google or...\": Web identity federation is for public consumer identity providers, not a corporate Active Directory. Not \"IAM users mirroring the Active Directory account list\": This creates the per-person IAM users the requirement forbids, plus a second credential store to synchronise. Not \"An Amazon Cognito identity pool federated to the directory\": Cognito serves application end users; workforce console and CLI access goes through SAML federation or Identity Center."
+  ref: "Question sec-054 (Identity federation and IAM Identity Center) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-055
+  kind: choice
+  en: "A Lambda function holds database and third-party API credentials in environment variables. Other developers with console access must not be able to read them in plain text. What provides the strongest protection?"
+  options:
+    - "Create a customer managed KMS key and use the console's encryption helpers to encrypt the variables with it."
+    - "Enable TLS on the function's outbound connections."
+    - "Nothing — Lambda already encrypts environment variables at rest by default."
+    - "Move the function to an EC2 instance and store the values in a local configuration file."
+  correct: [A]
+  why: "Lambda encrypts environment variables at rest with a default key, but anyone with console access to the function still sees the decrypted values. Encrypting with your own KMS key through the encryption helpers means the console shows ciphertext, and only principals granted Decrypt on that key can read them. Not \"Nothing — Lambda already encrypts environment variables at rest by...\": The default encryption protects the data at rest but not from colleagues viewing the function configuration — which is precisely the stated threat. Not \"Enable TLS on the function's outbound connections\": TLS protects credentials in transit and does nothing about who can read them in the console. Not \"Move the function to an EC2 instance and store the values in a local...\": A file on an instance is readable by anyone with access to the instance and abandons the serverless model."
+  ref: "Question sec-055 (Secrets management and rotation) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-056
+  kind: choice
+  en: "An audit team needs AWS's SOC and PCI compliance reports, plus agreements such as the Business Associate Addendum, for the company's account. Where should the architect get them?"
+  options:
+    - "Amazon Inspector."
+    - "AWS Security Hub."
+    - "AWS Identity and Access Management."
+    - "AWS Artifact."
+  correct: [D]
+  why: "AWS Artifact is the self-service portal for AWS's own compliance artefacts — SOC reports, PCI attestations, ISO certifications and agreements such as the BAA and NDA. It is the only place these documents are published. Not \"AWS Security Hub\": Security Hub aggregates security findings about your own resources; it does not host AWS's audit reports. Not \"Amazon Inspector\": Inspector assesses your workloads for vulnerabilities and has nothing to do with AWS's certifications. Not \"AWS Identity and Access Management\": IAM controls access to resources; it neither stores nor generates compliance reports."
+  ref: "Question sec-056 (Auditing with CloudTrail and Config) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-057
+  kind: choice
+  en: "An organization wants to procure resources such as Transit Gateways, License Manager configurations and Route 53 Resolver rules centrally and share them across its many AWS accounts, without duplicating them. Which TWO services accomplish this?"
+  options:
+    - "AWS ParallelCluster, to consolidate the accounts."
+    - "AWS Control Tower, to share the resources across accounts."
+    - "IAM cross-account roles configured individually in every account."
+    - "AWS Resource Access Manager, to share the resources with those accounts."
+    - "AWS Organizations, to consolidate the accounts into one organization."
+  correct: [D, E]
+  why: "Organizations provides the account structure and the boundary within which sharing is trusted. Resource Access Manager then shares specific resource types — Transit Gateways, subnets, License Manager configurations, Resolver rules — with accounts or organizational units, so they are created once and used everywhere. Not \"AWS Control Tower, to share the resources across accounts\": Control Tower sets up and governs a landing zone. Sharing individual resources across accounts is RAM's job. Not \"IAM cross-account roles configured individually in every account\": Hand-built cross-account roles in every account is the operational burden RAM exists to remove, and it does not share resource types like Transit Gateways. Not \"AWS ParallelCluster, to consolidate the accounts\": ParallelCluster is an HPC cluster management tool and is unrelated to account consolidation."
+  ref: "Question sec-057 (Cross-account access with IAM roles) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-058
+  kind: choice
+  en: "SQL injection attempts are hitting Application Load Balancers in several AWS accounts. The team needs immediate protection and wants one place to define and reuse the rules across every account. What should be implemented?"
+  options:
+    - "Amazon GuardDuty with a managed rule blocking SQL injection, shared through Security Hub."
+    - "AWS WAF with the SQL database managed rule group on each ALB, administered centrally through AWS Firewall Manager."
+    - "AWS Network Firewall with stateful rule groups in front of each ALB."
+    - "Amazon Macie to scan for the vulnerability, followed by refactoring the applications."
+  correct: [B]
+  why: "The AWS Managed Rules SQL database rule group blocks request patterns associated with SQL injection and attaches directly to an ALB. Firewall Manager then defines the policy once at the organization level and enforces it on load balancers across every account. Not \"Amazon GuardDuty with a managed rule blocking SQL injection, shared...\": GuardDuty detects threats from log analysis; it cannot attach rules to an ALB or block requests. Not \"AWS Network Firewall with stateful rule groups in front of each ALB\": Network Firewall protects VPC traffic and is not the layer that inspects HTTP requests reaching a load balancer. Not \"Amazon Macie to scan for the vulnerability, followed by refactoring...\": Macie classifies sensitive data in S3, and refactoring the applications takes far too long for an active attack."
+  ref: "Question sec-058 (Edge protection with WAF and Shield) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-059
+  kind: choice
+  en: "A manufacturing company runs an on-premises Active Directory forest that its security team requires to remain the single authoritative source of user accounts. The company is deploying a fleet of Windows EC2 instances in a VPC connected to the corporate network by AWS Direct Connect, and employees must sign in to those instances with their existing corporate credentials. The security team will not permit directory objects to be replicated into AWS. Which solution meets these requirements with the LEAST operational overhead?"
+  options:
+    - "Deploy AWS Managed Microsoft AD in the VPC, establish a two-way forest trust with the on-premises Active Directory, and domain-join the Windows instances to the AWS-hosted directory so that corporate accounts stay usable if the Direct Connect link goes down."
+    - "Deploy Simple AD in the VPC, create matching user accounts for every employee who needs access, and domain-join the Windows instances to the Simple AD directory."
+    - "Deploy AWS Directory Service AD Connector in the VPC and seamlessly domain-join the Windows instances through it."
+    - "Configure IAM Identity Center with the on-premises Active Directory as an external identity provider and have employees authenticate to the Windows instances through the AWS access portal."
+  correct: [C]
+  why: "AD Connector is a directory proxy. It forwards authentication and user-lookup requests to on-premises domain controllers over the existing connection and stores no directory objects in AWS, which satisfies the security team's constraint directly. It supports seamless domain join for Windows EC2 instances, so no per-instance configuration is required. Not \"Deploy AWS Managed Microsoft AD in the VPC, establish a two-way...\": A managed directory in AWS holds its own directory objects and a forest trust keeps them synchronised, which is exactly what the security team prohibited, and it costs more to run than a proxy. Not \"Deploy Simple AD in the VPC, create matching user accounts for every...\": Simple AD is a standalone Samba-based directory that cannot trust or proxy to an existing forest, so accounts would have to be duplicated and maintained separately from the authoritative source. Not \"Configure IAM Identity Center with the on-premises Active Directory...\": IAM Identity Center federates access to AWS accounts and SAML applications. It does not provide the Windows domain authentication a server needs for interactive operating-system sign-in."
+  ref: "Question sec-059 (Identity federation and IAM Identity Center) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-060
+  kind: choice
+  en: "A healthcare provider is migrating a .NET application to EC2 instances running Windows Server. The application requires LDAP lookups and Group Policy objects to configure its hosts, and it stores data in an Amazon RDS for SQL Server database that must authenticate application users with Windows Authentication. The provider's on-premises Active Directory must remain authoritative for identities, and the operations team is small. Which solution meets these requirements?"
+  options:
+    - "Deploy AWS Managed Microsoft AD and configure a one-way forest trust so the AWS directory trusts the on-premises forest, then join the EC2 instances and the RDS for SQL Server instance to the AWS directory."
+    - "Run self-managed Active Directory domain controllers on EC2 instances in the VPC, replicate the on-premises forest to them, and point both the application hosts and the database at those controllers."
+    - "Deploy Simple AD sized for the user population, apply the required Group Policy objects to it, and enable Windows Authentication on the RDS for SQL Server instance against that directory."
+    - "Deploy AWS Directory Service AD Connector so that authentication is proxied to the on-premises domain controllers, then join the EC2 instances and the RDS for SQL Server instance to the directory through the connector."
+  correct: [A]
+  why: "Amazon RDS for SQL Server supports Windows Authentication only through AWS Managed Microsoft AD, not through AD Connector or Simple AD. A one-way trust in which the AWS directory trusts the on-premises forest lets corporate users authenticate while leaving the on-premises forest authoritative, and Managed Microsoft AD is a real Microsoft AD so LDAP and Group Policy behave normally. Not \"Deploy AWS Directory Service AD Connector so that authentication is...\": AD Connector cannot be used to enable Windows Authentication on RDS for SQL Server, and it does not host Group Policy objects of its own, so two of the stated requirements fail. Not \"Deploy Simple AD sized for the user population, apply the required...\": Simple AD is Samba-based rather than genuine Active Directory. It supports neither forest trusts nor RDS for SQL Server Windows Authentication, and its Group Policy support is limited. Not \"Run self-managed Active Directory domain controllers on EC2 instances...\": Self-managed domain controllers can satisfy the technical requirements but leave the small operations team patching, monitoring and backing up the controllers themselves."
+  ref: "Question sec-060 (Identity federation and IAM Identity Center) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-061
+  kind: choice
+  en: "A retailer serves its storefront from an Amazon CloudFront distribution with an Application Load Balancer origin in the eu-west-1 Region. An engineer requested a public certificate for the storefront's custom domain in AWS Certificate Manager in eu-west-1 and validated it successfully, but the certificate does not appear in the list of certificates available to the CloudFront distribution. The team needs the custom domain served over HTTPS. What should the engineer do?"
+  options:
+    - "Enable automatic certificate rotation on the eu-west-1 certificate so that ACM replicates the validated certificate into the Regions used by CloudFront edge locations."
+    - "Request or import a public ACM certificate for the domain in the us-east-1 Region and select it in the distribution settings."
+    - "Issue a certificate for the domain from an AWS Private Certificate Authority in eu-west-1 and associate that certificate with the CloudFront distribution."
+    - "Attach the existing eu-west-1 certificate to the Application Load Balancer and configure the CloudFront distribution to use the default CloudFront certificate for viewer connections, so that visitors reach the site through the distribution's own domain name rather than the storefront domain."
+  correct: [B]
+  why: "CloudFront reads viewer certificates only from ACM in us-east-1, regardless of where the origin runs. Requesting the certificate in that Region makes it selectable. The eu-west-1 certificate remains useful for the ALB itself, since a load balancer requires a certificate in its own Region. Not \"Attach the existing eu-west-1 certificate to the Application Load...\": The default CloudFront certificate covers only the cloudfront.net domain name, so the retailer's own domain would produce certificate warnings for viewers. Not \"Issue a certificate for the domain from an AWS Private Certificate...\": A private CA issues certificates that public browsers do not trust, so storefront visitors would see errors. Private CA suits internal traffic, not a public site. Not \"Enable automatic certificate rotation on the eu-west-1 certificate so...\": ACM does not replicate certificates between Regions, and rotation concerns renewal rather than Regional availability."
+  ref: "Question sec-061 (Certificate management and encryption in transit) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-062
+  kind: choice
+  en: "A financial services firm connects its data centre to AWS with a single 10 Gbps Direct Connect dedicated connection terminating at one Direct Connect location. An architecture review flags that a failure of that Direct Connect location would sever all connectivity to the VPC. The firm wants connectivity to survive such a failure, accepts reduced bandwidth while running on the backup path, and wants to limit additional monthly cost. Which approach is MOST cost-effective?"
+  options:
+    - "Order a second 10 Gbps dedicated connection at the same Direct Connect location, terminate it on a separate customer router, and advertise the same prefixes over both connections so that either router can carry the full production load on its own."
+    - "Attach the virtual private gateway to an AWS Transit Gateway and associate the existing Direct Connect connection with a transit virtual interface for automatic redundancy."
+    - "Configure an AWS Site-to-Site VPN over the internet as a backup path to the same virtual private gateway, with BGP shifting traffic on failure."
+    - "Order a second 10 Gbps dedicated connection at a different Direct Connect location and run both connections in an active-active configuration using BGP for path selection."
+  correct: [C]
+  why: "A Site-to-Site VPN over the public internet is billed at a low hourly rate plus data transfer and provides an independent path that does not share the failed Direct Connect location. BGP withdraws the Direct Connect routes on failure and traffic moves to the VPN, at lower bandwidth but with continuity, which is what the firm asked for. Not \"Order a second 10 Gbps dedicated connection at a different Direct...\": A second dedicated connection at a different location does give the strongest resilience, but a second 10 Gbps port plus cross-connect and provider circuit is far more expensive than a VPN backup. Not \"Order a second 10 Gbps dedicated connection at the same Direct...\": A second connection at the same Direct Connect location protects against a device or port failure but not against loss of that location, which is the risk the review identified. Not \"Attach the virtual private gateway to an AWS Transit Gateway and...\": Transit Gateway changes how networks are attached and routed. It adds no additional physical path, so a Direct Connect location failure still removes all connectivity."
+  ref: "Question sec-062 (VPC connectivity: peering, Transit Gateway and VPN) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-063
+  kind: choice
+  en: "A retailer is launching a mobile application that lets shoppers sign in with an email address and password or with their existing Google account. After signing in, the application must upload photographs directly from the device to a prefix in an Amazon S3 bucket that is unique to each shopper. The development team does not want to embed long-lived credentials in the application or run authentication servers. Which combination should the architect use?"
+  options:
+    - "An IAM Identity Center instance federated to Google, issuing each shopper a permission set that grants access to their own prefix in the bucket."
+    - "An API Gateway REST API with an IAM authorizer in front of S3, where each shopper is created as an IAM user at first sign-in."
+    - "An Amazon Cognito user pool for sign-in, with the application calling S3 using an IAM user access key that is distributed with the mobile client."
+    - "An Amazon Cognito user pool for sign-in and an identity pool that exchanges the pool token for temporary IAM credentials scoped to the user's prefix."
+  correct: [D]
+  why: "A user pool handles sign-up, sign-in and the Google federation. The identity pool then trades the resulting token for temporary AWS credentials, and a role with a policy keyed on the substitution variable ${cognito-identity.amazonaws.com:sub} restricts each shopper to their own prefix. Nothing long-lived ships with the app. Not \"An Amazon Cognito user pool for sign-in, with the application calling...\": Any credential shipped inside a mobile binary can be extracted, and a single access key cannot isolate one shopper's prefix from another's. Not \"An IAM Identity Center instance federated to Google, issuing each...\": IAM Identity Center manages workforce access to AWS accounts and internal applications. It is not designed to authenticate large numbers of external consumers. Not \"An API Gateway REST API with an IAM authorizer in front of S3, where...\": IAM users are a hard-limited, long-lived construct meant for internal principals; creating one per shopper does not scale and adds an account to manage for every customer."
+  ref: "Question sec-063 (Application authentication with Cognito) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-064
+  kind: choice
+  en: "A company exposes an internal reporting API through Amazon API Gateway. Employees already sign in to a corporate SAML identity provider, and the security team requires that the API validate a JSON Web Token on every request without the API's own code performing signature checks or maintaining a user directory. Group membership carried in the token must determine which endpoints a caller may reach. What should the architect configure?"
+  options:
+    - "An API Gateway resource policy that permits requests only from the corporate IP ranges, with the SAML assertion passed as a request header."
+    - "AWS WAF in front of API Gateway with a rule group that inspects the Authorization header and blocks requests carrying an invalid token."
+    - "An Amazon Cognito user pool federated to the SAML provider, attached to API Gateway as a Cognito authorizer with scopes mapped to the endpoints."
+    - "A Lambda authorizer on API Gateway that retrieves the signing keys from the SAML provider and verifies each token before allowing the request through."
+  correct: [C]
+  why: "A Cognito user pool can federate to a SAML provider and issue its own JWTs. Attaching it to API Gateway as a Cognito authorizer means the gateway validates the token signature, expiry and scopes before the request reaches any application code, and group claims can be mapped to scopes per method. Not \"A Lambda authorizer on API Gateway that retrieves the signing keys...\": A Lambda authorizer works, but writing and maintaining signature verification is exactly the custom validation code the security team asked to avoid. Not \"An API Gateway resource policy that permits requests only from the...\": Source IP is a network control, not authentication, and an unverified assertion in a header proves nothing about the caller. Not \"AWS WAF in front of API Gateway with a rule group that inspects the...\": WAF filters on request patterns and rates. It cannot verify a token signature or evaluate group claims."
+  ref: "Question sec-064 (Application authentication with Cognito) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-065
+  kind: choice
+  en: "A company uses AWS Organizations with all features enabled. To satisfy a data residency obligation, the security team must guarantee that no principal in any member account can create resources outside eu-west-1 and eu-central-1, including principals holding the AdministratorAccess policy. The team is drafting a service control policy attached to the organization root. Which TWO statements about this approach are correct? (Select TWO.)"
+  options:
+    - "Service control policies apply only to roles, so IAM users in member accounts would bypass the residency restriction entirely."
+    - "The SCP restricts principals in member accounts even when their identity-based policy grants the action, because an SCP sets the maximum available permissions."
+    - "Principals in the management account are not affected by service control policies, so the management account needs a separate control."
+    - "Global services such as IAM and Amazon CloudFront are unaffected by a Region condition, so the policy must exempt them or legitimate calls will fail."
+    - "An SCP grants permissions on its own, so member account principals will be able to use any action the SCP allows without an identity-based policy."
+  correct: [B, C]
+  why: "An SCP is a permissions boundary for an account: it caps what identity-based policies can grant, so even an administrator is limited by it. The management account is the documented exception — SCPs never restrict its principals — so residency there must be enforced another way. Not \"An SCP grants permissions on its own, so member account principals...\": An SCP never grants permissions. A principal still needs an identity-based policy allowing the action; the SCP only defines the ceiling. Not \"Global services such as IAM and Amazon CloudFront are unaffected by a...\": The observation about global services is a genuine design concern, but the fix is a NotAction exemption within the same policy rather than a statement about how SCPs apply. Not \"Service control policies apply only to roles, so IAM users in member...\": SCPs apply to all IAM principals in a member account, users and roles alike, with the single exception of the account's root user in some cases."
+  ref: "Question sec-065 (Organizations SCPs and guardrails) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-066
+  kind: choice
+  en: "A platform team hands a development team its own AWS account and wants developers to create IAM roles freely for their applications, while guaranteeing that no role they create can ever be granted permissions beyond a defined set. Developers must not be able to remove or weaken that guarantee. The platform team wants the control to live inside the development account rather than depending on a change to the organization. Which mechanism should be used?"
+  options:
+    - "Give the developers a managed policy containing the permitted actions and rely on code review to prevent them attaching anything broader."
+    - "Attach a service control policy to the organizational unit that lists every action the development team is permitted to use."
+    - "Require a permissions boundary on every role the developers create, enforced by a condition on their role-creation permission."
+    - "Enable AWS Config rules in the account that detect over-permissive roles and raise findings in AWS Security Hub for the platform team."
+  correct: [C]
+  why: "A permissions boundary caps the effective permissions of a role regardless of the identity policy attached to it. Granting iam:CreateRole only under a condition requiring a specific boundary means developers can create roles freely but cannot create one that exceeds the ceiling, and cannot strip the boundary. Not \"Attach a service control policy to the organizational unit that lists...\": An SCP would work, but the requirement was explicitly for a control inside the account rather than an organization-level change. Not \"Give the developers a managed policy containing the permitted actions...\": Code review is a process control. Nothing technically prevents a developer attaching a broader policy. Not \"Enable AWS Config rules in the account that detect over-permissive...\": Config detects a violation after it exists, which is monitoring rather than the guarantee the platform team asked for."
+  ref: "Question sec-066 (Organizations SCPs and guardrails) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-067
+  kind: choice
+  en: "A consultancy has 200 staff working from home who need to reach private subnets in two VPCs in the same Region, using their corporate Active Directory credentials with multi-factor authentication. There is no data centre and no existing Direct Connect. Staff connect from laptops on domestic broadband, and usage is concentrated in working hours. Which solution meets these requirements MOST cost-effectively?"
+  options:
+    - "AWS Verified Access with an application group per VPC, published to staff through a public endpoint and evaluated against directory group membership."
+    - "An AWS Site-to-Site VPN from each employee's home router to a virtual private gateway in each of the two VPCs."
+    - "A bastion host in a public subnet in each VPC, with staff connecting over SSH and RDP using key pairs issued by the consultancy."
+    - "AWS Client VPN with a Client VPN endpoint associated to subnets in both VPCs, authenticating against the corporate directory through AWS Directory Service."
+  correct: [D]
+  why: "Client VPN is the managed remote-access VPN for individual users. It authenticates against Active Directory through AWS Directory Service, supports MFA, and bills per associated subnet hour plus per connected client hour, so concentrated working-hours usage keeps cost proportional. Not \"An AWS Site-to-Site VPN from each employee's home router to a virtual...\": Site-to-Site VPN connects networks, not roaming individuals; 200 tunnels from domestic routers would be unmanageable and far more expensive. Not \"A bastion host in a public subnet in each VPC, with staff connecting...\": Bastion hosts expose SSH and RDP to the internet, provide no directory-integrated MFA by default, and give access to instances rather than the private networks. Not \"AWS Verified Access with an application group per VPC, published to...\": Verified Access publishes individual applications over HTTPS. It does not give laptops network-level reach into private subnets."
+  ref: "Question sec-067 (VPC connectivity: peering, Transit Gateway and VPN) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-068
+  kind: choice
+  en: "An operations team administers EC2 instances that sit in private subnets with no internet gateway and no NAT gateway, as required by a security standard that forbids inbound SSH from any source. The team still needs interactive shell access for troubleshooting, and every session must be logged for audit. Which approach satisfies these requirements?"
+  options:
+    - "Use AWS Systems Manager Session Manager with interface VPC endpoints for ssm, ssmmessages and ec2messages, and send session logs to Amazon S3 or CloudWatch Logs."
+    - "Use EC2 Instance Connect Endpoint with a security group rule permitting SSH from the endpoint, and audit access through VPC Flow Logs."
+    - "Attach an internet gateway route to the private subnets only for the SSH port, and record connections with AWS CloudTrail data events."
+    - "Deploy a bastion host in a public subnet, restrict its security group to the office CIDR, and enable VPC Flow Logs to record the sessions."
+  correct: [A]
+  why: "Session Manager reaches instances through the SSM Agent making outbound calls, so no inbound port is opened and no internet path is required once the three interface endpoints exist. Session activity can be streamed to S3 or CloudWatch Logs, which satisfies the audit requirement. Not \"Deploy a bastion host in a public subnet, restrict its security group...\": A bastion still requires an inbound SSH listener, which the standard forbids, and Flow Logs record connection metadata rather than session content. Not \"Attach an internet gateway route to the private subnets only for the...\": Selectively routing a port through an internet gateway still exposes SSH to the internet, and CloudTrail data events do not capture shell sessions. Not \"Use EC2 Instance Connect Endpoint with a security group rule...\": Instance Connect Endpoint avoids the public bastion but still relies on an inbound SSH rule, and Flow Logs again capture metadata only."
+  ref: "Question sec-068 (VPC endpoints and private connectivity) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-069
+  kind: choice
+  en: "An audit finds that a bucket holding customer exports was made publicly readable by a developer who added a bucket policy granting s3:GetObject to a wildcard principal. The security team must guarantee that no bucket in any account of the organization can be made public in future, whatever bucket policy or ACL is applied, while leaving normal authenticated access untouched. What should be configured?"
+  options:
+    - "Attach a bucket policy to each bucket that explicitly denies s3:GetObject when the principal is a wildcard."
+    - "Enable S3 Block Public Access on each bucket individually and monitor the setting with an AWS Config rule."
+    - "Enable account-level S3 Block Public Access everywhere, with an SCP preventing it being disabled."
+    - "Turn on Amazon Macie across the organization so that publicly accessible buckets are detected and reported."
+  correct: [C]
+  why: "Account-level Block Public Access overrides any bucket policy or ACL that would grant public access, in every existing and future bucket. Pairing it with an SCP that denies s3:PutAccountPublicAccessBlock stops anyone turning the guardrail off. Not \"Attach a bucket policy to each bucket that explicitly denies...\": A per-bucket deny relies on someone remembering to apply it to every new bucket, and a future policy edit could remove it. Not \"Enable S3 Block Public Access on each bucket individually and monitor...\": Bucket-level settings can be changed by anyone with the permission, and a Config rule reports the drift after the exposure exists. Not \"Turn on Amazon Macie across the organization so that publicly...\": Macie discovers and classifies sensitive data and reports risk; it does not prevent a bucket from being made public."
+  ref: "Question sec-069 (S3 access controls and Block Public Access) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
+
+- id: rm-saa-sec-070
+  kind: choice
+  en: "A security team of three covers 40 AWS accounts. They need continuous detection of compromised credentials, cryptocurrency mining and communication with known malicious addresses, aggregated into one place with findings from Amazon Inspector and AWS Config, scored against the AWS Foundational Security Best Practices standard. They do not want to deploy or manage agents. What should the architect implement?"
+  options:
+    - "Amazon Inspector enabled organization-wide, with its findings forwarded to an Amazon EventBridge bus in the security account."
+    - "Amazon GuardDuty enabled organization-wide, with AWS Security Hub as the delegated administrator aggregating findings and running the standard."
+    - "AWS CloudTrail Lake collecting management and data events from all accounts, queried on a schedule for suspicious patterns."
+    - "Amazon Detective enabled in every account, with the security team investigating anomalies from its behaviour graphs."
+  correct: [B]
+  why: "GuardDuty analyses CloudTrail, VPC Flow Logs and DNS logs with no agents and detects exactly these threat classes. Security Hub aggregates GuardDuty, Inspector and Config findings across the organization and scores them against the Foundational Security Best Practices standard. Not \"Amazon Inspector enabled organization-wide, with its findings...\": Inspector assesses software vulnerabilities and unintended network exposure; it does not detect credential compromise or malicious traffic. Not \"AWS CloudTrail Lake collecting management and data events from all...\": CloudTrail Lake stores and queries activity but supplies no threat intelligence, so the team would be writing detections themselves. Not \"Amazon Detective enabled in every account, with the security team...\": Detective helps investigate a finding after one exists. It is a complement to GuardDuty rather than a replacement."
+  ref: "Question sec-070 (Threat detection with GuardDuty and Security Hub) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [saa]
