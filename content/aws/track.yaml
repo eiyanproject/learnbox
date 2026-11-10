@@ -17,6 +17,15 @@ exams:
       - { kind: choice, count: 17, points: 1, from: aws/saa/02-resilient }
       - { kind: choice, count: 15, points: 1, from: aws/saa/03-performance }
       - { kind: choice, count: 13, points: 1, from: aws/saa/04-cost }
+  - id: saa-open
+    title: "Solutions Architect - Associate (SAA-C03): open bank"
+    minutes: 130
+    pass: 720
+    max: 1000
+    shuffle: true
+    note: "65 questions drawn at random from the open practice bank by Berkay Cakibey (github.com/BerkayCakibey/aws-saa-tips, MIT licence), not weighted by domain."
+    draw:
+      - { kind: choice, count: 65, points: 1, from: aws/saa/05-open-bank }
   - id: dva
     title: "Developer - Associate (DVA-C02)"
     minutes: 130
@@ -96,7 +105,7 @@ sections:
     description: "Logs, metric filters and alarms, CloudTrail and Config for audit, and the same resources described once in CloudFormation."
   - id: saa
     title: "Exam practice: Solutions Architect - Associate"
-    description: "Multiple-choice questions by exam domain - secure, resilient, high-performing, cost-optimized - and a timed 65-question mock exam."
+    description: "Multiple-choice questions by exam domain - secure, resilient, high-performing, cost-optimized - a timed 65-question mock exam, and an open bank of 325 more questions with its own mock."
   - id: dva
     title: "Exam practice: Developer - Associate"
     description: "Multiple-choice questions by exam domain - development, security, deployment, troubleshooting - and a timed 65-question mock exam."

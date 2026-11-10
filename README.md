@@ -237,6 +237,13 @@ in 180 minutes with a pass at 750 for the professionals:
 | Solutions Architect - Professional (SAP-C02) | 81 | organizational complexity 21, new solutions 24, continuous improvement 20, migration 16 |
 | DevOps Engineer - Professional (DOP-C02) | 81 | SDLC automation 18, IaC 14, resilience 12, monitoring 12, incident response 11, security 14 |
 
+SAA-C03 also has an **open practice bank**: 325 questions from
+[aws-saa-tips](https://github.com/BerkayCakibey/aws-saa-tips) by Berkay
+Cakibey (MIT licence, credited on the topic page and in every question's
+reference), with its own 65-question mock exam drawn at random. Question
+banks found on GitHub for the other exams were copies of real exam questions
+(exam dumps) or had no licence, so they are not included.
+
 In the terminal, `aws ...` starts a private emulator on 127.0.0.1 the first
 time and keeps it until `awslab stop`; `awslab reset` empties it, `awslab run
 setup.sh` rebuilds it from a lesson's script, and `awslab given vpc` builds
