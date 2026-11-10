@@ -141,3 +141,29 @@
   why: "Service Quotas publishes usage metrics for many quotas and can create CloudWatch alarms on utilization, giving time to request increases."
   ref: "Service Quotas User Guide: Service Quotas and Amazon CloudWatch alarms"
   exams: [dop]
+
+- id: rm-dop-inc-001
+  kind: choice
+  en: "Whenever a security group is modified to allow 0.0.0.0/0 on port 22, the change must be reverted automatically within minutes and the security team notified, across all accounts. What should the team build?"
+  options:
+    - "An SCP denying ec2:AuthorizeSecurityGroupIngress in all accounts."
+    - "A CloudTrail alarm that emails the security team so they can revert the change manually."
+    - "An AWS Config rule detecting the condition, with automatic remediation through an SSM Automation document and an EventBridge rule notifying SNS."
+    - "A weekly report listing security groups with open SSH access."
+  correct: [C]
+  why: "Config evaluates the rule as the change is recorded, and an associated remediation action running an SSM Automation document reverts the offending rule without a human. EventBridge on the compliance-change event delivers the notification, so detection, correction and alerting are all automatic. Not \"A CloudTrail alarm that emails the security team so they can revert...\": Email plus manual reversion is exactly the human step the requirement removes, and response time depends on who is awake. Not \"An SCP denying ec2:AuthorizeSecurityGroupIngress in all accounts\": Denying the API outright blocks all legitimate security group changes, not just the dangerous rule. Not \"A weekly report listing security groups with open SSH access\": A weekly report leaves the exposure open for up to a week."
+  ref: "Question inc-001 (Automated remediation with SSM and Lambda) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dop]
+
+- id: rm-dop-inc-002
+  kind: choice
+  en: "A CloudFormation deployment to production occasionally succeeds structurally while the application it deploys begins failing health checks. The team wants the stack update to roll back automatically when that happens rather than leaving a broken release in place. What should be configured?"
+  options:
+    - "A DeletionPolicy of Retain on the stack's resources."
+    - "A manual approval step after the deployment stage."
+    - "Termination protection on the stack."
+    - "Rollback triggers on the stack update, referencing CloudWatch alarms that watch application health during a monitoring period."
+  correct: [D]
+  why: "Rollback triggers let a stack update monitor specified CloudWatch alarms for a defined period after resources are created or updated. If an alarm fires within that window CloudFormation rolls the stack back automatically, which catches exactly the case where deployment succeeds but the application is unhealthy. Not \"A manual approval step after the deployment stage\": A manual approval depends on someone noticing and acting, and typically gates before deployment rather than reacting to post-deployment health. Not \"Termination protection on the stack\": Termination protection prevents stack deletion; it has no bearing on update health. Not \"A DeletionPolicy of Retain on the stack's resources\": DeletionPolicy governs what happens to resources when they are removed, not whether a bad update is reverted."
+  ref: "Question inc-002 (Automatic rollback on failure) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dop]

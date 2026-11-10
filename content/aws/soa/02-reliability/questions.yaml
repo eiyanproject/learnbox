@@ -206,3 +206,852 @@
   why: "Pilot light keeps the core (data) live in the DR Region and provisions the rest only on failover. Warm standby would keep a scaled-down but working application running."
   ref: "Disaster Recovery of Workloads on AWS: Pilot light"
   exams: [soa]
+
+- id: zg-soa-d2-01
+  kind: choice
+  en: "A company runs a web application on Amazon EC2 instances in an Auto Scaling group. Load changes throughout the day without a fixed pattern. The company must keep average CPU utilization near 50%. Which scaling policy will meet this requirement with the LEAST operational overhead?"
+  options:
+    - "A step scaling policy with separate alarms at 40%, 50%, and 60% CPU"
+    - "A simple scaling policy that adds one instance when CPU passes 50%"
+    - "A scheduled action that changes the desired capacity every hour"
+    - "A target tracking policy on ASGAverageCPUUtilization with a target of 50"
+  correct: [D]
+  why: "Target tracking works like a thermostat. You choose a metric and a target value, and EC2 Auto Scaling creates and manages the CloudWatch alarms and adjusts capacity in both directions to keep the metric near the target. Not \"A step scaling policy with separate alarms at 40%, 50%, and 60% CPU\": Step scaling can work, but you must create and tune the alarms and step adjustments yourself, which is more effort. Not \"A scheduled action that changes the desired capacity every hour\": Scheduled actions suit predictable patterns, and this load has no fixed pattern. Not \"A simple scaling policy that adds one instance when CPU passes 50%\": Simple scaling adds one instance at a time and waits for a cooldown before it acts again, so it reacts slowly to large changes. It also needs a separate scale-in policy."
+  ref: "Question d2-01 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-02
+  kind: choice
+  en: "A company runs a stateless API on Amazon EC2 instances in an Auto Scaling group behind an Application Load Balancer. Load tests show that each instance handles up to 1,000 requests per minute before latency rises. CPU utilization stays below 40% even at that point. Which scaling configuration will keep latency low?"
+  options:
+    - "A target tracking policy on ASGAverageNetworkIn with a target of 1,000"
+    - "A target tracking policy on ASGAverageCPUUtilization with a target of 40"
+    - "A step scaling policy that adds instances when HealthyHostCount drops"
+    - "A target tracking policy on ALBRequestCountPerTarget with a target of about 800"
+  correct: [D]
+  why: "The instances slow down because of request volume, not CPU. Request count per target measures that load directly, and a target below the 1,000 limit leaves headroom while new instances start. Not \"A target tracking policy on ASGAverageCPUUtilization with a target of...\": CPU stays below 40% even when latency rises, so a CPU target would not add instances in time. Not \"A target tracking policy on ASGAverageNetworkIn with a target of 1,000\": Network bytes in are not the same as requests, and 1,000 bytes is not a meaningful target for this API. Not \"A step scaling policy that adds instances when HealthyHostCount drops\": HealthyHostCount drops when targets fail health checks. It does not track the request load that causes the latency."
+  ref: "Question d2-02 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-03
+  kind: choice
+  en: "A company has an internal HR application that runs in an Auto Scaling group. The application has almost no traffic at night. Every weekday at 08:00, 4,000 employees sign in within 10 minutes, and the group's target tracking policy cannot add instances fast enough. What should a CloudOps engineer do to handle the morning peak?"
+  options:
+    - "Add a scheduled action that raises the minimum capacity at 07:45 each weekday and lowers it in the evening."
+    - "Change the default instance warmup to count new instances toward the group's metrics sooner."
+    - "Lower the target value of the target tracking policy to run twice the instances that the group needs."
+    - "Replace the target tracking policy with a simple scaling policy that has a shorter cooldown period."
+  correct: [A]
+  why: "The peak is predictable, so a scheduled action can add capacity before users arrive. Target tracking stays in place to handle changes during the day, and a second scheduled action lowers the minimum in the evening to save cost. Not \"Lower the target value of the target tracking policy to run twice the...\": Running twice the needed capacity all day and night wastes money, especially at night when there is almost no traffic. Not \"Change the default instance warmup to count new instances toward the...\": Warmup controls when a new instance's metrics are counted. It does not start instances any earlier, so they would still be late. Not \"Replace the target tracking policy with a simple scaling policy that...\": A simple scaling policy still reacts only after the load arrives, so instances would still be late for the peak."
+  ref: "Question d2-03 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-04
+  kind: choice
+  en: "A company's retail website runs on Amazon EC2 instances in an Auto Scaling group. Traffic follows a repeating daily and weekly pattern. New instances take 8 minutes to boot and warm their caches. Capacity must be ready before traffic increases, without a manually maintained schedule. Which solution will meet these requirements?"
+  options:
+    - "Use step scaling with larger step adjustments to start more instances at once."
+    - "Add a predictive scaling policy. Keep a target tracking policy for unexpected changes."
+    - "Create scheduled actions for each hour of the week. Update them every month."
+    - "Enable detailed monitoring to evaluate the scaling alarms every minute."
+  correct: [B]
+  why: "Predictive scaling uses machine learning on the group's history to forecast load and launches capacity ahead of the forecast, which covers the 8-minute boot time. Target tracking still reacts to changes that the forecast does not predict. Not \"Create scheduled actions for each hour of the week. Update them every...\": A full set of scheduled actions must be built and kept up to date by hand, which the company wants to avoid. Not \"Use step scaling with larger step adjustments to start more instances...\": Step scaling still reacts after the load arrives, so new instances would still be 8 minutes late. Not \"Enable detailed monitoring to evaluate the scaling alarms every...\": More frequent metrics help scaling react slightly sooner, but capacity still arrives after the traffic does."
+  ref: "Question d2-04 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-05
+  kind: choice
+  en: "A company has an Auto Scaling group of Amazon EC2 instances that run an initialization script that takes 12 minutes. During sudden spikes, users see errors until the new instances finish initializing. The company needs faster scale-out without paying for running instances that do not serve traffic. Which solution will meet these requirements?"
+  options:
+    - "Lower the health check grace period."
+    - "Add a warm pool of pre-initialized instances in the Stopped state."
+    - "Raise the minimum capacity of the group by the size of a typical spike."
+    - "Add a launch lifecycle hook that holds new instances in Pending:Wait."
+  correct: [B]
+  why: "A warm pool keeps instances that have already run their initialization. Stopped instances incur no instance charges, only EBS storage, and they move into service much faster than new instances that start from scratch. Not \"Raise the minimum capacity of the group by the size of a typical...\": A higher minimum capacity keeps extra instances running without serving traffic, which is the cost the company wants to avoid. Not \"Add a launch lifecycle hook that holds new instances in Pending:Wait\": A lifecycle hook gives an instance time to finish setup before it enters service. It does not shorten the 12-minute setup. Not \"Lower the health check grace period\": A shorter grace period does not make initialization faster. Instances could be marked unhealthy and replaced before they are ready."
+  ref: "Question d2-05 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-06
+  kind: choice
+  en: "A company has an Auto Scaling group of Amazon EC2 instances that write application logs to local disk. When the group scales in, the logs on terminated instances are lost. The logs must be uploaded to Amazon S3 before each instance is terminated. Which solution will meet this requirement?"
+  options:
+    - "Increase the deregistration delay of the target group to give the logs time to upload."
+    - "Enable scale-in protection for all instances to prevent the group from terminating them."
+    - "Add a termination lifecycle hook that runs a script to upload the logs before the instance terminates."
+    - "Set the termination policy to OldestLaunchTemplate to keep the newer instances."
+  correct: [C]
+  why: "A termination lifecycle hook holds the instance in the Terminating:Wait state. An EventBridge rule can run a script on the instance, for example with Systems Manager Run Command, that uploads the logs and then completes the lifecycle action so termination continues. Not \"Enable scale-in protection for all instances to prevent the group...\": Scale-in protection stops the group from removing instances, which breaks scale-in and increases cost. Not \"Set the termination policy to OldestLaunchTemplate to keep the newer...\": A termination policy decides which instance is removed. The removed instance still loses its logs. Not \"Increase the deregistration delay of the target group to give the...\": Deregistration delay lets in-flight requests finish at the load balancer. It does not run scripts or upload files."
+  ref: "Question d2-06 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-07
+  kind: choice
+  en: "A company has an Auto Scaling group of Amazon EC2 instances behind an Application Load Balancer (ALB). The instances sometimes have a hung web server process. The ALB marks those targets as unhealthy and stops sending them traffic, but the Auto Scaling group never replaces them. The EC2 status checks pass. What should a CloudOps engineer do so that the group replaces these instances?"
+  options:
+    - "Add an Amazon CloudWatch alarm that reboots instances on StatusCheckFailed."
+    - "Lower the ALB health check interval from 30 seconds to 5 seconds."
+    - "Configure detailed monitoring for every instance in the Auto Scaling group."
+    - "Enable Elastic Load Balancing health checks for the Auto Scaling group."
+  correct: [D]
+  why: "By default, an Auto Scaling group uses only EC2 status checks, which pass because the instance is still running. When ELB health checks are enabled, the group also treats targets that fail the load balancer health check as unhealthy and replaces them. Not \"Configure detailed monitoring for every instance in the Auto Scaling...\": Detailed monitoring adds 1-minute metrics. It does not change how the group decides that an instance is unhealthy. Not \"Lower the ALB health check interval from 30 seconds to 5 seconds\": A shorter interval detects the failure sooner at the load balancer, but the group still ignores the load balancer's health status. Not \"Add an Amazon CloudWatch alarm that reboots instances on...\": The status checks pass, so this alarm would never fire for a hung web server process."
+  ref: "Question d2-07 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-08
+  kind: choice
+  en: "A CloudOps engineer enables Elastic Load Balancing (ELB) health checks for an Auto Scaling group. New instances are now terminated and replaced repeatedly. Each instance needs about 6 minutes to install dependencies before the application responds. The health check grace period is 60 seconds. What should the CloudOps engineer do to resolve this issue?"
+  options:
+    - "Enable scale-in protection for each instance as it launches."
+    - "Switch the Auto Scaling group back to Amazon EC2 status checks only."
+    - "Increase the health check grace period to longer than the startup time."
+    - "Lower the unhealthy threshold count on the target group to 2."
+  correct: [C]
+  why: "The grace period tells the group to ignore health check results for a new instance until it has had time to start. A value longer than the 6-minute startup stops the group from replacing instances that are still initializing. Not \"Switch the Auto Scaling group back to Amazon EC2 status checks only\": This stops the loop, but the group could no longer replace instances whose application stops responding. Not \"Lower the unhealthy threshold count on the target group to 2\": A lower threshold marks targets unhealthy even faster, which makes the problem worse. Not \"Enable scale-in protection for each instance as it launches\": Scale-in protection affects scale-in decisions. It does not stop the group from replacing instances that it considers unhealthy."
+  ref: "Question d2-08 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-09
+  kind: choice
+  en: "A company runs a batch processing fleet in an Auto Scaling group. The workload can tolerate interruptions. The company must minimize cost, keep at least 2 On-Demand Instances at all times, and reduce the chance of Spot Instance interruptions. Which configuration will meet these requirements?"
+  options:
+    - "A mixed instances policy with an On-Demand base capacity of 2, a single instance type, and the lowest-price Spot strategy"
+    - "Two Auto Scaling groups: one with 2 On-Demand Instances, and one with Spot Instances that use a single instance type"
+    - "A launch template for Spot Instances of one instance type, and a scheduled action that adds 2 On-Demand Instances daily"
+    - "A mixed instances policy with an On-Demand base capacity of 2, several instance types, and the price-capacity-optimized Spot strategy"
+  correct: [D]
+  why: "The On-Demand base capacity keeps 2 On-Demand Instances, and the rest of the group can use Spot. Allowing several instance types gives Auto Scaling more Spot capacity pools, and price-capacity-optimized chooses pools that have low prices and a low chance of interruption. Not \"A mixed instances policy with an On-Demand base capacity of 2, a...\": One instance type limits Spot to fewer pools, and lowest-price ignores available capacity, which raises the risk of interruptions. Not \"A launch template for Spot Instances of one instance type, and a...\": A scheduled action does not guarantee that 2 On-Demand Instances are always running, and one Spot instance type increases interruption risk. Not \"Two Auto Scaling groups: one with 2 On-Demand Instances, and one with...\": Two groups add management effort, and a single Spot instance type still increases interruption risk."
+  ref: "Question d2-09 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-10
+  kind: choice
+  en: "A company has worker instances in an Auto Scaling group that process video jobs that can run for up to 45 minutes. When the group scales in, it sometimes terminates an instance in the middle of a job. How can a CloudOps engineer prevent the group from terminating instances that are processing jobs?"
+  options:
+    - "Increase the cooldown period of the scaling policy to 45 minutes to scale in less often."
+    - "Have the worker enable instance scale-in protection when a job starts. Disable it when the job ends."
+    - "Set the minimum capacity equal to the maximum capacity to stop the group from scaling in."
+    - "Change the termination policy to terminate the instance with the newest launch template."
+  correct: [B]
+  why: "Instance scale-in protection stops Auto Scaling from choosing that instance during scale-in. Setting it through the API when a job starts and clearing it when the job finishes protects only busy instances, while idle instances can still be removed. Not \"Change the termination policy to terminate the instance with the...\": The termination policy only changes which instance is chosen. A busy instance can still be terminated. Not \"Increase the cooldown period of the scaling policy to 45 minutes to...\": A longer cooldown delays scaling activities but does not protect instances that are in the middle of a job. Not \"Set the minimum capacity equal to the maximum capacity to stop the...\": A fixed size removes elasticity and keeps idle instances running, which raises cost."
+  ref: "Question d2-10 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-11
+  kind: choice
+  en: "A company has an Auto Scaling group of worker instances that process messages from an Amazon SQS queue. Each instance processes about 100 messages per minute. The number of instances must grow and shrink so that any backlog is cleared within about 5 minutes. Which scaling approach will meet this requirement?"
+  options:
+    - "Use target tracking on the group's average CPU utilization with a target value of 70%."
+    - "Use a scheduled action that sets the desired capacity to the queue length at the top of each hour."
+    - "Publish a backlog per instance metric. Use target tracking with a target of 500 messages per instance."
+    - "Use step scaling on the queue's NumberOfMessagesSent metric with one step for each 100 messages."
+  correct: [C]
+  why: "Backlog per instance is ApproximateNumberOfMessagesVisible divided by the number of running instances. Each instance clears 100 messages per minute, so 500 messages per instance is about 5 minutes of work. Target tracking on this metric adds and removes instances as the queue grows and shrinks. Not \"Use target tracking on the group's average CPU utilization with a...\": CPU does not show how many messages are waiting. Workers can run at low CPU while the backlog grows. Not \"Use step scaling on the queue's NumberOfMessagesSent metric with one...\": Messages sent shows the arrival rate, not the backlog, and it ignores how many instances are already running. Not \"Use a scheduled action that sets the desired capacity to the queue...\": An hourly schedule cannot react to a backlog that changes within minutes."
+  ref: "Question d2-11 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-12
+  kind: choice
+  en: "A company has a new mobile game that uses an Amazon DynamoDB table in provisioned capacity mode with auto scaling enabled. Traffic is unpredictable and sometimes doubles within seconds after a social media post. Requests are throttled during these jumps. Which solution will MOST effectively stop the throttling?"
+  options:
+    - "Lower the auto scaling target utilization to 50%."
+    - "Switch the table to on-demand capacity mode."
+    - "Add a global secondary index to the table."
+    - "Enable DynamoDB Streams for the table."
+  correct: [B]
+  why: "On-demand mode serves traffic without capacity planning and instantly accommodates up to double the table's previous peak. Auto scaling in provisioned mode adjusts over minutes, so it cannot keep up with spikes that arrive within seconds. Not \"Lower the auto scaling target utilization to 50%\": A lower target adds more headroom, but auto scaling still reacts after the spike, so sudden jumps are still throttled. Not \"Add a global secondary index to the table\": A global secondary index has its own capacity needs. It does not add capacity to the base table. Not \"Enable DynamoDB Streams for the table\": Streams capture item changes for other consumers. They do not add read or write capacity."
+  ref: "Question d2-12 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-13
+  kind: choice
+  en: "A company has a product catalog in an Amazon DynamoDB table. Reads outnumber writes by 50 to 1, and the same items are read repeatedly. The application needs microsecond read latency, and the company wants the fewest possible code changes. Which solution will meet these requirements?"
+  options:
+    - "Add an Amazon ElastiCache cluster, and write cache logic for every read and write in the application."
+    - "Switch the table to on-demand capacity mode."
+    - "Add a DynamoDB Accelerator (DAX) cluster. Point the DynamoDB client at the DAX endpoint."
+    - "Create a global table in a second Region. Send half of the reads to the replica table."
+  correct: [C]
+  why: "DAX is an in-memory cache built for DynamoDB that delivers microsecond read latency for cached items. It is compatible with the DynamoDB API, so the application mostly changes its client configuration to use the DAX endpoint. Not \"Add an Amazon ElastiCache cluster, and write cache logic for every...\": ElastiCache can cache the data, but the team would have to write and maintain caching logic, which means more code changes. Not \"Create a global table in a second Region. Send half of the reads to...\": A replica in another Region does not bring read latency down to microseconds, and it adds cost and replication to manage. Not \"Switch the table to on-demand capacity mode\": On-demand mode changes how capacity is billed and scaled. It does not lower read latency to microseconds."
+  ref: "Question d2-13 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-14
+  kind: choice
+  en: "A company has an Amazon Aurora MySQL cluster that serves a reporting dashboard. Read traffic doubles during the last week of each month, and the reader instances reach 90% CPU utilization. At other times, one reader is enough. Which solution will meet the read demand with the LEAST operational overhead?"
+  options:
+    - "Create an Amazon RDS Proxy for the cluster."
+    - "Configure Aurora Auto Scaling for Aurora Replicas with a target on average reader CPU utilization."
+    - "Add a cross-Region read replica each month. Delete it after the reporting week ends."
+    - "Move the cluster to a larger instance class before each month end, and resize it back later."
+  correct: [B]
+  why: "Aurora Auto Scaling adds and removes Aurora Replicas based on a target tracking policy, such as the average CPU of the readers. Applications that use the reader endpoint automatically spread reads across the replicas that it adds. Not \"Add a cross-Region read replica each month. Delete it after the...\": Cross-Region replicas are meant for disaster recovery and local reads in another Region, and creating them by hand every month is extra work. Not \"Move the cluster to a larger instance class before each month end...\": Resizing by hand every month is manual work and can cause brief interruptions during each change. Not \"Create an Amazon RDS Proxy for the cluster\": RDS Proxy pools connections. It does not add CPU capacity for read queries."
+  ref: "Question d2-14 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-15
+  kind: choice
+  en: "A company runs an application on an Amazon RDS for MySQL DB instance. Read-heavy reporting queries run throughout the day and slow down the application's writes. A CloudOps engineer must reduce the load on the primary DB instance. The reports can use slightly stale data. Which solution will meet these requirements with the LEAST operational overhead?"
+  options:
+    - "Increase the automated backup retention period. Run the reporting queries against the latest snapshot."
+    - "Convert the DB instance to a Multi-AZ deployment. Send the reporting queries to the standby instance."
+    - "Restore a new DB instance from a snapshot each day. Run the reporting queries against the new DB instance."
+    - "Create a read replica of the DB instance. Update the reporting queries to use the read replica's endpoint."
+  correct: [D]
+  why: "A read replica is a read-only copy that Amazon RDS updates asynchronously. Routing read queries to it reduces the load on the primary, and the small replication lag is acceptable for reports. Not \"Convert the DB instance to a Multi-AZ deployment. Send the reporting...\": The standby in a Multi-AZ DB instance deployment cannot serve read traffic. It exists for high availability. Not \"Increase the automated backup retention period. Run the reporting...\": A snapshot cannot be queried directly, and a longer retention period does not reduce the load on the primary. Not \"Restore a new DB instance from a snapshot each day. Run the reporting...\": This can work, but it needs a daily restore process and leaves the data up to a day old, which is more work than a read replica."
+  ref: "Question d2-15 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-16
+  kind: choice
+  en: "A company has a web application that stores user session data in the memory of each Amazon EC2 instance. The Application Load Balancer uses sticky sessions. When the Auto Scaling group scales in, users on the terminated instances are logged out. Load is also uneven across the instances. Which solution will resolve these issues?"
+  options:
+    - "Store session data on an Amazon EBS volume on each instance, and take snapshots of the volumes every hour."
+    - "Increase the stickiness duration on the target group."
+    - "Store session data in Amazon ElastiCache. Disable sticky sessions on the target group."
+    - "Configure scale-in protection for every instance that has active user sessions in its memory."
+  correct: [C]
+  why: "Keeping sessions in a shared in-memory store makes the web tier stateless. Any instance can serve any request, so scale-in does not log users out, and disabling stickiness lets the load balancer spread requests evenly. Not \"Increase the stickiness duration on the target group\": Longer stickiness makes the uneven load worse, and sessions are still lost when an instance is terminated. Not \"Configure scale-in protection for every instance that has active user...\": Protecting instances that have sessions would block most scale-in and keep extra instances running. Not \"Store session data on an Amazon EBS volume on each instance, and take...\": Session data on a local volume is still unavailable to the other instances, and hourly snapshots cannot restore live sessions."
+  ref: "Question d2-16 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-17
+  kind: choice
+  en: "A company has an application that uses Amazon ElastiCache with a lazy loading strategy in front of an Amazon RDS database. After prices change in the database, users sometimes see prices that are several hours out of date. The cache must continue to serve most reads. Which solution will reduce stale data with the LEAST impact on the cache hit rate?"
+  options:
+    - "Write the new value to the cache whenever a price is updated, and set a TTL on each key."
+    - "Flush the entire cache every 5 minutes to reload every key from the database."
+    - "Disable the cache, and read every price directly from the RDS database instead."
+    - "Increase the TTL of each price key to keep items in the cache for a longer time."
+  correct: [A]
+  why: "With write-through, the application updates the cache at the same time as the database, so reads see the new price immediately. A TTL acts as a safety net that expires any keys that are missed, while popular keys stay cached. Not \"Disable the cache, and read every price directly from the RDS...\": Removing the cache sends every read to the database, which loses the performance benefit. Not \"Flush the entire cache every 5 minutes to reload every key from the...\": Flushing everything causes a burst of cache misses and database load every 5 minutes. Not \"Increase the TTL of each price key to keep items in the cache for a...\": A longer TTL keeps stale prices in the cache for even longer."
+  ref: "Question d2-17 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-18
+  kind: choice
+  en: "A company has an Amazon ElastiCache (Redis OSS) cluster with cluster mode disabled. The Evictions metric is rising steadily, and the cache hit rate is falling. The DatabaseMemoryUsagePercentage metric is near 100%, and CPU utilization is low. What should a CloudOps engineer do to resolve this issue?"
+  options:
+    - "Scale up to a node type with more memory, or enable cluster mode and add shards."
+    - "Add more read replicas to the shard."
+    - "Set the maxmemory-policy parameter to noeviction."
+    - "Scale up to nodes with more vCPUs, because evictions show that the engine is CPU bound."
+  correct: [A]
+  why: "Evictions happen when the cache runs out of memory and removes keys to make room. More memory per node, or more shards that split the key space, increases the memory available for data, which reduces evictions and restores the hit rate. Not \"Add more read replicas to the shard\": Read replicas hold copies of the same data, so they add read capacity but no extra space for more keys. Not \"Set the maxmemory-policy parameter to noeviction\": With noeviction, write commands fail with errors when memory is full instead of removing keys, which breaks the application. Not \"Scale up to nodes with more vCPUs, because evictions show that the...\": CPU utilization is low, so the engine is not CPU bound. The evictions are caused by memory pressure."
+  ref: "Question d2-18 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-19
+  kind: choice
+  en: "A company's news website serves images and JavaScript files directly from an Application Load Balancer (ALB) to users around the world. During breaking news, the Amazon EC2 instances behind the ALB reach high CPU utilization because of requests for the same static files. Which solution will MOST reduce the load on the instances?"
+  options:
+    - "Move the ALB into a larger subnet to create more load balancer nodes."
+    - "Enable cross-zone load balancing to spread requests evenly across all instances."
+    - "Put an Amazon CloudFront distribution in front of the site, and cache static files with long TTLs."
+    - "Add more instances to the Auto Scaling group, and raise the maximum capacity of the group."
+  correct: [C]
+  why: "CloudFront caches static content at edge locations close to users. Repeated requests for the same images and scripts are served from the cache instead of reaching the instances, which removes most of that load. Not \"Add more instances to the Auto Scaling group, and raise the maximum...\": More instances absorb the load but cost more, and every request still reaches the origin. Not \"Enable cross-zone load balancing to spread requests evenly across all...\": Cross-zone load balancing is already on by default for an ALB. Spreading requests does not reduce how many requests there are. Not \"Move the ALB into a larger subnet to create more load balancer nodes\": Subnet size does not limit request capacity in this way, and the instances, not the load balancer, are the bottleneck."
+  ref: "Question d2-19 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-20
+  kind: choice
+  en: "A company has a latency-sensitive API that runs on AWS Lambda functions. Users complain about slow responses for the first requests each morning because of cold starts. Traffic is high from 08:00 to 18:00 on weekdays and low at other times. Which solution will reduce cold starts during business hours MOST cost-effectively?"
+  options:
+    - "Set reserved concurrency on the function to the peak level."
+    - "Use Application Auto Scaling to schedule provisioned concurrency on an alias during business hours."
+    - "Configure provisioned concurrency at the peak level on the function alias 24 hours a day, every day."
+    - "Invoke the function every minute from an Amazon EventBridge schedule to keep exactly one instance warm."
+  correct: [B]
+  why: "Provisioned concurrency keeps execution environments initialized, so requests avoid cold starts. Application Auto Scaling can raise it on a schedule before 08:00 and lower it after 18:00, so you pay for it only when traffic is high. Not \"Configure provisioned concurrency at the peak level on the function...\": This removes cold starts, but it pays for peak provisioned concurrency during nights and weekends when traffic is low. Not \"Set reserved concurrency on the function to the peak level\": Reserved concurrency limits and guarantees how many concurrent executions a function can use. It does not pre-initialize execution environments. Not \"Invoke the function every minute from an Amazon EventBridge schedule...\": One warm environment does not help when many requests arrive at the same time, so most morning requests would still have cold starts."
+  ref: "Question d2-20 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-21
+  kind: choice
+  en: "A company has an Amazon ECS service that runs on an Auto Scaling group of Amazon EC2 container instances. During peaks, the service needs more tasks, but new tasks stay in the PROVISIONING state because the cluster has no free capacity. Which combination of steps will let the service scale automatically? (Select TWO.)"
+  options:
+    - "Configure ECS service auto scaling with a target tracking policy on CPU."
+    - "Enable the deployment circuit breaker for the service in the cluster."
+    - "Raise the desired task count of the service to the peak value permanently."
+    - "Change the task placement strategy from spread to binpack on memory only."
+    - "Use a capacity provider with managed scaling for the Auto Scaling group."
+  correct: [A, E]
+  why: "Service auto scaling uses Application Auto Scaling to change the desired number of tasks based on metrics such as average CPU, so the service adds tasks during peaks. A capacity provider with managed scaling scales the Auto Scaling group based on the capacity that tasks need. Tasks that are waiting for capacity cause the group to add instances so that the tasks can be placed. Not \"Raise the desired task count of the service to the peak value...\": A permanently high task count wastes capacity at quiet times and still needs instances to run the tasks. Not \"Change the task placement strategy from spread to binpack on memory...\": Binpack can fit tasks more tightly, but it cannot place tasks when the cluster is full. Not \"Enable the deployment circuit breaker for the service in the cluster\": The circuit breaker rolls back failed deployments. It does not add tasks or instances."
+  ref: "Question d2-21 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-22
+  kind: choice
+  en: "A company has an Amazon DynamoDB table that stores sensor readings. The partition key is the sensor model. Ten thousand sensors share only three model names. The table has plenty of total provisioned capacity, but writes are throttled. What should a CloudOps engineer recommend to resolve this issue?"
+  options:
+    - "Enable point-in-time recovery."
+    - "Double the table's provisioned write capacity, and keep the sensor model as the partition key."
+    - "Use a high-cardinality partition key, such as the sensor ID."
+    - "Add a local secondary index on the sensor model."
+  correct: [C]
+  why: "A key with only three values sends all writes to a few partitions, which become hot and throttle even when the table has spare capacity. A key with many distinct values, such as the sensor ID, spreads writes evenly. Adaptive capacity helps with uneven load but cannot fix a key with only three values. Not \"Double the table's provisioned write capacity, and keep the sensor...\": Each partition has its own throughput limit, so the hot partitions keep throttling while cost rises. Not \"Add a local secondary index on the sensor model\": Local secondary indexes share the partition key of the base table, so writes still concentrate on the same few keys. Not \"Enable point-in-time recovery\": Point-in-time recovery protects against data loss. Throttled writes are rejected and never stored, so there is nothing to restore."
+  ref: "Question d2-22 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-23
+  kind: choice
+  en: "A CloudOps engineer adds an HTTP-to-HTTPS redirect to a web server configuration. All targets in an Application Load Balancer target group then become unhealthy. The health check uses HTTP on port 80 with the path /health and expects a 200 response. What should the CloudOps engineer do to resolve this issue?"
+  options:
+    - "Exclude the /health path from the redirect."
+    - "Increase the healthy threshold count."
+    - "Change the health check protocol to TCP."
+    - "Configure stickiness."
+  correct: [A]
+  why: "The redirect makes the web server answer the health check with a 301 or 302 code, which does not match the expected 200, so every target fails. Returning 200 on the health check path, or adding the redirect code to the success codes, fixes the checks. Not \"Change the health check protocol to TCP\": Target groups for an Application Load Balancer support only HTTP and HTTPS health checks, not TCP. Not \"Increase the healthy threshold count\": A higher threshold makes targets take longer to become healthy. It does not change the redirect response. Not \"Configure stickiness\": Stickiness affects how client requests are routed. It has no effect on health checks."
+  ref: "Question d2-23 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-24
+  kind: choice
+  en: "A company creates a new Application Load Balancer (ALB) for an existing fleet of Amazon EC2 instances. All targets fail health checks with the reason Request timed out. The application responds normally when a CloudOps engineer runs curl on the instances. The instances' security group allows inbound port 80 only from the company's office IP range. What should the CloudOps engineer do to resolve this issue?"
+  options:
+    - "Allow inbound port 80 on the instance security group from the ALB's security group."
+    - "Allow inbound port 80 on the ALB's security group from the instance security group."
+    - "Change the target type of the target group from instance to IP to skip security groups."
+    - "Add a route to the ALB in the route tables of the subnets that contain the instances."
+  correct: [A]
+  why: "Health checks come from the load balancer nodes, so the targets' security group must allow the health check port from the load balancer. Referencing the ALB's security group allows that traffic without hardcoding IP addresses. Not \"Allow inbound port 80 on the ALB's security group from the instance...\": The ALB's inbound rules control traffic from clients to the load balancer. The timeout happens on the path from the ALB to the instances. Not \"Add a route to the ALB in the route tables of the subnets that...\": Traffic within a VPC uses the local route, which already exists. No extra route is needed. Not \"Change the target type of the target group from instance to IP to...\": Security groups still apply to IP targets. Changing the target type does not bypass them."
+  ref: "Question d2-24 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-25
+  kind: choice
+  en: "A company has a Network Load Balancer (NLB) with nodes in two Availability Zones. Zone A has 2 targets, and zone B has 8 targets. The 2 targets in zone A are overloaded, while the targets in zone B are mostly idle. Which solution will spread traffic evenly across all 10 targets?"
+  options:
+    - "Increase the deregistration delay of the target group."
+    - "Configure sticky sessions for the NLB target group."
+    - "Enable cross-zone load balancing for the NLB."
+    - "Change the NLB target group to use IP targets."
+  correct: [C]
+  why: "Cross-zone load balancing is off by default for Network Load Balancers, so each node sends traffic only to targets in its own zone. Each zone gets about half the traffic, so 2 targets receive as much as 8. Turning on cross-zone load balancing spreads traffic across all registered targets. Data transfer charges between zones can apply. Not \"Configure sticky sessions for the NLB target group\": Stickiness keeps a client on the same target. It does not balance load between zones. Not \"Change the NLB target group to use IP targets\": The target type does not change how traffic is split between zones. Not \"Increase the deregistration delay of the target group\": Deregistration delay controls how long in-flight connections can finish when a target is removed. It does not change routing."
+  ref: "Question d2-25 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-26
+  kind: choice
+  en: "A company runs an application that handles uploads that can take up to 90 seconds. Users see failed requests every time the Auto Scaling group scales in. The Application Load Balancer target group uses a deregistration delay of 10 seconds. What should a CloudOps engineer do to resolve this issue?"
+  options:
+    - "Disable cross-zone load balancing to keep requests in each Availability Zone."
+    - "Increase the deregistration delay to longer than the longest request."
+    - "Enable slow start mode to give new targets a gradual share of requests."
+    - "Lower the health check interval to remove targets from service faster."
+  correct: [B]
+  why: "When a target is deregistered, the load balancer stops sending it new requests but lets in-flight requests finish during the deregistration delay. A 10-second delay cuts off uploads that need up to 90 seconds, so a longer delay prevents the failures. Not \"Enable slow start mode to give new targets a gradual share of...\": Slow start helps new targets warm up. It does nothing for requests on targets that are being removed. Not \"Lower the health check interval to remove targets from service faster\": Removing targets faster would cut off in-flight requests even sooner. Not \"Disable cross-zone load balancing to keep requests in each...\": Cross-zone settings control how traffic is spread. They do not protect requests during deregistration."
+  ref: "Question d2-26 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-27
+  kind: choice
+  en: "A company runs its primary web application behind an Application Load Balancer. Users must see a static maintenance page that is hosted in Amazon S3 whenever the application becomes unavailable. The switch must happen automatically. Which Amazon Route 53 configuration will meet these requirements?"
+  options:
+    - "Latency-based routing with one record for the ALB and one record for the S3 site in the same AWS Region"
+    - "Failover routing: a primary alias to the ALB with Evaluate Target Health, and a secondary record for the S3 site"
+    - "Multivalue answer routing that returns both the ALB and the S3 site"
+    - "Weighted routing that sends 90% of traffic to the ALB and 10% to the S3 site, with no health checks on either record"
+  correct: [B]
+  why: "Failover routing answers with the primary record while it is healthy and with the secondary record when it is not. An alias record to the ALB with Evaluate Target Health uses the load balancer's target health, so Route 53 switches to the S3 maintenance page when the application is down. Not \"Weighted routing that sends 90% of traffic to the ALB and 10% to the...\": Weighted routing without health checks keeps sending 90% of users to the failed ALB, and it sends 10% to the maintenance page even when the site is healthy. Not \"Latency-based routing with one record for the ALB and one record for...\": Latency routing picks the record with the lowest latency. Both records are in one Region, and nothing here switches traffic based on health. Not \"Multivalue answer routing that returns both the ALB and the S3 site\": Multivalue answer returns several records for clients to try. It is not designed to show a maintenance page only during failures, and clients could pick it while the site is up."
+  ref: "Question d2-27 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-28
+  kind: choice
+  en: "A company uses Amazon Route 53 failover routing between two internal API endpoints that run in private subnets. The endpoints are not reachable from the internet, so Route 53 health checkers cannot connect to them. The company still needs failover based on endpoint health. What should a CloudOps engineer do to meet this requirement?"
+  options:
+    - "Replace failover routing with simple routing that lists both endpoints as values in a single record."
+    - "Open each endpoint's security group to 0.0.0.0/0 to allow the Route 53 health checkers to connect."
+    - "Create a Route 53 health check that monitors the state of an Amazon CloudWatch alarm for each endpoint."
+    - "Associate the Route 53 health checks with the VPC to run the checks from inside the private subnets."
+  correct: [C]
+  why: "Route 53 health checkers run on the internet and cannot reach private resources. A health check can instead monitor a CloudWatch alarm, such as an alarm on the endpoint's error rate. The health check becomes unhealthy when the alarm is in ALARM, which drives the failover. Not \"Open each endpoint's security group to 0.0.0.0/0 to allow the Route...\": Opening the endpoints to the internet breaks the private design, and the subnets have no internet path anyway. Not \"Associate the Route 53 health checks with the VPC to run the checks...\": Route 53 health checks cannot be placed inside a VPC. They always run from health checker locations on the internet. Not \"Replace failover routing with simple routing that lists both...\": Simple routing with several values returns them with no health checking, so clients could still be sent to a failed endpoint."
+  ref: "Question d2-28 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-29
+  kind: choice
+  en: "A company keeps critical documents in an Amazon S3 bucket in us-east-1. For disaster recovery, a copy of every new object must be stored automatically in a bucket in eu-west-1. Which solution will meet this requirement with the LEAST operational overhead?"
+  options:
+    - "Create an AWS Lambda function that copies each object. Invoke the function from an event notification on the source bucket."
+    - "Create an AWS Backup plan for the source bucket. Run a weekly copy job to a backup vault in eu-west-1."
+    - "Run the aws s3 sync command from an Amazon EC2 instance. Schedule the command by using a cron job on the instance."
+    - "Enable versioning on both buckets. Create an S3 Replication rule on the source bucket that targets the eu-west-1 bucket."
+  correct: [D]
+  why: "S3 Replication copies new objects to the destination automatically. Both buckets must have versioning enabled, and Amazon S3 needs an IAM role with replication permissions. To copy objects that already exist, use S3 Batch Replication. Not \"Create an AWS Lambda function that copies each object. Invoke the...\": This can work, but the company would have to write and maintain code for retries, large objects, and failures. Replication handles these without custom code. Not \"Create an AWS Backup plan for the source bucket. Run a weekly copy...\": A weekly copy job leaves up to a week of new objects without a copy in the second Region. Not \"Run the aws s3 sync command from an Amazon EC2 instance. Schedule the...\": An instance with a cron job must be patched and monitored, and new objects wait until the next run."
+  ref: "Question d2-29 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-30
+  kind: choice
+  en: "A company has an application that connects to an Amazon RDS for MySQL Multi-AZ DB instance by using the DB endpoint. During a test failover, Amazon RDS promotes the standby within 60 seconds, but the application continues to fail for 20 minutes until it is restarted. What is the MOST likely cause of this issue?"
+  options:
+    - "The application caches the DNS lookup of the endpoint for longer than the record's TTL."
+    - "The standby instance is in a different DB subnet group that the application cannot reach."
+    - "The standby needs 20 minutes to replay transaction logs before it accepts connections."
+    - "Multi-AZ failover creates a new endpoint name that the application must be updated to use."
+  correct: [A]
+  why: "During a Multi-AZ failover, RDS updates the endpoint's DNS record to point to the new primary. The endpoint name stays the same, but an application or runtime that caches DNS results for too long keeps connecting to the old address. Honoring the short TTL, or connecting through RDS Proxy, shortens recovery. Not \"The standby instance is in a different DB subnet group that the...\": The primary and standby are in the same DB subnet group and VPC, so the application's network path is the same. Not \"The standby needs 20 minutes to replay transaction logs before it...\": The standby is kept current with synchronous replication, and the scenario says the promotion finished within 60 seconds. Not \"Multi-AZ failover creates a new endpoint name that the application...\": The endpoint name does not change during a Multi-AZ failover. Only the IP address behind it changes."
+  ref: "Question d2-30 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-31
+  kind: choice
+  en: "A company runs Amazon RDS for PostgreSQL in a Multi-AZ DB instance deployment. The company needs faster failover, typically under 35 seconds, and needs to use the standby capacity for read queries. Which solution will meet these requirements?"
+  options:
+    - "Add a read replica in another Region. Promote it during an outage."
+    - "Keep the Multi-AZ DB instance deployment. Send read queries to its standby instance."
+    - "Move to a Multi-AZ DB cluster deployment with two readable standby instances."
+    - "Enable RDS storage autoscaling."
+  correct: [C]
+  why: "A Multi-AZ DB cluster has a writer and two readable standby instances in three Availability Zones. Failover is typically under 35 seconds, and applications can send read queries to the reader endpoint. Not \"Add a read replica in another Region. Promote it during an outage\": Promoting a cross-Region replica is a manual disaster recovery step that takes longer and changes the endpoint. Not \"Enable RDS storage autoscaling\": Storage autoscaling grows storage when free space runs low. It has no effect on failover time. Not \"Keep the Multi-AZ DB instance deployment. Send read queries to its...\": In a Multi-AZ DB instance deployment, the standby cannot serve reads. It exists only for failover."
+  ref: "Question d2-31 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-32
+  kind: choice
+  en: "A company has an Amazon Aurora MySQL cluster with a writer and three Aurora Replicas: two db.r6g.2xlarge replicas that the application uses, and one db.r6g.large replica for ad hoc reports. During a failover test, Aurora promoted the small reporting replica, and the application performed poorly. How should a CloudOps engineer ensure that a large replica is promoted during failover?"
+  options:
+    - "Move the reporting replica to a different Availability Zone from the one the writer uses."
+    - "Enable Aurora Backtrack."
+    - "Set the large replicas to promotion tier 0 and the reporting replica to tier 15."
+    - "Add the large replicas to a custom endpoint named failover for the cluster."
+  correct: [C]
+  why: "Aurora promotes the replica with the highest priority, which is the lowest tier number. Tier 0 for the large replicas and tier 15 for the reporting replica makes Aurora choose a large replica. Among replicas in the same tier, Aurora picks the largest one. Not \"Move the reporting replica to a different Availability Zone from the...\": Availability Zone placement does not decide which replica is promoted. Not \"Add the large replicas to a custom endpoint named failover for the...\": Custom endpoints group instances for connections. They do not affect which replica is promoted. Not \"Enable Aurora Backtrack\": Backtrack rewinds a cluster's data to an earlier point in time. It does not control failover."
+  ref: "Question d2-32 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-33
+  kind: choice
+  en: "A company has a financial application that uses Amazon Aurora PostgreSQL in us-east-1. The company needs a disaster recovery plan for a Regional outage with an RPO of about 1 second and an RTO of a few minutes. The company also needs low-latency reads in eu-west-1. Which solution will meet these requirements?"
+  options:
+    - "Export the database to Amazon S3 each night, and import it into a cluster in eu-west-1."
+    - "Convert the cluster to an Aurora Global Database with a secondary cluster in eu-west-1."
+    - "Create a Multi-AZ DB cluster in us-east-1 that spans three Availability Zones."
+    - "Take hourly cluster snapshots, and copy each snapshot to eu-west-1 by using an AWS Backup plan."
+  correct: [B]
+  why: "Aurora Global Database replicates storage to secondary Regions with typical lag of under 1 second, and the secondary cluster serves reads locally. During a Regional outage, a secondary cluster can be promoted to accept writes within minutes. Not \"Take hourly cluster snapshots, and copy each snapshot to eu-west-1 by...\": Hourly snapshots give an RPO of up to an hour, and restoring a cluster from a snapshot takes much longer than a few minutes. Not \"Create a Multi-AZ DB cluster in us-east-1 that spans three...\": Multi-AZ protects against an Availability Zone failure, not a Regional outage, and it provides no reads in eu-west-1. Not \"Export the database to Amazon S3 each night, and import it into a...\": Nightly exports can lose up to a day of data, which fails the 1-second RPO."
+  ref: "Question d2-33 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-34
+  kind: choice
+  en: "A company has an application on Amazon EC2 instances in three Availability Zones. The instances share files through an Amazon EFS file system that uses the One Zone storage class. When the file system's Availability Zone had an outage, all instances lost access to the shared files. Which solution will prevent this issue in the future?"
+  options:
+    - "Enable Elastic throughput for the One Zone file system."
+    - "Configure EFS Replication to another One Zone file system in the same Availability Zone."
+    - "Add mount targets for the One Zone file system in the two other Availability Zones."
+    - "Move the data to an EFS file system with Regional storage and a mount target in each zone."
+  correct: [D]
+  why: "Regional EFS file systems store data redundantly across multiple Availability Zones, and a mount target in each zone gives instances local access. The file system stays available if one zone fails. Not \"Add mount targets for the One Zone file system in the two other...\": A One Zone file system stores data in one zone and has a mount target only in that zone. Instances in other zones still lose access when that zone fails. Not \"Configure EFS Replication to another One Zone file system in the same...\": A replica in the same zone fails along with the source, so it does not protect against a zone outage. Not \"Enable Elastic throughput for the One Zone file system\": The throughput mode affects performance, not where the data is stored."
+  ref: "Question d2-34 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-35
+  kind: choice
+  en: "A company runs an application behind an Application Load Balancer in three Availability Zones. During an incident, monitoring shows elevated errors in one Availability Zone, but health checks still pass. The company must move traffic away from that Availability Zone quickly and move it back later, without changing any infrastructure. Which solution will meet these requirements?"
+  options:
+    - "Lower the health check thresholds."
+    - "Start a zonal shift in Amazon Application Recovery Controller to move the ALB's traffic away from the zone."
+    - "Update the Auto Scaling group to remove the impaired zone's subnet. Add the subnet back after the event."
+    - "Deregister the targets in the impaired zone from the target group, and register them again after the event."
+  correct: [B]
+  why: "A zonal shift moves traffic for a supported resource, such as a load balancer, away from one Availability Zone for a duration that you set. It works even when health checks pass, changes no infrastructure, and can be canceled or allowed to expire to restore traffic. The load balancer must be opted in to zonal shift beforehand, and the other zones need enough capacity to absorb the load. Not \"Deregister the targets in the impaired zone from the target group...\": Deregistering and registering targets by hand is slow and error prone during an incident, and it must be undone carefully. Not \"Update the Auto Scaling group to remove the impaired zone's subnet...\": Changing the group's subnets terminates and relaunches instances, which is a slow infrastructure change. Not \"Lower the health check thresholds\": Lower thresholds affect every zone and may not catch the problem if checks still succeed. They also stay in place after the event."
+  ref: "Question d2-35 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-36
+  kind: choice
+  en: "A company runs a critical application in an Auto Scaling group across two Availability Zones with 4 instances in each Availability Zone. The application needs at least 8 instances to serve peak load. The application must continue to serve peak load if one Availability Zone fails, without waiting for new instances to launch. Which configuration will meet this requirement?"
+  options:
+    - "Run 8 instances in a single Availability Zone only."
+    - "Run 4 instances in each of three Availability Zones."
+    - "Run 6 instances in each of two Availability Zones."
+    - "Run 4 instances in each of two Availability Zones. Set the maximum capacity to 16."
+  correct: [B]
+  why: "With 12 instances across three zones, losing any one zone leaves 8 instances, which is enough for peak load. This is static stability: enough capacity is already running, so recovery does not depend on launching instances during the event. Not \"Run 6 instances in each of two Availability Zones\": Losing one zone leaves only 6 instances, which is below the 8 needed, so the group would have to launch more during the event. Not \"Run 8 instances in a single Availability Zone only\": A single zone is a single point of failure. Losing that zone takes down the whole application. Not \"Run 4 instances in each of two Availability Zones. Set the maximum...\": A higher maximum lets the group scale out, but it must launch instances after the zone fails, which takes time and might be constrained during a zone event."
+  ref: "Question d2-36 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-37
+  kind: choice
+  en: "A company has an Amazon ElastiCache (Redis OSS) replication group with one primary node and no replicas. When the primary node failed, the application lost its cache for 30 minutes while a new node was created and filled with data. Which solution will provide the FASTEST recovery from a primary node failure?"
+  options:
+    - "Add a replica in another Availability Zone. Enable Multi-AZ with automatic failover."
+    - "Change the node type to a larger size to start a new primary node and load data faster."
+    - "Enable data tiering to store the cache data on SSDs that survive the node failure."
+    - "Configure daily automatic backups. Restore the latest backup whenever the primary node fails."
+  correct: [A]
+  why: "With Multi-AZ and automatic failover, ElastiCache promotes a replica in another Availability Zone when the primary fails, and the replica already holds the data. The primary endpoint stays the same, so the application reconnects without configuration changes. Not \"Configure daily automatic backups. Restore the latest backup whenever...\": Restoring from a backup creates a new cluster, still takes a long time, and loses data written since the backup. Not \"Change the node type to a larger size to start a new primary node and...\": A larger node still has to be created and refilled with data, so recovery is not much faster. Not \"Enable data tiering to store the cache data on SSDs that survive the...\": Data tiering extends capacity by using SSDs on the same node. It does not protect against that node failing."
+  ref: "Question d2-37 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-38
+  kind: choice
+  en: "A company must back up every Amazon EBS volume, Amazon RDS database, and Amazon DynamoDB table that has the tag Backup=Daily. Backups must be kept for 35 days, and a copy must be stored in a second AWS Region. New resources that get the tag must be included automatically. Which combination of steps will meet these requirements with the LEAST operational overhead? (Select TWO.)"
+  options:
+    - "Create an AWS Backup plan with a daily rule, 35-day retention, and a copy action to a vault in the second Region."
+    - "Configure Amazon S3 Cross-Region Replication for the bucket where AWS Backup stores the recovery points."
+    - "Create an Amazon EventBridge schedule that invokes an AWS Lambda function to snapshot each tagged resource every day."
+    - "Assign resources to the backup plan by using the Backup=Daily tag."
+    - "Use Amazon Data Lifecycle Manager for all three resource types, with a cross-Region copy rule."
+  correct: [A, D]
+  why: "An AWS Backup plan defines when backups run and how long they are kept. A copy action sends each recovery point to a backup vault in another Region, with its own retention. Tag-based resource assignment includes every supported resource that has the tag, including resources created later, so no one has to update the plan. Not \"Create an Amazon EventBridge schedule that invokes an AWS Lambda...\": Custom snapshot code must be built and maintained for each resource type, and it still needs separate retention and copy logic. Not \"Use Amazon Data Lifecycle Manager for all three resource types, with...\": Data Lifecycle Manager manages EBS snapshots and EBS-backed AMIs. It does not back up RDS databases or DynamoDB tables. Not \"Configure Amazon S3 Cross-Region Replication for the bucket where AWS...\": AWS Backup stores recovery points in backup vaults, not in an S3 bucket that you manage, so there is no bucket to replicate."
+  ref: "Question d2-38 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-39
+  kind: choice
+  en: "A company has production AWS accounts in an organization in AWS Organizations. The company's security team needs backups of the production accounts stored in a separate backup account, so that a compromised production account cannot delete them. Which solution will meet this requirement?"
+  options:
+    - "Enable cross-account backup in AWS Backup. Add a copy action to a vault in the backup account."
+    - "Create a second backup vault in each production account. Copy every recovery point into it."
+    - "Give the backup account's IAM users permission to start backup jobs inside each production account."
+    - "Share each production backup vault with the backup account by using AWS Resource Access Manager."
+  correct: [A]
+  why: "With cross-account backup enabled in the organization's management account, a backup plan can copy recovery points to a vault in another account. Production administrators cannot delete copies that live in the backup account, and a vault access policy can restrict access further. Not \"Share each production backup vault with the backup account by using...\": Standard backup vaults are not shared through AWS RAM, and the backups would still be stored in the production accounts. Not \"Give the backup account's IAM users permission to start backup jobs...\": Backups created inside the production accounts still live there and can be deleted from a compromised account. Not \"Create a second backup vault in each production account. Copy every...\": A second vault in the same account is still controlled by that account, so a compromise could delete both copies."
+  ref: "Question d2-39 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-40
+  kind: choice
+  en: "A company must keep backups for 7 years to comply with a regulation. No one, including the root user, can be allowed to delete the backups before the retention period ends. Which solution will meet these requirements?"
+  options:
+    - "Apply AWS Backup Vault Lock in governance mode to the vault, with a minimum retention of 7 years."
+    - "Enable MFA delete for the backup vault."
+    - "Apply AWS Backup Vault Lock in compliance mode to the vault, with a minimum retention of 7 years."
+    - "Add a vault access policy that denies backup:DeleteRecoveryPoint to all IAM users in the account."
+  correct: [C]
+  why: "Vault Lock in compliance mode makes the retention settings immutable after the grace period ends. No one, including the root user and AWS, can delete recovery points early or remove the lock. Not \"Apply AWS Backup Vault Lock in governance mode to the vault, with a...\": Governance mode can be removed or changed by users who have sufficient IAM permissions, so it does not stop all deletions. Not \"Add a vault access policy that denies backup:DeleteRecoveryPoint to...\": Users with enough permissions, or the root user, can change the vault access policy, so it is not an immutable control. Not \"Enable MFA delete for the backup vault\": MFA delete is an S3 bucket feature. Backup vaults use Vault Lock for this purpose."
+  ref: "Question d2-40 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-41
+  kind: choice
+  en: "A company stores shared files on an Amazon EFS file system in us-east-1. For disaster recovery, the company needs a copy in us-west-2 that is no more than about 15 minutes behind the source. Which solution will meet these requirements in the MOST operationally efficient way?"
+  options:
+    - "Back up the file system with AWS Backup every day, and copy each backup to us-west-2."
+    - "Enable EFS Replication with a destination file system in us-west-2."
+    - "Run an AWS DataSync task every hour from us-east-1 to an EFS file system in us-west-2."
+    - "Mount both file systems on an Amazon EC2 instance, and run rsync from a cron job every 15 minutes."
+  correct: [B]
+  why: "EFS Replication keeps a read-only replica in another Region, with a recovery point objective of 15 minutes for most file systems, and it needs no scripts or schedules. During a disaster, you fail over to the replica. Not \"Run an AWS DataSync task every hour from us-east-1 to an EFS file...\": DataSync is built for scheduled transfers, so it adds tasks to run, and an hourly schedule does not meet the 15-minute target. Not \"Mount both file systems on an Amazon EC2 instance, and run rsync from...\": A cron job on a server must be patched, monitored, and retried, which is far more overhead than a managed replication feature. Not \"Back up the file system with AWS Backup every day, and copy each...\": A daily backup can lose up to a day of changes, which fails the 15-minute target."
+  ref: "Question d2-41 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-42
+  kind: choice
+  en: "A company's auditors require monthly evidence that backups of critical Amazon RDS databases and Amazon EBS volumes can be restored, and how long each restore takes. The company's CloudOps team currently performs these restores manually. Which solution will meet this requirement with the LEAST operational overhead?"
+  options:
+    - "Configure AWS Backup Audit Manager with a framework that checks that a backup plan covers each resource."
+    - "Create an AWS Backup restore testing plan that restores recent recovery points on a schedule."
+    - "Write an AWS Lambda function that restores each backup monthly, times it, and saves results to a spreadsheet."
+    - "Copy every recovery point to a second Region each month."
+  correct: [B]
+  why: "Restore testing runs scheduled restores of selected recovery points, records whether each restore succeeded and how long it took, and then cleans up the test resources. This gives auditors monthly evidence with no manual restores. Not \"Write an AWS Lambda function that restores each backup monthly, times...\": A custom function works, but it is code to build and maintain for each resource type. Not \"Configure AWS Backup Audit Manager with a framework that checks that...\": Audit Manager reports whether backup controls, such as plans and retention, are in place. On its own, it does not run restores to prove that they work. Not \"Copy every recovery point to a second Region each month\": Copies prove that data was duplicated, not that it can be restored."
+  ref: "Question d2-42 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-43
+  kind: choice
+  en: "A company needs hourly snapshots of Amazon EBS volumes that have the tag Tier=Critical, kept for 48 hours. The company also needs daily snapshots of the same volumes, kept for 30 days. The company wants a policy-based feature that is built into Amazon EBS and needs no custom code. Which solution will meet these requirements?"
+  options:
+    - "Create an Auto Scaling scheduled action that creates snapshots of the volumes every hour."
+    - "Create an Amazon Data Lifecycle Manager policy that targets the tag and has two schedules."
+    - "Enable fast snapshot restore for the tagged volumes."
+    - "Create an Amazon EventBridge rule that runs every hour and invokes an AWS Lambda function to snapshot the volumes."
+  correct: [B]
+  why: "Data Lifecycle Manager automates the creation, retention, and deletion of EBS snapshots for volumes or instances selected by tag. One policy can have several schedules, such as hourly snapshots kept for 48 hours and daily snapshots kept for 30 days. Not \"Create an Amazon EventBridge rule that runs every hour and invokes an...\": Custom code must handle creating, keeping, and deleting snapshots, which Data Lifecycle Manager provides natively. Not \"Enable fast snapshot restore for the tagged volumes\": Fast snapshot restore speeds up creating volumes from existing snapshots. It does not create snapshots. Not \"Create an Auto Scaling scheduled action that creates snapshots of the...\": Auto Scaling scheduled actions change a group's capacity. They cannot create EBS snapshots."
+  ref: "Question d2-43 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-44
+  kind: choice
+  en: "A company stores application logs in Amazon S3 Standard. The logs are read often for 30 days and rarely after that. The logs must be kept for 1 year for compliance and must be retrievable within hours. After 1 year, the logs must be deleted. Which solution will meet these requirements MOST cost-effectively?"
+  options:
+    - "Create an S3 Lifecycle configuration that transitions objects to S3 Glacier Flexible Retrieval after 30 days and expires objects after 365 days."
+    - "Create an S3 Lifecycle configuration that transitions objects to S3 Standard-IA after 30 days and expires objects after 365 days."
+    - "Create an AWS Lambda function that runs each day to copy objects older than 30 days to S3 Glacier Flexible Retrieval and delete objects older than 1 year."
+    - "Enable S3 Object Lock in compliance mode with a retention period of 1 year. Keep all objects in S3 Standard for the full retention period."
+  correct: [A]
+  why: "S3 Lifecycle moves objects to a lower-cost storage class and deletes them at the end of the retention period without custom code. S3 Glacier Flexible Retrieval costs less than S3 Standard-IA and supports retrieval within hours, which meets the requirement. Not \"Create an S3 Lifecycle configuration that transitions objects to S3...\": This meets the requirements, but S3 Standard-IA costs more than S3 Glacier Flexible Retrieval for logs that are rarely read and can wait hours for retrieval. Not \"Create an AWS Lambda function that runs each day to copy objects...\": This re-creates what a lifecycle rule does for free, and the company would have to maintain the code. Not \"Enable S3 Object Lock in compliance mode with a retention period of 1...\": Object Lock prevents deletion, which the requirement does not ask for, and keeping everything in S3 Standard is the most expensive choice."
+  ref: "Question d2-44 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-45
+  kind: choice
+  en: "A CloudOps engineer accidentally deleted several Amazon EBS snapshots and AMIs that were needed for recovery. The company must be able to recover deleted snapshots and AMIs for 14 days after they are deleted. Which solution will meet this requirement?"
+  options:
+    - "Enable AWS CloudTrail data events for Amazon EBS to re-create each deleted snapshot from the trail."
+    - "Add an IAM policy that denies ec2:DeleteSnapshot to all users, including the backup automation role."
+    - "Create Recycle Bin retention rules for EBS snapshots and for AMIs with a 14-day retention period."
+    - "Enable AWS Config recording to restore deleted snapshots and AMIs from configuration history."
+  correct: [C]
+  why: "Recycle Bin keeps deleted EBS snapshots and EBS-backed AMIs for the retention period of a matching rule. During that time you can recover them, and after that they are permanently deleted. Not \"Enable AWS Config recording to restore deleted snapshots and AMIs...\": Config records configuration history. It cannot restore the data in a deleted snapshot. Not \"Enable AWS CloudTrail data events for Amazon EBS to re-create each...\": CloudTrail records the delete API call. The snapshot data is gone and cannot be rebuilt from a log. Not \"Add an IAM policy that denies ec2:DeleteSnapshot to all users...\": Denying all deletions breaks the backup automation's retention cleanup, and snapshot costs would grow without limit."
+  ref: "Question d2-45 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-46
+  kind: choice
+  en: "A company has a production Amazon RDS for MySQL database. At 14:05, a developer accidentally ran a DELETE statement without a WHERE clause. Automated backups are enabled with a 7-day retention period. The company needs the data as it was at 14:04. What should a CloudOps engineer do to meet this requirement?"
+  options:
+    - "Create a read replica of the DB instance. Promote the replica to recover the data from before 14:05."
+    - "Restore the DB instance to a point in time of 14:04 as a new DB instance. Point the application to it."
+    - "Promote the Multi-AZ standby instance, because the standby still has the data from before 14:05."
+    - "Restore the most recent daily automated snapshot onto the existing DB instance to overwrite its current data."
+  correct: [B]
+  why: "Point-in-time restore uses automated backups and transaction logs to create a new DB instance at any second within the retention period, up to about 5 minutes before the current time. A restore always creates a new instance, so the application must be pointed to the new endpoint, or the instances must be renamed. Not \"Restore the most recent daily automated snapshot onto the existing DB...\": RDS restores always create a new DB instance. You cannot restore a snapshot onto an existing instance, and a daily snapshot would lose more data. Not \"Promote the Multi-AZ standby instance, because the standby still has...\": The standby is synchronously replicated, so the DELETE was applied to it as well. Not \"Create a read replica of the DB instance. Promote the replica to...\": A new replica copies the current data, which already has the rows deleted."
+  ref: "Question d2-46 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-47
+  kind: choice
+  en: "A company runs a stateless web application on a single Amazon EC2 instance in one Availability Zone. An outage in the Availability Zone took the application offline. The application must remain available if an Availability Zone fails and must replace failed instances automatically. Which solution will meet these requirements?"
+  options:
+    - "Change the instance to a larger instance type. Create an Amazon CloudWatch alarm that uses the EC2 recover action."
+    - "Launch a second instance in another Availability Zone. Create an Amazon Route 53 simple record with both IP addresses."
+    - "Create an Auto Scaling group that spans multiple Availability Zones. Place an Application Load Balancer in front of the group."
+    - "Create an Auto Scaling group in the existing Availability Zone. Set the minimum capacity of the group to 4 instances."
+  correct: [C]
+  why: "An Auto Scaling group across Availability Zones replaces failed instances and rebalances capacity. An Application Load Balancer sends traffic only to healthy targets in the zones that are still working. This is the standard pattern for a highly available stateless application. Not \"Create an Auto Scaling group in the existing Availability Zone. Set...\": All instances are still in one Availability Zone, so an outage in that zone stops the application. Not \"Change the instance to a larger instance type. Create an Amazon...\": The recover action helps with hardware problems on one instance. It does not protect against the loss of the whole Availability Zone. Not \"Launch a second instance in another Availability Zone. Create an...\": A simple record has no health checks, so clients still receive the failed instance's IP address, and nothing replaces failed instances."
+  ref: "Question d2-47 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-48
+  kind: choice
+  en: "A company runs a production database on a Single-AZ Amazon RDS for PostgreSQL DB instance. The database must fail over automatically if the Availability Zone fails. Committed transactions must not be lost, and the application must continue to use the same endpoint. Which solution will meet these requirements?"
+  options:
+    - "Install PostgreSQL on an Amazon EC2 instance in another Availability Zone. Configure log shipping to the instance."
+    - "Create a read replica in another Availability Zone. Promote the read replica during an Availability Zone outage."
+    - "Modify the DB instance to use a Multi-AZ deployment with a synchronous standby in another Availability Zone."
+    - "Take a manual snapshot every hour. Restore the latest snapshot in another Availability Zone during an outage."
+  correct: [C]
+  why: "A Multi-AZ DB instance deployment keeps a synchronous standby in another Availability Zone. Amazon RDS fails over automatically and updates the DNS record of the DB endpoint, so the application reconnects to the same endpoint. Not \"Create a read replica in another Availability Zone. Promote the read...\": Replication to a read replica is asynchronous, so committed transactions can be lost. Promotion is manual, and the replica has a different endpoint. Not \"Take a manual snapshot every hour. Restore the latest snapshot in...\": A restore loses the changes made since the last snapshot, and the restored DB instance has a new endpoint. Not \"Install PostgreSQL on an Amazon EC2 instance in another Availability...\": The company would have to patch and fail over this database itself, and log shipping does not fail over automatically."
+  ref: "Question d2-48 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-49
+  kind: choice
+  en: "A company has an Amazon DynamoDB table with point-in-time recovery enabled. A bug in a deployment 2 hours ago overwrote attributes in thousands of items. The company needs the data as it was before the bug. What should a CloudOps engineer do to meet this requirement?"
+  options:
+    - "Restore the table to a point in time before the deployment as a new table. Copy the needed data back."
+    - "Restore the table in place to a point in time before the deployment."
+    - "Use the on-demand backup that DynamoDB created automatically when point-in-time recovery was enabled."
+    - "Enable DynamoDB Streams, and replay the stream records from the last 2 hours in reverse order."
+  correct: [A]
+  why: "Point-in-time recovery restores a table to any second within its recovery period, which can be set from 1 to 35 days. The restore always creates a new table, so the team can copy the correct items back or switch the application to the restored table. Not \"Restore the table in place to a point in time before the deployment\": DynamoDB cannot restore a table in place. Every restore creates a new table. Not \"Enable DynamoDB Streams, and replay the stream records from the last...\": Turning on Streams now captures only future changes, so the earlier values are not available this way. Not \"Use the on-demand backup that DynamoDB created automatically when...\": Turning on point-in-time recovery does not create an on-demand backup. The two are separate features."
+  ref: "Question d2-49 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-50
+  kind: choice
+  en: "A global ecommerce company needs its Amazon DynamoDB shopping cart table to accept writes in us-east-1 and eu-west-1 at the same time. Changes must replicate between the AWS Regions automatically, and the application must continue to work if one Region fails. Which solution will meet these requirements?"
+  options:
+    - "Use AWS Backup to copy the table to the other Region every 15 minutes."
+    - "Take on-demand backups every hour, and restore them in the other Region."
+    - "Enable DynamoDB Streams. Use an AWS Lambda function to copy writes to a table in the other Region."
+    - "Convert the table to a DynamoDB global table with replicas in both Regions."
+  correct: [D]
+  why: "Global tables provide multi-Region, multi-active replication. Applications can read and write in each replica Region, DynamoDB replicates changes automatically, and the application can keep working in one Region if the other fails. Not \"Enable DynamoDB Streams. Use an AWS Lambda function to copy writes to...\": Custom stream replication is code to build and operate, and handling conflicts and failures yourself is complex. Not \"Take on-demand backups every hour, and restore them in the other...\": Hourly backups lose up to an hour of carts, and restored tables are separate copies that cannot both accept writes and stay in sync. Not \"Use AWS Backup to copy the table to the other Region every 15 minutes\": Periodic copies are not live replicas, so the second Region cannot accept writes that stay in sync."
+  ref: "Question d2-50 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-51
+  kind: choice
+  en: "A company has an Amazon S3 bucket with versioning enabled. A user accidentally deleted an important report with a simple DELETE request that did not specify a version ID. The report no longer appears in the bucket listing. How can a CloudOps engineer restore the report with the LEAST operational overhead?"
+  options:
+    - "Delete the delete marker that is now the current version of the object."
+    - "Rebuild the object from the S3 server access logs that recorded the upload."
+    - "Create a new bucket with versioning enabled. Copy the object back from it."
+    - "Ask AWS Support to recover the object from the bucket's deleted storage."
+  correct: [A]
+  why: "In a versioned bucket, a simple DELETE adds a delete marker as the current version and keeps the earlier versions. Removing the delete marker makes the previous version current again, so the report reappears. Not \"Rebuild the object from the S3 server access logs that recorded the...\": Server access logs record requests, not object contents, so they cannot rebuild the report. Not \"Create a new bucket with versioning enabled. Copy the object back...\": A new bucket does not contain the deleted object, so there is nothing to copy back. Not \"Ask AWS Support to recover the object from the bucket's deleted...\": No support request is needed, because the earlier version is still stored in the bucket."
+  ref: "Question d2-51 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-52
+  kind: choice
+  en: "A company has an Amazon S3 bucket with versioning enabled. The bucket stores files that are overwritten many times each day. Storage costs continue to rise because every old version is kept indefinitely. The company must be able to recover overwritten files for 30 days. Which solution will meet these requirements?"
+  options:
+    - "Suspend versioning on the bucket to stop keeping old versions of the overwritten files."
+    - "Add a lifecycle rule that expires the current versions of all objects 30 days after creation."
+    - "Enable S3 Intelligent-Tiering to move the old versions to a cheaper tier after 30 days."
+    - "Add a lifecycle rule that permanently deletes noncurrent versions 30 days after they become noncurrent."
+  correct: [D]
+  why: "The NoncurrentVersionExpiration action deletes old versions a set number of days after they are replaced. Overwritten files stay recoverable for 30 days, and storage no longer grows without limit. Not \"Suspend versioning on the bucket to stop keeping old versions of the...\": Suspending versioning stops keeping new versions, so overwritten files could no longer be recovered, and existing old versions would remain. Not \"Add a lifecycle rule that expires the current versions of all objects...\": Expiring current versions deletes live files, which the company does not want, and it does not remove old versions. Not \"Enable S3 Intelligent-Tiering to move the old versions to a cheaper...\": Intelligent-Tiering lowers the price of data that is not accessed, but it keeps every version forever, so costs still grow."
+  ref: "Question d2-52 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-53
+  kind: choice
+  en: "A company stores trading records in Amazon S3. Regulations require that no user can overwrite or delete a record for 5 years. Separately, the company's legal team sometimes needs to keep specific records indefinitely during an investigation. Which combination of steps will meet these requirements? (Select TWO.)"
+  options:
+    - "Set a default retention of 5 years in governance mode with no extra permissions."
+    - "Enable MFA delete."
+    - "Add a bucket policy that denies s3:DeleteObject to every user except the root user."
+    - "Enable S3 Object Lock. Set a default retention of 5 years in compliance mode."
+    - "Place a legal hold on specific object versions during an investigation."
+  correct: [D, E]
+  why: "Object Lock in compliance mode prevents every user, including the root user, from overwriting or deleting a protected version until its retention period ends, and the retention period cannot be shortened. A legal hold prevents an object version from being deleted or overwritten until the hold is removed. It has no expiration date, which suits investigations of unknown length. Not \"Set a default retention of 5 years in governance mode with no extra...\": Users with the s3:BypassGovernanceRetention permission can delete objects in governance mode, so it does not meet a rule that applies to every user. Not \"Add a bucket policy that denies s3:DeleteObject to every user except...\": Administrators can change a bucket policy, and the root user would still be able to delete records. Not \"Enable MFA delete\": MFA delete makes deletions harder, but the root user can still delete versions, and it does not set a retention period."
+  ref: "Question d2-53 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-54
+  kind: choice
+  en: "A company enables Amazon S3 Cross-Region Replication from a bucket in us-east-1 to a bucket in us-west-2 for disaster recovery. New objects replicate correctly, but the 2 million objects that existed before replication was configured are missing from the destination. The company also needs 99.9% of new objects replicated within 15 minutes. Which combination of steps will meet these requirements? (Select TWO.)"
+  options:
+    - "Configure S3 Transfer Acceleration for the source bucket."
+    - "Run an S3 Batch Replication job to replicate the existing objects."
+    - "Enable S3 Replication Time Control for the replication rule."
+    - "Add a lifecycle rule that copies existing objects to us-west-2."
+    - "Suspend and then resume versioning on the source bucket."
+  correct: [B, C]
+  why: "Replication rules apply only to objects written after the rule is created. S3 Batch Replication replicates existing objects, and objects that failed to replicate before, on demand. Replication Time Control replicates most new objects in seconds and 99.9% of them within 15 minutes, backed by a service level agreement, and it adds replication metrics and notifications. Not \"Configure S3 Transfer Acceleration for the source bucket\": Transfer Acceleration speeds up client transfers to a bucket. It does not affect replication. Not \"Suspend and then resume versioning on the source bucket\": Changing the versioning state does not replicate existing objects, and replication requires versioning to stay enabled. Not \"Add a lifecycle rule that copies existing objects to us-west-2\": Lifecycle rules transition or expire objects. They cannot copy objects to another Region."
+  ref: "Question d2-54 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-55
+  kind: choice
+  en: "A company has an Amazon FSx for Windows File Server share. Users often overwrite documents by mistake and open tickets to get earlier versions back. Users must be able to restore earlier versions of their files themselves from Windows File Explorer. What should a CloudOps engineer configure to meet this requirement?"
+  options:
+    - "Enable shadow copies for the FSx file system on a regular schedule."
+    - "Configure daily automatic backups of the FSx file system with 30-day retention."
+    - "Configure data deduplication for the FSx file system to keep copies of changes."
+    - "Enable Amazon S3 Versioning for the bucket that stores the FSx file system data."
+  correct: [A]
+  why: "Shadow copies are point-in-time snapshots of the file system that Windows users can browse on the Previous Versions tab in File Explorer. Users can restore earlier versions of their own files without opening a ticket. Not \"Configure daily automatic backups of the FSx file system with 30-day...\": Automatic backups protect the whole file system, but restoring one creates a new file system. That needs an administrator and does not give users self-service restores. Not \"Enable Amazon S3 Versioning for the bucket that stores the FSx file...\": FSx for Windows File Server data is not stored in a bucket that you manage, so there is no S3 Versioning to enable. Not \"Configure data deduplication for the FSx file system to keep copies...\": Deduplication saves storage by removing duplicate data. It does not keep earlier versions of files."
+  ref: "Question d2-55 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-56
+  kind: choice
+  en: "A company copies the AMIs of its application servers from us-east-1 to us-west-2 for disaster recovery. The AMIs' Amazon EBS snapshots are encrypted with a customer managed AWS KMS key that is in us-east-1. The copies must be encrypted with a customer managed key. What must a CloudOps engineer specify when copying the AMIs?"
+  options:
+    - "No key at all, because AMI copies across Regions are always left unencrypted by default."
+    - "The same KMS key ARN from us-east-1, because AMI copies keep the source Region's key."
+    - "The AWS owned key for EBS, because customer managed keys cannot be used across Regions."
+    - "A KMS key in us-west-2 to encrypt the copied snapshots, because KMS keys are Regional."
+  correct: [D]
+  why: "KMS keys are Regional, so a key in us-east-1 cannot encrypt data in us-west-2. When you copy an AMI with encrypted snapshots to another Region, you specify a key in the destination Region, such as a customer managed key or a replica of a multi-Region key. Not \"The same KMS key ARN from us-east-1, because AMI copies keep the...\": A single-Region key exists only in its own Region and cannot encrypt the copies in us-west-2. Not \"No key at all, because AMI copies across Regions are always left...\": Copies of encrypted snapshots are always encrypted. They cannot become unencrypted. Not \"The AWS owned key for EBS, because customer managed keys cannot be...\": EBS uses the AWS managed key aws/ebs by default, not an AWS owned key. Customer managed keys work as long as the key is in the destination Region."
+  ref: "Question d2-56 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-57
+  kind: choice
+  en: "A company has an internal wiki. During a Regional disaster, the wiki can be down for up to 24 hours, and losing up to 12 hours of data is acceptable. The company needs the lowest-cost disaster recovery strategy. Which strategy should a CloudOps engineer implement?"
+  options:
+    - "Pilot light, with a live database replica in a second Region"
+    - "Warm standby, with a scaled-down copy running in a second Region"
+    - "Backup and restore, with backups copied to a second Region"
+    - "Multi-site active/active across two Regions"
+  correct: [C]
+  why: "Backup and restore costs the least because nothing runs in the recovery Region until a disaster. Copying backups to a second Region every few hours meets a 12-hour RPO, and rebuilding from infrastructure as code and backups fits a 24-hour RTO. Not \"Pilot light, with a live database replica in a second Region\": Pilot light keeps core components such as a database replica running all the time, which costs more than these targets need. Not \"Warm standby, with a scaled-down copy running in a second Region\": Warm standby runs a scaled-down copy of the whole workload, which costs more than a 24-hour RTO requires. Not \"Multi-site active/active across two Regions\": Active/active gives near-zero RTO and RPO at the highest cost, far beyond what the wiki needs."
+  ref: "Question d2-57 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-58
+  kind: choice
+  en: "A company has an order system that must recover from a Regional disaster within 4 hours with no more than 5 minutes of data loss. To keep costs low, the company does not want application servers running in the recovery AWS Region. Which disaster recovery strategy will meet these requirements MOST cost-effectively?"
+  options:
+    - "Multi-site active/active: serve traffic from both Regions at all times"
+    - "Pilot light: replicate the database continuously, and keep application servers off until failover"
+    - "Warm standby: run a scaled-down copy of every tier in the recovery Region"
+    - "Backup and restore: copy nightly database snapshots to the recovery Region, and rebuild there"
+  correct: [B]
+  why: "Pilot light keeps the core data, such as a cross-Region database replica, continuously up to date, which meets a 5-minute RPO. Application servers are created from AMIs and infrastructure as code only during a failover, which fits a 4-hour RTO at low cost. Not \"Backup and restore: copy nightly database snapshots to the recovery...\": Nightly snapshots could lose up to a day of orders, which fails the 5-minute RPO. Not \"Warm standby: run a scaled-down copy of every tier in the recovery...\": Warm standby meets the targets but keeps application servers running all the time, which the company wants to avoid. Not \"Multi-site active/active: serve traffic from both Regions at all times\": Active/active has the highest cost and runs full capacity in both Regions."
+  ref: "Question d2-58 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-59
+  kind: choice
+  en: "A company has a customer-facing application that must recover from a Regional disaster in under 15 minutes with an RPO of seconds. The company is willing to pay for a smaller, always-running copy of the workload in the recovery AWS Region, but not for full duplicate capacity. Which disaster recovery strategy will meet these requirements?"
+  options:
+    - "Pilot light"
+    - "Backup and restore"
+    - "Multi-site active/active"
+    - "Warm standby"
+  correct: [D]
+  why: "Warm standby runs a scaled-down but fully working copy of the workload in the recovery Region, with data replicated continuously. During a disaster, the copy scales up and takes traffic within minutes. Not \"Pilot light\": Pilot light keeps only core components running, so application servers must be started and scaled during failover, which usually takes longer than 15 minutes. Not \"Backup and restore\": Backup and restore rebuilds everything from backups, which takes hours and loses the data written since the last backup. Not \"Multi-site active/active\": Active/active meets the targets but runs full capacity in both Regions, which the company does not want to pay for."
+  ref: "Question d2-59 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-60
+  kind: choice
+  en: "A company runs an Amazon RDS for PostgreSQL DB instance in us-east-1 and keeps a cross-Region read replica in us-west-2 for disaster recovery. During a Regional outage drill, the database in us-west-2 must start accepting writes. What should a CloudOps engineer do to meet this requirement?"
+  options:
+    - "Start a Multi-AZ failover on the primary instance."
+    - "Restore the latest snapshot of the primary instance in us-west-2. Delete the read replica afterward."
+    - "Change the replica's parameter group to set read_only to 0, and then reboot the replica instance."
+    - "Promote the read replica in us-west-2 to a standalone DB instance. Point the application to it."
+  correct: [D]
+  why: "Promoting a read replica stops replication and turns the replica into a standalone DB instance that accepts writes. Applications then connect to the promoted instance's endpoint, often through a DNS record that is updated during the failover. Not \"Start a Multi-AZ failover on the primary instance\": Multi-AZ failover switches to a standby in the same Region. It does not involve cross-Region read replicas, and it cannot run if the primary Region is down. Not \"Change the replica's parameter group to set read_only to 0, and then...\": RDS manages replication on read replicas. Changing a parameter does not turn a replica into a writable primary. Not \"Restore the latest snapshot of the primary instance in us-west-2...\": Restoring a snapshot loses data written since the snapshot and takes longer than promoting the replica, which already has current data."
+  ref: "Question d2-60 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-61
+  kind: choice
+  en: "A company has an Amazon EC2 instance in us-east-1a with an Amazon EBS data volume that has hourly snapshots. The us-east-1a Availability Zone is impaired, and the company needs the data online on a new instance in us-east-1b. What should a CloudOps engineer do to meet this requirement?"
+  options:
+    - "Detach the volume in us-east-1a, and attach it directly to the new instance in us-east-1b."
+    - "Copy the snapshot to us-east-1b first, because each EBS snapshot is stored only in the zone of its volume."
+    - "Create a new volume from the latest snapshot in us-east-1b. Attach it to the new instance."
+    - "Configure EBS Multi-Attach."
+  correct: [C]
+  why: "EBS snapshots are stored regionally, so a volume can be created from a snapshot in any Availability Zone in the Region. The new volume in us-east-1b holds the data as of the last snapshot. Not \"Detach the volume in us-east-1a, and attach it directly to the new...\": An EBS volume can be attached only to instances in its own Availability Zone. Not \"Copy the snapshot to us-east-1b first, because each EBS snapshot is...\": Snapshots are already available to every zone in the Region. Snapshot copies are for moving snapshots between Regions or accounts, or for changing encryption. Not \"Configure EBS Multi-Attach\": Multi-Attach works only for io1 and io2 volumes and only with instances in the same Availability Zone."
+  ref: "Question d2-61 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-62
+  kind: choice
+  en: "A company keeps automated backups for an Amazon RDS database for 35 days, the maximum. A new policy requires monthly backups to be kept for 1 year and then deleted automatically. Which solution will meet this requirement with the LEAST operational overhead?"
+  options:
+    - "Enable Multi-AZ for the DB instance."
+    - "Create an AWS Backup plan with a monthly rule for the database and a 1-year retention period."
+    - "Ask a CloudOps engineer to take a manual snapshot each month and delete snapshots older than 1 year."
+    - "Change the automated backup retention period of the DB instance from 35 days to 365 days."
+  correct: [B]
+  why: "AWS Backup can take monthly snapshots of RDS databases, keep them for the retention period that you set, and delete them automatically. These snapshots are not limited by the 35-day window for automated backups. Not \"Change the automated backup retention period of the DB instance from...\": The maximum retention for RDS automated backups is 35 days, so 365 days is not allowed. Not \"Ask a CloudOps engineer to take a manual snapshot each month and...\": Manual snapshots meet the retention need, but taking and deleting them by hand is effort and easy to forget. Not \"Enable Multi-AZ for the DB instance\": A Multi-AZ standby is a live copy for failover. It does not keep historical backups."
+  ref: "Question d2-62 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-63
+  kind: choice
+  en: "A company backs up Amazon EC2 instances that run Microsoft SQL Server on Windows. Restores from crash-consistent backups sometimes require database recovery steps. The company needs application-consistent backups without stopping the instances. What should a CloudOps engineer do to meet these requirements?"
+  options:
+    - "Enable Windows VSS in the AWS Backup plan for the EC2 instances."
+    - "Configure fast snapshot restore for the snapshots that AWS Backup creates."
+    - "Take Amazon EBS snapshots of each volume at different times to spread the I/O load."
+    - "Stop the instances before each backup by using a scheduled AWS Lambda function."
+  correct: [A]
+  why: "With the Windows VSS option enabled, AWS Backup uses the Volume Shadow Copy Service through SSM Agent to quiesce applications such as SQL Server before the snapshot. This creates application-consistent backups without stopping the instance. The instance needs SSM Agent and the required IAM permissions. Not \"Stop the instances before each backup by using a scheduled AWS Lambda...\": Stopping instances gives consistent backups but causes downtime, which the company wants to avoid. Not \"Take Amazon EBS snapshots of each volume at different times to spread...\": Snapshots taken at different times are not consistent with each other, which makes the problem worse. Not \"Configure fast snapshot restore for the snapshots that AWS Backup...\": Fast snapshot restore speeds up volume creation. It does not make backups application consistent."
+  ref: "Question d2-63 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-64
+  kind: choice
+  en: "A company completes a business impact analysis for its billing system. The system can lose at most 15 minutes of data and must be back online within 2 hours after a disaster. Which statement correctly describes these targets?"
+  options:
+    - "The RPO and the RTO are both 2 hours and 15 minutes."
+    - "The RPO is 15 minutes, and the RTO is 2 hours."
+    - "The RPO is 2 hours, and the SLA is 15 minutes."
+    - "The RTO is 15 minutes, and the RPO is 2 hours."
+  correct: [B]
+  why: "The recovery point objective (RPO) is the maximum acceptable data loss, measured as the time since the last recovery point, which is 15 minutes here. The recovery time objective (RTO) is the maximum acceptable time to restore service, which is 2 hours. Not \"The RTO is 15 minutes, and the RPO is 2 hours\": This reverses the definitions. RTO is about downtime, and RPO is about data loss. Not \"The RPO and the RTO are both 2 hours and 15 minutes\": RPO and RTO are separate targets. They are not added together. Not \"The RPO is 2 hours, and the SLA is 15 minutes\": The 2-hour target is the RTO, and an SLA is a service commitment, not a data loss target."
+  ref: "Question d2-64 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d2-65
+  kind: choice
+  en: "A company must be able to restore the objects in an Amazon S3 bucket to their state at any point in the past 14 days after accidental bulk changes. Versioning is already enabled for the bucket. Which solution will meet this requirement with the LEAST operational overhead?"
+  options:
+    - "Write a script that reads all object versions and copies the versions from the chosen time back into place."
+    - "Use AWS Backup continuous backups for the bucket with 14-day retention. Restore to a point in time."
+    - "Enable S3 Cross-Region Replication."
+    - "Add a lifecycle rule that moves noncurrent versions to S3 Glacier Deep Archive after 14 days."
+  correct: [B]
+  why: "AWS Backup supports continuous backups for Amazon S3, which allow restores to any point in time within a retention period of up to 35 days. The bucket must have versioning enabled, which it already does. Not \"Write a script that reads all object versions and copies the versions...\": This can work, but writing and testing a script that rebuilds a bucket from its versions is a lot of effort and error prone. Not \"Enable S3 Cross-Region Replication\": Replication copies changes as they happen, including the accidental changes, so the replica would not keep the older state. Not \"Add a lifecycle rule that moves noncurrent versions to S3 Glacier...\": Moving old versions to Deep Archive reduces cost but makes them slow to restore, and it does not provide a point-in-time restore."
+  ref: "Question d2-65 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]

@@ -28,3 +28,9 @@ kind: quiz
 
 Source: AWS Certified CloudOps Engineer - Associate (SOA-C03) exam guide,
 Content Domain 5; AWS service documentation.
+
+## Questions from open banks
+
+- 65 questions by **zghanw** from github.com/zghanw/aws-cloudops-engineer-associate (commit c2e7acc), MIT licence. Their ids start with `zg-`; each one's reference names the original question.
+
+They are written by their authors as original practice questions, not copied from the exam, and are drawn by the mock exam alongside the questions above. Their wording is unchanged; the answer options are shuffled, and the explanations of the wrong options are joined into one explanation. THIRD-PARTY-NOTICES.md in the repository holds the licences.

@@ -179,3 +179,42 @@
   why: "UpdateReplacePolicy decides what happens to the old physical resource when an update replaces it; DeletionPolicy applies when the resource is removed from the stack or the stack is deleted."
   ref: "AWS CloudFormation User Guide: UpdateReplacePolicy attribute"
   exams: [dop]
+
+- id: rm-dop-iac-001
+  kind: choice
+  en: "A security baseline stack must exist in every account in an organizational unit, and must be created automatically in any account added to that OU later, without an engineer running anything. What should be used?"
+  options:
+    - "A CloudFormation StackSet with service-managed permissions targeting the OU, with automatic deployment enabled."
+    - "A Lambda function subscribed to organization events that deploys a stack into new accounts."
+    - "A documented runbook for the platform team to follow during account creation."
+    - "A CloudFormation StackSet with self-managed permissions, run manually when accounts are added."
+  correct: [A]
+  why: "Service-managed StackSets integrate with Organizations: you target an OU rather than a list of accounts, and with automatic deployment enabled a new account joining that OU receives the stack automatically, while an account leaving it has the stack removed. Not \"A CloudFormation StackSet with self-managed permissions, run manually...\": Self-managed permissions require explicit account lists and IAM roles you create in each target, and nothing happens automatically when accounts join. Not \"A Lambda function subscribed to organization events that deploys a...\": This is custom code duplicating a built-in capability, with its own failure modes and no drift handling. Not \"A documented runbook for the platform team to follow during account...\": A runbook depends on a human remembering, which is what the requirement excludes."
+  ref: "Question iac-001 (StackSets across accounts) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dop]
+
+- id: rm-dop-iac-002
+  kind: choice
+  en: "Engineers occasionally change resources in the console that were created by CloudFormation. The team needs to know when a stack no longer matches its template and to be alerted automatically. What should they implement?"
+  options:
+    - "An SCP denying all console write actions in every account."
+    - "Scheduled CloudFormation drift detection invoked by EventBridge, with results published to SNS."
+    - "A pipeline stage that redeploys every stack nightly to overwrite manual changes."
+    - "AWS Config rules checking that resources have the correct tags."
+  correct: [B]
+  why: "Drift detection compares the live resource configuration against the stack template and reports which resources and properties differ. Triggering it on a schedule through EventBridge and publishing results turns it into continuous monitoring rather than an occasional manual check. Not \"A pipeline stage that redeploys every stack nightly to overwrite...\": Nightly redeployment can be destructive, hides that drift ever happened, and does not tell anyone what changed or why. Not \"An SCP denying all console write actions in every account\": Blanket console denial is a heavy-handed control that breaks legitimate read and break-glass workflows, and does not detect drift caused through the API. Not \"AWS Config rules checking that resources have the correct tags\": Tag compliance is unrelated to whether a resource matches its CloudFormation template."
+  ref: "Question iac-002 (Configuration drift detection) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dop]
+
+- id: rm-dop-iac-003
+  kind: choice
+  en: "Several hundred EC2 instances across three accounts must receive operating system patches on a defined monthly window, with a report of which instances are compliant. Instances are in private subnets with no inbound access. What should the team use?"
+  options:
+    - "Rebuilding all instances monthly from a fresh AMI with no other tooling."
+    - "A Lambda function that SSHes into each instance using a stored private key."
+    - "A cron job on each instance running the package manager's update command."
+    - "AWS Systems Manager Patch Manager with patch baselines and maintenance windows, using the SSM Agent and VPC endpoints for connectivity."
+  correct: [D]
+  why: "Patch Manager applies patch baselines during maintenance windows and reports patch compliance per instance, and it works over the SSM Agent's outbound connection — through interface VPC endpoints for private subnets — so no inbound access is needed. Not \"A cron job on each instance running the package manager's update...\": Per-instance cron gives no central scheduling, no baseline control and no compliance reporting. Not \"A Lambda function that SSHes into each instance using a stored...\": SSH from Lambda with a stored key reintroduces inbound access and a long-lived credential, and reports nothing. Not \"Rebuilding all instances monthly from a fresh AMI with no other...\": Immutable rebuilds are a legitimate strategy but require an image pipeline and deployment orchestration that this option does not include, and still leaves compliance unreported."
+  ref: "Question iac-003 (Systems Manager automation) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dop]

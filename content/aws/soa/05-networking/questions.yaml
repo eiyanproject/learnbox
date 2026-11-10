@@ -167,3 +167,853 @@
   why: "Access logs record each request with the target, elb_status_code and target_status_code and timing fields, which separates load balancer errors from target errors."
   ref: "Elastic Load Balancing User Guide: Access logs for your Application Load Balancer"
   exams: [soa]
+
+- id: zg-soa-d5-01
+  kind: choice
+  en: "A company has Amazon EC2 instances in a private subnet that cannot download operating system updates from the internet. A NAT gateway was created in the same private subnet, and the private subnet's route table sends 0.0.0.0/0 to that NAT gateway. What should a CloudOps engineer do to resolve this issue?"
+  options:
+    - "Change the private subnet's route for 0.0.0.0/0 to the VPC's local route instead of to the NAT gateway."
+    - "Create the NAT gateway in a public subnet that routes to an internet gateway. Point the private route at it."
+    - "Assign an Elastic IP address to each instance in the private subnet."
+    - "Add an inbound rule to the instance security group that allows all traffic from 0.0.0.0/0 on every port."
+  correct: [B]
+  why: "A public zonal NAT gateway must be in a public subnet whose route table sends 0.0.0.0/0 to an internet gateway. A NAT gateway inside the private subnet has no path to the internet, so its traffic goes nowhere. A regional NAT gateway is another option that does not need a public subnet. Not \"Assign an Elastic IP address to each instance in the private subnet\": Instances in a subnet without a route to an internet gateway cannot use public IP addresses to reach the internet, and the design is meant to keep them private. Not \"Add an inbound rule to the instance security group that allows all...\": Security groups are stateful, so return traffic for outbound requests is already allowed. Opening inbound access adds risk and does not create a route. Not \"Change the private subnet's route for 0.0.0.0/0 to the VPC's local...\": The local route covers only traffic within the VPC's CIDR range. It cannot send traffic to the internet."
+  ref: "Question d5-01 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-02
+  kind: choice
+  en: "A CloudOps engineer launches a web server on an Amazon EC2 instance in a subnet whose route table sends 0.0.0.0/0 to an internet gateway. The instance's security group allows HTTP from 0.0.0.0/0. Users still cannot reach the server from the internet. What is the MOST likely cause of this issue?"
+  options:
+    - "The security group needs an outbound rule that allows the HTTP responses."
+    - "The subnet's default network ACL allows all inbound and outbound traffic."
+    - "The instance does not have a public IPv4 address or an Elastic IP address."
+    - "The VPC does not have a NAT gateway for inbound traffic from the internet."
+  correct: [C]
+  why: "An instance needs a public IPv4 address or an Elastic IP address to be reached from the internet through an internet gateway. If auto-assign public IP is disabled for the subnet, the instance has only a private address. Not \"The subnet's default network ACL allows all inbound and outbound...\": The default network ACL allows all traffic, so it would not block the users. Not \"The VPC does not have a NAT gateway for inbound traffic from the...\": NAT gateways are for outbound connections from private subnets. They do not accept inbound connections from the internet. Not \"The security group needs an outbound rule that allows the HTTP...\": Security groups are stateful, so responses to allowed inbound requests are allowed automatically."
+  ref: "Question d5-02 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-03
+  kind: choice
+  en: "A company has a custom network ACL on a public subnet. The network ACL allows inbound TCP 443 from 0.0.0.0/0 and outbound TCP 443 to 0.0.0.0/0, and it denies all other traffic. Clients cannot load pages from a web server in the subnet, and their connections time out. What should a CloudOps engineer change to resolve this issue?"
+  options:
+    - "Add an outbound rule for TCP 443 to the instance's security group for responses."
+    - "Allow outbound TCP 1024-65535 to 0.0.0.0/0 in the network ACL for return traffic."
+    - "Move the deny rule for all traffic to the lowest rule number."
+    - "Allow inbound TCP 1024-65535 from 0.0.0.0/0 in the instance's security group."
+  correct: [B]
+  why: "Network ACLs are stateless, so return traffic must be allowed explicitly. Responses from the server go to the client's ephemeral port, typically in the range 1024-65535, which the outbound rules currently deny. Not \"Allow inbound TCP 1024-65535 from 0.0.0.0/0 in the instance's...\": Security groups are stateful and already allow responses. The block is in the stateless network ACL. Not \"Add an outbound rule for TCP 443 to the instance's security group for...\": Security groups track connections, so responses to allowed inbound traffic do not need outbound rules. Not \"Move the deny rule for all traffic to the lowest rule number\": Rules are evaluated from the lowest number up, so a deny-all rule at the top would block all traffic, including HTTPS."
+  ref: "Question d5-03 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-04
+  kind: choice
+  en: "A company has a three-tier application with web, app, and database tiers. The app tier runs in an Auto Scaling group whose instance IP addresses change often. The database security group must allow MySQL traffic only from the app tier instances. How should a CloudOps engineer configure the database security group?"
+  options:
+    - "Add an inbound rule for port 3306 with the app subnet's CIDR blocks as the source."
+    - "Add an inbound rule for port 3306 from 0.0.0.0/0, and rely on the private subnets."
+    - "Add a network ACL rule that allows port 3306 from each app instance's current IP address."
+    - "Add an inbound rule for port 3306 with the app tier's security group as the source."
+  correct: [D]
+  why: "A security group rule can use another security group as its source. Any instance that has the app tier's security group is allowed, whatever its IP address, so scaling events need no rule changes. Not \"Add an inbound rule for port 3306 with the app subnet's CIDR blocks...\": CIDR blocks allow every resource in those subnets, not only the app tier, and they need updates if the subnets change. Not \"Add a network ACL rule that allows port 3306 from each app instance's...\": Per-instance IP rules break whenever instances are replaced, and network ACLs have a small rule limit. Not \"Add an inbound rule for port 3306 from 0.0.0.0/0, and rely on the...\": 0.0.0.0/0 allows any source that can route to the database, which is far broader than required."
+  ref: "Question d5-04 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-05
+  kind: choice
+  en: "A company has a VPC with IPv6 enabled. Amazon EC2 instances in a private subnet must reach IPv6 software repositories on the internet, but inbound IPv6 connections from the internet must not reach the instances. What should a CloudOps engineer configure to meet these requirements?"
+  options:
+    - "An internet gateway with a ::/0 route and a network ACL that blocks inbound"
+    - "A NAT gateway with an IPv6 route from the private subnet to ::/0"
+    - "An egress-only internet gateway with a ::/0 route from the private subnet"
+    - "A gateway VPC endpoint for the repositories with an IPv6 prefix list"
+  correct: [C]
+  why: "An egress-only internet gateway allows outbound IPv6 traffic and the responses to it, but it blocks connections that start from the internet. It is the IPv6 equivalent of outbound-only access through a NAT gateway. Not \"A NAT gateway with an IPv6 route from the private subnet to ::/0\": NAT gateways translate IPv4 addresses (and support NAT64 to reach IPv4 services). They are not used for IPv6-to-IPv6 egress. Not \"An internet gateway with a ::/0 route and a network ACL that blocks...\": An internet gateway allows inbound IPv6 connections. A stateless network ACL that blocks inbound traffic would also block the responses unless it is carefully tuned, which is fragile. Not \"A gateway VPC endpoint for the repositories with an IPv6 prefix list\": Gateway VPC endpoints exist only for Amazon S3 and DynamoDB, not for general internet repositories."
+  ref: "Question d5-05 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-06
+  kind: choice
+  en: "A company has a VPC with private subnets in three Availability Zones. All of the subnets route through a single NAT gateway in one Availability Zone. When that Availability Zone had an outage, instances in the other two Availability Zones lost internet access. What should a CloudOps engineer do to prevent this issue?"
+  options:
+    - "Create a NAT gateway in each Availability Zone. Route each private subnet to its own zone's gateway."
+    - "Add an internet gateway route to the private subnets for use when the NAT gateway is unavailable."
+    - "Add a second Elastic IP address to the existing NAT gateway."
+    - "Replace the NAT gateway with a NAT instance in an Auto Scaling group that has a desired capacity of one."
+  correct: [A]
+  why: "A zonal NAT gateway runs in one Availability Zone, so it is lost with that zone. One NAT gateway per zone, with each private route table pointing to the gateway in the same zone, keeps the other zones online and avoids cross-zone data charges. NAT gateways now also offer a regional availability mode that spans zones automatically. Not \"Add a second Elastic IP address to the existing NAT gateway\": Elastic IP addresses do not move a NAT gateway out of its Availability Zone. Not \"Replace the NAT gateway with a NAT instance in an Auto Scaling group...\": A NAT instance is a server to patch and scale, and it is still a single point of failure while it is being replaced. Not \"Add an internet gateway route to the private subnets for use when the...\": An internet gateway route makes the subnets public, and instances without public IP addresses still could not use it."
+  ref: "Question d5-06 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-07
+  kind: choice
+  en: "A company has a VPC with the CIDR block 10.0.0.0/24 that has run out of IP addresses. The company cannot re-create the VPC because many resources depend on it. What should a CloudOps engineer do to resolve this issue?"
+  options:
+    - "Associate a secondary IPv4 CIDR block with the VPC. Create new subnets in it."
+    - "Change the VPC's primary CIDR block from /24 to /16 by editing the VPC settings."
+    - "Resize the existing subnets to larger CIDR blocks while the instances keep running."
+    - "Delete the five reserved addresses in each subnet."
+  correct: [A]
+  why: "You can add secondary IPv4 CIDR blocks to an existing VPC, within the allowed ranges, and create new subnets in them. Existing resources keep working, and new resources use the new subnets. Not \"Change the VPC's primary CIDR block from /24 to /16 by editing the...\": A VPC's primary CIDR block cannot be changed after the VPC is created. Not \"Resize the existing subnets to larger CIDR blocks while the instances...\": A subnet's CIDR block cannot be changed after the subnet is created. Not \"Delete the five reserved addresses in each subnet\": AWS reserves five addresses in every subnet, and they cannot be released."
+  ref: "Question d5-07 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-08
+  kind: choice
+  en: "A company hosts a web application on Amazon EC2 instances. Requests to example.com/api must go to one group of instances, and requests to example.com/images must go to a different group of instances. All requests must use the same domain name and HTTPS. Which solution will meet these requirements with the LEAST operational overhead?"
+  options:
+    - "Use two Application Load Balancers. Create an Amazon Route 53 weighted record that splits the traffic between the load balancers."
+    - "Use one Application Load Balancer with two target groups. Add listener rules with path conditions that route each path to its target group."
+    - "Use one Network Load Balancer with two target groups. Configure the TCP listener to choose a target group based on the URL path."
+    - "Use one target group for all instances. Run a reverse proxy on every instance that forwards requests to the correct group of instances."
+  correct: [B]
+  why: "An Application Load Balancer works at the application layer. A listener rule with a path-pattern condition can send each URL path to its own target group behind one domain name and one HTTPS listener. Not \"Use one Network Load Balancer with two target groups. Configure the...\": A Network Load Balancer works at the transport layer and cannot read the URL path. Not \"Use two Application Load Balancers. Create an Amazon Route 53...\": Weighted records split traffic by percentage. DNS cannot route by URL path. Not \"Use one target group for all instances. Run a reverse proxy on every...\": This adds software to manage on every instance for a feature that the load balancer provides."
+  ref: "Question d5-08 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-09
+  kind: choice
+  en: "A company's partner accepts API calls only from a fixed list of IP addresses. The company's application runs on Amazon EC2 instances in private subnets that use a NAT gateway for outbound traffic. Which IP address should the company give to the partner?"
+  options:
+    - "The Elastic IP address that is associated with the NAT gateway"
+    - "The private IP addresses that are assigned to each application instance"
+    - "The public IP address of the VPC's internet gateway"
+    - "The CIDR block of the private subnets in the VPC"
+  correct: [A]
+  why: "Traffic from the private subnets leaves through the NAT gateway, which replaces the source address with its Elastic IP address. The partner sees only that address, so allowlisting it covers every instance behind the NAT gateway. Not \"The private IP addresses that are assigned to each application...\": Private addresses are not routable on the internet, and the partner never sees them. Not \"The public IP address of the VPC's internet gateway\": An internet gateway does not have its own public IP address. It translates addresses that belong to resources. Not \"The CIDR block of the private subnets in the VPC\": Private CIDR blocks are not visible on the internet."
+  ref: "Question d5-09 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-10
+  kind: choice
+  en: "A company has applications in private subnets that upload large amounts of data to Amazon S3 in the same AWS Region through a NAT gateway. NAT gateway data processing charges are high. The company's security team also requires this path to reach only the company's own buckets. Which combination of steps will meet these requirements? (Select TWO.)"
+  options:
+    - "Move the NAT gateway to a larger size to process data at a lower price per GB."
+    - "Attach an endpoint policy that allows access only to the company's bucket ARNs."
+    - "Enable S3 Transfer Acceleration to make uploads bypass the NAT gateway automatically."
+    - "Create a gateway VPC endpoint for S3. Associate it with the private subnets' route tables."
+    - "Create an interface VPC endpoint for S3 in each subnet to remove all charges for S3 traffic."
+  correct: [B, D]
+  why: "A gateway endpoint for S3 adds a route that uses the S3 prefix list, so traffic to S3 in the Region bypasses the NAT gateway. Gateway endpoints have no hourly or data processing charge. Endpoint policies control which actions and resources can be reached through the endpoint. Allowing only the company's bucket ARNs stops data from being sent to other buckets through this path. Not \"Create an interface VPC endpoint for S3 in each subnet to remove all...\": Interface endpoints for S3 have hourly and data processing charges. They are useful for on-premises access, but the gateway endpoint is the cheaper fix here. Not \"Move the NAT gateway to a larger size to process data at a lower...\": NAT gateways do not have sizes, and data processing is charged per GB. Not \"Enable S3 Transfer Acceleration to make uploads bypass the NAT...\": Transfer Acceleration uses edge locations and still sends traffic from private subnets through the NAT gateway, and it adds charges."
+  ref: "Question d5-10 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-11
+  kind: choice
+  en: "A CloudOps engineer creates an interface VPC endpoint for Amazon SQS with private DNS enabled. Amazon EC2 instances in the VPC still resolve sqs.us-east-1.amazonaws.com to public IP addresses, and their requests go through the NAT gateway. What should the CloudOps engineer check FIRST?"
+  options:
+    - "Verify that a gateway VPC endpoint for SQS is attached to each of the private subnets' route tables."
+    - "Verify that the VPC has both the enableDnsSupport and enableDnsHostnames attributes enabled."
+    - "Verify that the SQS queue policy allows access only from the endpoint's private IP addresses."
+    - "Verify that the endpoint's security group allows inbound UDP port 53 from the instance subnets."
+  correct: [B]
+  why: "Private DNS for interface endpoints relies on the Amazon-provided DNS resolver and a private hosted zone that AWS manages. Both enableDnsSupport and enableDnsHostnames must be true on the VPC for the service name to resolve to the endpoint's private addresses. Not \"Verify that the endpoint's security group allows inbound UDP port 53...\": DNS queries go to the VPC resolver, not to the endpoint, so the endpoint does not need to allow port 53. It needs to allow HTTPS from clients. Not \"Verify that the SQS queue policy allows access only from the...\": A queue policy controls access, but it does not change how the name resolves. Not \"Verify that a gateway VPC endpoint for SQS is attached to each of the...\": Gateway endpoints exist only for Amazon S3 and DynamoDB."
+  ref: "Question d5-11 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-12
+  kind: choice
+  en: "A SaaS company must offer a TCP service to 200 customer VPCs in other AWS accounts. Many customer VPCs use CIDR blocks that overlap with the company's VPC. Customers must not get access to any other resources in the company's VPC. Which solution will meet these requirements?"
+  options:
+    - "Create a VPC peering connection with each customer VPC. Add routes to the service subnet."
+    - "Attach every customer VPC to a shared transit gateway. Add routes to the service subnet."
+    - "Put the service behind a Network Load Balancer, and share it as a PrivateLink endpoint service."
+    - "Give the service a public IP address, and ask customers to reach it through their NAT gateways."
+  correct: [C]
+  why: "AWS PrivateLink exposes a service behind a Network Load Balancer as an endpoint service. Customers create interface endpoints in their own VPCs, traffic flows only to the service, and overlapping CIDR blocks do not matter because there is no routing between the VPCs. Not \"Create a VPC peering connection with each customer VPC. Add routes to...\": VPC peering does not work with overlapping CIDR blocks, and peering gives broader network access than one service. Not \"Attach every customer VPC to a shared transit gateway. Add routes to...\": Transit Gateway routing also fails with overlapping CIDR blocks, and it exposes more of the network. Not \"Give the service a public IP address, and ask customers to reach it...\": Public exposure sends traffic over the internet and opens the service to anyone who can reach it."
+  ref: "Question d5-12 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-13
+  kind: choice
+  en: "A company has VPC A peered with VPC B, and VPC B peered with VPC C. Instances in VPC A cannot reach instances in VPC C, even though all route tables have routes for the peering connections that they use. What should a CloudOps engineer do to allow traffic between VPC A and VPC C?"
+  options:
+    - "Create a peering connection between VPC A and VPC C. Add routes in both VPCs."
+    - "Enable DNS resolution for the existing peering connections in both of the directions."
+    - "Add a route in VPC A that sends VPC C's CIDR block to the A-to-B peering connection."
+    - "Allow VPC C's CIDR block in the security groups of the instances in VPC A and VPC B."
+  correct: [A]
+  why: "VPC peering is not transitive, so traffic cannot pass through VPC B to reach VPC C. A direct peering connection between A and C, with routes on both sides and matching security group rules, connects them. For many VPCs, a transit gateway is easier to manage. Not \"Add a route in VPC A that sends VPC C's CIDR block to the A-to-B...\": VPC B does not forward traffic between peering connections, so this route does not work. Not \"Enable DNS resolution for the existing peering connections in both of...\": DNS resolution settings help resolve private hostnames. They do not make peering transitive. Not \"Allow VPC C's CIDR block in the security groups of the instances in...\": Security groups allow traffic only when a route exists, and there is no route from A to C."
+  ref: "Question d5-13 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-14
+  kind: choice
+  en: "A company connects 30 VPCs to a transit gateway. Production VPCs must not be able to reach development VPCs, but every VPC must be able to reach a shared services VPC. How should a CloudOps engineer configure the transit gateway to meet these requirements?"
+  options:
+    - "Use separate TGW route tables for production and development that both propagate the shared VPC."
+    - "Disable default route table association, and leave the attachments without any route tables."
+    - "Use one TGW route table for every attachment, and block the traffic with network ACLs in each of the VPCs."
+    - "Create a separate transit gateway for each VPC, and peer every transit gateway with each other."
+  correct: [A]
+  why: "Transit gateway route tables control which attachments can reach each other. Production attachments associate with a production route table and development attachments with a development route table. Each of these tables has routes to the shared services VPC but not to the other environment, and the shared services table has routes to both. Not \"Use one TGW route table for every attachment, and block the traffic...\": A single route table lets every VPC reach every other VPC, and maintaining network ACLs in 30 VPCs is error prone. Not \"Create a separate transit gateway for each VPC, and peer every...\": Thirty transit gateways and a full mesh of peering connections add cost and complexity. Not \"Disable default route table association, and leave the attachments...\": Attachments without route tables cannot route traffic at all, so no VPC could reach the shared services VPC."
+  ref: "Question d5-14 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-15
+  kind: choice
+  en: "A company's on-premises servers connect to a VPC through AWS Direct Connect with a private virtual interface. The servers must upload data to Amazon S3 privately, without traversing the public internet. Which solution will meet this requirement?"
+  options:
+    - "Create an interface VPC endpoint for S3. Have the servers use its endpoint-specific DNS names."
+    - "Create a gateway VPC endpoint for S3. Add a route to it in each of the on-premises router tables."
+    - "Route the on-premises traffic through a NAT gateway in the VPC to reach the public S3 endpoint."
+    - "Configure S3 Transfer Acceleration. Send the uploads to the accelerate endpoint over the link."
+  correct: [A]
+  why: "Interface endpoints for S3 have private IP addresses in the VPC, so on-premises servers can reach them over Direct Connect or VPN. The servers use the endpoint-specific DNS names, or Route 53 Resolver inbound endpoints with private DNS, to send S3 requests through the endpoint. Not \"Create a gateway VPC endpoint for S3. Add a route to it in each of...\": Gateway endpoints work only for traffic that starts inside the VPC. They cannot be reached from on-premises networks. Not \"Route the on-premises traffic through a NAT gateway in the VPC to...\": VPCs do not support edge-to-edge routing, so on-premises traffic cannot use the VPC's NAT gateway to reach the internet. Not \"Configure S3 Transfer Acceleration. Send the uploads to the...\": Transfer Acceleration sends traffic over the internet to edge locations, not over the private link."
+  ref: "Question d5-15 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-16
+  kind: choice
+  en: "A company uses AWS Site-to-Site VPN with static routing, and only one of the two tunnels is configured on its customer gateway device. During AWS maintenance on that tunnel, the company lost connectivity. Which solution will provide automatic failover between the tunnels?"
+  options:
+    - "Configure both tunnels on the customer gateway. Use BGP dynamic routing for failover."
+    - "Enable acceleration for the VPN."
+    - "Create a second customer gateway in AWS that points to the same IP address of the device."
+    - "Replace the VPN with a VPC peering connection to the on-premises network for redundancy."
+  correct: [A]
+  why: "Each Site-to-Site VPN connection has two tunnels that terminate on different AWS endpoints for redundancy. Configuring both tunnels and using BGP lets traffic move to the healthy tunnel automatically during maintenance or a failure. Not \"Create a second customer gateway in AWS that points to the same IP...\": A second customer gateway resource with the same IP address does not add a tunnel on the device, so the single-tunnel problem remains. Not \"Replace the VPN with a VPC peering connection to the on-premises...\": VPC peering connects VPCs only. It cannot connect to an on-premises network. Not \"Enable acceleration for the VPN\": Accelerated VPN improves performance through AWS Global Accelerator. It does not keep a tunnel up during maintenance."
+  ref: "Question d5-16 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-17
+  kind: choice
+  en: "A company has a login page behind an Application Load Balancer. The page receives credential stuffing attacks in which single IP addresses send thousands of requests per minute. Normal users send fewer than 20 login requests in 5 minutes. What should a CloudOps engineer do to mitigate these attacks?"
+  options:
+    - "Enable AWS Shield Standard for the ALB to block each of the credential stuffing attempts."
+    - "Add an AWS WAF rate-based rule, scoped down to the login path, that blocks IPs over a limit."
+    - "Add a security group rule on the ALB that denies the attacking IP addresses as they appear."
+    - "Increase the ALB idle timeout to limit how many connections attackers can open each minute."
+  correct: [B]
+  why: "A rate-based rule counts requests from each IP address over a time window and blocks addresses that exceed the limit. A scope-down statement limits the count to the login path, so normal browsing is not affected. The AWS WAF Fraud Control account takeover prevention rule group adds more protection. Not \"Add a security group rule on the ALB that denies the attacking IP...\": Security groups do not support deny rules, and tracking attacker IP addresses by hand cannot keep up. Not \"Enable AWS Shield Standard for the ALB to block each of the...\": Shield Standard protects against common network and transport layer DDoS attacks. It does not inspect login requests. Not \"Increase the ALB idle timeout to limit how many connections attackers...\": A longer idle timeout keeps connections open longer, which does not limit requests."
+  ref: "Question d5-17 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-18
+  kind: choice
+  en: "A company plans to add the AWS Managed Rules core rule set to the AWS WAF web ACL of a production application. The company is concerned that some of the rules might block legitimate traffic. How should a CloudOps engineer roll out the rule group safely?"
+  options:
+    - "Add the rule group with its action overridden to Count, review the logs, and then switch to Block."
+    - "Add the rule group. Change the web ACL's default action from Allow to Block at the same time."
+    - "Add the rule group to a web ACL that is not associated with any resource, and then wait for one week."
+    - "Add the rule group in Block mode during a weekend. Remove it if users complain on Monday."
+  correct: [A]
+  why: "Overriding rule actions to Count lets AWS WAF record which requests would match without blocking them. After reviewing WAF logs and sampled requests, the team can exclude or scope down noisy rules and then enable blocking. Not \"Add the rule group in Block mode during a weekend. Remove it if users...\": Blocking first risks an outage, and waiting for complaints means that real users were affected. Not \"Add the rule group to a web ACL that is not associated with any...\": A web ACL that is not associated with a resource sees no traffic, so it provides no data. Not \"Add the rule group. Change the web ACL's default action from Allow to...\": Changing the default action to Block would block all traffic that no rule allows, which is a much bigger change."
+  ref: "Question d5-18 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-19
+  kind: choice
+  en: "A company enables AWS WAF for its application. Some customers now receive HTTP 403 errors when they submit a support form that contains code samples. A CloudOps engineer needs to find which rule blocks these requests. What should the CloudOps engineer do to meet this requirement?"
+  options:
+    - "Configure AWS CloudTrail data events for AWS WAF."
+    - "Enable web ACL logging, and look for the terminatingRuleId in the logs for the blocked requests."
+    - "Enable VPC Flow Logs for the ALB subnets, and look for rejected packets from the customers."
+    - "Configure ALB access logs, and look for the WAF rule name inside the user agent field of each request."
+  correct: [B]
+  why: "Web ACL logs record each inspected request, the action taken, and the terminatingRuleId of the rule that blocked it. Logs can go to CloudWatch Logs, Amazon S3, or Data Firehose. Sampled requests in the console also help. Not \"Configure ALB access logs, and look for the WAF rule name inside the...\": ALB access logs do not record which WAF rule matched, and the user agent is set by the client. Not \"Enable VPC Flow Logs for the ALB subnets, and look for rejected...\": The requests are blocked at layer 7 with an HTTP 403 response, so flow logs would show accepted traffic. Not \"Configure AWS CloudTrail data events for AWS WAF\": CloudTrail records WAF configuration API calls, not the web requests that AWS WAF inspects."
+  ref: "Question d5-19 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-20
+  kind: choice
+  en: "A company's public website has been hit by large DDoS attacks that caused scaling costs to spike. The company needs 24/7 access to the AWS Shield Response Team during attacks and protection against scaling charges caused by DDoS attacks. Which solution will meet these requirements?"
+  options:
+    - "Rely on AWS Shield Standard, which includes the Shield Response Team at no extra cost."
+    - "Subscribe to AWS Shield Advanced. Add the website's resources as protected resources."
+    - "Enable Amazon GuardDuty. Use its findings to request credits for DDoS scaling charges."
+    - "Add AWS WAF rate-based rules, which include cost protection for DDoS scaling charges."
+  correct: [B]
+  why: "Shield Advanced adds enhanced DDoS detection and mitigation for protected resources such as CloudFront distributions, Application Load Balancers, Global Accelerator accelerators, and Route 53 hosted zones. It includes access to the Shield Response Team and cost protection for scaling charges caused by DDoS attacks. Not \"Rely on AWS Shield Standard, which includes the Shield Response Team...\": Shield Standard protects all AWS customers against common attacks at no cost, but it does not include the Shield Response Team or cost protection. Not \"Add AWS WAF rate-based rules, which include cost protection for DDoS...\": Rate-based rules help with application layer floods, but AWS WAF does not provide DDoS cost protection. Not \"Enable Amazon GuardDuty. Use its findings to request credits for DDoS...\": GuardDuty detects threats in your account. It is not a DDoS protection service, and it does not provide credits."
+  ref: "Question d5-20 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-21
+  kind: choice
+  en: "A company must restrict outbound internet traffic from its private subnets to an approved list of domain names, such as updates.example.com, and block everything else. The traffic currently leaves through a NAT gateway. Which solution will meet this requirement?"
+  options:
+    - "Add network ACL rules that allow the approved domain names and deny all other outbound traffic."
+    - "Add security group outbound rules that allow the approved domain names and deny all of the other traffic."
+    - "Create an Amazon Route 53 private hosted zone for each approved domain."
+    - "Deploy AWS Network Firewall with a stateful domain list rule group. Route egress traffic through it."
+  correct: [D]
+  why: "Network Firewall supports stateful domain list rules that inspect the TLS SNI and HTTP Host header to allow or deny traffic by domain name. Routing the private subnets' egress through firewall endpoints before the NAT gateway enforces the allow list. Not \"Add security group outbound rules that allow the approved domain...\": Security groups work with IP addresses, CIDR blocks, prefix lists, and other security groups. They cannot filter by domain name, and they have no deny rules. Not \"Add network ACL rules that allow the approved domain names and deny...\": Network ACLs filter by IP address and port only. Not \"Create an Amazon Route 53 private hosted zone for each approved...\": Private hosted zones answer for the names that they contain. They do not stop queries for other names or connections to other IP addresses."
+  ref: "Question d5-21 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-22
+  kind: choice
+  en: "A company's security team must stop Amazon EC2 instances in every VPC in the account from resolving domain names that are known to be used for malware and botnet command and control. The company does not want to maintain domain lists manually. Which solution will meet these requirements?"
+  options:
+    - "Configure Amazon GuardDuty."
+    - "Add a network ACL rule that denies outbound traffic on port 53 from every subnet in each VPC."
+    - "Create a private hosted zone named com that returns 0.0.0.0 for every malicious domain name."
+    - "Use Amazon Route 53 Resolver DNS Firewall with AWS managed domain lists associated with each VPC."
+  correct: [D]
+  why: "DNS Firewall filters DNS queries that go through Route 53 Resolver in your VPCs. AWS managed domain lists, such as lists of malware and botnet domains, are kept up to date by AWS, and a rule group can block or alert on queries that match them. Not \"Add a network ACL rule that denies outbound traffic on port 53 from...\": Blocking all DNS traffic would break every name lookup, not only the malicious ones. Not \"Configure Amazon GuardDuty\": GuardDuty detects DNS activity linked to threats and reports findings, but it does not block queries. Not \"Create a private hosted zone named com that returns 0.0.0.0 for every...\": A hosted zone named com would break resolution of every .com domain, and keeping it current by hand is the work the team wants to avoid."
+  ref: "Question d5-22 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-23
+  kind: choice
+  en: "A company's bill shows high Regional data transfer charges. Application instances in us-east-1a send most of their internet traffic to a NAT gateway in us-east-1b and read from database replicas in other Availability Zones. The company must keep its Multi-AZ design. Which solution will MOST reduce these data transfer charges?"
+  options:
+    - "Replace the NAT gateway with an internet gateway route in the private subnets of us-east-1a."
+    - "Enable cross-zone load balancing on every load balancer to spread traffic across zones."
+    - "Route each zone's traffic to a NAT gateway in the same zone, and prefer same-zone database replicas."
+    - "Move all instances and databases into one Availability Zone to remove all cross-zone traffic."
+  correct: [C]
+  why: "Data transfer between Availability Zones in the same Region is charged in each direction. Sending each zone's internet-bound traffic through a NAT gateway in the same zone, and reading from replicas in the same zone where possible, removes most cross-zone charges while keeping the Multi-AZ design. Not \"Move all instances and databases into one Availability Zone to remove...\": One zone removes the charges but breaks the Multi-AZ requirement, so the application would fail if that zone fails. Not \"Enable cross-zone load balancing on every load balancer to spread...\": Cross-zone load balancing spreads traffic across zones, which can increase cross-zone data transfer. Not \"Replace the NAT gateway with an internet gateway route in the private...\": An internet gateway route would make the subnets public, and instances without public IP addresses still could not use it."
+  ref: "Question d5-23 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-24
+  kind: choice
+  en: "A company's VPC costs increased after AWS began to charge for all public IPv4 addresses. The company has many Elastic IP addresses that are not associated with any resource. The company also has many instances with public IP addresses that are reached only through a load balancer. Which combination of steps will reduce these costs? (Select TWO.)"
+  options:
+    - "Move the load balancer into private subnets."
+    - "Replace each public IPv4 address with a second Elastic IP address on the instance."
+    - "Move instances behind the load balancer to private subnets without public IPs."
+    - "Enable auto-assign public IPv4 addresses for every subnet in the VPC by default."
+    - "Release the Elastic IP addresses that are not associated with any resource."
+  correct: [C, E]
+  why: "AWS charges for every public IPv4 address, whether it is in use or idle. Releasing Elastic IP addresses that are not associated with anything removes their charge. IPAM public IP insights can help find them. Instances that are reached only through a load balancer do not need public addresses. Placing them in private subnets, with NAT for outbound access if needed, removes their public IPv4 charges and reduces exposure. Not \"Replace each public IPv4 address with a second Elastic IP address on...\": Elastic IP addresses are also public IPv4 addresses and are charged the same way. Not \"Enable auto-assign public IPv4 addresses for every subnet in the VPC...\": Auto-assigning public addresses adds more public IPv4 addresses and more cost. Not \"Move the load balancer into private subnets\": An internet-facing load balancer must be in public subnets with public addresses to receive internet traffic, so this would take the site offline."
+  ref: "Question d5-24 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-25
+  kind: choice
+  en: "A media company serves large video files directly from an Amazon S3 bucket to viewers around the world. Data transfer out from Amazon S3 to the internet is the largest item on the bill, and many viewers request the same files. Which solution will reduce data transfer costs?"
+  options:
+    - "Move the files to S3 Glacier Instant Retrieval to lower the cost of each download."
+    - "Create S3 Replication copies in three Regions. Let viewers pick the nearest one."
+    - "Serve the files through an Amazon CloudFront distribution with the S3 bucket as its origin."
+    - "Enable S3 Transfer Acceleration to send downloads through the AWS edge network."
+  correct: [C]
+  why: "Data transfer from Amazon S3 to CloudFront is free, and CloudFront serves repeated requests from edge caches. CloudFront data transfer out pricing is usually lower than S3 data transfer to the internet, so caching popular files reduces cost and improves performance. Not \"Enable S3 Transfer Acceleration to send downloads through the AWS...\": Transfer Acceleration adds a per-GB charge on top of normal data transfer, so it increases cost. Not \"Move the files to S3 Glacier Instant Retrieval to lower the cost of...\": Glacier Instant Retrieval lowers storage cost but adds retrieval charges, and data transfer out is still charged. Not \"Create S3 Replication copies in three Regions. Let viewers pick the...\": Extra copies add storage and replication costs, and downloads still incur S3 data transfer out charges."
+  ref: "Question d5-25 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-26
+  kind: choice
+  en: "A company uses a single NAT instance that a CloudOps engineer must patch and manage. The NAT instance has become a bottleneck and a single point of failure for private subnets in two Availability Zones. Which solution will resolve these issues with the LEAST operational overhead?"
+  options:
+    - "Create an internet gateway for the private subnets. Update each private route table to send internet traffic to the internet gateway."
+    - "Launch a second NAT instance in the other Availability Zone. Use a script to move the routes when a health check of an instance fails."
+    - "Launch a larger NAT instance in an Auto Scaling group with a minimum size of 1. Use a script to update the route tables after each replacement."
+    - "Create a NAT gateway in a public subnet in each Availability Zone. Update each private route table to use the NAT gateway in its Availability Zone."
+  correct: [D]
+  why: "AWS recommends NAT gateways over NAT instances because they provide better availability and bandwidth and AWS manages them. One NAT gateway in each Availability Zone keeps each zone independent. Not \"Launch a larger NAT instance in an Auto Scaling group with a minimum...\": A NAT instance still needs patching, and a script must manage failover. Bandwidth depends on the instance type. Not \"Launch a second NAT instance in the other Availability Zone. Use a...\": Two NAT instances remove the single point of failure, but the company must still patch them and maintain the failover script. Not \"Create an internet gateway for the private subnets. Update each...\": Routing to an internet gateway makes the subnets public and does not work for instances without public IP addresses."
+  ref: "Question d5-26 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-27
+  kind: choice
+  en: "A company created an Amazon Route 53 private hosted zone named internal.example.com in account A and associated the zone with a VPC in account A. Instances in a VPC in account B must resolve the zone's records, but their queries return NXDOMAIN. What should a CloudOps engineer do to resolve this issue?"
+  options:
+    - "Share the private hosted zone with account B by using AWS RAM, and accept the share in account B."
+    - "Create a public hosted zone with the same name."
+    - "Authorize the association in account A. Associate the zone with the VPC from account B."
+    - "Create a VPC peering connection between the VPCs."
+  correct: [C]
+  why: "A private hosted zone can be associated with a VPC in another account. An administrator in account A creates a VPC association authorization, and an administrator in account B then associates the VPC with the zone. The VPC must have DNS resolution and DNS hostnames enabled. Not \"Share the private hosted zone with account B by using AWS RAM, and...\": Private hosted zones themselves are not shared through AWS RAM, so cross-account association uses an association authorization. Route 53 Profiles, which can be shared through AWS RAM, are another way to apply DNS settings at scale. Not \"Create a public hosted zone with the same name\": A public zone would expose the internal records to the internet. Not \"Create a VPC peering connection between the VPCs\": Peering does not make a private hosted zone available to the other VPC. The zone must be associated with that VPC."
+  ref: "Question d5-27 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-28
+  kind: choice
+  en: "A company has applications in a VPC that must resolve hostnames in the on-premises domain corp.local, which only the on-premises DNS servers know. The VPC is connected to the data center through AWS Direct Connect. What should a CloudOps engineer configure to meet this requirement?"
+  options:
+    - "A Resolver outbound endpoint with a forwarding rule for corp.local to the on-premises DNS servers"
+    - "A DHCP options set that points the VPC only at the on-premises DNS server IP addresses"
+    - "A private hosted zone named corp.local with a copy of each on-premises DNS record in it"
+    - "An Amazon Route 53 Resolver inbound endpoint that the on-premises DNS servers are able to forward queries to"
+  correct: [A]
+  why: "An outbound endpoint lets Route 53 Resolver send queries out of the VPC. A forwarding rule for corp.local sends matching queries to the on-premises DNS servers over Direct Connect, while all other queries are still resolved by Route 53 Resolver. Not \"An Amazon Route 53 Resolver inbound endpoint that the on-premises DNS...\": Inbound endpoints handle the opposite direction: they let on-premises servers resolve names in AWS. Not \"A private hosted zone named corp.local with a copy of each...\": Copying records by hand goes out of date and duplicates the on-premises DNS data. Not \"A DHCP options set that points the VPC only at the on-premises DNS...\": Sending all queries to on-premises servers breaks resolution of AWS private names and makes every lookup depend on the hybrid link."
+  ref: "Question d5-28 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-29
+  kind: choice
+  en: "A company's on-premises servers must resolve records in an Amazon Route 53 private hosted zone named aws.example.com that is associated with a VPC. The data center connects to the VPC through an AWS Site-to-Site VPN connection. What should a CloudOps engineer do to meet this requirement?"
+  options:
+    - "Create a Resolver inbound endpoint in the VPC. Forward aws.example.com from on-premises DNS to it."
+    - "Point the on-premises servers directly at the Amazon DNS server address at the base of the VPC CIDR block plus two."
+    - "Change the private hosted zone into a public hosted zone."
+    - "Create a Resolver outbound endpoint in the VPC. Associate a forwarding rule for aws.example.com."
+  correct: [A]
+  why: "An inbound endpoint gives Route 53 Resolver IP addresses in the VPC that on-premises DNS servers can reach over the VPN. A conditional forwarder for aws.example.com on the on-premises servers sends those queries to the endpoint, which answers from the private hosted zone. Not \"Create a Resolver outbound endpoint in the VPC. Associate a...\": Outbound endpoints send queries from the VPC to other DNS servers, which is the opposite direction. Not \"Change the private hosted zone into a public hosted zone\": A private hosted zone cannot be converted into a public zone, and publishing internal records is a security risk. Not \"Point the on-premises servers directly at the Amazon DNS server...\": The Amazon-provided DNS server cannot be reached from outside the VPC, so on-premises servers cannot query it directly."
+  ref: "Question d5-29 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-30
+  kind: choice
+  en: "A company runs the same application in us-east-1, eu-west-1, and ap-southeast-1. Users around the world must be sent to the AWS Region that gives them the fastest response, and traffic must avoid any Region that becomes unhealthy. Which Amazon Route 53 configuration will meet these requirements?"
+  options:
+    - "A simple record with all three load balancer addresses as its values"
+    - "Geolocation records for each continent, with a default record for others"
+    - "Weighted records with equal weights for each Region and no health checks"
+    - "Latency-based records for each Region, with health checks associated"
+  correct: [D]
+  why: "Latency-based routing answers with the Region that has the lowest measured network latency for the user. With health checks, Route 53 skips an unhealthy Region and answers with the next best one. Not \"Geolocation records for each continent, with a default record for...\": Geolocation routes by the user's location, not by measured latency, so some users might not get the fastest Region. Not \"Weighted records with equal weights for each Region and no health...\": Equal weights spread users across Regions regardless of latency, and without health checks a failed Region keeps receiving traffic. Not \"A simple record with all three load balancer addresses as its values\": A simple record with several values returns them in random order, with no latency awareness or health checks."
+  ref: "Question d5-30 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-31
+  kind: choice
+  en: "A company has a licensing agreement that requires users in Germany to be served by an application stack in eu-central-1. All other users must be served by a stack in us-east-1. Users whose location cannot be determined must still be served. Which Amazon Route 53 configuration will meet these requirements?"
+  options:
+    - "Geoproximity routing with a large positive bias on the eu-central-1 record and none on us-east-1"
+    - "Latency-based routing with one record for eu-central-1 and one record for us-east-1"
+    - "Geolocation routing with a Germany record for eu-central-1 and a Default record for us-east-1"
+    - "Geolocation routing with only a Germany record that points to eu-central-1"
+  correct: [C]
+  why: "Geolocation routing answers based on where the DNS query comes from. A record for Germany sends those users to eu-central-1, and the Default record covers every other location, including queries whose location cannot be determined. Not \"Latency-based routing with one record for eu-central-1 and one record...\": Latency routing would send some users outside Germany to eu-central-1, and some German users could go elsewhere, which breaks the licensing rule. Not \"Geoproximity routing with a large positive bias on the eu-central-1...\": Geoproximity shifts traffic by distance and bias, so the boundary would not match the borders of Germany. Not \"Geolocation routing with only a Germany record that points to...\": Without a Default record, Route 53 returns no answer for users outside Germany or for unknown locations."
+  ref: "Question d5-31 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-32
+  kind: choice
+  en: "A company is migrating a website from an on-premises server to an Application Load Balancer on AWS. The company must send 10% of users to AWS first, increase the share gradually, and move users back if errors appear. Which Amazon Route 53 routing policy will meet these requirements?"
+  options:
+    - "IP-based routing"
+    - "Failover routing"
+    - "Weighted routing"
+    - "Multivalue answer routing"
+  correct: [C]
+  why: "Weighted routing splits DNS responses between records in proportion to their weights, such as 90 and 10. Changing the weights shifts traffic gradually, and setting the AWS record's weight to 0 moves users back. A low TTL makes changes take effect faster. Not \"Failover routing\": Failover routing sends all traffic to the primary while it is healthy, so it cannot send a percentage of users. Not \"Multivalue answer routing\": Multivalue answer returns several healthy records for clients to choose from. It does not control the share of traffic. Not \"IP-based routing\": IP-based routing sends users based on their source IP ranges, not by percentage."
+  ref: "Question d5-32 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-33
+  kind: choice
+  en: "A company has a small internal service that runs on 6 Amazon EC2 instances without a load balancer. DNS must return up to 8 healthy instance IP addresses at random so that clients spread their requests. Unhealthy instances must not be returned. Which Amazon Route 53 configuration will meet these requirements?"
+  options:
+    - "Latency-based records for each instance in the same AWS Region"
+    - "Multivalue answer records for each instance, each with its own health check"
+    - "A simple record that lists all 6 instance IP addresses as values of the same record"
+    - "Failover records, with one primary record and five secondary records"
+  correct: [B]
+  why: "Multivalue answer routing returns up to 8 healthy records, chosen at random, for each query. A health check on each record removes unhealthy instances from the responses. It does not replace a load balancer, but it improves availability for simple cases. Not \"A simple record that lists all 6 instance IP addresses as values of...\": A simple record returns all of its values without health checks, so clients can still receive the addresses of failed instances. Not \"Failover records, with one primary record and five secondary records\": Failover routing supports one primary and one secondary record, and it does not spread traffic across instances. Not \"Latency-based records for each instance in the same AWS Region\": Latency routing chooses between Regions. Records in the same Region do not spread traffic in a useful way."
+  ref: "Question d5-33 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-34
+  kind: choice
+  en: "A company needs both example.com (the zone apex) and www.example.com to point to an Application Load Balancer (ALB). A CloudOps engineer tries to create a CNAME record for example.com, and Amazon Route 53 rejects the record. What should the CloudOps engineer do to resolve this issue?"
+  options:
+    - "Create a TXT record for example.com that contains the ALB's DNS name."
+    - "Create an A record for example.com with the ALB's current IP addresses."
+    - "Create an MX record for example.com that points to the ALB's DNS name."
+    - "Create an alias A record for example.com that targets the ALB."
+  correct: [D]
+  why: "DNS does not allow a CNAME record at the zone apex. A Route 53 alias record can point the apex to AWS resources such as an ALB, a CloudFront distribution, or an S3 website endpoint. It follows IP address changes automatically, and queries to alias records for AWS resources have no charge. Not \"Create an A record for example.com with the ALB's current IP...\": ALB IP addresses change over time, so a static A record would break. Not \"Create an MX record for example.com that points to the ALB's DNS name\": MX records direct email delivery. They do not route web traffic. Not \"Create a TXT record for example.com that contains the ALB's DNS name\": TXT records hold text values, such as verification strings. Browsers do not use them to find a website."
+  ref: "Question d5-34 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-35
+  kind: choice
+  en: "A company's security team must log every DNS query that public resolvers send to Amazon Route 53 for the company's public hosted zone. A CloudOps engineer tries to set up query logging to an Amazon CloudWatch Logs log group in eu-west-1, but the log group cannot be selected. What should the CloudOps engineer do to resolve this issue?"
+  options:
+    - "Change the hosted zone to a private hosted zone to allow query logging in any AWS Region."
+    - "Enable AWS CloudTrail data events for Route 53 to record every public DNS query in the trail."
+    - "Create the log group in us-east-1. Add a resource policy that allows Route 53 to write to it."
+    - "Enable Resolver query logging for the VPC in eu-west-1 to capture public zone queries."
+  correct: [C]
+  why: "Query logging for public hosted zones sends logs to CloudWatch Logs in the US East (N. Virginia) Region. The log group must be in us-east-1, and a CloudWatch Logs resource policy must allow Route 53 to publish to it. Not \"Enable Resolver query logging for the VPC in eu-west-1 to capture...\": Resolver query logging records queries made from inside your VPCs. It does not capture queries from public resolvers on the internet. Not \"Enable AWS CloudTrail data events for Route 53 to record every public...\": CloudTrail records Route 53 API calls, such as record changes, not DNS queries. Not \"Change the hosted zone to a private hosted zone to allow query...\": Changing the zone type would make the domain unreachable from the internet."
+  ref: "Question d5-35 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-36
+  kind: choice
+  en: "A company will move a website to a new IP address next week. The current A record has a TTL of 86,400 seconds. Users must reach the new address within minutes after the change. What should a CloudOps engineer do to meet this requirement?"
+  options:
+    - "Keep the TTL at 86,400 seconds, and ask each public DNS resolver to flush its cache after the cutover is done."
+    - "Raise the TTL to 172,800 seconds before the change."
+    - "Delete the record during the cutover. Create a new record with the same name a day later."
+    - "Lower the TTL to 60 seconds at least a day before the change, and update the record during the cutover."
+  correct: [D]
+  why: "Resolvers cache a record for its TTL. Lowering the TTL in advance, by at least as long as the old TTL, makes sure that cached copies expire quickly. After the cutover, the TTL can be raised again. Not \"Keep the TTL at 86,400 seconds, and ask each public DNS resolver to...\": You cannot flush the caches of public resolvers that you do not control. Not \"Raise the TTL to 172,800 seconds before the change\": A longer TTL keeps the old address cached for even longer. Not \"Delete the record during the cutover. Create a new record with the...\": Deleting the record causes failed lookups for a full day."
+  ref: "Question d5-36 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-37
+  kind: choice
+  en: "A company serves a static website from an Amazon S3 bucket through an Amazon CloudFront distribution. Users can also download files directly from the bucket's URL, which bypasses CloudFront and its AWS WAF rules. The bucket uses SSE-KMS encryption. How should a CloudOps engineer make the files reachable only through CloudFront?"
+  options:
+    - "Configure S3 static website hosting. Allow public read access only for the CloudFront edge IP ranges."
+    - "Use origin access control. Allow only the distribution's ARN in the bucket policy and key policy."
+    - "Add a CloudFront geo restriction that blocks every country except the countries where the users live."
+    - "Use an origin access identity. Disable Block Public Access."
+  correct: [B]
+  why: "Origin access control (OAC) lets CloudFront sign its requests to the S3 origin. A bucket policy that allows the cloudfront.amazonaws.com service principal only when AWS:SourceArn is the distribution's ARN blocks direct access. OAC supports SSE-KMS, so the key policy must also allow the distribution. Not \"Configure S3 static website hosting. Allow public read access only...\": Public read access, even if it is scoped to IP ranges, keeps the bucket publicly reachable and is hard to maintain. Not \"Use an origin access identity. Disable Block Public Access\": Origin access identity is the legacy method and does not support SSE-KMS, and disabling Block Public Access is unnecessary and risky. Not \"Add a CloudFront geo restriction that blocks every country except the...\": Geo restriction applies to requests that go through CloudFront. It does not stop direct requests to the bucket."
+  ref: "Question d5-37 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-38
+  kind: choice
+  en: "A training company sells video courses. Each course has hundreds of video files under one path in Amazon CloudFront. Only paying customers can watch the videos, and customers must not be able to share links that work indefinitely. Which solution will meet these requirements with the LEAST development effort?"
+  options:
+    - "Make the Amazon S3 bucket public, and change the object names every few days."
+    - "Enable CloudFront geo restriction for the countries of paying customers."
+    - "Use CloudFront signed URLs for each of the hundreds of files in a course."
+    - "Use CloudFront signed cookies with an expiration time for the course path."
+  correct: [D]
+  why: "Signed cookies grant access to many files, such as everything under one path, with one set of cookies. The policy can set an expiration time, so shared access stops working after it expires. Not \"Use CloudFront signed URLs for each of the hundreds of files in a...\": Signed URLs work, but the application would have to create a signed URL for every file, which is more effort when a course has hundreds of files. Not \"Make the Amazon S3 bucket public, and change the object names every...\": A public bucket can be accessed by anyone who finds an object name, and renaming files does not control access. Not \"Enable CloudFront geo restriction for the countries of paying...\": Geo restriction controls access by country, not by whether a user has paid."
+  ref: "Question d5-38 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-39
+  kind: choice
+  en: "A company has an Amazon CloudFront distribution that serves images from an Amazon S3 bucket in us-east-1. The company replicates the bucket to us-west-2. CloudFront must serve images from us-west-2 automatically if the primary bucket returns errors. What should a CloudOps engineer configure to meet this requirement?"
+  options:
+    - "A longer default TTL"
+    - "A Lambda@Edge function that copies each failed image from us-west-2 into us-east-1 on demand"
+    - "Two distributions, and an Amazon Route 53 failover record that points to the second one when needed"
+    - "An origin group with the primary bucket, the secondary bucket, and failover status codes"
+  correct: [D]
+  why: "An origin group has a primary and a secondary origin. When the primary returns one of the configured status codes, such as 500, 502, 503, or 504, or the connection fails, CloudFront retries the request against the secondary origin automatically. Not \"Two distributions, and an Amazon Route 53 failover record that points...\": Two distributions with DNS failover are more complex and slower, because DNS changes depend on health checks and caching. Not \"A Lambda@Edge function that copies each failed image from us-west-2...\": Copying files on demand is custom code, and the primary bucket would still be failing. Not \"A longer default TTL\": Caching helps only for images that are already cached. New or expired requests would still fail."
+  ref: "Question d5-39 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-40
+  kind: choice
+  en: "A company has a multiplayer game that uses UDP and runs on Network Load Balancers in two AWS Regions. Players need static IP addresses that they can allowlist in their firewalls, lower latency over long distances, and failover between Regions within seconds. Which solution will meet these requirements?"
+  options:
+    - "Use an Amazon CloudFront distribution in front of the NLBs with caching disabled."
+    - "Use Amazon Route 53 latency-based routing with health checks for the two NLBs."
+    - "Use AWS Global Accelerator with endpoint groups for the NLBs in both Regions."
+    - "Use Elastic IP addresses on the NLBs, and ask players to switch addresses during a failure."
+  correct: [C]
+  why: "Global Accelerator provides two static anycast IP addresses, carries traffic over the AWS global network from the nearest edge location, and supports TCP and UDP. Health checks move traffic to healthy endpoint groups within seconds, without DNS caching delays. Not \"Use an Amazon CloudFront distribution in front of the NLBs with...\": CloudFront delivers HTTP and HTTPS content. It does not proxy arbitrary UDP traffic, so it cannot front a UDP game. Not \"Use Amazon Route 53 latency-based routing with health checks for the...\": DNS-based routing gives no static IP addresses that cover both Regions, and failover is slowed by DNS caching. Not \"Use Elastic IP addresses on the NLBs, and ask players to switch...\": Asking players to switch addresses by hand is not automatic failover."
+  ref: "Question d5-40 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-41
+  kind: choice
+  en: "A company uses an Application Load Balancer (ALB) as the origin for an Amazon CloudFront distribution that has AWS WAF rules. Users can bypass CloudFront by calling the ALB's DNS name directly. The ALB must accept only requests that come through this distribution. Which combination of steps will meet these requirements? (Select TWO.)"
+  options:
+    - "Enable access logs for the ALB, and block direct callers manually when they show up in the logs."
+    - "Allow inbound traffic on the ALB security group only from the CloudFront managed prefix list."
+    - "Configure cross-zone load balancing."
+    - "Add a CloudFront geo restriction that blocks the countries where most direct requests come from."
+    - "Have CloudFront add a secret custom header. Add an ALB listener rule that requires it."
+  correct: [B, E]
+  why: "The AWS-managed prefix list com.amazonaws.global.cloudfront.origin-facing contains the IP ranges that CloudFront uses to reach origins. Allowing only that prefix list blocks direct requests from other sources. The prefix list covers every CloudFront distribution, including distributions that other customers own. A secret header that only your distribution adds, checked by an ALB listener rule, makes sure that requests come through your distribution. CloudFront VPC origins, which keep the ALB in private subnets, are another option. Not \"Enable access logs for the ALB, and block direct callers manually...\": Blocking callers by hand after the fact is slow and does not prevent the bypass. Not \"Configure cross-zone load balancing\": Cross-zone load balancing spreads traffic across targets. It does not restrict who can reach the ALB. Not \"Add a CloudFront geo restriction that blocks the countries where most...\": Geo restriction applies only to requests that come through CloudFront, so it does not affect direct calls to the ALB."
+  ref: "Question d5-41 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-42
+  kind: choice
+  en: "A company needs to redirect old URL paths to new paths and add security headers to every Amazon CloudFront response. The logic is simple, and the company needs the lowest cost. Which solution will meet these requirements?"
+  options:
+    - "An AWS Lambda function behind an ALB that the distribution uses as its origin"
+    - "An AWS WAF rule group that rewrites URLs and adds the response headers"
+    - "Lambda@Edge functions on the origin request and origin response events"
+    - "CloudFront Functions on the viewer request and viewer response events"
+  correct: [D]
+  why: "CloudFront Functions run lightweight JavaScript at edge locations on viewer request and viewer response events, with sub-millisecond startup and very high scale, at a lower price than Lambda@Edge. Redirects and header changes are typical uses. A response headers policy can also add security headers without code. Not \"Lambda@Edge functions on the origin request and origin response events\": Lambda@Edge suits heavier logic, such as network calls, but it costs more, so it is not the cheapest choice for simple logic. Not \"An AWS Lambda function behind an ALB that the distribution uses as...\": Sending every request to an origin function adds latency and cost and removes the benefit of edge caching. Not \"An AWS WAF rule group that rewrites URLs and adds the response headers\": AWS WAF filters requests. It does not rewrite URLs or add response headers to responses."
+  ref: "Question d5-42 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-43
+  kind: choice
+  en: "A company's video service delivers content through Amazon CloudFront. Because of distribution rights, the service must not serve content to viewers in three specific countries. Which solution will meet this requirement in the MOST operationally efficient way?"
+  options:
+    - "Write a Lambda@Edge function that looks up each viewer's country in a third-party API."
+    - "Add a bucket policy that denies requests from the IP ranges of those three countries."
+    - "Enable CloudFront geographic restrictions with a block list of those countries."
+    - "Create an Amazon Route 53 geolocation record that returns no answer for those three countries."
+  correct: [C]
+  why: "CloudFront geographic restrictions use a GeoIP database to allow or block viewers by country. A block list returns HTTP 403 to viewers in the listed countries, with no code. Not \"Create an Amazon Route 53 geolocation record that returns no answer...\": DNS location is based on the resolver, not the viewer, and users could still reach the distribution through other resolvers. Not \"Add a bucket policy that denies requests from the IP ranges of those...\": Requests to the bucket come from CloudFront, not from viewers, and country IP ranges change often. Not \"Write a Lambda@Edge function that looks up each viewer's country in a...\": A custom function adds latency and cost, and CloudFront already provides country-based restrictions."
+  ref: "Question d5-43 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-44
+  kind: choice
+  en: "A company uses Amazon Route 53 health checks for a public web server. The health checks always report unhealthy, but the site works for users. The server's security group allows HTTPS only from the company's office and from a list of partner IP addresses. What should a CloudOps engineer do to resolve this issue?"
+  options:
+    - "Change the health check to use the server's private IP address to keep the check inside the VPC."
+    - "Enable string matching in the health check to ignore connection timeouts from the server."
+    - "Increase the health check failure threshold to 10 to report healthy more often."
+    - "Allow inbound HTTPS from the Route 53 health checker IP ranges in the security group."
+  correct: [D]
+  why: "Route 53 health checkers send requests from AWS IP ranges on the internet, so the security group must allow them. The ranges are published in ip-ranges.json under the ROUTE53_HEALTHCHECKS service, and an AWS-managed prefix list for Route 53 health checks is also available. Not \"Change the health check to use the server's private IP address to...\": Health checkers run on the internet and cannot reach private IP addresses. Not \"Enable string matching in the health check to ignore connection...\": String matching checks the response body. It cannot help when the request never reaches the server. Not \"Increase the health check failure threshold to 10 to report healthy...\": A higher threshold only delays the unhealthy status. Every check still fails."
+  ref: "Question d5-44 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-45
+  kind: choice
+  en: "Users cannot connect to a company's application on an Amazon EC2 instance. VPC Flow Logs for the instance's network interface show the inbound request from a user as ACCEPT and show the instance's response to the user's ephemeral port as REJECT. What is the MOST likely cause of this issue?"
+  options:
+    - "The instance's security group denies the inbound request traffic."
+    - "The subnet's network ACL denies the outbound response traffic."
+    - "The route table has no route back to the user's IP address range."
+    - "The instance's security group denies the outbound response traffic."
+  correct: [B]
+  why: "Security groups are stateful: if an inbound request is accepted, its response is allowed automatically. A rejected response therefore points to the stateless network ACL, which must allow outbound traffic to the client's ephemeral ports. Not \"The instance's security group denies the inbound request traffic\": The flow log shows the inbound request as ACCEPT, so it was not denied. Not \"The instance's security group denies the outbound response traffic\": Because security groups are stateful, an accepted inbound request means that its response is allowed, whatever the outbound rules say. Not \"The route table has no route back to the user's IP address range\": A missing route would not appear as a REJECT record for the response. Flow logs show REJECT when a security group or network ACL denies traffic."
+  ref: "Question d5-45 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-46
+  kind: choice
+  en: "A CloudOps engineer must find which instances in private subnets send the most traffic to the internet through a NAT gateway. VPC flow logs on the NAT gateway's network interface show only the NAT gateway's own IP address as the source of the internet traffic. Which solution will identify the original source instances with the LEAST operational overhead?"
+  options:
+    - "Use a custom flow log format with pkt-srcaddr and pkt-dstaddr, publish to Amazon S3, and query with Amazon Athena."
+    - "Install packet capture software on the NAT gateway, and analyze the captures each day."
+    - "Enable AWS CloudTrail data events for the NAT gateway to record each connection."
+    - "Enable ALB access logs for the NAT gateway, and sort the requests by the client IP field in each log."
+  correct: [A]
+  why: "The pkt-srcaddr and pkt-dstaddr fields show the original packet-level addresses of traffic that passes through an intermediate device such as a NAT gateway. Publishing flow logs to Amazon S3 and querying them with Athena makes it easy to rank instances by bytes sent. Not \"Enable ALB access logs for the NAT gateway, and sort the requests by...\": NAT gateways are not load balancers and have no access logs. Not \"Install packet capture software on the NAT gateway, and analyze the...\": NAT gateways are managed by AWS, so you cannot install software on them. Not \"Enable AWS CloudTrail data events for the NAT gateway to record each...\": CloudTrail records API calls, not network connections."
+  ref: "Question d5-46 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-47
+  kind: choice
+  en: "A company has an application on an Amazon EC2 instance in VPC A that cannot connect to a database on port 5432 on an instance in VPC B. The VPCs are connected through a transit gateway, and the path involves several route tables, security groups, and network ACLs. Which tool will MOST quickly identify the component that blocks the path?"
+  options:
+    - "Amazon CloudWatch Synthetics"
+    - "AWS Trusted Advisor"
+    - "Amazon Inspector network reachability findings"
+    - "VPC Reachability Analyzer"
+  correct: [D]
+  why: "Reachability Analyzer analyzes the network configuration between a source and a destination without sending packets. It reports whether the destination is reachable and, if it is not, which component blocks the path, such as a missing transit gateway route, a security group rule, or a network ACL rule. Not \"Amazon Inspector network reachability findings\": Inspector network reachability findings show which ports on instances are exposed to networks such as the internet. They do not trace a specific path between two resources to show what blocks it. Not \"AWS Trusted Advisor\": Trusted Advisor checks for best practices. It does not analyze a specific network path. Not \"Amazon CloudWatch Synthetics\": Synthetics canaries can show that a connection fails, but not which configuration component causes the failure."
+  ref: "Question d5-47 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-48
+  kind: choice
+  en: "Users report that some of a company's API calls through an Application Load Balancer take more than 10 seconds. A CloudOps engineer must determine whether the time is spent in the load balancer or in the backend targets for each slow request. Which data source should the CloudOps engineer use?"
+  options:
+    - "VPC Flow Logs for the ALB network interfaces, comparing the start and end time of each record"
+    - "AWS CloudTrail management events for Elastic Load Balancing, comparing the event times of each call"
+    - "The ALB's HealthyHostCount metric, comparing the number of healthy targets during each request"
+    - "ALB access logs, comparing the request, target, and response processing time fields"
+  correct: [D]
+  why: "Each ALB access log entry records request_processing_time, target_processing_time, and response_processing_time. A large target_processing_time shows that the backend was slow, while large values in the other fields point to the load balancer or the client connection. The TargetResponseTime metric shows the same trend in aggregate. Not \"VPC Flow Logs for the ALB network interfaces, comparing the start and...\": Flow logs aggregate traffic over capture windows and do not show HTTP request timings. Not \"AWS CloudTrail management events for Elastic Load Balancing...\": CloudTrail records API calls that manage the load balancer, not client requests. Not \"The ALB's HealthyHostCount metric, comparing the number of healthy...\": HealthyHostCount shows how many targets are healthy. It does not show the latency of individual requests."
+  ref: "Question d5-48 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-49
+  kind: choice
+  en: "A company has an Amazon CloudFront distribution in front of a product catalog. The cache hit ratio is 15%. The cache key includes a session cookie, tracking query strings such as utm_source, and the User-Agent header. The catalog content does not depend on any of these values. Which solution will MOST improve the cache hit ratio?"
+  options:
+    - "Lower the minimum TTL in the cache policy to 0 seconds to refresh objects more often."
+    - "Add more origins to an origin group to spread cache misses across several origin servers."
+    - "Enable Origin Shield in a Region far from the origin to share one cache across more edge locations."
+    - "Use a cache policy that leaves cookies, the tracking query strings, and User-Agent out of the cache key."
+  correct: [D]
+  why: "Every value in the cache key creates a separate cached object, so including cookies, tracking parameters, and User-Agent splits the cache into many copies of the same content. A cache policy that includes only values that change the response raises the hit ratio. An origin request policy can still forward values that the origin needs without adding them to the cache key. Not \"Lower the minimum TTL in the cache policy to 0 seconds to refresh...\": A lower TTL makes objects expire sooner, which lowers the hit ratio. Not \"Enable Origin Shield in a Region far from the origin to share one...\": Origin Shield can help, but it should be placed in the Region closest to the origin, and it does not fix a fragmented cache key. Not \"Add more origins to an origin group to spread cache misses across...\": Origin groups are for failover. They do not change how often CloudFront finds objects in its cache."
+  ref: "Question d5-49 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-50
+  kind: choice
+  en: "A company deploys updates to main.js in the Amazon S3 origin of an Amazon CloudFront distribution. After a deployment, many users still receive the old version for up to 24 hours, which is the file's TTL. Users must get new versions right after each deployment from now on. Which combination of steps will meet this requirement? (Select TWO.)"
+  options:
+    - "Create a CloudFront invalidation for /main.js right after the current deployment."
+    - "Enable S3 Versioning for the origin bucket to make CloudFront fetch the newest version."
+    - "Increase the default TTL to 7 days to make CloudFront check the origin less often."
+    - "Use versioned file names, such as main.3f2a1c.js. Update the HTML references."
+    - "Enable CloudFront standard logging to remove stale objects from the edge locations."
+  correct: [A, D]
+  why: "An invalidation removes the cached object from edge caches, so the next request fetches the new file from the origin. It fixes the current deployment, and invalidation paths beyond the monthly free allowance are charged. Versioned file names give each release a new URL that is not in any cache, so users get the new file at once while long TTLs stay in place. This is the recommended long-term approach. Not \"Enable S3 Versioning for the origin bucket to make CloudFront fetch...\": S3 Versioning keeps object versions in the bucket. CloudFront still serves its cached copy until the TTL expires. Not \"Increase the default TTL to 7 days to make CloudFront check the...\": A longer TTL makes stale content last even longer. Not \"Enable CloudFront standard logging to remove stale objects from the...\": Logging records requests. It does not remove anything from the cache."
+  ref: "Question d5-50 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-51
+  kind: choice
+  en: "A company has an Amazon CloudFront distribution that uses a custom origin, origin.example.com, over HTTPS. After the origin team replaced the origin's certificate with a self-signed certificate, CloudFront started to return HTTP 502 errors. What should a CloudOps engineer do to resolve this issue?"
+  options:
+    - "Install a certificate on the origin from a trusted CA that covers origin.example.com."
+    - "Invalidate all paths in the distribution to make CloudFront fetch new copies of objects."
+    - "Change the viewer protocol policy to allow HTTP and remove the need for viewer certificates."
+    - "Increase the origin response timeout in the distribution settings from 30 to 60 seconds."
+  correct: [A]
+  why: "CloudFront validates the origin's certificate when it connects over HTTPS. A self-signed certificate, or one whose name does not match the origin domain, makes the TLS handshake fail, and CloudFront returns 502 Bad Gateway. A certificate from a trusted CA that covers the origin name fixes the problem. Not \"Increase the origin response timeout in the distribution settings...\": The timeout setting affects slow responses, which cause 504 errors. Here the TLS handshake fails before any response. Not \"Invalidate all paths in the distribution to make CloudFront fetch new...\": Invalidations clear cached objects. They do not fix the connection to the origin. Not \"Change the viewer protocol policy to allow HTTP and remove the need...\": The viewer protocol policy controls the viewer side. The failure is on the connection from CloudFront to the origin."
+  ref: "Question d5-51 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-52
+  kind: choice
+  en: "A company has an Amazon CloudFront distribution in front of an Application Load Balancer. The distribution returns HTTP 504 errors for a reporting endpoint. The origin needs about 45 seconds to generate each report. Other endpoints work normally. What should a CloudOps engineer do to resolve this issue?"
+  options:
+    - "Increase the origin response timeout for the origin to more than 45 seconds."
+    - "Lower the distribution's default TTL to refresh the reports more often."
+    - "Add a geo restriction to allow only users near the origin to call the endpoint."
+    - "Replace the ALB origin with an Amazon S3 bucket that serves the reporting endpoint."
+  correct: [A]
+  why: "CloudFront waits for the origin response timeout, 30 seconds by default, before it gives up and returns 504 Gateway Timeout. Raising the timeout above 45 seconds (values above 120 seconds need a quota increase) lets the report finish. Making the report asynchronous is a better long-term fix. Not \"Lower the distribution's default TTL to refresh the reports more...\": TTL affects caching of successful responses. It does not let slow requests finish. Not \"Add a geo restriction to allow only users near the origin to call the...\": Distance to the origin is not the cause. The origin itself takes 45 seconds. Not \"Replace the ALB origin with an Amazon S3 bucket that serves the...\": S3 cannot run the report generation logic."
+  ref: "Question d5-52 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-53
+  kind: choice
+  en: "A company serves static images through Amazon CloudFront. The images always show Miss in the X-Cache response header. The origin sends Cache-Control: no-store on every response, and the cache policy uses the origin's cache headers with a minimum TTL of 0. What should a CloudOps engineer do to make CloudFront cache the images?"
+  options:
+    - "Enable HTTP/3 for the distribution to serve the image requests from the edge caches."
+    - "Enable automatic compression in the cache policy to make the images small enough to cache."
+    - "Add the images' query strings to the cache key to give each image request its own cache entry."
+    - "Change the origin to send Cache-Control: max-age for images, or set a minimum TTL in the cache policy."
+  correct: [D]
+  why: "With a minimum TTL of 0, CloudFront follows the origin's Cache-Control headers, and no-store tells it not to cache. Sending a max-age value for images from the origin, or raising the minimum TTL in the cache policy, lets CloudFront cache them. Not \"Enable automatic compression in the cache policy to make the images...\": Compression reduces object size. It does not override caching directives. Not \"Add the images' query strings to the cache key to give each image...\": Adding values to the cache key splits the cache further, and it does not change the no-store directive. Not \"Enable HTTP/3 for the distribution to serve the image requests from...\": HTTP/3 changes the protocol between viewers and CloudFront. It does not affect caching rules."
+  ref: "Question d5-53 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-54
+  kind: choice
+  en: "A company runs Amazon ECS tasks on AWS Fargate in private subnets that have no NAT gateway. The tasks fail to start with an error that says that they cannot pull the container image from Amazon ECR. Which combination of VPC endpoints is required for the tasks to pull images? (Select TWO.)"
+  options:
+    - "An interface VPC endpoint for AWS Systems Manager, which ECS uses to pull"
+    - "A gateway VPC endpoint for Amazon S3, where ECR stores image layers"
+    - "A gateway VPC endpoint for Amazon DynamoDB, where ECR stores image manifests"
+    - "Interface VPC endpoints for com.amazonaws.region.ecr.api and ecr.dkr"
+    - "An interface VPC endpoint for Amazon EC2, which Fargate uses for images"
+  correct: [B, D]
+  why: "Pulling an image calls the ECR API (ecr.api) for authentication and metadata and the Docker registry endpoint (ecr.dkr) for the image itself. Without internet access, the tasks need interface endpoints for both. ECR stores image layers in Amazon S3, so a gateway endpoint for S3 on the private route tables is also needed. If the tasks send logs to CloudWatch Logs, a logs interface endpoint is needed too. Not \"A gateway VPC endpoint for Amazon DynamoDB, where ECR stores image...\": ECR does not store manifests in DynamoDB, and no DynamoDB endpoint is needed to pull images. Not \"An interface VPC endpoint for AWS Systems Manager, which ECS uses to...\": Systems Manager endpoints are not used to pull container images. Not \"An interface VPC endpoint for Amazon EC2, which Fargate uses for...\": Fargate does not need an EC2 endpoint to pull images from ECR."
+  ref: "Question d5-54 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-55
+  kind: choice
+  en: "A company has an AWS Site-to-Site VPN connection that uses BGP, and both tunnels show UP. On-premises hosts cannot reach instances in the VPC's private subnets. The on-premises router receives the VPC CIDR block through BGP correctly. What should a CloudOps engineer check to resolve this issue?"
+  options:
+    - "Verify that an internet gateway is attached to the VPC."
+    - "Verify that the VPN connection uses static routing instead of BGP."
+    - "Verify that route propagation from the virtual private gateway is enabled in the subnets' route tables."
+    - "Verify that the customer gateway has an Elastic IP address that is attached to an Amazon EC2 instance in the VPC."
+  correct: [C]
+  why: "The tunnels are up and the on-premises side has the VPC routes, so the missing piece is the return path. Turning on route propagation for the virtual private gateway in the private subnets' route tables adds the on-premises prefixes learned through BGP. Security groups and network ACLs must also allow the traffic. Not \"Verify that the VPN connection uses static routing instead of BGP\": BGP is working, and switching to static routing would not add routes to the VPC route tables. Not \"Verify that the customer gateway has an Elastic IP address that is...\": The customer gateway is the on-premises device. It is not an Elastic IP address on an AWS instance. Not \"Verify that an internet gateway is attached to the VPC\": VPN traffic uses the virtual private gateway, not an internet gateway."
+  ref: "Question d5-55 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-56
+  kind: choice
+  en: "A company has VPC A and VPC B attached to a transit gateway. Both attachments are associated with the same transit gateway route table, which has propagated routes for both VPC CIDR blocks. Instances in VPC A still cannot reach VPC B. What is the MOST likely cause of this issue?"
+  options:
+    - "Transit gateways do not support traffic between two VPCs that are attached to the same route table."
+    - "VPC A's subnet route tables have no route that sends VPC B's CIDR block to the transit gateway."
+    - "The transit gateway needs an internet gateway attachment to route traffic between the two VPCs."
+    - "VPC A and VPC B must be peered with each other in addition to being attached to the transit gateway."
+  correct: [B]
+  why: "The transit gateway route table handles routing between attachments, but each VPC's own subnet route tables must also send traffic for the other VPC's CIDR block to the transit gateway. VPC B also needs a return route. Not \"Transit gateways do not support traffic between two VPCs that are...\": Attachments that share a route table with routes to each other can communicate. This is a common design. Not \"VPC A and VPC B must be peered with each other in addition to being...\": Peering is not needed when both VPCs route through the transit gateway. Not \"The transit gateway needs an internet gateway attachment to route...\": Transit gateways route between attachments directly. Internet gateways are attached to VPCs, not to transit gateways."
+  ref: "Question d5-56 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-57
+  kind: choice
+  en: "A company runs a TCP-based application on Amazon EC2 instances. A partner must allowlist the application's IP addresses in its firewall, so each Availability Zone needs a static IP address. The application must handle millions of requests each second. Which solution will meet these requirements?"
+  options:
+    - "Use an Application Load Balancer. Give the partner the IP addresses that its DNS name currently resolves to."
+    - "Use an Amazon Route 53 simple record. Point the record to the public IP address of each EC2 instance."
+    - "Use a Network Load Balancer. Associate an Elastic IP address with the load balancer in each Availability Zone."
+    - "Use an Amazon CloudFront distribution. Give the partner the published IP ranges for all CloudFront edge locations."
+  correct: [C]
+  why: "A Network Load Balancer works at the transport layer and handles millions of requests per second. An internet-facing Network Load Balancer can have one Elastic IP address for each Availability Zone, which gives the partner static addresses. Not \"Use an Application Load Balancer. Give the partner the IP addresses...\": The IP addresses of an Application Load Balancer can change over time, so they are not safe to allowlist. Not \"Use an Amazon CloudFront distribution. Give the partner the published...\": CloudFront IP ranges are shared, very large, and change over time, so this does not give the partner a small static list. Not \"Use an Amazon Route 53 simple record. Point the record to the public...\": This exposes each instance directly, gives no load balancing, and the addresses change when instances are replaced."
+  ref: "Question d5-57 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-58
+  kind: choice
+  en: "A global streaming company hosts its application on AWS. The company needs to know when internet problems, such as an ISP outage in a specific city, affect its users' latency and availability, and which users are affected. Which service should a CloudOps engineer use to meet these requirements?"
+  options:
+    - "Amazon CloudWatch Network Flow Monitor"
+    - "VPC Flow Logs"
+    - "AWS Health Dashboard"
+    - "Amazon CloudWatch Internet Monitor"
+  correct: [D]
+  why: "Internet Monitor uses AWS's view of global internet traffic to measure performance and availability between your application and its users, broken down by city, network (ASN), and Region. It creates health events when internet issues affect your users and can suggest changes, such as serving users from different Regions. Not \"Amazon CloudWatch Network Flow Monitor\": Network Flow Monitor measures traffic between workloads inside AWS, not the internet path to end users. Not \"AWS Health Dashboard\": The Health Dashboard reports events that affect AWS services and your resources, not problems with third-party ISPs. Not \"VPC Flow Logs\": Flow logs record traffic metadata for VPC network interfaces. They do not measure user experience across the internet."
+  ref: "Question d5-58 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-59
+  kind: choice
+  en: "A company connects its data center to a VPC by using an AWS Site-to-Site VPN connection over the internet. The company transfers large datasets every day and needs a dedicated private connection that does not use the internet. Which solution will meet these requirements?"
+  options:
+    - "Create an AWS Global Accelerator accelerator. Send the data center's traffic to the accelerator's static IP addresses."
+    - "Order an AWS Direct Connect connection. Create a private virtual interface to the VPC's virtual private gateway."
+    - "Add a second Site-to-Site VPN connection. Configure both connections to use the same customer gateway device."
+    - "Create an Amazon CloudFront distribution in front of the VPC. Send the data center's traffic to the distribution."
+  correct: [B]
+  why: "Direct Connect links the data center to an AWS Direct Connect location over a dedicated Ethernet fiber-optic connection, bypassing internet service providers. A private virtual interface gives access to the VPC. Not \"Add a second Site-to-Site VPN connection. Configure both connections...\": A second VPN connection adds resilience, but the traffic still travels over the internet. Not \"Create an AWS Global Accelerator accelerator. Send the data center's...\": Global Accelerator improves paths for internet users to AWS endpoints. The data center's traffic still starts on the internet. Not \"Create an Amazon CloudFront distribution in front of the VPC. Send...\": CloudFront delivers content to viewers. It is not a private connection from a data center to a VPC."
+  ref: "Question d5-59 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-60
+  kind: choice
+  en: "A company's remote employees connect to an AWS Client VPN endpoint successfully, but they cannot reach application servers in a private subnet of the associated VPC. The servers' security group allows traffic from the Client VPN endpoint's security group. What should a CloudOps engineer check FIRST?"
+  options:
+    - "Verify that the Client VPN endpoint uses split tunneling for all traffic to use the tunnel."
+    - "Verify that each employee's laptop has a public IP address that is registered in the VPC's route tables."
+    - "Verify that the private subnet has a NAT gateway for the VPN clients to reach the servers."
+    - "Verify that an authorization rule allows the users' group to access the private subnet's CIDR range."
+  correct: [D]
+  why: "Client VPN authorization rules control which networks connected users can reach. Without a rule that allows the users, or their Active Directory or SAML group, to reach the subnet's CIDR range, connections succeed but traffic to that network is dropped. The Client VPN route table also needs a route to the destination. Not \"Verify that each employee's laptop has a public IP address that is...\": Client VPN assigns client addresses from its own CIDR range. Employees' public IP addresses do not go into VPC route tables. Not \"Verify that the private subnet has a NAT gateway for the VPN clients...\": NAT gateways provide outbound internet access. VPN clients do not need them to reach private resources. Not \"Verify that the Client VPN endpoint uses split tunneling for all...\": Split tunneling sends only VPC-bound traffic through the VPN, which is the opposite of what this option says, and it does not grant access to subnets."
+  ref: "Question d5-60 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-61
+  kind: choice
+  en: "A company attached an AWS Lambda function to private subnets so that the function can reach an Amazon RDS database. Since then, the function times out when it calls a third-party payment API on the internet. What should a CloudOps engineer do to resolve this issue?"
+  options:
+    - "Add a NAT gateway path for the function's private subnets. Keep the function in the VPC."
+    - "Assign a public IP address to the function's network interfaces through the Lambda console."
+    - "Move the function into a public subnet to use the internet gateway route of the subnet."
+    - "Increase the function timeout to 15 minutes to give the payment API call time to complete."
+  correct: [A]
+  why: "Lambda functions that are attached to a VPC get only private IP addresses, so they need a NAT gateway (zonal or regional) to reach the internet. Routing the function's subnets through NAT keeps database access and restores internet access. Not \"Assign a public IP address to the function's network interfaces...\": Lambda does not support public IP addresses on the network interfaces that it creates. Not \"Move the function into a public subnet to use the internet gateway...\": Even in a public subnet, the function's network interfaces have no public IP addresses, so the internet gateway route does not help. Not \"Increase the function timeout to 15 minutes to give the payment API...\": The call fails because there is no network path, so a longer timeout only delays the failure."
+  ref: "Question d5-61 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-62
+  kind: choice
+  en: "A company uses a single AWS Direct Connect connection to reach its VPCs. During a recent fiber cut, all connectivity to AWS was lost for 6 hours. The company needs a low-cost backup path that takes over automatically. Which solution will meet these requirements?"
+  options:
+    - "Configure Direct Connect SiteLink."
+    - "Order a second Direct Connect connection in the same location on the same router at the same speed."
+    - "Add an AWS Site-to-Site VPN to the same virtual private gateway or transit gateway. Use BGP for failover."
+    - "Ask the on-premises team to route traffic through the public internet to the instances' public IPs."
+  correct: [C]
+  why: "A Site-to-Site VPN over the internet is a low-cost backup for Direct Connect. When both use BGP with the same gateway, AWS prefers the Direct Connect path while it is up and fails over to the VPN automatically when the Direct Connect BGP session goes down. Not \"Order a second Direct Connect connection in the same location on the...\": A second connection on the same router and in the same location shares the same failure points, and it costs more than a VPN. Not \"Configure Direct Connect SiteLink\": SiteLink connects on-premises sites to each other through Direct Connect locations. It does not back up a single failed connection. Not \"Ask the on-premises team to route traffic through the public internet...\": Routing to public IP addresses over the internet exposes resources and is not an automatic, private failover."
+  ref: "Question d5-62 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-63
+  kind: choice
+  en: "A CloudOps engineer tries to create a VPC peering connection between VPC A (10.0.0.0/16) and VPC B (10.0.128.0/17). The request fails. Why does the request fail?"
+  options:
+    - "VPC peering requires that both VPCs use exactly the same CIDR block size, such as /16."
+    - "The two VPCs must be in different AWS Regions before any peering connection between them can be created."
+    - "VPC peering is allowed only between VPCs that are in two different AWS accounts."
+    - "The CIDR blocks of the two VPCs overlap, and peering does not allow overlapping CIDR blocks."
+  correct: [D]
+  why: "10.0.128.0/17 falls inside 10.0.0.0/16, so the ranges overlap. A VPC peering connection cannot be created between VPCs with overlapping IPv4 CIDR blocks. Re-addressing one VPC, or using PrivateLink for specific services, solves this. Not \"The two VPCs must be in different AWS Regions before any peering...\": Peering works both within a Region and across Regions. Not \"VPC peering requires that both VPCs use exactly the same CIDR block...\": Peered VPCs can use different CIDR block sizes as long as the ranges do not overlap. Not \"VPC peering is allowed only between VPCs that are in two different...\": Peering works between VPCs in the same account or in different accounts."
+  ref: "Question d5-63 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-64
+  kind: choice
+  en: "A company has an Amazon ECS service on AWS Fargate. Tasks stop shortly after they start, and the reason is not visible. The task definition does not configure any logging. What should a CloudOps engineer do to see the container's output?"
+  options:
+    - "Connect to the Fargate host with SSH, and read the Docker logs in the host's /var/log directory."
+    - "Configure VPC Flow Logs for the task's network interface to see the output that the container wrote."
+    - "Add the awslogs log driver to the task definition."
+    - "Enable AWS CloudTrail data events for ECS."
+  correct: [C]
+  why: "The awslogs log driver, or FireLens for routing to other destinations, sends the container's stdout and stderr to CloudWatch Logs. The task's stopped reason and the container exit code in the ECS console also help explain why tasks stop. The task execution role needs permission to write the logs. Not \"Connect to the Fargate host with SSH, and read the Docker logs in the...\": Fargate hosts are managed by AWS, so there is no SSH access to them. Not \"Configure VPC Flow Logs for the task's network interface to see the...\": Flow logs record network traffic metadata, not application output. Not \"Enable AWS CloudTrail data events for ECS\": CloudTrail records ECS API calls, not container output."
+  ref: "Question d5-64 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d5-65
+  kind: choice
+  en: "A company's application on Amazon EC2 instances intermittently fails to receive connections. A CloudOps engineer must determine whether security groups or network ACLs are rejecting traffic to the instances' network interfaces. The CloudOps engineer must be able to query the results. Which solution will meet these requirements?"
+  options:
+    - "Enable access logs on the security groups and network ACLs. Query the access logs by using Amazon CloudWatch Logs Insights."
+    - "Create a VPC flow log with the REJECT filter that publishes to Amazon CloudWatch Logs. Query the logs by using CloudWatch Logs Insights."
+    - "Create an AWS CloudTrail trail with data events for the VPC that publishes to Amazon S3. Query the events by using Amazon Athena."
+    - "Enable detailed monitoring on the instances. Create an Amazon CloudWatch dashboard that shows the NetworkPacketsIn metric."
+  correct: [B]
+  why: "VPC Flow Logs capture information about the IP traffic to and from network interfaces, including whether security groups and network ACLs accepted or rejected the traffic. Publishing to CloudWatch Logs lets the engineer query the records with Logs Insights. Not \"Create an AWS CloudTrail trail with data events for the VPC that...\": CloudTrail records API calls, not network traffic. Rejected packets do not appear in a trail. Not \"Enable detailed monitoring on the instances. Create an Amazon...\": NetworkPacketsIn counts packets that the instance received. It does not show packets that were rejected before reaching the instance. Not \"Enable access logs on the security groups and network ACLs. Query the...\": Security groups and network ACLs do not have their own access logs. VPC Flow Logs provide this information."
+  ref: "Question d5-65 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]

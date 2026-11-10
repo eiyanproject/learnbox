@@ -232,17 +232,28 @@ in 180 minutes with a pass at 750 for the professionals:
 | Exam | Questions | Domains (questions in the bank) |
 |---|---|---|
 | Solutions Architect - Associate (SAA-C03) | 100 | secure 30, resilient 26, high-performing 24, cost-optimized 20 |
-| Developer - Associate (DVA-C02) | 76 | development 25, security 19, deployment 18, troubleshooting 14 |
-| CloudOps Engineer - Associate (SOA-C03) | 73 | monitoring 16, reliability 16, automation 16, security 12, networking 13 |
-| Solutions Architect - Professional (SAP-C02) | 81 | organizational complexity 21, new solutions 24, continuous improvement 20, migration 16 |
-| DevOps Engineer - Professional (DOP-C02) | 81 | SDLC automation 18, IaC 14, resilience 12, monitoring 12, incident response 11, security 14 |
+| Developer - Associate (DVA-C02) | 84 | development 27, security 21, deployment 20, troubleshooting 16 |
+| CloudOps Engineer - Associate (SOA-C03) | 398 | monitoring 81, reliability 81, automation 81, security 77, networking 78 |
+| Solutions Architect - Professional (SAP-C02) | 97 | organizational complexity 25, new solutions 29, continuous improvement 24, migration 19 |
+| DevOps Engineer - Professional (DOP-C02) | 98 | SDLC automation 22, IaC 17, resilience 14, monitoring 15, incident response 13, security 17 |
 
-SAA-C03 also has an **open practice bank**: 325 questions from
-[aws-saa-tips](https://github.com/BerkayCakibey/aws-saa-tips) by Berkay
-Cakibey (MIT licence, credited on the topic page and in every question's
-reference), with its own 65-question mock exam drawn at random. Question
-banks found on GitHub for the other exams were copies of real exam questions
-(exam dumps) or had no licence, so they are not included.
+Besides questions written for learnbox, the banks include openly licensed
+(MIT) questions whose authors wrote them as original practice material, each
+credited on its topic page and in its reference, with the licences in
+[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md):
+
+- SAA-C03: an **open practice bank** of 325 questions from
+  [aws-saa-tips](https://github.com/BerkayCakibey/aws-saa-tips) (Berkay
+  Cakibey), as its own topic with its own 65-question mock exam.
+- SOA-C03: 325 questions from
+  [aws-cloudops-engineer-associate](https://github.com/zghanw/aws-cloudops-engineer-associate)
+  (zghanw), 65 per domain, merged into the domains and the mock exam.
+- DVA-C02, SAP-C02, DOP-C02: 8, 16 and 17 questions from
+  [aws-trainer](https://github.com/renehmj/aws-trainer) (Reneh Majnounian),
+  merged into the domains and the mock exams.
+
+Other banks found on GitHub were copies of real exam questions (exam dumps)
+or had no licence, so they are not included.
 
 In the terminal, `aws ...` starts a private emulator on 127.0.0.1 the first
 time and keeps it until `awslab stop`; `awslab reset` empties it, `awslab run

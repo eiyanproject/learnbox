@@ -323,3 +323,29 @@
   why: "Lambda's /tmp is 512 MB by default and can be configured up to 10 GB of ephemeral storage. Alternatives include streaming the file or mounting EFS."
   ref: "AWS Lambda Developer Guide: Configure ephemeral storage for Lambda functions"
   exams: [dva]
+
+- id: rm-dva-dev-001
+  kind: choice
+  en: "A developer stores orders in a DynamoDB table with partition key customerId and sort key orderDate. The 'recent orders' endpoint currently calls Scan with a filter expression on customerId and has become slow and expensive as the table grew to 40 million items. What is the correct fix?"
+  options:
+    - "Add a filter expression on orderDate in addition to customerId so fewer items are returned."
+    - "Call Query with a key condition expression on customerId and a sort key condition on orderDate."
+    - "Enable DynamoDB Streams and rebuild the endpoint to read from the stream."
+    - "Keep Scan but increase the table's provisioned read capacity and enable parallel scan segments."
+  correct: [B]
+  why: "Query reads only the items under a given partition key, so cost and latency scale with the items returned rather than with table size. Because customerId is the partition key and orderDate is the sort key, the access pattern is exactly what the table was designed for. Not \"Keep Scan but increase the table's provisioned read capacity and...\": Scan reads every item in the table before filtering. Parallel segments and more capacity make an inherently full-table read faster and more expensive, not correct. Not \"Add a filter expression on orderDate in addition to customerId so...\": Filter expressions are applied after items are read, so consumed capacity is unchanged. Filters never reduce the cost of a Scan. Not \"Enable DynamoDB Streams and rebuild the endpoint to read from the...\": Streams deliver a time-ordered change log for reacting to writes; they are not a mechanism for querying current data by key."
+  ref: "Question dev-001 (DynamoDB query vs scan) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dva]
+
+- id: rm-dva-dev-002
+  kind: choice
+  en: "Two instances of an application occasionally update the same DynamoDB inventory item at the same time, and one update silently overwrites the other. The developer must ensure a write only succeeds if the item has not changed since it was read, without introducing another service. What should they implement?"
+  options:
+    - "A global secondary index on the version attribute, queried before each write."
+    - "A version attribute on the item plus a ConditionExpression asserting the stored version still matches the one that was read."
+    - "Provisioned capacity increases so both writes have enough throughput to complete."
+    - "A DynamoDB transaction wrapping the single PutItem call."
+  correct: [B]
+  why: "This is optimistic locking. The item carries a version attribute, and every update sends a ConditionExpression requiring the stored version to equal the value the caller read. If another writer got there first the condition fails and the write is rejected, so the caller can re-read and retry instead of silently clobbering. Not \"A DynamoDB transaction wrapping the single PutItem call\": Transactions give all-or-nothing semantics across multiple items. A transaction around one write still overwrites whatever is there unless a condition is attached. Not \"Provisioned capacity increases so both writes have enough throughput...\": Throughput is not the problem — both writes succeed today. The problem is that the second one overwrites the first. Not \"A global secondary index on the version attribute, queried before...\": Reading the version through an index before writing leaves a race between the read and the write; only a condition evaluated atomically at write time closes it."
+  ref: "Question dev-002 (DynamoDB conditional writes) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dva]

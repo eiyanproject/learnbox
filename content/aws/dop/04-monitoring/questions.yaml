@@ -154,3 +154,42 @@
   why: "Defining dashboards (AWS::CloudWatch::Dashboard) and alarms in IaC creates them with the service and keeps them versioned and consistent."
   ref: "AWS CloudFormation User Guide: AWS::CloudWatch::Dashboard"
   exams: [dop]
+
+- id: rm-dop-mon-001
+  kind: choice
+  en: "Application logs from 40 accounts must land in a central account for search and long-term retention, in near real time, without engineers deploying custom forwarders in each account. Which architecture fits?"
+  options:
+    - "A scheduled Lambda function in the central account calling GetLogEvents across all accounts."
+    - "Installing a third-party log shipper on every instance, pointing at a central collector."
+    - "Exporting log groups to S3 with a daily create-export-task in each account."
+    - "CloudWatch Logs subscription filters in each account sending to a Kinesis Data Firehose destination in the central account, delivering to S3 and OpenSearch."
+  correct: [D]
+  why: "Subscription filters stream log events out of CloudWatch Logs as they arrive, and a cross-account destination backed by Firehose handles buffering, transformation and delivery to S3 for retention and OpenSearch for search. It is near real time and uses managed components rather than per-account custom code. Not \"A scheduled Lambda function in the central account calling...\": Polling GetLogEvents across 40 accounts is slow, rate limited, and turns into a substantial piece of code to maintain. Not \"Exporting log groups to S3 with a daily create-export-task in each...\": Export tasks are batch operations suited to archival, delivering data hours late rather than in near real time. Not \"Installing a third-party log shipper on every instance, pointing at a...\": Agents on instances miss logs from managed services such as Lambda and RDS, and add fleet-wide software to maintain."
+  ref: "Question mon-001 (Centralized logging architecture) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dop]
+
+- id: rm-dop-mon-002
+  kind: choice
+  en: "On-call engineers are being paged whenever CPU is briefly high on any single instance, which is almost always harmless. They only want to be paged when high CPU coincides with elevated ALB target response time. What should be configured?"
+  options:
+    - "A longer evaluation period on the CPU alarm."
+    - "A dashboard combining both metrics for the on-call engineer to check."
+    - "A composite alarm that fires only when both the CPU alarm and the latency alarm are in ALARM state."
+    - "A higher CPU threshold on the existing alarm."
+  correct: [C]
+  why: "Composite alarms combine other alarms with a rule expression, so a page fires only when the combination indicates real customer impact. That is precisely the requirement — CPU alone is noise, CPU plus latency is a signal — and it reduces alert fatigue without losing coverage. Not \"A higher CPU threshold on the existing alarm\": A higher threshold still pages on a single metric and risks missing genuine incidents that occur below the new threshold. Not \"A longer evaluation period on the CPU alarm\": A longer period delays the page but does not correlate the two signals, so harmless sustained CPU still pages. Not \"A dashboard combining both metrics for the on-call engineer to check\": A dashboard is not alerting; someone has to be looking at it."
+  ref: "Question mon-002 (CloudWatch metrics, alarms and dashboards) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dop]
+
+- id: rm-dop-mon-003
+  kind: choice
+  en: "During incidents, engineers need to run ad-hoc aggregations over the last few days of CloudWatch Logs — counting errors by request path and computing percentiles — without building a separate analytics stack. What is the most direct capability?"
+  options:
+    - "Streaming logs to Amazon OpenSearch Service and building dashboards."
+    - "Exporting logs to S3 and querying with Athena."
+    - "CloudWatch Logs Insights queries against the relevant log groups."
+    - "Downloading log files locally and processing them with a script."
+  correct: [C]
+  why: "Logs Insights runs a purpose-built query language directly over CloudWatch Logs with no data movement and no infrastructure, and supports aggregation functions including counts, statistics and percentiles. For ad-hoc incident investigation over recent data, it is the shortest path. Not \"Exporting logs to S3 and querying with Athena\": Athena over exported logs is powerful for large historical analysis, but the export and partitioning step makes it too slow during an incident. Not \"Streaming logs to Amazon OpenSearch Service and building dashboards\": OpenSearch is the right answer when you need rich dashboards and long retention, but standing it up is the separate analytics stack the requirement excludes. Not \"Downloading log files locally and processing them with a script\": Manual downloading does not scale and loses the audit trail of what was investigated."
+  ref: "Question mon-003 (Log analysis with Logs Insights and OpenSearch) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dop]

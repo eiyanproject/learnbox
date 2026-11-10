@@ -310,3 +310,68 @@
   why: "A queue absorbs bursts and lets consumers process at the rate the database sustains (load leveling); a DLQ isolates poison messages."
   ref: "AWS Prescriptive Guidance: Queue-based load leveling"
   exams: [sap]
+
+- id: rm-sap-new-001
+  kind: choice
+  en: "A payments platform must survive the loss of an entire Region with an RTO of 5 minutes and an RPO of near zero. The business will fund duplicate infrastructure but wants both Regions doing useful work rather than one sitting idle. Which architecture matches?"
+  options:
+    - "Warm standby, with a scaled-down copy of the stack in the second Region scaled up on failover."
+    - "Active/active in two Regions with Route 53 or Global Accelerator distributing traffic, and a data tier replicating synchronously or near-synchronously across both."
+    - "Backup and restore, with hourly snapshots copied cross-Region."
+    - "Pilot light, with data replicated continuously and application servers switched off until needed."
+  correct: [B]
+  why: "Only active/active serves traffic from both Regions, which is the stated requirement that neither sits idle, and it is the strategy that supports an RTO measured in minutes with near-zero RPO because the second Region is already live and current. Not \"Warm standby, with a scaled-down copy of the stack in the second...\": Warm standby can approach a 5-minute RTO but the standby is deliberately under-utilised, failing the requirement that both Regions do useful work. Not \"Pilot light, with data replicated continuously and application...\": Pilot light leaves compute switched off, so recovery involves provisioning and starting the stack — too slow for a 5-minute RTO. Not \"Backup and restore, with hourly snapshots copied cross-Region\": Hourly snapshots give an RPO of up to an hour and a restore-driven RTO of far more than 5 minutes."
+  ref: "Question new-001 (Business continuity and RTO/RPO design) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [sap]
+
+- id: rm-sap-new-002
+  kind: choice
+  en: "A relational workload needs cross-Region disaster recovery with an RPO of about one second and an RTO under one minute, with replication managed by AWS rather than by the application. Which data tier should the architect choose?"
+  options:
+    - "Amazon DynamoDB global tables."
+    - "Amazon Aurora Global Database, with a secondary Region that can be promoted quickly."
+    - "Amazon RDS Multi-AZ with automated backups copied to a second Region."
+    - "Amazon RDS for PostgreSQL with a cross-Region read replica promoted manually on failure."
+  correct: [B]
+  why: "Aurora Global Database replicates at the storage layer with typical cross-Region lag under a second and supports promoting a secondary Region in well under a minute, with AWS managing the replication. That combination is what the stated RPO and RTO require from a relational engine. Not \"Amazon RDS for PostgreSQL with a cross-Region read replica promoted...\": Cross-Region read replicas use asynchronous logical replication with higher and more variable lag, and manual promotion typically takes several minutes. Not \"Amazon DynamoDB global tables\": DynamoDB global tables meet the replication targets but are non-relational, so they do not satisfy a relational workload. Not \"Amazon RDS Multi-AZ with automated backups copied to a second Region\": Multi-AZ protects against Availability Zone loss only, and restoring cross-Region backups is measured in hours."
+  ref: "Question new-002 (Multi-Region resilience patterns) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [sap]
+
+- id: rm-sap-new-003
+  kind: choice
+  en: "An industrial platform ingests 2 million sensor readings per minute. Queries are almost always \"the values for this sensor over this time window\", data older than two years can be dropped automatically, and the team wants to avoid managing shards or capacity. Which store fits best?"
+  options:
+    - "Amazon Aurora PostgreSQL with a partitioned readings table."
+    - "Amazon Redshift with hourly loads from S3."
+    - "Amazon DynamoDB with the sensor id as partition key and timestamp as sort key."
+    - "Amazon Timestream, a purpose-built time-series database with configurable memory and magnetic retention."
+  correct: [D]
+  why: "The access pattern, the ingest rate and the automatic ageing-out of old data are the defining characteristics of a time-series workload. Timestream handles the ingest, stores recent data in a memory tier and older data in a magnetic tier, and expires data by policy without the team managing capacity. Not \"Amazon DynamoDB with the sensor id as partition key and timestamp as...\": DynamoDB can model this and would work, but capacity management, hot partitions on busy sensors, and hand-rolled TTL and roll-ups make it more operational effort for the same access pattern. Not \"Amazon Aurora PostgreSQL with a partitioned readings table\": A relational engine at 2 million writes per minute requires substantial partition maintenance and vertical scaling, and is not designed for this ingest profile. Not \"Amazon Redshift with hourly loads from S3\": Redshift is an analytics warehouse loaded in batches; it is not an ingestion target for real-time sensor writes."
+  ref: "Question new-003 (Data store selection at scale) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [sap]
+
+- id: rm-sap-new-004
+  kind: choice
+  en: "A retailer needs one ordered stream of clickstream events consumed independently by a fraud service, a personalisation service and an analytics pipeline. Consumers must be able to replay the last seven days after a logic change, and each must read at its own pace without affecting the others. Which service should carry the stream?"
+  options:
+    - "Amazon SQS FIFO with three consumer groups."
+    - "Amazon SNS fanning out to three SQS queues."
+    - "Amazon EventBridge with three rules, one per consumer."
+    - "Amazon Kinesis Data Streams, with each consumer using enhanced fan-out and its own iterator position."
+  correct: [D]
+  why: "Kinesis retains records for a configurable window, so any consumer can rewind and replay. Each consumer tracks its own position independently, and enhanced fan-out gives each a dedicated read throughput so a slow consumer cannot starve the others. Ordering is preserved per shard. Not \"Amazon EventBridge with three rules, one per consumer\": EventBridge delivers events as they occur and does not retain a replayable log of the last seven days for arbitrary re-processing by consumers. Not \"Amazon SNS fanning out to three SQS queues\": SNS to SQS gives independent consumption but no replay — once a message is consumed and deleted it is gone, and ordering is not preserved on standard queues. Not \"Amazon SQS FIFO with three consumer groups\": SQS has no notion of consumer groups reading the same messages independently; a message consumed by one consumer is not available to the others."
+  ref: "Question new-004 (Event-driven and streaming architectures) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [sap]
+
+- id: rm-sap-new-005
+  kind: choice
+  en: "An application replicates encrypted objects between two Regions and must be able to decrypt them in either Region without a call back to the origin Region, while keeping a single logical key whose material the security team controls. What should the architect use?"
+  options:
+    - "A multi-Region KMS key, with a replica key created in the second Region sharing the same key material and key id."
+    - "A CloudHSM cluster in the origin Region, accessed cross-Region over a VPC peering connection."
+    - "Independent single-Region KMS keys in each Region, re-encrypting objects during replication."
+    - "An AWS managed key in each Region, relying on S3 replication to handle re-encryption."
+  correct: [A]
+  why: "Multi-Region keys exist as a primary and replicas that share key material and key id, so ciphertext produced in one Region can be decrypted by the replica in another with no cross-Region call. That is precisely the interoperability this design needs, while the customer still controls the key. Not \"Independent single-Region KMS keys in each Region, re-encrypting...\": This works and is a valid pattern, but it forces a re-encrypt step in the replication path and means two distinct keys to manage rather than one logical key. Not \"An AWS managed key in each Region, relying on S3 replication to...\": AWS managed keys cannot be replicated or controlled by the security team, and each Region's key is distinct. Not \"A CloudHSM cluster in the origin Region, accessed cross-Region over a...\": Reaching a single HSM cluster cross-Region reintroduces exactly the dependency on the origin Region the requirement removes, and adds latency and a failure mode."
+  ref: "Question new-005 (Encryption and key management design) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [sap]

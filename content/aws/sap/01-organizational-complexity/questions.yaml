@@ -272,3 +272,55 @@
   why: "In consolidated billing, Savings Plans and RI discounts apply across accounts only where discount sharing is enabled. Compute Savings Plans are Region- and family-independent."
   ref: "AWS Billing User Guide: Turning off reserved instances and Savings Plans discount sharing"
   exams: [sap]
+
+- id: rm-sap-org-001
+  kind: choice
+  en: "A group with 12 existing AWS accounts is expanding to roughly 80 over two years. They need a governed landing zone with mandatory guardrails, centralised logging, and a self-service way for business units to request new accounts that are compliant from the moment they are created. The platform team is four people. Which approach fits?"
+  options:
+    - "Write a CloudFormation StackSet that applies baseline resources, and have the platform team create each account manually through Organizations."
+    - "Use AWS Organizations with SCPs only, and let each business unit configure its own logging and baselines."
+    - "Deploy AWS Control Tower, enrol the existing accounts, and use Account Factory for new account provisioning."
+    - "Create a single large account with one VPC per business unit, separated by IAM policies and tagging."
+  correct: [C]
+  why: "Control Tower is the managed landing zone: it sets up the organizational units, the log archive and audit accounts, and preventive and detective guardrails, and Account Factory gives business units a self-service path that produces a compliant account every time. That is what lets four people govern 80 accounts. Not \"Write a CloudFormation StackSet that applies baseline resources, and...\": StackSets can apply a baseline but the team still hand-builds the landing zone, the guardrail framework and the account request process — a large amount of undifferentiated work Control Tower already does. Not \"Create a single large account with one VPC per business unit...\": A single account gives no blast-radius separation, no per-unit billing boundary, and no service quota isolation; it is the opposite of a multi-account strategy. Not \"Use AWS Organizations with SCPs only, and let each business unit...\": SCPs restrict permissions but do not provision accounts, centralise logging, or provide detective controls, and delegating baselines to each unit guarantees drift."
+  ref: "Question org-001 (Multi-account strategy with Control Tower) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [sap]
+
+- id: rm-sap-org-002
+  kind: choice
+  en: "An organization runs 40 VPCs across four accounts in one Region, plus two Direct Connect links to on-premises. Traffic between any VPC and on-premises must pass through a central inspection firewall, and VPC-to-VPC traffic must be blocked by default except for specific approved pairs. Which design meets this?"
+  options:
+    - "Full-mesh VPC peering between all 40 VPCs, with routes to the firewall VPC added to every route table."
+    - "A Transit Gateway with a single default route table shared by all attachments and a security group referencing the firewall."
+    - "A Transit Gateway with separate route tables per segment, an inspection VPC hosting the firewall via Gateway Load Balancer, and Direct Connect attached through a Transit VIF."
+    - "AWS PrivateLink endpoints between every pair of VPCs, with Direct Connect terminating in each VPC."
+  correct: [C]
+  why: "Transit Gateway route tables are the segmentation mechanism: attachments associated with different route tables cannot reach each other unless routes are explicitly propagated, which gives deny-by-default with approved exceptions. Sending inter-domain traffic through an inspection VPC running the firewall behind a Gateway Load Balancer inserts the appliance centrally, and a Transit VIF connects Direct Connect to the same hub. Not \"Full-mesh VPC peering between all 40 VPCs, with routes to the...\": Full-mesh peering across 40 VPCs means 780 connections to build and maintain, peering is non-transitive so it cannot chain through a firewall, and route table sprawl makes the policy unauditable. Not \"A Transit Gateway with a single default route table shared by all...\": A single shared route table means every attachment can reach every other — precisely the default-open behaviour the requirement forbids — and security groups do not apply to Transit Gateway attachments. Not \"AWS PrivateLink endpoints between every pair of VPCs, with Direct...\": PrivateLink exposes individual services, not general VPC-to-VPC routing, and Direct Connect cannot terminate in every VPC at this scale without a gateway."
+  ref: "Question org-002 (Network topology with Transit Gateway) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [sap]
+
+- id: rm-sap-org-003
+  kind: choice
+  en: "A company federates workforce identities into AWS through IAM Identity Center. Auditors now require that a specific set of production accounts can only be accessed by engineers who are members of an on-call group, that access is time-bounded, and that every session is attributable to a named person. What should the architect implement?"
+  options:
+    - "Use an EC2 bastion host in each production account with SSH keys distributed to on-call staff."
+    - "Grant every engineer a permanent administrator permission set and audit their activity monthly."
+    - "Create a shared IAM user in each production account whose password is held in a password manager available to the on-call engineers."
+    - "Assign a permission set to the on-call group for those accounts only, and rely on Identity Center's short-lived sessions with CloudTrail recording the federated identity."
+  correct: [D]
+  why: "Permission sets are assigned to groups and scoped to specific accounts, so membership of the on-call group is what grants access. Identity Center issues short-lived credentials rather than long-lived keys, and CloudTrail records the federated user identity, satisfying time-bounding and attribution together. Not \"Create a shared IAM user in each production account whose password is...\": A shared credential destroys attribution — CloudTrail would show the same principal for everyone — and creates a long-lived secret. Not \"Grant every engineer a permanent administrator permission set and...\": Standing administrator access to production for all engineers fails the least-privilege requirement, and monthly review is detection long after the fact. Not \"Use an EC2 bastion host in each production account with SSH keys...\": Bastion hosts with distributed SSH keys give infrastructure access outside IAM, with keys that are hard to attribute and revoke."
+  ref: "Question org-003 (Centralized identity and federation) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [sap]
+
+- id: rm-sap-org-004
+  kind: choice
+  en: "A platform team owns the network account containing a VPC with well-designed subnets. Application teams in separate accounts must deploy EC2 instances and load balancers into those subnets without the platform team giving up control of routing, NAT gateways or the VPC itself. What should be used?"
+  options:
+    - "VPC peering between the network account VPC and a new VPC in each application account."
+    - "Cross-account IAM roles that let application teams create resources in the network account."
+    - "AWS Resource Access Manager to share the specific subnets with the application accounts, using VPC sharing."
+    - "A Transit Gateway attachment from each application account's own VPC."
+  correct: [C]
+  why: "VPC sharing through RAM lets the owning account share individual subnets with participant accounts. Participants launch resources into those subnets in their own accounts, while the owner retains sole control of the VPC, its route tables, gateways and peering — exactly the split described. Not \"VPC peering between the network account VPC and a new VPC in each...\": Peering connects separate VPCs; each application team would still own and operate its own VPC, duplicating the NAT and routing design the platform team wants to centralise. Not \"Cross-account IAM roles that let application teams create resources...\": This puts application resources in the network account, mixing ownership, billing and blast radius, and gives application teams rights inside the platform account. Not \"A Transit Gateway attachment from each application account's own VPC\": Transit Gateway routes between VPCs but again assumes each team runs its own VPC, rather than deploying into shared subnets."
+  ref: "Question org-004 (Cross-account resource sharing with RAM) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [sap]

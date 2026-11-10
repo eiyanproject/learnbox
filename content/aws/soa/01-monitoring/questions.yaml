@@ -206,3 +206,851 @@
   why: "Multipart upload sends parts in parallel and retries parts independently; Transfer Acceleration routes traffic through the nearest edge location over the AWS backbone."
   ref: "Amazon S3 User Guide: Configuring fast, secure file transfers using Amazon S3 Transfer Acceleration"
   exams: [soa]
+
+- id: zg-soa-d1-01
+  kind: choice
+  en: "A company runs a Java application on a fleet of Amazon EC2 Linux instances. The company needs an alarm when memory utilization on any instance exceeds 85%. A CloudOps engineer cannot find a memory metric in the AWS/EC2 namespace. What should the CloudOps engineer do to meet this requirement?"
+  options:
+    - "Create an Amazon CloudWatch metric math expression that derives memory usage from the CPUUtilization metric."
+    - "Install the Amazon CloudWatch agent on the instances. Configure it to collect the mem_used_percent metric."
+    - "Enable EC2 Instance Connect to allow Amazon CloudWatch to read memory statistics from each instance."
+    - "Enable detailed monitoring on each instance to publish memory metrics at 1-minute intervals."
+  correct: [B]
+  why: "Amazon EC2 cannot see inside the guest operating system, so memory is not a default EC2 metric. The CloudWatch agent runs on the instance and publishes OS-level metrics such as mem_used_percent to the CWAgent namespace, where you can alarm on them. Not \"Enable detailed monitoring on each instance to publish memory metrics...\": Detailed monitoring only increases the frequency of the default hypervisor-level metrics to 1 minute. It does not add memory metrics, because the hypervisor cannot see guest memory usage. Not \"Enable EC2 Instance Connect to allow Amazon CloudWatch to read memory...\": EC2 Instance Connect provides SSH access to an instance. It does not publish any metrics to CloudWatch. Not \"Create an Amazon CloudWatch metric math expression that derives...\": CPU utilization and memory utilization are independent. Metric math can only combine metrics that already exist, so it cannot derive memory usage from CPU data."
+  ref: "Question d1-01 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-02
+  kind: choice
+  en: "A company has 400 Amazon EC2 instances that are managed by AWS Systems Manager. A CloudOps engineer must install the Amazon CloudWatch agent on every instance and must ensure that all instances use the same agent configuration. The configuration will change several times each year. Which solution will meet these requirements in the MOST operationally efficient way?"
+  options:
+    - "Bake the agent and its configuration file into a new AMI, and replace all instances each time the configuration changes."
+    - "Store the agent configuration in Parameter Store. Use Systems Manager to install the agent and apply that configuration."
+    - "Add commands that install and configure the agent to the user data script in the launch template for each instance."
+    - "Connect to each instance with Session Manager, run the agent configuration wizard, and save the file locally."
+  correct: [B]
+  why: "Systems Manager can install the agent on all managed instances with the AWS-ConfigureAWSPackage document and apply a configuration stored in Parameter Store with the AmazonCloudWatch-ManageAgent document. A configuration change becomes one parameter update and one command or State Manager association, with no per-instance work. Not \"Bake the agent and its configuration file into a new AMI, and replace...\": A new AMI works for new instances, but replacing 400 instances several times a year just to change a configuration adds a lot of effort and risk. Not \"Connect to each instance with Session Manager, run the agent...\": Configuring 400 instances one at a time is slow and error prone, and the local files would drift apart over time. Not \"Add commands that install and configure the agent to the user data...\": User data runs only when an instance first launches. It would not configure the instances that are already running, and every configuration change would require relaunching instances."
+  ref: "Question d1-02 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-03
+  kind: choice
+  en: "A CloudOps engineer installs and starts the Amazon CloudWatch agent on an Amazon EC2 instance in a private subnet. The subnet routes internet traffic through a NAT gateway. The agent log shows AccessDenied errors when the agent calls the PutMetricData API. No custom metrics appear in CloudWatch. What should the CloudOps engineer do to resolve this issue?"
+  options:
+    - "Attach the CloudWatchAgentServerPolicy managed policy to the IAM role in the instance profile."
+    - "Restart the agent with the fetch-config action to reload its JSON configuration file."
+    - "Enable detailed monitoring on the instance to allow CloudWatch to accept metrics at 1-minute intervals."
+    - "Create an interface VPC endpoint for CloudWatch in the subnet to allow the agent to reach the service."
+  correct: [A]
+  why: "An AccessDenied error means the request reached CloudWatch but the caller lacked permission. The agent uses the credentials from the instance profile, so the role needs the permissions in CloudWatchAgentServerPolicy, such as cloudwatch:PutMetricData and the CloudWatch Logs write actions. Not \"Create an interface VPC endpoint for CloudWatch in the subnet to...\": A VPC endpoint fixes network reachability. The NAT gateway already provides a path, and the error is a permissions error, not a timeout. Not \"Restart the agent with the fetch-config action to reload its JSON...\": Reloading the configuration does not change the permissions of the agent's credentials. The calls would still be denied. Not \"Enable detailed monitoring on the instance to allow CloudWatch to...\": Detailed monitoring applies only to the default EC2 metrics. It has no effect on custom metrics or on IAM permissions."
+  ref: "Question d1-03 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-04
+  kind: choice
+  en: "A company runs a critical background process named order-sync on Amazon EC2 Linux instances. The process sometimes stops without writing any error to the application logs. The company needs an alarm within 1 minute of the process stopping on any instance. Which solution will meet this requirement?"
+  options:
+    - "Use the Amazon CloudWatch agent procstat plugin to publish the order-sync process count, and alarm when the count is below 1."
+    - "Create a metric filter on the application log group that counts events containing the text order-sync, and alarm on it."
+    - "Enable detailed monitoring and alarm when the CPUUtilization metric for any of the instances drops below 5 percent."
+    - "Create an Amazon CloudWatch alarm on the StatusCheckFailed_Instance metric for each instance that runs order-sync."
+  correct: [A]
+  why: "The procstat plugin monitors individual processes by name or pattern and publishes metrics such as procstat_lookup_pid_count. An alarm on a count below 1 fires when the process is no longer running, even when the process writes nothing to its logs. Not \"Create an Amazon CloudWatch alarm on the StatusCheckFailed_Instance...\": The instance status check detects operating system problems such as exhausted memory or a corrupted file system. A single process can stop while the instance stays healthy. Not \"Create a metric filter on the application log group that counts...\": A filter that counts log lines cannot show that a process is gone, because the process stops without logging anything. Not \"Enable detailed monitoring and alarm when the CPUUtilization metric...\": Low CPU can have many causes, and other processes keep using CPU after order-sync stops. This alarm would be unreliable in both directions."
+  ref: "Question d1-04 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-05
+  kind: choice
+  en: "A company runs workloads on an Amazon EKS cluster. The company's operations team needs pod-level and container-level CPU and memory metrics, and container logs, in Amazon CloudWatch. Which solution will meet these requirements with the LEAST operational overhead?"
+  options:
+    - "Configure detailed monitoring on the worker node instances, and build one CloudWatch dashboard for each namespace."
+    - "Install the Amazon CloudWatch Observability EKS add-on to enable Container Insights with enhanced observability."
+    - "Enable control plane logging on the EKS cluster. Send the API server and audit logs to CloudWatch Logs."
+    - "Deploy and maintain a self-managed Prometheus server in the cluster. Configure it to remote write metrics to CloudWatch."
+  correct: [B]
+  why: "The CloudWatch Observability add-on installs the CloudWatch agent and Fluent Bit as a managed EKS add-on. It enables Container Insights with enhanced observability, which collects cluster, node, pod, and container metrics and sends container logs to CloudWatch Logs. Not \"Deploy and maintain a self-managed Prometheus server in the cluster...\": Running your own Prometheus server means patching, scaling, and storing data yourself, which is more effort than a managed add-on. Not \"Enable control plane logging on the EKS cluster. Send the API server...\": Control plane logs describe the Kubernetes API server, authenticator, and scheduler. They do not contain pod resource metrics or application container logs. Not \"Configure detailed monitoring on the worker node instances, and build...\": Detailed monitoring gives node-level EC2 metrics only. EC2 cannot see the CPU and memory use of individual pods or containers."
+  ref: "Question d1-05 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-06
+  kind: choice
+  en: "A company runs several services on an Amazon ECS cluster that uses AWS Fargate. A CloudOps engineer must view CPU and memory utilization for each task and each service. The CloudOps engineer also must create alarms on the number of running tasks. Which solution will meet these requirements?"
+  options:
+    - "Enable AWS X-Ray tracing for each service. Create alarms on the trace segment counts for the tasks."
+    - "Configure VPC Flow Logs on the task network interfaces. Create metric filters for CPU and memory values."
+    - "Configure Container Insights for the ECS cluster. Create alarms on the ECS/ContainerInsights metrics."
+    - "Install the Amazon CloudWatch agent on the Fargate hosts by using an AWS Systems Manager State Manager association."
+  correct: [C]
+  why: "Container Insights collects task-level and service-level metrics such as CpuUtilized, MemoryUtilized, and RunningTaskCount in the ECS/ContainerInsights namespace. It works with Fargate because AWS collects the data, so there is no host to manage. Not \"Install the Amazon CloudWatch agent on the Fargate hosts by using an...\": With Fargate, AWS manages the underlying hosts. You cannot install agents on them or target them with Systems Manager. Not \"Configure VPC Flow Logs on the task network interfaces. Create metric...\": Flow logs record IP traffic metadata such as addresses, ports, and bytes. They contain no CPU or memory data. Not \"Enable AWS X-Ray tracing for each service. Create alarms on the trace...\": X-Ray traces requests through an application. Trace counts do not show resource utilization or the number of running tasks."
+  ref: "Question d1-06 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-07
+  kind: choice
+  en: "A company has an application on Amazon EC2 instances that writes its logs to an Amazon CloudWatch Logs log group. The company's operations team needs an email notification whenever the application writes more than 20 log lines that contain the word ERROR within 5 minutes. Which combination of steps will meet this requirement? (Select TWO.)"
+  options:
+    - "Export the log group to Amazon S3 every 5 minutes and use Amazon S3 Event Notifications to send email."
+    - "Run a CloudWatch Logs Insights query every 5 minutes from the console and email the results."
+    - "Create a metric filter on the log group that matches ERROR and publishes a count metric."
+    - "Create a subscription filter that sends the log group to an Amazon SQS queue for email delivery."
+    - "Create a CloudWatch alarm on that metric with a threshold of 20 that notifies an Amazon SNS topic."
+  correct: [C, E]
+  why: "A metric filter turns matching log events into a CloudWatch metric. Counting events that contain ERROR gives the team a number to alarm on. An alarm that uses the Sum statistic over a 5-minute period with a threshold of 20 fires when the error count is exceeded. An Amazon SNS topic with an email subscription delivers the notification. Not \"Create a subscription filter that sends the log group to an Amazon...\": Subscription filters deliver to Lambda, Kinesis Data Streams, Data Firehose, or OpenSearch Service, not to SQS. SQS also cannot send email. Not \"Run a CloudWatch Logs Insights query every 5 minutes from the console...\": A query that someone runs by hand from the console is not automated, so it cannot reliably notify the team within the 5-minute window. Not \"Export the log group to Amazon S3 every 5 minutes and use Amazon S3...\": Export tasks are batch jobs for archiving logs. They are not designed for near real-time alerting, and the exported files would still need parsing to count errors."
+  ref: "Question d1-07 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-08
+  kind: choice
+  en: "A CloudOps engineer creates an Amazon CloudWatch Logs metric filter that counts HTTP 500 responses in a web server log group. The CloudOps engineer creates an alarm on the metric with a threshold of 10 in 5 minutes. During quiet periods with no errors, the alarm shows INSUFFICIENT_DATA instead of OK. What should the CloudOps engineer do so that the alarm reports OK when there are no errors?"
+  options:
+    - "Set a default value of 0 on the metric filter."
+    - "Enable high-resolution storage on the metric."
+    - "Change the alarm statistic from Sum to Average."
+    - "Change the alarm period from 5 minutes to 1 minute."
+  correct: [A]
+  why: "By default, a metric filter publishes nothing when no events match, so the alarm has no data points and shows INSUFFICIENT_DATA. A default value of 0 makes the filter report 0 for periods with no matches, so the alarm evaluates to OK. Treating missing data as not breaching is another way to get the same result. Not \"Change the alarm statistic from Sum to Average\": Changing the statistic does not create data points. With no matching events, there is still nothing to average. Not \"Change the alarm period from 5 minutes to 1 minute\": A shorter period is evaluated more often but still finds no data points during quiet periods. Not \"Enable high-resolution storage on the metric\": High resolution changes how granular the stored data is. It does not create data points when no events match."
+  ref: "Question d1-08 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-09
+  kind: choice
+  en: "A company has a web application that runs on Amazon EC2 instances behind an Application Load Balancer (ALB). The company has one Amazon CloudWatch alarm for high CPU utilization on the instances and another alarm for high target response time on the ALB. On-call engineers are often paged when CPU utilization spikes briefly without affecting users. Engineers must be paged only when both conditions are true at the same time. Which solution will meet this requirement in the MOST operationally efficient way?"
+  options:
+    - "Raise the CPU alarm threshold to 95% and its evaluation period to 15 minutes to reduce how often it fires."
+    - "Create a composite alarm that combines both alarms with AND. Move the paging action from the child alarms to it."
+    - "Create an AWS Lambda function that runs every minute, reads the state of both alarms, and pages when both are in ALARM."
+    - "Use a metric math expression that multiplies CPU by response time. Create an alarm on the product."
+  correct: [B]
+  why: "A composite alarm evaluates a rule expression over other alarms, such as ALARM(cpu) AND ALARM(latency). Putting the notification on the composite alarm and removing it from the child alarms pages only when both conditions are true, with no code to maintain. An actions suppressor alarm can also silence it during planned maintenance. Not \"Create an AWS Lambda function that runs every minute, reads the state...\": A polling function would work, but it is custom code to build, secure, and maintain. Composite alarms provide the same logic as a managed feature. Not \"Raise the CPU alarm threshold to 95% and its evaluation period to 15...\": A higher threshold reduces noise but still pages on CPU alone. It does not require high response time, and it can delay real alerts. Not \"Use a metric math expression that multiplies CPU by response time...\": The product of two unrelated metrics has no meaningful threshold. A high value could come from either metric alone, so it does not express that both are high."
+  ref: "Question d1-09 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-10
+  kind: choice
+  en: "A company has an application on Amazon EC2 instances that tracks the number of orders that are waiting to be processed. The company must graph this value in Amazon CloudWatch and must create an alarm on the value. Which solution will meet these requirements?"
+  options:
+    - "Enable AWS CloudTrail data events for the application. Create an alarm on the number of delivered events."
+    - "Update the application to publish the value as a custom metric by using the PutMetricData API. Create an alarm on the metric."
+    - "Enable VPC Flow Logs for the application subnets. Create an alarm on the size of the published flow logs."
+    - "Enable detailed monitoring on the instances. Create an alarm on the matching metric in the AWS/EC2 namespace."
+  correct: [B]
+  why: "Only the application knows this business value, so the application must publish it. PutMetricData sends a custom metric to CloudWatch, where you can graph it and create alarms. The instance role needs the cloudwatch:PutMetricData permission. The CloudWatch agent's StatsD support and OpenTelemetry are other ways to publish custom metrics. Not \"Enable detailed monitoring on the instances. Create an alarm on the...\": Detailed monitoring sends the default EC2 metrics every minute instead of every 5 minutes. It does not add application values such as the number of waiting orders. Not \"Enable AWS CloudTrail data events for the application. Create an...\": CloudTrail records AWS API activity. It has no view of a value inside the application. Not \"Enable VPC Flow Logs for the application subnets. Create an alarm on...\": Flow logs record metadata about IP traffic. They do not contain the number of waiting orders."
+  ref: "Question d1-10 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-11
+  kind: choice
+  en: "A company has an application that publishes a custom metric named FailedPayments only when a payment fails. An Amazon CloudWatch alarm monitors the metric with a threshold of 1. Long periods with no failures cause the alarm to change to INSUFFICIENT_DATA, which opens a ticket in the company's ticketing system. Which alarm setting should a CloudOps engineer change to stop the false tickets?"
+  options:
+    - "Treat missing data as missing."
+    - "Treat missing data as breaching."
+    - "Change the statistic to SampleCount."
+    - "Treat missing data as notBreaching."
+  correct: [D]
+  why: "When no failures occur, no data points are published. Treating missing data as notBreaching tells CloudWatch to count those periods as within the threshold, so the alarm stays in OK. Not \"Treat missing data as breaching\": Treating missing data as breaching would put the alarm into ALARM during quiet periods and create even more false tickets. Not \"Treat missing data as missing\": Missing is the default behavior, and it is what causes the INSUFFICIENT_DATA state in the first place. Not \"Change the statistic to SampleCount\": SampleCount still needs data points to evaluate. It does not change how the alarm handles periods with no data."
+  ref: "Question d1-11 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-12
+  kind: choice
+  en: "A company has an Amazon CloudWatch alarm on the p99 latency of an API. The alarm uses a 1-minute period and 1 evaluation period. One-minute spikes cause the alarm to fire several times each day. The alarm must fire only when latency is high for at least 3 of the last 5 minutes. How should a CloudOps engineer configure the alarm to meet this requirement?"
+  options:
+    - "Set the period to 5 minutes and Evaluation periods to 3."
+    - "Set Datapoints to alarm to 5 and Evaluation periods to 3."
+    - "Set Datapoints to alarm to 3 and Evaluation periods to 5."
+    - "Change the statistic from p99 to Minimum over 1 minute."
+  correct: [C]
+  why: "An M out of N alarm fires when M of the last N data points breach. With 3 of 5 one-minute data points, a single spike does not fire the alarm, but a problem that lasts 3 minutes within any 5-minute window does. Not \"Set the period to 5 minutes and Evaluation periods to 3\": This requires three consecutive 5-minute periods to breach, so a real problem would take 15 minutes to alarm. It does not match the requirement of 3 of the last 5 minutes. Not \"Set Datapoints to alarm to 5 and Evaluation periods to 3\": Datapoints to alarm cannot be larger than the number of evaluation periods, so this configuration is not valid. Not \"Change the statistic from p99 to Minimum over 1 minute\": Minimum hides real latency problems, because one fast request in the minute keeps the value low. It changes what is measured instead of how long the problem must last."
+  ref: "Question d1-12 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-13
+  kind: choice
+  en: "A company runs a legacy application on a single Amazon EC2 instance that has an Elastic IP address and Amazon EBS volumes. The application cannot run behind a load balancer. If the underlying host has a hardware problem, the instance must recover automatically with the same instance ID and IP address. Which solution will meet these requirements?"
+  options:
+    - "Create an Amazon EventBridge rule that launches a new instance from the latest AMI when the host fails."
+    - "Create an Amazon CloudWatch alarm on StatusCheckFailed_Instance that uses the EC2 reboot action."
+    - "Create an Amazon CloudWatch alarm on StatusCheckFailed_System that uses the EC2 recover action."
+    - "Place the instance in an Auto Scaling group with a minimum, maximum, and desired capacity of 1."
+  correct: [C]
+  why: "A system status check failure points to a problem with the AWS hardware or host. The recover action moves the instance to new hardware and keeps the instance ID, private IP addresses, Elastic IP addresses, and EBS volumes. Many current instance types also recover automatically by default. Not \"Create an Amazon CloudWatch alarm on StatusCheckFailed_Instance that...\": An instance status check failure points to a problem inside the operating system, and a reboot stays on the same host. A reboot does not fix a hardware problem on the host. Not \"Place the instance in an Auto Scaling group with a minimum, maximum...\": An Auto Scaling group replaces an unhealthy instance with a new instance. The new instance has a new instance ID, which the scenario does not allow. Not \"Create an Amazon EventBridge rule that launches a new instance from...\": A new instance launched from an AMI gets a new instance ID and would need extra steps to move the Elastic IP address and data volumes."
+  ref: "Question d1-13 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-14
+  kind: choice
+  en: "A company has an Amazon CloudWatch alarm for a payment service. When the alarm enters the ALARM state, the company must start an AWS Step Functions state machine that collects diagnostics. The company also must invoke an existing AWS Lambda function that posts a message to a chat channel. The alarm's own actions already send Amazon SNS notifications. Which solution will meet these requirements with the LEAST operational overhead?"
+  options:
+    - "Create a metric filter on the AWS CloudTrail log group that detects SetAlarmState calls and starts the workflows."
+    - "Create an Amazon EventBridge rule that matches CloudWatch Alarm State Change events for the alarm and targets both."
+    - "Add a Lambda alarm action that runs new code to start the state machine and then calls the chat function."
+    - "Subscribe an Amazon SQS queue to the SNS topic, and poll the queue from an Amazon EC2 instance that starts both workflows."
+  correct: [B]
+  why: "CloudWatch sends an event to the EventBridge default event bus every time an alarm changes state. One rule that matches the alarm name and the ALARM state can invoke up to five targets, including a Step Functions state machine and a Lambda function, without new code. Not \"Add a Lambda alarm action that runs new code to start the state...\": Alarms can invoke a Lambda function directly, but this design needs new glue code to start the state machine and call the other function. EventBridge can send the event to both targets natively. Not \"Subscribe an Amazon SQS queue to the SNS topic, and poll the queue...\": Polling a queue from an EC2 instance adds a server to patch and run. It is far more effort than an EventBridge rule. Not \"Create a metric filter on the AWS CloudTrail log group that detects...\": When CloudWatch evaluates an alarm and changes its state, that is not a SetAlarmState API call in CloudTrail, so this would not detect the transitions reliably."
+  ref: "Question d1-14 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-15
+  kind: choice
+  en: "A company has 30 AWS accounts in AWS Organizations. The company's central operations team must search logs, view metrics, and view traces from all accounts in one place without copying the data. New accounts must be included automatically. Which solution will meet these requirements?"
+  options:
+    - "Create subscription filters in every account that copy all log groups to a central account through Data Firehose."
+    - "Set up Amazon CloudWatch cross-account observability with a monitoring account, and link the source accounts through Organizations."
+    - "Create a cross-account IAM role in each account, and switch roles in the console to view the data for each account."
+    - "Create an Amazon CloudWatch dashboard in each account. Share each dashboard publicly with the central operations team."
+  correct: [B]
+  why: "CloudWatch cross-account observability links source accounts to a monitoring account. The monitoring account can search logs, graph metrics, and view traces from linked accounts without copying data, and an organization-wide setup links new accounts automatically. Not \"Create a cross-account IAM role in each account, and switch roles in...\": Switching roles shows only one account at a time, so the team cannot search across all accounts together. Not \"Create subscription filters in every account that copy all log groups...\": Subscription filters copy the data, which the team wants to avoid, and each new account would need its own setup. They also do not cover metrics or traces. Not \"Create an Amazon CloudWatch dashboard in each account. Share each...\": Public dashboards expose data to anyone who has the link, and separate dashboards do not provide one place to search logs across accounts."
+  ref: "Question d1-15 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-16
+  kind: choice
+  en: "A company needs to give its support managers access to an Amazon CloudWatch dashboard that shows application health. The managers do not have AWS accounts, and the company does not want to create IAM identities for them. The dashboard contains internal hostnames and must not be visible to the public. What should a CloudOps engineer do to meet these requirements?"
+  options:
+    - "Share the dashboard publicly. Send the link to the managers through the company's internal chat tool."
+    - "Create an IAM user for each manager that has console access and the CloudWatchReadOnlyAccess policy."
+    - "Share the dashboard with the managers' email addresses."
+    - "Take a screenshot of the dashboard every hour with an AWS Lambda function, and email it to all of the managers."
+  correct: [C]
+  why: "CloudWatch can share a dashboard with specific email addresses. Each person gets a link and signs in with a username and password that Amazon Cognito manages, so they can view the dashboard without an AWS account and without it being public. Not \"Share the dashboard publicly. Send the link to the managers through...\": Anyone who has a public link can see the dashboard, which would expose the internal hostnames. Not \"Create an IAM user for each manager that has console access and the...\": The scenario rules out creating IAM identities. Console access through IAM users also grants far more than one dashboard view. Not \"Take a screenshot of the dashboard every hour with an AWS Lambda...\": Screenshots are custom work to maintain, they are out of date between runs, and they are not interactive."
+  ref: "Question d1-16 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-17
+  kind: choice
+  en: "A company runs an in-memory analytics application on m5.2xlarge Amazon EC2 instances. Amazon CloudWatch shows that memory utilization stays above 95% and that CPU utilization stays below 20%. The company must improve the application's performance. Which solution will meet this requirement MOST cost-effectively?"
+  options:
+    - "Change the instances to a burstable performance instance type, such as the T family."
+    - "Change the Amazon EBS volumes to io2 Block Express, and increase the provisioned IOPS."
+    - "Change the instances to a compute optimized instance type, such as the C family."
+    - "Change the instances to a memory optimized instance type, such as the R family."
+  correct: [D]
+  why: "Memory optimized instances are designed for workloads that process large data sets in memory. The R family has more memory for each vCPU than the M family, which fits a workload that is short of memory and uses little CPU. Not \"Change the instances to a compute optimized instance type, such as...\": Compute optimized instances have less memory for each vCPU than the M family, so the memory shortage would get worse. Not \"Change the instances to a burstable performance instance type, such...\": Burstable performance instances suit low, spiky CPU use. They do not address a shortage of memory. Not \"Change the Amazon EBS volumes to io2 Block Express, and increase the...\": Faster storage does not add memory. The application would still run short of memory, and io2 volumes add cost."
+  ref: "Question d1-17 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-18
+  kind: choice
+  en: "A company uses AWS Organizations. The company's security team requires API activity from every current and future account to be logged to a central Amazon S3 bucket. Auditors also must be able to prove that log files were not changed after delivery. Which solution will meet these requirements?"
+  options:
+    - "Create an organization trail from the management account with log file integrity validation enabled."
+    - "Configure AWS CloudTrail Lake event data stores in every account, and export the events to the central bucket weekly."
+    - "Create a trail in each member account by using a StackSet. Enable S3 Versioning for the central bucket."
+    - "Use AWS CloudTrail event history in each account, and download 90 days of events to the central bucket each month."
+  correct: [A]
+  why: "An organization trail logs events for all accounts in the organization, including accounts that join later, and member accounts cannot change it. Log file integrity validation adds signed digest files, so auditors can run the validate-logs command to prove that files were not modified or deleted. Not \"Create a trail in each member account by using a StackSet. Enable S3...\": Per-account trails can be changed or stopped by account administrators, and new accounts need extra setup. Versioning keeps old versions but does not prove that a file is unmodified. Not \"Configure AWS CloudTrail Lake event data stores in every account, and...\": Weekly exports leave gaps, and an export is not a validated record of the original delivered log files. Not \"Use AWS CloudTrail event history in each account, and download 90...\": Event history covers only 90 days of management events, and manual downloads are neither reliable nor tamper evident."
+  ref: "Question d1-18 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-19
+  kind: choice
+  en: "A company stores invoices in an Amazon S3 bucket. Objects are being deleted from the bucket, and the company does not know who is deleting them. An AWS CloudTrail trail already logs management events. The company must identify the IAM principal behind future deletions. What should a CloudOps engineer do to meet this requirement?"
+  options:
+    - "Configure S3 Versioning."
+    - "Enable CloudTrail Insights events."
+    - "Enable CloudTrail data events for the bucket."
+    - "Configure VPC Flow Logs for the VPC that the application uses to reach the bucket."
+  correct: [C]
+  why: "Object-level actions such as GetObject, PutObject, and DeleteObject are data events, which trails do not log by default. Logging data events for the bucket records the principal, source IP address, and time of each deletion. Not \"Configure S3 Versioning\": Versioning protects data by keeping a delete marker and earlier versions, but it does not record who made the request. Not \"Enable CloudTrail Insights events\": Insights detects unusual API call rates and API error rates. It does not log individual object-level calls or who made each one. Not \"Configure VPC Flow Logs for the VPC that the application uses to...\": Flow logs record IP traffic metadata only. They do not show API actions or IAM identities, and requests to S3 might not even pass through that VPC."
+  ref: "Question d1-19 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-20
+  kind: choice
+  en: "A company needs to receive an alert when the volume of write API calls in its AWS account changes sharply from normal, for example, when a script starts to create hundreds of security groups. The company does not want to define a threshold for each API. Which solution will meet these requirements?"
+  options:
+    - "Configure AWS Config recording for all resource types. Create a rule that counts the configuration changes."
+    - "Configure AWS CloudTrail Insights for the trail. Route Insights events to an Amazon SNS topic with an Amazon EventBridge rule."
+    - "Create a metric filter for each write API in the trail's log group. Create an alarm with a static threshold."
+    - "Run an Amazon Athena query on the trail's Amazon S3 bucket every hour, and compare the results with those of the prior week."
+  correct: [B]
+  why: "CloudTrail Insights learns the normal rate of write management API calls and API error rates, and it records an Insights event when activity is unusual. No per-API thresholds are needed, and an EventBridge rule can send the events to an SNS topic. Not \"Create a metric filter for each write API in the trail's log group...\": This requires a filter and a threshold for every API, which the company wants to avoid. Static thresholds also do not adapt to normal patterns. Not \"Configure AWS Config recording for all resource types. Create a rule...\": Config records resource configuration changes and evaluates compliance. A custom rule that counts changes is not a built-in way to detect unusual API call rates. Not \"Run an Amazon Athena query on the trail's Amazon S3 bucket every...\": A custom hourly comparison is code to build and maintain, and it alerts late."
+  ref: "Question d1-20 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-21
+  kind: choice
+  en: "A company runs Kubernetes applications on Amazon EKS. The applications already expose Prometheus metrics. The company needs a fully managed way to collect and store these metrics and to build dashboards. The company does not want to run Prometheus servers or agents in the cluster. Which solution will meet these requirements?"
+  options:
+    - "Install the Amazon CloudWatch agent as a DaemonSet with Prometheus scraping enabled, and build CloudWatch dashboards."
+    - "Use an Amazon Managed Service for Prometheus managed collector, and visualize the workspace in Amazon Managed Grafana."
+    - "Configure EKS control plane logging. Use Amazon CloudWatch Logs Insights to query the Prometheus metrics in the logs."
+    - "Run a self-managed Prometheus server on Amazon EC2 that scrapes the cluster. Install Grafana on the same instance."
+  correct: [B]
+  why: "An Amazon Managed Service for Prometheus collector is an agentless scraper that AWS runs for you. It scrapes Prometheus metrics from the EKS cluster into a managed workspace, and Amazon Managed Grafana can query that workspace for dashboards. Not \"Install the Amazon CloudWatch agent as a DaemonSet with Prometheus...\": This works, but it runs agents inside the cluster, which the company wants to avoid. Not \"Run a self-managed Prometheus server on Amazon EC2 that scrapes the...\": A self-managed server is not fully managed. The company would need to patch, scale, and back up both Prometheus and Grafana. Not \"Configure EKS control plane logging. Use Amazon CloudWatch Logs...\": Control plane logs do not contain application Prometheus metrics, and Logs Insights is not a metrics store."
+  ref: "Question d1-21 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-22
+  kind: choice
+  en: "A company has a support chatbot that calls a foundation model through Amazon Bedrock. The company's operations team must keep a copy of every prompt and model response for troubleshooting. Which solution will meet this requirement?"
+  options:
+    - "Create an AWS Config rule that records each Bedrock invocation as a configuration item for review."
+    - "Install the Amazon CloudWatch agent on the Bedrock model endpoint to collect the prompts and the responses."
+    - "Enable AWS CloudTrail data events for Bedrock."
+    - "Configure model invocation logging in Bedrock, and deliver the logs to Amazon CloudWatch Logs or Amazon S3."
+  correct: [D]
+  why: "Model invocation logging is disabled by default. When it is on, Bedrock records the request data, response data, and metadata for invocations in the account and Region, and delivers them to CloudWatch Logs, Amazon S3, or both. To alert on throttling, use a separate CloudWatch alarm on the InvocationThrottles metric. Not \"Enable AWS CloudTrail data events for Bedrock\": CloudTrail records who called the Bedrock API and when. It is an audit log of API activity, so it does not keep the full prompt and response text. Not \"Install the Amazon CloudWatch agent on the Bedrock model endpoint to...\": Bedrock is a managed service, so there are no model hosts for you to install an agent on. Not \"Create an AWS Config rule that records each Bedrock invocation as a...\": Config tracks resource configurations, not individual API requests and their content."
+  ref: "Question d1-22 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-23
+  kind: choice
+  en: "A company has an AWS Lambda function that sometimes runs much longer than normal. A CloudOps engineer needs to find the 20 slowest invocations from the last 24 hours, with their request IDs, by using the function's log group. Which solution will meet this requirement with the LEAST operational overhead?"
+  options:
+    - "Enable Lambda Insights, and wait 24 hours for the function's performance dashboard to fill with data."
+    - "Run an Amazon CloudWatch Logs Insights query that filters REPORT lines and sorts by @duration in descending order."
+    - "Create a metric filter that extracts the duration value, and view the metric on an Amazon CloudWatch graph."
+    - "Export the log group to Amazon S3, and then use Amazon Athena to parse the REPORT lines and sort them by duration."
+  correct: [B]
+  why: "Logs Insights automatically discovers fields in Lambda REPORT log lines, including @duration and @requestId. A query such as filter @type = \"REPORT\" | sort @duration desc | limit 20 returns the slowest invocations directly. Not \"Export the log group to Amazon S3, and then use Amazon Athena to...\": This would work, but exporting the logs and setting up Athena is much more effort than one query on data that is already in CloudWatch Logs. Not \"Enable Lambda Insights, and wait 24 hours for the function's...\": Lambda Insights collects data only after it is enabled, so it cannot show the past 24 hours. Not \"Create a metric filter that extracts the duration value, and view the...\": A metric filter applies only to new log events and produces aggregated numbers. It cannot return the request IDs of individual invocations."
+  ref: "Question d1-23 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-24
+  kind: choice
+  en: "A company must stream application logs from Amazon CloudWatch Logs in several AWS accounts to a central Amazon S3 bucket in a logging account. Logs must arrive within a few minutes of each event and must be compressed when stored. Which solution will meet these requirements?"
+  options:
+    - "Configure S3 Replication from each account's log bucket to the central bucket with S3 Replication Time Control."
+    - "Install the CloudWatch agent in the logging account. Configure it to read the log groups from every account."
+    - "Create subscription filters to a cross-account log destination that delivers through Amazon Data Firehose to S3."
+    - "Schedule a daily CloudWatch Logs export task in each account that writes the log groups to the central bucket."
+  correct: [C]
+  why: "Subscription filters stream log events in near real time. A CloudWatch Logs destination in the logging account can receive events from other accounts and pass them to Amazon Data Firehose, which buffers, compresses, and delivers them to Amazon S3. Not \"Schedule a daily CloudWatch Logs export task in each account that...\": Daily exports do not meet the requirement to deliver logs within a few minutes. Not \"Configure S3 Replication from each account's log bucket to the...\": The logs are in CloudWatch Logs, not in S3 buckets, so there is nothing for S3 Replication to copy. Not \"Install the CloudWatch agent in the logging account. Configure it to...\": The CloudWatch agent collects logs from the host that it runs on. It cannot pull log groups from other accounts."
+  ref: "Question d1-24 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-25
+  kind: choice
+  en: "A company stores debug logs in Amazon CloudWatch Logs with the retention setting Never expire. The logs are needed only for occasional investigations within 30 days, and the company does not use metric filters or alarms on them. CloudWatch Logs costs are growing every month. Which combination of steps will reduce costs and still meet these requirements? (Select TWO.)"
+  options:
+    - "Set the retention period of the debug log groups to 30 days."
+    - "Create a metric filter that counts debug lines per minute."
+    - "Enable high-resolution storage for the debug log groups."
+    - "Export the logs to Amazon S3 daily and keep the CloudWatch copy too."
+    - "Use the Essentials log class (formerly Infrequent Access) for new debug log groups."
+  correct: [A, E]
+  why: "Logs that never expire keep adding storage cost. A 30-day retention period deletes older events automatically and still covers the investigation window. The Essentials log class (formerly Infrequent Access) has a lower ingestion price and still supports most Logs Insights query commands. It does not support features such as metric filters, which the team does not use. The class is chosen when the log group is created. Not \"Enable high-resolution storage for the debug log groups\": There is no high-resolution storage setting for log groups. High resolution applies to metrics, and it would not lower costs. Not \"Create a metric filter that counts debug lines per minute\": A metric filter creates a custom metric, which adds cost and does not reduce log storage. Not \"Export the logs to Amazon S3 daily and keep the CloudWatch copy too\": Exporting adds S3 storage without removing the CloudWatch copy, so total cost goes up."
+  ref: "Question d1-25 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-26
+  kind: choice
+  en: "A CloudOps engineer configures Amazon S3 Event Notifications on a bucket to publish to an Amazon SNS topic when objects are created. When the CloudOps engineer saves the configuration, Amazon S3 returns the error Unable to validate the following destination configurations. What should the CloudOps engineer do to resolve this issue?"
+  options:
+    - "Attach an IAM policy to the engineer's user that allows the sns:Publish action on all topics in the account."
+    - "Create a gateway VPC endpoint for Amazon S3."
+    - "Enable S3 Versioning for the bucket, because event notifications need a versioned bucket to validate."
+    - "Update the Amazon SNS topic access policy to allow the Amazon S3 service principal to publish from that bucket."
+  correct: [D]
+  why: "Amazon S3 publishes the notification as the s3.amazonaws.com service principal, so the topic's access policy must allow that principal to call sns:Publish. Conditions on aws:SourceArn and aws:SourceAccount limit the permission to that bucket. S3 checks this permission when the configuration is saved. Not \"Attach an IAM policy to the engineer's user that allows the...\": The notification is sent by the S3 service, not by the engineer. The engineer's own permissions do not let S3 publish to the topic. Not \"Create a gateway VPC endpoint for Amazon S3\": Event notifications are delivered between AWS services. A VPC endpoint has no effect on this delivery. Not \"Enable S3 Versioning for the bucket, because event notifications need...\": Event notifications work on unversioned buckets. Versioning does not affect destination validation."
+  ref: "Question d1-26 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-27
+  kind: choice
+  en: "A company's security policy requires every Amazon SNS topic to use server-side encryption. A CloudOps engineer enables encryption with the AWS managed key (aws/sns) for a topic that receives Amazon CloudWatch alarm notifications. CloudWatch alarms still change state, but notifications stop arriving. What should the CloudOps engineer do to restore notifications and keep encryption?"
+  options:
+    - "Disable encryption on the topic during business hours, and turn it back on with an Amazon EventBridge schedule."
+    - "Encrypt the topic with a customer managed AWS KMS key whose key policy lets the CloudWatch service use the key."
+    - "Add a statement to the topic access policy that allows the CloudWatch service principal to call sns:Subscribe."
+    - "Re-create each CloudWatch alarm."
+  correct: [B]
+  why: "The key policy of the AWS managed key aws/sns cannot be edited, so it cannot grant CloudWatch permission to use the key. With a customer managed key, the key policy can allow the cloudwatch.amazonaws.com service principal the kms:Decrypt and kms:GenerateDataKey* actions it needs to publish to the encrypted topic. Not \"Add a statement to the topic access policy that allows the CloudWatch...\": Publishing needs sns:Publish and access to the KMS key. Allowing sns:Subscribe does not help, because the missing piece is the key permission. Not \"Disable encryption on the topic during business hours, and turn it...\": Turning off encryption breaks the security policy, and only alarms that fire during the unencrypted window would notify. Not \"Re-create each CloudWatch alarm\": The alarms are not the problem. They would still fail to publish because the CloudWatch service cannot use the AWS managed key."
+  ref: "Question d1-27 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-28
+  kind: choice
+  en: "A company runs Amazon EC2 instances. AWS sometimes schedules maintenance or retirement for the instances. The company's operations team often misses the emails that go to the account's root email address. Scheduled change notices for Amazon EC2 must reach an on-call distribution list automatically. Which solution will meet this requirement?"
+  options:
+    - "Create an Amazon CloudWatch alarm on the StatusCheckFailed metric for each instance that notifies the distribution list."
+    - "Create an Amazon EventBridge rule for AWS Health events from the EC2 service that targets an Amazon SNS topic for the list."
+    - "Use AWS Trusted Advisor to check for scheduled instance events, and email its weekly summary to the distribution list."
+    - "Create an AWS Config rule that checks for retired instances and sends its findings to the distribution list daily."
+  correct: [B]
+  why: "AWS Health sends events, including scheduled changes such as instance retirement and maintenance, to EventBridge. A rule that matches aws.health events for EC2 can send them to an SNS topic that the on-call list subscribes to. The AWS Health Dashboard shows the same events. Not \"Create an Amazon CloudWatch alarm on the StatusCheckFailed metric for...\": Status checks report failures that are happening now. They do not warn about maintenance that AWS has scheduled for the future. Not \"Create an AWS Config rule that checks for retired instances and sends...\": Config evaluates resource configurations. It does not receive AWS Health scheduled change notices. Not \"Use AWS Trusted Advisor to check for scheduled instance events, and...\": Trusted Advisor checks cost, security, and other best practices. Scheduled maintenance notices come from AWS Health, and a weekly email would arrive too late."
+  ref: "Question d1-28 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-29
+  kind: choice
+  en: "A company's public website sometimes returns errors on the checkout page. Customers report the problem before the company's operations team notices. The company must detect a broken checkout flow within 5 minutes, including steps that need a web browser. Which solution will meet these requirements?"
+  options:
+    - "Create an Amazon CloudWatch Synthetics canary that runs a browser script against the checkout flow every 5 minutes."
+    - "Enable access logs for the ALB. Run an Amazon Athena query each morning to find the failed checkout requests."
+    - "Create an alarm on the ALB HealthyHostCount metric."
+    - "Create an Amazon Route 53 health check that requests the home page every 30 seconds from several AWS Regions."
+  correct: [A]
+  why: "Synthetics canaries are scripts that run on a schedule and can drive a headless browser through multi-step flows such as adding to cart and checking out. Failures and latency are reported as CloudWatch metrics that you can alarm on, so the team finds problems before customers do. Not \"Create an Amazon Route 53 health check that requests the home page...\": A Route 53 health check requests one URL and checks the response. It cannot perform the multi-step browser actions needed to test checkout. Not \"Enable access logs for the ALB. Run an Amazon Athena query each...\": Analyzing logs once a day finds problems hours later, not within 5 minutes. Not \"Create an alarm on the ALB HealthyHostCount metric\": Targets can pass health checks while the checkout flow is broken, for example when a downstream payment call fails."
+  ref: "Question d1-29 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-30
+  kind: choice
+  en: "A company has an online store. The number of orders per minute follows a strong daily and weekly pattern. A static threshold alarm either misses drops at night or fires falsely during quiet hours. The company needs an alert when the order rate is unusually low for the time of day. Which solution will meet this requirement in the MOST operationally efficient way?"
+  options:
+    - "Use a metric math expression that divides the order rate by 24. Set a static threshold on the result."
+    - "Write an AWS Lambda function that compares the current rate with last week's rate and publishes an alert to Amazon SNS."
+    - "Create an Amazon CloudWatch alarm based on an anomaly detection band, and alert when the metric drops below the band."
+    - "Create 24 alarms with a different static threshold for each hour. Enable each alarm on an hourly schedule."
+  correct: [C]
+  why: "Anomaly detection trains a model on the metric's history, including daily and weekly patterns, and creates a band of expected values. An alarm on values below the band fires when orders are unusually low for that time, with no thresholds to maintain. Not \"Create 24 alarms with a different static threshold for each hour...\": Hourly thresholds would need constant tuning and do not handle weekly patterns. Turning alarms on and off on a schedule adds even more work. Not \"Write an AWS Lambda function that compares the current rate with last...\": This is custom code to build and maintain, and one comparison with last week is easily thrown off by a holiday or one unusual week. Not \"Use a metric math expression that divides the order rate by 24. Set a...\": Dividing by a constant only scales the metric. It still needs a static threshold, so it has the same problem."
+  ref: "Question d1-30 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-31
+  kind: choice
+  en: "A CloudOps engineer uses AWS CloudFormation to create an Amazon EventBridge rule that sends Amazon EC2 instance state-change events to an AWS Lambda function. When instances stop, the rule's MatchedEvents metric increases, and its FailedInvocations metric increases at the same rate. The function never runs. What is the MOST likely cause of this issue?"
+  options:
+    - "The event pattern in the rule does not match EC2 Instance State-change Notification events."
+    - "The EventBridge rule was created on the default event bus instead of on a custom event bus."
+    - "The Lambda function's execution role does not allow the function to write to Amazon CloudWatch Logs."
+    - "The Lambda function's resource-based policy does not allow EventBridge to invoke the function."
+  correct: [D]
+  why: "MatchedEvents shows that the pattern matches, and FailedInvocations shows that delivery to the target fails. The console adds the Lambda permission for you, but with CloudFormation or the CLI you must add a resource-based policy (an AWS::Lambda::Permission resource) that allows events.amazonaws.com to invoke the function. Not \"The event pattern in the rule does not match EC2 Instance...\": If the pattern did not match, MatchedEvents would not increase. The rule matches events but fails to deliver them. Not \"The EventBridge rule was created on the default event bus instead of...\": AWS service events such as EC2 state changes are delivered to the default event bus, so the default bus is the correct place for this rule. Not \"The Lambda function's execution role does not allow the function to...\": Missing log permissions stop the function from writing logs, but the function would still be invoked. FailedInvocations shows that EventBridge cannot call the function at all."
+  ref: "Question d1-31 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-32
+  kind: choice
+  en: "A company has an Amazon EventBridge rule that sends Amazon GuardDuty findings to an Amazon SNS topic. The topic emails the company's security team. Each email contains the full raw JSON event and is hard to read. The security team needs a short message that includes only the finding type, severity, and account ID. What should a CloudOps engineer do to meet this requirement?"
+  options:
+    - "Configure an input transformer on the rule's target that maps the three fields into a custom message template."
+    - "Add a filter policy to the SNS subscription that removes every field except type, severity, and account."
+    - "Change the SNS subscription protocol from Email to Email-JSON."
+    - "Change the event pattern of the rule to match only the finding type, severity, and account fields."
+  correct: [A]
+  why: "An input transformer has an input path that extracts values from the event, such as $.detail.type and $.detail.severity, and a template that builds the text sent to the target. The SNS topic then receives only the short message. Not \"Change the SNS subscription protocol from Email to Email-JSON\": Email-JSON sends the raw JSON message, which is even less readable for people. It does not reduce the content. Not \"Add a filter policy to the SNS subscription that removes every field...\": SNS filter policies decide whether a subscriber receives a message. They do not remove fields from the message body. Not \"Change the event pattern of the rule to match only the finding type...\": An event pattern decides which events match the rule. It does not change the content that is sent to the target."
+  ref: "Question d1-32 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-33
+  kind: choice
+  en: "A company has 20 workload accounts in AWS Organizations. A central operations account must receive the Amazon EC2 Auto Scaling events from every workload account so that one set of rules can start automation. Which solution will meet this requirement in the MOST operationally efficient way?"
+  options:
+    - "Create an Amazon EventBridge rule in the central account with an event pattern that lists the account IDs of all 20 workload accounts."
+    - "Create rules in each workload account that send the events to the central account's event bus. Allow the organization in that bus's policy."
+    - "Configure an organization trail. Create an Amazon EventBridge rule in the central account for the Auto Scaling events that the trail records."
+    - "Create an Amazon SNS topic in each workload account. Subscribe an AWS Lambda function in the central account that forwards the events locally."
+  correct: [B]
+  why: "EventBridge can deliver events to an event bus in another account as a rule target. A resource-based policy on the central bus that allows the organization (aws:PrincipalOrgID) lets every workload account put events, and rules in the central account then trigger the automation. Not \"Create an Amazon EventBridge rule in the central account with an...\": Events are delivered only to event buses in the account where they occur. A rule in the central account cannot see events from other accounts unless they are sent to it. Not \"Create an Amazon SNS topic in each workload account. Subscribe an AWS...\": This works, but it adds topics and forwarding code to maintain in 20 accounts. EventBridge cross-account delivery does the same thing natively. Not \"Configure an organization trail. Create an Amazon EventBridge rule in...\": Auto Scaling launch and terminate events are service events, not API records in CloudTrail. An organization trail also does not deliver events to EventBridge in another account."
+  ref: "Question d1-33 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-34
+  kind: choice
+  en: "A company's production Amazon EC2 instance was terminated yesterday. A CloudOps engineer must identify which IAM principal terminated the instance and when. The company did not configure any additional logging before the event. Which solution will meet these requirements with the LEAST operational overhead?"
+  options:
+    - "Use AWS Config to review the instance's compliance history. Review the rule that evaluated the instance last."
+    - "Query VPC Flow Logs for the instance's network interface. Review the source of the last accepted connection."
+    - "Search AWS CloudTrail Event history for the TerminateInstances event. Review the user identity in the event."
+    - "Run an Amazon CloudWatch Logs Insights query on the instance's logs. Review the last operating system events."
+  correct: [C]
+  why: "CloudTrail is enabled by default, and Event history keeps the past 90 days of management events at no extra cost. TerminateInstances is a management event, and its record shows who made the call, when, and from where. Not \"Use AWS Config to review the instance's compliance history. Review...\": AWS Config records resource configuration and compliance, and it must be set up before the event. Compliance history does not show who called the API. Not \"Query VPC Flow Logs for the instance's network interface. Review the...\": Flow logs record network traffic, not API calls, and they must be enabled before the event. Not \"Run an Amazon CloudWatch Logs Insights query on the instance's logs...\": Operating system logs do not record the AWS API call that terminated the instance, and they need an agent that was set up before the event."
+  ref: "Question d1-34 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-35
+  kind: choice
+  en: "A company has an Amazon EventBridge rule that sends events to a partner's webhook through an API destination. During partner outages, some events are lost after EventBridge stops retrying. The company must keep every event that cannot be delivered so that the company can resend the events later. What should a CloudOps engineer do to meet this requirement?"
+  options:
+    - "Configure an Amazon SQS dead-letter queue on the rule's target."
+    - "Configure AWS CloudTrail data events for the event bus that the rule uses."
+    - "Set the retry policy of the rule to a maximum event age of 30 days."
+    - "Create an archive on the API destination for undelivered events."
+  correct: [A]
+  why: "When EventBridge exhausts the retry policy for a target, it can send the event to an SQS dead-letter queue instead of dropping it. The queue keeps the failed events with error details so the company can resend them after the partner recovers. Not \"Set the retry policy of the rule to a maximum event age of 30 days\": The maximum event age in a retry policy is 24 hours. Events that are still undelivered after that are dropped unless a dead-letter queue is configured. Not \"Create an archive on the API destination for undelivered events\": Archives are created on event buses, not on API destinations, and an archive does not track which deliveries failed. Not \"Configure AWS CloudTrail data events for the event bus that the rule...\": CloudTrail records API calls made to EventBridge. It does not store the event payloads that failed delivery."
+  ref: "Question d1-35 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-36
+  kind: choice
+  en: "A company runs hundreds of Amazon EC2 instances and Amazon EBS volumes across several accounts in AWS Organizations. The company suspects that many of the resources are over-provisioned. A CloudOps engineer must identify which resources to resize based on historical utilization data. Which solution will meet this requirement with the LEAST operational overhead?"
+  options:
+    - "Opt in to AWS Compute Optimizer for the organization. Review the recommendations for the instances and the volumes."
+    - "Create an AWS Config rule for each instance type in each account. Review the compliance results of each rule."
+    - "Create an Amazon CloudWatch dashboard in each account. Compare the CPUUtilization metric of each instance manually."
+    - "Export AWS CloudTrail logs to Amazon S3. Query the RunInstances events in the logs by using Amazon Athena."
+  correct: [A]
+  why: "Compute Optimizer analyzes the configuration and utilization metrics of resources, including EC2 instances and EBS volumes, and gives rightsizing recommendations. It supports the management account of an organization and its member accounts. Installing the CloudWatch agent adds memory metrics to the analysis. Not \"Create an Amazon CloudWatch dashboard in each account. Compare the...\": This can show utilization, but comparing hundreds of resources manually is a lot of work, and it does not produce sizing recommendations. Not \"Export AWS CloudTrail logs to Amazon S3. Query the RunInstances...\": CloudTrail records API activity, such as who launched an instance. It does not contain utilization data. Not \"Create an AWS Config rule for each instance type in each account...\": AWS Config can check whether an instance type is allowed. It does not analyze utilization or recommend a size."
+  ref: "Question d1-36 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-37
+  kind: choice
+  en: "A company has a web server on an Amazon EC2 instance. The disk fills up every few weeks because of old log files. An Amazon CloudWatch alarm already monitors disk usage on the instance. The old log files must be removed automatically when the alarm fires, without anyone logging in to the instance. Which solution will meet these requirements with the LEAST operational overhead?"
+  options:
+    - "Replace the instance every few weeks with a new instance from the AMI by using an Auto Scaling scheduled action."
+    - "Create an AWS Lambda function that connects to the instance over SSH with a stored key and deletes the old log files."
+    - "Enable Amazon EBS Elastic Volumes auto-growth."
+    - "Use an Amazon EventBridge rule on the alarm's ALARM state to start an Automation runbook that runs the cleanup command."
+  correct: [D]
+  why: "EventBridge can start a Systems Manager Automation runbook as a rule target. The runbook can use the aws:runCommand action to run a cleanup script on the instance through SSM Agent, so no one logs in and no SSH keys are needed. Not \"Create an AWS Lambda function that connects to the instance over SSH...\": SSH from Lambda requires network access to the instance and a stored private key, which adds security risk and code to maintain. Not \"Enable Amazon EBS Elastic Volumes auto-growth\": EBS has no automatic growth feature. Growing the volume would also hide the problem and increase cost. Not \"Replace the instance every few weeks with a new instance from the AMI...\": Replacing instances on a schedule is disruptive and does not react to the alarm. Logs could still fill the disk between replacements."
+  ref: "Question d1-37 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-38
+  kind: choice
+  en: "A CloudOps engineer is writing a custom AWS Systems Manager Automation runbook that restarts a production database cluster. Company policy requires a member of the database team to approve each restart before it happens. What should the CloudOps engineer do to meet this requirement?"
+  options:
+    - "Add an aws:sleep step of 24 hours before the restart steps."
+    - "Add an aws:assertAwsResourceProperty step that checks whether the database team signed in that day."
+    - "Add an aws:approve step before the restart steps. List the database team's IAM principals as approvers."
+    - "Add an aws:executeScript step that emails the database team and waits for each reply before it continues."
+  correct: [C]
+  why: "The aws:approve action pauses an Automation run until the required number of designated approvers approve or reject it. Approvers can be IAM users or roles, and an SNS topic can notify them that an approval is waiting. Not \"Add an aws:sleep step of 24 hours before the restart steps\": A sleep step only delays the restart. The restart would still happen without anyone approving it. Not \"Add an aws:executeScript step that emails the database team and waits...\": Scripts in aws:executeScript have a short time limit and cannot wait for an email reply. Building custom approval logic is unnecessary when aws:approve exists. Not \"Add an aws:assertAwsResourceProperty step that checks whether the...\": This step checks a property of an AWS resource. Whether someone signed in is not an approval of the restart."
+  ref: "Question d1-38 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-39
+  kind: choice
+  en: "A company must run the same AWS Systems Manager Automation runbook to enable a security setting in 40 AWS accounts across 3 AWS Regions. The accounts are members of an organization in AWS Organizations. Which solution will meet this requirement in the MOST operationally efficient way?"
+  options:
+    - "Sign in to each of the 40 accounts, and start the runbook in each of the 3 Regions from the console."
+    - "Share the runbook with each account, and ask each account owner to start it in their own Regions."
+    - "Run the runbook once from the management or delegated administrator account by targeting the OUs and Regions."
+    - "Write a script that loops over the accounts and Regions and assumes a role to start each run."
+  correct: [C]
+  why: "Automation supports multi-account and multi-Region runs. From the management account or a delegated administrator account, you choose target accounts or OUs and Regions, and Automation runs the runbook in each one by assuming an execution role in the target accounts. Not \"Sign in to each of the 40 accounts, and start the runbook in each of...\": 120 manual runs take a long time and are easy to get wrong or skip. Not \"Share the runbook with each account, and ask each account owner to...\": Depending on 40 account owners is slow and hard to track, and some runs might never happen. Not \"Write a script that loops over the accounts and Regions and assumes a...\": A custom script works, but it is code to write, secure, and maintain. Automation provides this capability natively."
+  ref: "Question d1-39 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-40
+  kind: choice
+  en: "A CloudOps engineer must run an AWS Systems Manager Automation runbook that patches and reboots 300 Amazon EC2 instances tagged Env=Prod. No more than 10% of the instances can be offline at the same time. The run must stop if more than 5 instances fail. Which Automation settings will meet these requirements?"
+  options:
+    - "Target a resource group, with concurrency set to 100% and the error threshold set to 10%."
+    - "Target each instance ID in a separate run. Start each run after the last one ends."
+    - "Target the Env=Prod tag, with concurrency set to 30 and the error threshold set to 0%."
+    - "Target the Env=Prod tag, with concurrency set to 10% and the error threshold set to 5."
+  correct: [D]
+  why: "Rate control lets you target resources by tag and limit concurrency as a number or a percentage. A concurrency of 10% keeps no more than 30 instances in progress at once, and an error threshold of 5 stops the run when more than 5 instances fail. Not \"Target the Env=Prod tag, with concurrency set to 30 and the error...\": A concurrency of 30 works, but an error threshold of 0% stops the run after the first failure, which is stricter than required. Not \"Target each instance ID in a separate run. Start each run after the...\": Hundreds of separate runs add a lot of manual work. Rate controls exist to do this in a single run. Not \"Target a resource group, with concurrency set to 100% and the error...\": 100% concurrency patches and reboots every instance at the same time, which takes the whole fleet offline."
+  ref: "Question d1-40 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-41
+  kind: choice
+  en: "A company's on-call engineers spend hours during each incident correlating Amazon CloudWatch metrics and logs with recent deployments and code changes in GitHub. An investigation must start automatically when a high-severity CloudWatch alarm fires. The company also needs a root cause analysis and mitigation steps. Which solution will meet these requirements with the LEAST operational overhead?"
+  options:
+    - "Configure AWS CloudTrail Insights."
+    - "Configure AWS DevOps Agent with the CloudWatch and GitHub integrations, and trigger investigations from the alarms."
+    - "Build an AWS Step Functions workflow that collects metrics, logs, and commit history, and emails them to the on-call team."
+    - "Create a CloudWatch dashboard that shows metrics, logs, and deployment markers for each service in a single view."
+  correct: [B]
+  why: "AWS DevOps Agent investigates incidents on its own when an alert arrives, such as a CloudWatch alarm. It correlates telemetry with code repositories and deployment history, and it reports root cause findings and a mitigation plan, which reduces mean time to resolution. Not \"Build an AWS Step Functions workflow that collects metrics, logs, and...\": This gathers data but still leaves the analysis to people, and the workflow is custom code to build and maintain. Not \"Create a CloudWatch dashboard that shows metrics, logs, and...\": A dashboard puts data in one place, but engineers still have to correlate it and find the root cause by hand. Not \"Configure AWS CloudTrail Insights\": Insights detects unusual API call rates and API error rates. Most application incidents are not caused by API call volume, and Insights provides no root cause analysis."
+  ref: "Question d1-41 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-42
+  kind: choice
+  en: "A CloudOps engineer uses Kiro to write AWS CloudFormation templates and remediation scripts. Company standards require CostCenter and Owner tags on every resource, and all scripts must use the company's logging library. The CloudOps engineer does not want to repeat these standards in every chat session. Which Kiro feature should the CloudOps engineer use?"
+  options:
+    - "A Model Context Protocol server that stores each tag value"
+    - "Steering files in the .kiro/steering folder of the workspace"
+    - "An agent hook that runs each time a file in the project is deleted"
+    - "A spec that is regenerated at the start of every chat session"
+  correct: [B]
+  why: "Steering files are Markdown files that give Kiro persistent knowledge of a project's conventions and standards. Workspace steering in .kiro/steering applies to every session in that project, so the tagging and logging rules are followed without being repeated. Not \"A spec that is regenerated at the start of every chat session\": Specs capture the requirements, design, and tasks for a specific feature. Regenerating one for every session does not give persistent, project-wide standards. Not \"An agent hook that runs each time a file in the project is deleted\": Hooks run an agent action when an event occurs, such as saving a file. A delete trigger does not teach Kiro the team's standards when it writes new code. Not \"A Model Context Protocol server that stores each tag value\": MCP servers connect Kiro to external tools and data. They are not where team coding conventions belong."
+  ref: "Question d1-42 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-43
+  kind: choice
+  en: "A CloudOps engineer uses Kiro to help investigate a latency problem. Kiro must read live Amazon CloudWatch metrics, alarms, and logs from the account while it drafts a remediation runbook. Kiro must be able to read data only. What should the CloudOps engineer do to meet these requirements?"
+  options:
+    - "Create an agent hook that grants Kiro the AdministratorAccess policy each time that a file is saved."
+    - "Configure an AWS MCP server for CloudWatch in Kiro that uses an IAM role with read-only permissions."
+    - "Export the CloudWatch data to a CSV file every hour, and add each file to the Kiro workspace manually."
+    - "Paste the root user's access keys into a Kiro steering file."
+  correct: [B]
+  why: "Kiro uses the Model Context Protocol (MCP) to connect to external tools. AWS provides MCP servers that let an agent query services such as CloudWatch, and the credentials that the server uses decide what it can do. A read-only role meets the requirement. Not \"Paste the root user's access keys into a Kiro steering file\": Root user access keys should never be created or shared, and steering files are plain-text project guidance, not a credential store. Not \"Export the CloudWatch data to a CSV file every hour, and add each...\": Hourly CSV exports are manual work and give Kiro stale data instead of live metrics. Not \"Create an agent hook that grants Kiro the AdministratorAccess policy...\": Hooks run agent actions on IDE events. Granting administrator access breaks the read-only requirement."
+  ref: "Question d1-43 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-44
+  kind: choice
+  en: "A CloudOps engineer creates an Amazon CloudWatch alarm on the HTTPCode_Target_5XX_Count metric of an Application Load Balancer. The alarm has a threshold of 50 errors in 5 minutes and uses the Average statistic. During an incident, the access logs show more than 300 errors in 5 minutes, but the alarm stays in the OK state. What should the CloudOps engineer do to resolve this issue?"
+  options:
+    - "Change the alarm statistic from Average to Minimum."
+    - "Enable access logging for the target group as well."
+    - "Change the alarm statistic from Average to Sum."
+    - "Change the alarm period from 5 minutes to 1 hour."
+  correct: [C]
+  why: "Count metrics such as HTTPCode_Target_5XX_Count should be alarmed on with the Sum statistic. Average divides the total by the number of data points received, so it stays low. Sum shows the real number of errors in the period. Not \"Change the alarm statistic from Average to Minimum\": Minimum reports the smallest value seen in the period, which makes the alarm even less likely to fire. Not \"Change the alarm period from 5 minutes to 1 hour\": A longer period changes the time window and would delay alerts. The problem is the statistic, not the period. Not \"Enable access logging for the target group as well\": The access logs already show the errors. More logs do not change how the alarm evaluates the metric."
+  ref: "Question d1-44 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-45
+  kind: choice
+  en: "A company's application runs behind an Application Load Balancer. After a deployment, users receive HTTP 503 errors. The HTTPCode_ELB_503_Count metric is high, and HTTPCode_Target_5XX_Count is 0. The HealthyHostCount metric for the target group is 0. What is the MOST likely cause of this issue?"
+  options:
+    - "The application on the targets is throwing unhandled exceptions."
+    - "The ALB security group blocks inbound HTTPS from the internet."
+    - "The target group has no registered targets to route requests to."
+    - "The targets are taking longer than the idle timeout to respond."
+  correct: [C]
+  why: "An ELB 503 error means that the target group has no registered targets, and a HealthyHostCount of 0 fits that. The deployment most likely deregistered the targets. If the targets were registered but all unhealthy, the ALB would fail open and still send them requests. Not \"The application on the targets is throwing unhandled exceptions\": Application errors would appear as target 5XX responses, but HTTPCode_Target_5XX_Count is 0. Not \"The targets are taking longer than the idle timeout to respond\": Responses that take too long cause 504 Gateway Timeout errors from the load balancer, not 503 errors. Not \"The ALB security group blocks inbound HTTPS from the internet\": If the security group blocked clients, their requests would never reach the load balancer, so it could not return a 503 error."
+  ref: "Question d1-45 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-46
+  kind: choice
+  en: "A company has an AWS Lambda function that processes images that are uploaded to Amazon S3. During a marketing campaign, the function's Throttles metric rises sharply, and ConcurrentExecutions for the account in that AWS Region levels off at 1,000. Other functions in the account also are being throttled. What should a CloudOps engineer do to resolve this issue?"
+  options:
+    - "Request an increase to the Lambda concurrent executions quota through Service Quotas."
+    - "Increase the memory of the function to process more images with each invocation."
+    - "Enable provisioned concurrency for every function in the account to remove throttles."
+    - "Set reserved concurrency of 1,000 on the image function to allow it to scale further."
+  correct: [A]
+  why: "The account has reached its Regional concurrency limit, which affects every function in the account. Requesting a higher concurrent executions quota through Service Quotas raises the ceiling for all functions. Not \"Increase the memory of the function to process more images with each...\": More memory can shorten each run, but it does not raise the account concurrency limit that causes the throttles. Not \"Set reserved concurrency of 1,000 on the image function to allow it...\": Reserved concurrency carves capacity out of the existing account limit. It cannot exceed that limit, and it would leave even less for the other functions. Not \"Enable provisioned concurrency for every function in the account to...\": Provisioned concurrency also counts against the account limit, and it adds cost. It does not raise the ceiling."
+  ref: "Question d1-46 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-47
+  kind: choice
+  en: "A company has worker instances that read jobs from an Amazon SQS queue. Every job must start within 10 minutes of being queued. A CloudOps engineer needs an alarm that warns when this requirement is at risk. Which metric should the alarm use?"
+  options:
+    - "NumberOfMessagesSent"
+    - "NumberOfEmptyReceives"
+    - "SentMessageSize"
+    - "ApproximateAgeOfOldestMessage"
+  correct: [D]
+  why: "ApproximateAgeOfOldestMessage shows how long the oldest unprocessed message has waited. An alarm below 10 minutes, for example at 8 minutes, warns the team before jobs miss their start target. Not \"NumberOfMessagesSent\": This counts messages added to the queue. A high value does not show whether workers are falling behind. Not \"NumberOfEmptyReceives\": Empty receives are polls that found no messages, which shows idle workers, not delays. Not \"SentMessageSize\": Message size does not show how long jobs wait in the queue."
+  ref: "Question d1-47 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-48
+  kind: choice
+  en: "A company needs to right-size 200 Amazon EC2 instances. AWS Compute Optimizer marks many of the instances as over-provisioned. However, the application team says that the workloads are memory-bound and would fail on smaller instances. What should a CloudOps engineer do to get more accurate recommendations?"
+  options:
+    - "Install the Amazon CloudWatch agent to publish memory utilization."
+    - "Enable detailed monitoring on the instances."
+    - "Export the recommendations to Amazon S3, and remove instances with high memory use from the results."
+    - "Switch the instances to burstable performance types."
+  correct: [A]
+  why: "By default, Compute Optimizer analyzes metrics that EC2 provides, such as CPU and network, and it cannot see memory. When the CloudWatch agent publishes memory utilization, Compute Optimizer uses it and stops recommending smaller instances for memory-bound workloads. Enhanced infrastructure metrics can also extend the lookback period to 3 months. Not \"Enable detailed monitoring on the instances\": Compute Optimizer already uses CPU data. More frequent CPU data does not tell it about memory pressure. Not \"Switch the instances to burstable performance types\": Changing instance families just to collect a different metric could hurt performance, and it still would not provide memory data. Not \"Export the recommendations to Amazon S3, and remove instances with...\": Filtering results by hand is manual work and does not make the remaining recommendations any more accurate."
+  ref: "Question d1-48 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-49
+  kind: choice
+  en: "A company runs an internal reporting application on a t3.large Amazon EC2 instance in standard credit mode. Every afternoon, report generation becomes very slow. Amazon CloudWatch shows CPUCreditBalance falling to 0 and CPUUtilization staying flat at about 30%. Which solution will resolve this issue with the LEAST operational overhead?"
+  options:
+    - "Attach a larger gp3 volume to the instance."
+    - "Configure detailed monitoring for the instance."
+    - "Move the instance to a cluster placement group."
+    - "Change the instance to unlimited credit mode."
+  correct: [D]
+  why: "When a burstable instance in standard mode runs out of CPU credits, it is held to its baseline performance, which is 30% for a t3.large. Unlimited mode lets the instance burst above the baseline without credits, for an extra charge. If the load stays high most of the time, a fixed-performance instance such as an M-family instance is a better long-term choice. Not \"Configure detailed monitoring for the instance\": Detailed monitoring gives more frequent metrics. It does not add CPU capacity. Not \"Attach a larger gp3 volume to the instance\": The bottleneck is CPU credits, not storage. A larger volume does not change CPU throttling. Not \"Move the instance to a cluster placement group\": Cluster placement groups reduce network latency between instances. They do not affect CPU credits."
+  ref: "Question d1-49 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-50
+  kind: choice
+  en: "A company runs a tightly coupled high performance computing (HPC) application on Amazon EC2 instances. The nodes exchange large amounts of data and need the lowest possible network latency between them. The company accepts the risk of running all nodes in one Availability Zone. Which EC2 placement strategy should a CloudOps engineer use to meet these requirements?"
+  options:
+    - "A partition placement group with 3 partitions"
+    - "An Auto Scaling group with no placement group"
+    - "A spread placement group across Availability Zones"
+    - "A cluster placement group in one Availability Zone"
+  correct: [D]
+  why: "A cluster placement group packs instances close together inside one Availability Zone. This gives the low-latency network performance that tightly coupled node-to-node communication needs. A shared hardware failure can affect more nodes, which the company accepts. Not \"A partition placement group with 3 partitions\": A partition placement group separates groups of instances onto different racks to limit the effect of a hardware failure. It suits large distributed workloads such as HDFS and Cassandra, not the lowest latency. Not \"A spread placement group across Availability Zones\": A spread placement group places each instance on distinct hardware to reduce correlated failures. Spreading instances does not give the lowest latency between them. Not \"An Auto Scaling group with no placement group\": Without a placement group, Amazon EC2 does not keep the instances physically close, so latency between nodes is higher and less consistent."
+  ref: "Question d1-50 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-51
+  kind: choice
+  en: "A company has hundreds of 1,000 GiB gp2 Amazon EBS volumes. Each volume delivers its baseline of 3,000 IOPS, which the workloads need. The company must reduce storage costs without downtime and without reducing performance. What should a CloudOps engineer do to meet these requirements?"
+  options:
+    - "Change each volume to io2 in place by using Elastic Volumes."
+    - "Change each volume to gp3 in place by using Elastic Volumes."
+    - "Stop each instance, and attach a new st1 volume as the root."
+    - "Create snapshots. Restore each one as a new sc1 volume."
+  correct: [B]
+  why: "gp3 costs about 20% less per GiB than gp2 and includes 3,000 IOPS and 125 MiB/s at any size. Elastic Volumes changes the volume type while the volume stays attached and in use, so there is no downtime. If you set no performance values, EBS matches the higher of the source gp2 performance and the gp3 baseline. Not \"Create snapshots. Restore each one as a new sc1 volume\": sc1 is cold HDD storage with low throughput, and it is not designed for random IOPS, so performance would drop sharply. Not \"Change each volume to io2 in place by using Elastic Volumes\": io2 provides provisioned IOPS and high durability, but it costs more than gp2 for this workload. Not \"Stop each instance, and attach a new st1 volume as the root\": st1 cannot be used as a boot volume, and HDD volumes do not suit random I/O."
+  ref: "Question d1-51 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-52
+  kind: choice
+  en: "A company runs a database on an m5.xlarge Amazon EC2 instance with a gp3 Amazon EBS volume that is provisioned for 16,000 IOPS and 1,000 MiB/s. Under heavy load, throughput levels off far below 1,000 MiB/s, and the VolumeQueueLength metric is high. The volume's metrics show that it is well below its provisioned limits. What should a CloudOps engineer do to improve throughput?"
+  options:
+    - "Change the volume type from gp3 to st1 for higher throughput."
+    - "Increase the provisioned IOPS on the gp3 volume to 80,000."
+    - "Move the database to an instance type with higher EBS bandwidth."
+    - "Configure fast snapshot restore for the volume's snapshots."
+  correct: [C]
+  why: "Each instance type has a maximum EBS bandwidth and IOPS. When the instance limit is lower than the volume's provisioned performance, the instance becomes the bottleneck and I/O queues up. A larger or EBS-optimized instance type with more EBS bandwidth raises that ceiling. Not \"Increase the provisioned IOPS on the gp3 volume to 80,000\": The volume is already below its provisioned limits, so more IOPS would not help. The instance cannot drive the volume any harder. Not \"Configure fast snapshot restore for the volume's snapshots\": Fast snapshot restore removes first-read latency on volumes created from snapshots. It does not raise ongoing throughput. Not \"Change the volume type from gp3 to st1 for higher throughput\": st1 is an HDD volume for large sequential reads. It has higher latency and fewer IOPS, which does not suit a database."
+  ref: "Question d1-52 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-53
+  kind: choice
+  en: "A company runs a critical database on a Nitro-based Amazon EC2 instance with a gp3 Amazon EBS volume. The database needs a sustained 150,000 IOPS on a single volume. The volume must have 99.999% durability. The company cannot accept downtime for the change. Which solution will meet these requirements?"
+  options:
+    - "Change the volume type to Provisioned IOPS SSD (io2 Block Express) by using Elastic Volumes."
+    - "Move the database to instance store volumes. Take a nightly backup to Amazon S3."
+    - "Change the volume type to Throughput Optimized HDD (st1) by using Elastic Volumes."
+    - "Increase the provisioned IOPS of the gp3 volume to 150,000 by using Elastic Volumes."
+  correct: [A]
+  why: "io2 Block Express provides up to 256,000 IOPS on Nitro-based instances and is designed for 99.999% durability. Elastic Volumes can change the volume type without detaching the volume or restarting the instance. Not \"Increase the provisioned IOPS of the gp3 volume to 150,000 by using...\": gp3 supports up to 80,000 IOPS and is designed for 99.8% to 99.9% durability, so it meets neither requirement. Not \"Change the volume type to Throughput Optimized HDD (st1) by using...\": st1 is a hard disk volume for sequential throughput. It cannot deliver this level of random IOPS. Not \"Move the database to instance store volumes. Take a nightly backup to...\": Instance store data does not survive stopping or terminating the instance, so it does not meet the durability requirement. A nightly backup also allows up to a day of data loss."
+  ref: "Question d1-53 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-54
+  kind: choice
+  en: "During a disaster recovery test, a company creates a large Amazon EBS volume from a snapshot for a database. The database is slow for several hours because each block loads from the snapshot the first time that it is read. New volumes must deliver full performance as soon as they are created. What should a CloudOps engineer do to meet this requirement?"
+  options:
+    - "Create the new volume as io2 with more provisioned IOPS than the original volume had."
+    - "Take a new snapshot of the slow volume, and create a second volume from that new snapshot."
+    - "Configure fast snapshot restore for the snapshot in the Availability Zone of the new volume."
+    - "Copy the snapshot to another AWS Region. Create the new volume from that copy instead."
+  correct: [C]
+  why: "Volumes created from a snapshot load blocks from Amazon S3 on first access, so early reads are slow. With fast snapshot restore enabled for a snapshot in an Availability Zone, new volumes there deliver their full performance when they are created. It is billed while it is on, so disable it when it is not needed. A provisioned rate for volume initialization is a related option when you only need a predictable initialization time. Not \"Create the new volume as io2 with more provisioned IOPS than the...\": Provisioned IOPS do not change how blocks are fetched from the snapshot, so first reads would still be slow, and io2 adds cost. Not \"Copy the snapshot to another AWS Region. Create the new volume from...\": A snapshot copy is stored the same way, so a volume created from it has the same first-read delay. Not \"Take a new snapshot of the slow volume, and create a second volume...\": A volume created from the new snapshot also loads its blocks on first read, so the delay remains."
+  ref: "Question d1-54 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-55
+  kind: choice
+  en: "A company runs a log analytics job that reads 2 TiB of data sequentially from an Amazon EBS volume every night. Throughput is important for the job, but low latency is not. The data is currently stored on a gp3 volume, and the company needs to reduce storage cost. Which EBS volume type will meet these requirements MOST cost-effectively?"
+  options:
+    - "Throughput Optimized HDD (st1)"
+    - "Cold HDD (sc1)"
+    - "General Purpose SSD (gp2)"
+    - "Provisioned IOPS SSD (io2)"
+  correct: [A]
+  why: "st1 is a low-cost HDD volume designed for frequently accessed, throughput-intensive sequential workloads such as log processing. It costs much less per GiB than SSD volumes and suits a nightly sequential scan. Not \"Cold HDD (sc1)\": sc1 is the lowest-cost volume type, but it is meant for data that is accessed infrequently and has much lower throughput. A nightly 2 TiB scan would take far longer. Not \"Provisioned IOPS SSD (io2)\": io2 is for latency-sensitive workloads that need high IOPS and durability. It is the most expensive option, and its strengths are not needed here. Not \"General Purpose SSD (gp2)\": gp2 is an SSD volume that costs more per GiB than gp3, so it would increase cost."
+  ref: "Question d1-55 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-56
+  kind: choice
+  en: "A media company uploads video files of 20 GB to 80 GB from its data center to an Amazon S3 bucket. Uploads often fail partway through and restart from the beginning. The S3 bill also shows storage charges that are larger than the total size of the completed objects. Which combination of steps will resolve these issues? (Select TWO.)"
+  options:
+    - "Upload each file with a single PUT request to store it as one complete object."
+    - "Enable S3 Versioning to keep failed uploads as earlier versions of each object."
+    - "Add a lifecycle rule that aborts incomplete multipart uploads after a few days."
+    - "Use multipart uploads to retry failed parts without restarting the whole file."
+    - "Enable S3 Object Lock to prevent partial uploads from being deleted by mistake."
+  correct: [C, D]
+  why: "Multipart upload splits a file into parts that are uploaded independently and in parallel. If a part fails, only that part is retried. Objects larger than 5 GB must use multipart upload, and AWS recommends it for objects larger than 100 MB. Parts from uploads that never complete are stored and billed until the upload is completed or aborted. A lifecycle rule with the AbortIncompleteMultipartUpload action deletes those leftover parts automatically. Not \"Upload each file with a single PUT request to store it as one...\": A single PUT request can upload at most 5 GB, so it cannot handle these files, and any failure would still restart the whole upload. Not \"Enable S3 Versioning to keep failed uploads as earlier versions of...\": Versioning applies to completed objects. It does not keep or resume failed uploads, and it can add storage cost. Not \"Enable S3 Object Lock to prevent partial uploads from being deleted...\": Object Lock prevents the deletion of object versions. It would not help uploads finish and could make extra storage permanent."
+  ref: "Question d1-56 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-57
+  kind: choice
+  en: "A company has users in Asia, Europe, and South America who upload large files from a browser to a single Amazon S3 bucket in us-east-1. Uploads from distant locations are slow. The company must speed up uploads without changing the bucket's AWS Region or managing servers. Which solution will meet these requirements?"
+  options:
+    - "Use AWS DataSync agents on each continent to copy the files from the users' browsers to the bucket."
+    - "Enable S3 Intelligent-Tiering for the bucket."
+    - "Create a bucket on each continent. Use S3 Replication to copy files to the bucket in us-east-1."
+    - "Enable S3 Transfer Acceleration for the bucket. Use the accelerate endpoint for uploads."
+  correct: [D]
+  why: "Transfer Acceleration routes uploads to the nearest CloudFront edge location and then across the AWS backbone network to the bucket. It speeds up long-distance transfers to a single bucket, and clients only change the endpoint that they use. Not \"Create a bucket on each continent. Use S3 Replication to copy files...\": This adds buckets and replication to manage, and files would reach us-east-1 later than with a direct accelerated upload. Not \"Enable S3 Intelligent-Tiering for the bucket\": Intelligent-Tiering moves objects between storage tiers to save cost. It does not speed up uploads. Not \"Use AWS DataSync agents on each continent to copy the files from the...\": DataSync agents run on hosts that you manage and copy data from storage systems. They cannot receive uploads from users' browsers."
+  ref: "Question d1-57 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-58
+  kind: choice
+  en: "A company must copy 50 TB of files from an on-premises NFS server to Amazon EFS over an existing AWS Direct Connect connection. The copy must verify data integrity. After the first copy, only changed files must be copied each night until cutover. Which solution will meet these requirements with the LEAST operational overhead?"
+  options:
+    - "Mount the EFS file system on an on-premises server, and run rsync from a cron job each night."
+    - "Deploy an AWS DataSync agent on premises. Create a task that runs on a nightly schedule."
+    - "Order an AWS Snowball Edge device for the first copy, and use the AWS CLI for the nightly changes."
+    - "Use an Amazon S3 File Gateway to copy the files to Amazon S3. Copy them from S3 to Amazon EFS."
+  correct: [B]
+  why: "DataSync copies data between NFS shares and EFS, verifies integrity, and copies only changed files on each run. Tasks run on a schedule and can use a bandwidth limit, so no custom scripts are needed. Not \"Mount the EFS file system on an on-premises server, and run rsync...\": rsync can work, but scripting, monitoring, and retrying it is manual effort, and it lacks managed scheduling and integrity reporting. Not \"Order an AWS Snowball Edge device for the first copy, and use the AWS...\": The company already has Direct Connect, so shipping a device adds time, and the AWS CLI cannot sync NFS changes into EFS. Not \"Use an Amazon S3 File Gateway to copy the files to Amazon S3. Copy...\": Copying through S3 adds an extra hop and an extra copy step, and it does not preserve POSIX metadata the same way."
+  ref: "Question d1-58 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-59
+  kind: choice
+  en: "A company has an analytics application that writes 15,000 objects per second to an Amazon S3 bucket. Every object is written under the same prefix, logs/. The application receives many HTTP 503 Slow Down errors. Which solution will MOST effectively reduce the errors?"
+  options:
+    - "Enable S3 Versioning to store more versions of each object at the same time."
+    - "Spread the objects across multiple prefixes, such as logs/shard-01/ through logs/shard-10/."
+    - "Enable S3 Transfer Acceleration to send the writes through edge locations."
+    - "Keep the single prefix. Use longer object names to spread the keys more evenly."
+  correct: [B]
+  why: "Amazon S3 supports at least 3,500 write requests per second for each partitioned prefix and scales by adding partitions. 15,000 writes per second to one prefix exceeds that, so spreading the writes across several prefixes lets S3 scale. Retrying with exponential backoff also helps while S3 scales. Not \"Enable S3 Transfer Acceleration to send the writes through edge...\": Transfer Acceleration speeds up long-distance transfers. It does not raise the request rate for a prefix. Not \"Enable S3 Versioning to store more versions of each object at the...\": Versioning keeps multiple versions of objects. It does not increase request throughput, and it adds storage. Not \"Keep the single prefix. Use longer object names to spread the keys...\": Request capacity scales with prefixes, not with how long the object names are. One prefix still has the same request rate."
+  ref: "Question d1-59 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-60
+  kind: choice
+  en: "A company stores 400 TB of user-generated content in Amazon S3 Standard. Some objects are read heavily for months and others are never read again, and the pattern cannot be predicted. Reads must stay in milliseconds. The company must reduce storage costs without building analysis jobs. Which solution will meet these requirements?"
+  options:
+    - "Use S3 Storage Lens to find cold prefixes. Move them to S3 Standard-IA manually each month."
+    - "Move all objects to S3 Glacier Deep Archive after 30 days with a lifecycle rule."
+    - "Move all objects to S3 One Zone-IA after 30 days with a lifecycle rule."
+    - "Move the objects to S3 Intelligent-Tiering by using a lifecycle rule."
+  correct: [D]
+  why: "Intelligent-Tiering moves each object between access tiers based on its own access pattern and moves it back when it is read again. The automatic tiers keep millisecond reads, and there are no retrieval fees, which suits unpredictable access. A small monthly monitoring fee applies for each object. Not \"Move all objects to S3 Glacier Deep Archive after 30 days with a...\": Deep Archive retrieval takes hours, which fails the millisecond requirement, and objects that are still read heavily would incur retrieval costs. Not \"Move all objects to S3 One Zone-IA after 30 days with a lifecycle...\": One Zone-IA keeps data in one Availability Zone and charges for retrievals. Objects that are read heavily would cost more, and resilience would be lower. Not \"Use S3 Storage Lens to find cold prefixes. Move them to S3...\": This is manual analysis and movement, which the company wants to avoid, and Standard-IA charges retrieval fees for objects that become popular again."
+  ref: "Question d1-60 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-61
+  kind: choice
+  en: "A company is migrating a Windows-based line-of-business application to Amazon EC2. The application needs a shared file system that supports the SMB protocol, uses Microsoft Active Directory for permissions, and supports DFS namespaces. Which storage service should a CloudOps engineer choose to meet these requirements?"
+  options:
+    - "Amazon FSx for Windows File Server"
+    - "Amazon EFS with Max I/O performance mode"
+    - "Amazon FSx for Lustre linked to an Amazon S3 bucket"
+    - "Amazon S3 Files mounted on each instance"
+  correct: [A]
+  why: "FSx for Windows File Server provides fully managed Windows file shares over SMB. It joins Microsoft Active Directory, uses Windows ACLs, and supports DFS namespaces and shadow copies. Not \"Amazon EFS with Max I/O performance mode\": EFS is an NFS file system for Linux workloads. It does not support SMB or Windows permissions that come from Active Directory. Not \"Amazon FSx for Lustre linked to an Amazon S3 bucket\": FSx for Lustre is a high-performance file system for compute-intensive Linux workloads such as HPC. It does not provide SMB shares. Not \"Amazon S3 Files mounted on each instance\": S3 Files provides NFS access to the data in an S3 bucket. It does not provide SMB shares or Windows ACLs from Active Directory."
+  ref: "Question d1-61 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-62
+  kind: choice
+  en: "A company has a content management system that stores files on an Amazon EFS file system. The file system uses Bursting throughput mode and holds only 50 GiB of data, and traffic is spiky. During peaks, file operations become slow, and the BurstCreditBalance metric drops to 0. Which solution will resolve this issue with the LEAST operational overhead?"
+  options:
+    - "Switch the file system to Elastic throughput mode."
+    - "Create a second mount target in the same subnet."
+    - "Switch the file system to Max I/O performance mode."
+    - "Add 1 TiB of placeholder files to earn more burst credits."
+  correct: [A]
+  why: "In Bursting mode, throughput scales with the amount of data stored, so a small file system earns few credits. Elastic throughput scales up and down automatically with the workload, and you pay for the throughput that you use, which suits spiky traffic. Not \"Add 1 TiB of placeholder files to earn more burst credits\": More stored data does raise baseline throughput, but placeholder files are a workaround that adds storage cost and must be maintained. Not \"Switch the file system to Max I/O performance mode\": Max I/O is a performance mode for highly parallel workloads, and it has higher latency. It does not add throughput when burst credits run out. Not \"Create a second mount target in the same subnet\": A file system can have only one mount target in each Availability Zone, and mount targets do not add throughput."
+  ref: "Question d1-62 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-63
+  kind: choice
+  en: "A company's data science team keeps 300 TB of datasets in an Amazon S3 bucket. The team's Python tools and shell scripts need a shared POSIX file system, so engineers copy data to Amazon EBS volumes before each job. The company needs to stop copying the data. Which solution will meet this requirement with the LEAST operational overhead?"
+  options:
+    - "Use Mountpoint for Amazon S3 on each instance. Change the tools that edit files in place."
+    - "Create an Amazon FSx for Windows File Server share. Use AWS DataSync to keep it in sync with the bucket."
+    - "Create a file system for the bucket with Amazon S3 Files, and mount it on the compute instances."
+    - "Copy the datasets to an Amazon EFS file system each night. Copy results back with AWS DataSync."
+  correct: [C]
+  why: "S3 Files makes an S3 bucket accessible as a shared NFS file system that compute resources can mount. The data stays in the bucket, changes made through the file system are synced back to S3, and there is no copy step or migration. Not \"Copy the datasets to an Amazon EFS file system each night. Copy...\": Nightly copies duplicate 300 TB of data and add sync jobs to manage, which is the overhead the team wants to remove. Not \"Use Mountpoint for Amazon S3 on each instance. Change the tools that...\": Mountpoint for Amazon S3 does not provide full file system semantics, such as editing existing files in place, so the tools would need changes. Not \"Create an Amazon FSx for Windows File Server share. Use AWS DataSync...\": FSx for Windows File Server provides SMB shares for Windows workloads. It does not suit Linux Python tools, and syncing it with the bucket keeps a second copy of the data."
+  ref: "Question d1-63 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-64
+  kind: choice
+  en: "A company has an Amazon RDS for PostgreSQL DB instance that shows high CPU utilization every day at 11:00. A CloudOps engineer needs to identify which SQL statements and wait events cause the load. Which solution will meet this requirement with the LEAST operational overhead?"
+  options:
+    - "Configure AWS CloudTrail data events for the DB instance, and search the trail for the SQL that ran at 11:00."
+    - "Enable Enhanced Monitoring. Review the operating system process list for the DB instance."
+    - "Export the instance's metrics to Amazon S3, and use Amazon Athena to correlate CPU with query counts."
+    - "Use Amazon CloudWatch Database Insights (formerly Performance Insights) to view DB load by top SQL and wait events."
+  correct: [D]
+  why: "CloudWatch Database Insights shows database load as average active sessions and breaks it down by dimensions such as top SQL and wait events, which identifies the statements behind the 11:00 load directly. It replaced Performance Insights in 2026. The exam guide still uses the older name, so know both. Not \"Enable Enhanced Monitoring. Review the operating system process list...\": Enhanced Monitoring shows OS metrics and processes. It shows that database processes use CPU, but not which SQL statements cause it. Not \"Configure AWS CloudTrail data events for the DB instance, and search...\": CloudTrail records RDS management API calls, such as modifying an instance. It does not record SQL statements that run inside the database. Not \"Export the instance's metrics to Amazon S3, and use Amazon Athena to...\": CloudWatch metrics such as CPUUtilization do not include individual SQL statements, so this analysis cannot find them."
+  ref: "Question d1-64 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d1-65
+  kind: choice
+  en: "A company has an AWS Lambda function that connects to an Amazon Aurora MySQL database. During traffic spikes, thousands of function instances open new connections. The database reaches its max_connections limit, and requests fail with Too many connections errors. Which solution will resolve this issue with the LEAST change to the application code?"
+  options:
+    - "Set the function's reserved concurrency to 0 during spikes."
+    - "Create an Amazon RDS Proxy for the database. Change the function to connect to the proxy endpoint."
+    - "Add an Aurora Replica. Send all of the function's connections to the cluster reader endpoint."
+    - "Increase the max_connections parameter to the highest value allowed for the DB instance class."
+  correct: [B]
+  why: "RDS Proxy pools and shares database connections, so many function instances reuse a smaller number of connections to the database. Only the connection endpoint changes in the function's configuration. The proxy can also use IAM authentication and Secrets Manager for credentials. Not \"Increase the max_connections parameter to the highest value allowed...\": A higher limit uses more database memory and only delays the problem, because each new connection still adds overhead. Not \"Set the function's reserved concurrency to 0 during spikes\": Reserved concurrency of 0 stops the function from running at all, so the requests would fail. Not \"Add an Aurora Replica. Send all of the function's connections to the...\": A reader endpoint accepts read-only work. Writes from the function would fail, and the replica has its own connection limit."
+  ref: "Question d1-65 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]

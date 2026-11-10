@@ -207,3 +207,42 @@
   why: "DMS data validation compares source and target data row by row during and after migration and reports mismatches."
   ref: "AWS DMS User Guide: AWS DMS data validation"
   exams: [sap]
+
+- id: rm-sap-mig-001
+  kind: choice
+  en: "A company must vacate its data centre in six months. Of 300 applications, most are commodity workloads on supported operating systems, a handful are commercial products the vendor now offers as SaaS, and about 20 are legacy applications nobody uses. Which strategy mix reflects the right priorities?"
+  options:
+    - "Rehost the bulk of the estate, repurchase the vendor products as SaaS, retire the unused applications, and defer refactoring until after the deadline."
+    - "Refactor every application to serverless before migrating, to avoid carrying technical debt into AWS."
+    - "Retain the estate on-premises and extend the data centre lease while a full modernisation programme runs."
+    - "Replatform all 300 applications onto managed services during the move."
+  correct: [A]
+  why: "With a hard deadline, the strategies are chosen per application. Rehosting is the fastest route for commodity workloads, repurchasing removes applications entirely where the vendor offers SaaS, and retiring unused applications reduces scope for free. Refactoring is the slowest strategy and is deferred until the deadline is met. Not \"Refactor every application to serverless before migrating, to avoid...\": Refactoring 300 applications is a multi-year programme and guarantees missing a six-month deadline. Not \"Retain the estate on-premises and extend the data centre lease while...\": Extending the lease contradicts the stated constraint that the data centre must be vacated. Not \"Replatform all 300 applications onto managed services during the move\": Replatforming everything adds change and testing to every workload, which the deadline does not allow, and many commodity workloads gain little from it."
+  ref: "Question mig-001 (Migration strategy selection) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [sap]
+
+- id: rm-sap-mig-002
+  kind: choice
+  en: "A 4 TB Oracle database must move to Amazon Aurora PostgreSQL with no more than 15 minutes of downtime at cutover. Stored procedures and schema objects must be converted. Which approach should the architect use?"
+  options:
+    - "Export with Data Pump, copy the dump to S3, and import into Aurora during a weekend outage."
+    - "Use AWS DataSync to copy the database files into Aurora's storage layer."
+    - "Convert the schema with AWS Schema Conversion Tool, then run AWS DMS with full load plus change data capture, cutting over once replication lag is near zero."
+    - "Create an Aurora read replica of the Oracle database and promote it at cutover."
+  correct: [C]
+  why: "This is a heterogeneous migration, so the schema and procedural code need conversion first — the job SCT does. DMS then performs a full load followed by continuous change data capture, so the target stays current while the source keeps serving; cutover happens when lag approaches zero, which is what keeps downtime inside 15 minutes. Not \"Export with Data Pump, copy the dump to S3, and import into Aurora...\": A dump and import means the source is frozen for the whole transfer and load of 4 TB, far exceeding 15 minutes, and Data Pump does not convert Oracle procedures to PostgreSQL. Not \"Create an Aurora read replica of the Oracle database and promote it...\": Read replicas exist within an engine family; Aurora PostgreSQL cannot be a replica of an Oracle database. Not \"Use AWS DataSync to copy the database files into Aurora's storage...\": DataSync moves files between file and object storage. Database storage internals are not accessible or portable this way."
+  ref: "Question mig-002 (Database migration with DMS and SCT) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [sap]
+
+- id: rm-sap-mig-003
+  kind: choice
+  en: "A broadcaster must move a 900 TB archive to Amazon S3 within eight weeks, and afterwards keep synchronising roughly 2 TB of new footage each week from the same on-premises NAS. The site has a 1 Gbps link shared with production traffic. What should the architect propose?"
+  options:
+    - "Move the 900 TB archive with AWS Snowball Edge devices, then use AWS DataSync over the network for the weekly 2 TB increments."
+    - "Use AWS DataSync for both the initial archive and the weekly increments."
+    - "Use S3 Transfer Acceleration with multipart uploads for both the archive and the increments."
+    - "Use Snowball Edge for the archive and ship a further device every week for the increments."
+  correct: [A]
+  why: "The two workloads have different shapes. 900 TB over a shared 1 Gbps link would take many months, so the bulk archive goes offline via Snowball Edge. The ongoing 2 TB per week is a few hours of transfer, well within the link's capacity, and DataSync handles scheduled incremental synchronisation with verification. Not \"Use AWS DataSync for both the initial archive and the weekly...\": DataSync cannot overcome physics — 900 TB on a shared 1 Gbps link misses the eight-week deadline by a wide margin. Not \"Use Snowball Edge for the archive and ship a further device every...\": Shipping a device weekly for 2 TB adds handling delay and cost for a volume the network transfers comfortably. Not \"Use S3 Transfer Acceleration with multipart uploads for both the...\": Transfer Acceleration optimises long-distance throughput but is still bounded by the site's own uplink, so the archive remains infeasible."
+  ref: "Question mig-003 (Large-scale data transfer) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [sap]

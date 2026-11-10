@@ -153,3 +153,29 @@
   why: "Asynchronous decoupling lets the web tier stay responsive while the backlog is processed; scaling on ApproximateNumberOfMessagesVisible (or backlog per instance) matches workers to demand."
   ref: "Amazon EC2 Auto Scaling User Guide: Scaling policy based on Amazon SQS"
   exams: [dop]
+
+- id: rm-dop-rcs-001
+  kind: choice
+  en: "Instances behind an ALB sometimes keep passing EC2 status checks while the application process is dead, and they stay in service. The team also needs new instances to complete a five-minute warm-up before receiving traffic. Which combination addresses both?"
+  options:
+    - "Set the Auto Scaling group health check type to ELB, and configure a health check grace period covering the warm-up."
+    - "Shorten the ALB health check interval and reduce the deregistration delay."
+    - "Replace the target tracking policy with a scheduled scaling policy."
+    - "Enable instance scale-in protection and increase the cooldown period."
+  correct: [A]
+  why: "EC2 status checks only verify the instance, so a dead application still passes; switching the group's health check type to ELB makes the load balancer's application-level verdict authoritative so failing instances are replaced. The health check grace period stops the group from judging an instance before its warm-up finishes. Not \"Shorten the ALB health check interval and reduce the deregistration...\": Faster ALB checks change nothing while Auto Scaling is not consulting the ALB, and deregistration delay concerns instances leaving, not arriving. Not \"Enable instance scale-in protection and increase the cooldown period\": Scale-in protection actively prevents the replacement the design needs. Not \"Replace the target tracking policy with a scheduled scaling policy\": Scaling policy choice governs when capacity changes, not how unhealthy instances are detected or warmed up."
+  ref: "Question rcs-001 (Auto Scaling and self-healing) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dop]
+
+- id: rm-dop-rcs-002
+  kind: choice
+  en: "A compliance team requires that backups of EBS, RDS and DynamoDB across all accounts follow one retention policy, are copied to a second Region, and cannot be deleted early by anyone including an account administrator. What should be implemented?"
+  options:
+    - "S3 Cross-Region Replication with Object Lock on an export bucket."
+    - "AWS Backup with organization-level backup policies, cross-Region copy in the backup plan, and Vault Lock in compliance mode."
+    - "Per-account Data Lifecycle Manager policies with a Lambda function copying snapshots cross-Region."
+    - "A nightly script assuming a role in each account and calling each service's snapshot API."
+  correct: [B]
+  why: "AWS Backup spans all three services from one control plane, backup policies can be applied organization-wide through Organizations, backup plans handle cross-Region copies, and Vault Lock in compliance mode makes recovery points immutable until expiry — not even the root user can delete them early. Not \"Per-account Data Lifecycle Manager policies with a Lambda function...\": Data Lifecycle Manager covers EBS snapshots and AMIs only, so RDS and DynamoDB fall outside it, and the copy function is code to maintain. Not \"A nightly script assuming a role in each account and calling each...\": Bespoke scripting per service and account is fragile and provides no immutability guarantee. Not \"S3 Cross-Region Replication with Object Lock on an export bucket\": Object Lock protects S3 objects, but the sources are EBS, RDS and DynamoDB, which something else would first have to export."
+  ref: "Question rcs-002 (Backup and disaster recovery automation) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dop]

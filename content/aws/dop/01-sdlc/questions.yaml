@@ -232,3 +232,55 @@
   why: "Traffic-splitting deployments run a canary of new instances that receive a percentage of client traffic for an evaluation period, then finish or roll back based on health."
   ref: "AWS Elastic Beanstalk Developer Guide: Traffic-splitting deployments"
   exams: [dop]
+
+- id: rm-dop-sdlc-001
+  kind: choice
+  en: "A pipeline defined in a shared tooling account must deploy CloudFormation stacks into separate development, staging and production accounts. Artifacts are stored in S3 and encrypted with KMS. What is required for the cross-account deployments to work?"
+  options:
+    - "Making the artifact bucket public so target accounts can retrieve build outputs."
+    - "An IAM user in each target account whose access keys are stored in the pipeline account's Secrets Manager."
+    - "A separate pipeline in each target account, triggered by a webhook from the tooling account."
+    - "A deployment role in each target account trusted by the pipeline account, a customer managed KMS key on the artifact bucket shared with the target accounts, and a bucket policy granting them read access."
+  correct: [D]
+  why: "Cross-account CodePipeline deployment has three moving parts that must all line up: a role in the target account that the pipeline account can assume, artifact bucket permissions allowing the target account to read, and — because artifacts are encrypted — a customer managed KMS key whose policy grants those accounts decrypt. An AWS managed key cannot be shared this way, which is the detail most often missed. Not \"An IAM user in each target account whose access keys are stored in...\": Long-lived access keys are unnecessary when role assumption exists, and they create a credential to rotate and protect in perpetuity. Not \"Making the artifact bucket public so target accounts can retrieve...\": A public artifact bucket exposes build output, which frequently contains configuration and source, to the internet. Not \"A separate pipeline in each target account, triggered by a webhook...\": Duplicating the pipeline per account multiplies maintenance and loses the single promotion path that staged deployment depends on."
+  ref: "Question sdlc-001 (CodePipeline design) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dop]
+
+- id: rm-dop-sdlc-002
+  kind: choice
+  en: "An ECS service on Fargate must be updated with no downtime, traffic shifted to the new version only after automated tests pass against it, and an immediate return to the old version if error rates rise within the first hour. Which configuration achieves this?"
+  options:
+    - "Updating the task definition and forcing a new deployment, monitoring the service manually."
+    - "Two ECS services behind weighted Route 53 records, adjusted by hand after testing."
+    - "An ECS rolling update with a minimum healthy percent of 100 and maximum percent of 200."
+    - "CodeDeploy blue/green deployment for ECS with a test listener for validation hooks, and CloudWatch alarms configured to trigger automatic rollback during the bake period."
+  correct: [D]
+  why: "CodeDeploy blue/green for ECS stands up the replacement task set behind a test listener so hooks can validate it before any production traffic shifts, then shifts traffic and holds a bake period during which alarms can trigger an automatic rollback to the original task set. Not \"An ECS rolling update with a minimum healthy percent of 100 and...\": A rolling update replaces tasks in place with no separate environment to test against, and rollback means another rolling deployment rather than an instant switch. Not \"Updating the task definition and forcing a new deployment, monitoring...\": Manual monitoring is neither automated validation nor automatic rollback. Not \"Two ECS services behind weighted Route 53 records, adjusted by hand...\": DNS weighting is slow to take effect because of resolver caching and requires manual intervention, so it cannot deliver an immediate rollback."
+  ref: "Question sdlc-002 (Deployment strategies) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dop]
+
+- id: rm-dop-sdlc-003
+  kind: choice
+  en: "A team wants unit tests, static analysis and a security scan to run on every commit, with the pipeline stopping before deployment if any of them fail, and the results retained for audit. What is the appropriate design?"
+  options:
+    - "A manual approval action where a reviewer confirms the tests were run locally."
+    - "A post-deployment Lambda function that runs the checks and raises a ticket if they fail."
+    - "A CodeBuild test stage in CodePipeline running all three checks, reporting through CodeBuild test reports, with the stage failing the pipeline on a non-zero exit."
+    - "A nightly CodeBuild project that scans the repository and emails the team."
+  correct: [C]
+  why: "Putting the checks in a CodeBuild stage before the deploy stage makes them a gate: a non-zero exit fails the stage and the pipeline does not proceed. Test report groups retain structured results for audit, and everything runs automatically on every commit. Not \"A manual approval action where a reviewer confirms the tests were run...\": Manual attestation is not automation and gives no retained evidence of what actually ran. Not \"A post-deployment Lambda function that runs the checks and raises a...\": Running checks after deployment means faulty code has already reached the environment, which is what the gate is meant to prevent. Not \"A nightly CodeBuild project that scans the repository and emails the...\": A nightly scan detects problems up to a day late and does not block a deployment."
+  ref: "Question sdlc-003 (Automated testing in pipelines) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dop]
+
+- id: rm-dop-sdlc-004
+  kind: choice
+  en: "An organization requires that the exact container image tested in staging is the one deployed to production, and that an image tag can never be repointed to different content after it is pushed. What should be configured?"
+  options:
+    - "Enable tag immutability on the ECR repository and promote images by digest between environments."
+    - "Store built images as tar archives in a versioned S3 bucket."
+    - "Always deploy the image tagged latest, refreshed at each promotion."
+    - "Rebuild the image in each environment from the same commit hash."
+  correct: [A]
+  why: "Tag immutability makes ECR reject a push that would overwrite an existing tag, and referring to images by digest guarantees byte-for-byte identity between what was tested and what is deployed. Together they close the gap the requirement describes. Not \"Rebuild the image in each environment from the same commit hash\": Rebuilding produces a different image even from identical source, because base images and dependencies move; the tested artifact is not the deployed artifact. Not \"Always deploy the image tagged latest, refreshed at each promotion\": A mutable latest tag is the exact anti-pattern being prohibited — its content changes over time. Not \"Store built images as tar archives in a versioned S3 bucket\": S3 versioning preserves archives but abandons the container registry, and nothing prevents deploying a different archive than the one tested."
+  ref: "Question sdlc-004 (Artifact management and versioning) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dop]

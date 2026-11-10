@@ -258,3 +258,55 @@
   why: "Macie samples and classifies objects using managed and custom data identifiers and reports buckets that contain sensitive data such as PII."
   ref: "Amazon Macie User Guide: Automated sensitive data discovery"
   exams: [sap]
+
+- id: rm-sap-imp-001
+  kind: choice
+  en: "A Lambda-based API backed by Amazon RDS fails under load with database connection errors, even though CPU on the database stays under 40 percent. Concurrency spikes create hundreds of short-lived connections. What is the correct fix?"
+  options:
+    - "Put Amazon RDS Proxy between the functions and the database to pool and reuse connections."
+    - "Increase the database instance class to raise the connection limit."
+    - "Raise the Lambda function's reserved concurrency so more invocations run in parallel."
+    - "Add a read replica and send all queries to it."
+  correct: [A]
+  why: "The symptom — connection exhaustion with low CPU — is a connection-management problem, not a capacity problem. RDS Proxy maintains a warm pool and multiplexes many short-lived client connections onto far fewer database connections, which is the standard remedy for serverless workloads against relational databases. Not \"Increase the database instance class to raise the connection limit\": Scaling up raises the connection ceiling at higher cost while leaving the churn of thousands of short-lived connections intact; the ceiling is reached again as traffic grows. Not \"Add a read replica and send all queries to it\": A replica helps read scaling, but the failure is connection establishment rather than query throughput, and writes still need the primary. Not \"Raise the Lambda function's reserved concurrency so more invocations...\": More concurrency creates more simultaneous connections, making the problem worse."
+  ref: "Question imp-001 (Performance bottleneck analysis) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [sap]
+
+- id: rm-sap-imp-002
+  kind: choice
+  en: "An organization with 60 accounts needs a single place to search application logs and view operational metrics, without engineers assuming a role in each account to investigate an incident. Which design meets this with the least custom code?"
+  options:
+    - "An EC2 fleet running a self-managed log aggregator with agents installed in every account."
+    - "A CloudWatch dashboard in each account, bookmarked by the operations team."
+    - "A Lambda function in every account that copies log events into an S3 bucket in a central account each hour."
+    - "CloudWatch cross-account observability, linking source accounts to a central monitoring account for logs, metrics and traces."
+  correct: [D]
+  why: "Cross-account observability is the managed feature for exactly this: source accounts are linked to a monitoring account, and engineers then search logs, view metrics and inspect traces from all linked accounts in one console without switching roles. Not \"A Lambda function in every account that copies log events into an S3...\": Hourly copying delays incident investigation and creates a pipeline of custom code to own in 60 accounts. Not \"A CloudWatch dashboard in each account, bookmarked by the operations...\": Per-account dashboards still require switching accounts during an incident, which is the problem being solved. Not \"An EC2 fleet running a self-managed log aggregator with agents...\": A self-managed aggregator is the most operational effort of all and duplicates a managed capability."
+  ref: "Question imp-002 (Observability strategy) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [sap]
+
+- id: rm-sap-imp-003
+  kind: choice
+  en: "A CFO wants an organization-wide programme to reduce compute spend across 60 accounts: identify over-provisioned instances, commit to a discount that survives instance family changes, and give each business unit visibility of its own spend. Which combination should the architect propose?"
+  options:
+    - "Spot Instances for all workloads, with capacity rebalancing enabled."
+    - "AWS Compute Optimizer for right-sizing recommendations, Compute Savings Plans for the steady baseline, and cost allocation tags with per-unit budgets in the management account."
+    - "Consolidated billing alone, letting volume discounts accrue automatically."
+    - "Standard Reserved Instances for all steady workloads, with Trusted Advisor checks reviewed quarterly."
+  correct: [B]
+  why: "Each requirement maps to one mechanism: Compute Optimizer produces right-sizing recommendations with projected savings across the organization, Compute Savings Plans give a deep discount that remains flexible across instance family, size and Region, and cost allocation tags with Budgets give business units their own view and alerts. Not \"Standard Reserved Instances for all steady workloads, with Trusted...\": Standard RIs lock to an instance family, which conflicts with surviving family changes, and quarterly manual review is not a programme. Not \"Spot Instances for all workloads, with capacity rebalancing enabled\": Spot suits interruption-tolerant work only; applying it to all workloads would break the ones that cannot tolerate reclamation. Not \"Consolidated billing alone, letting volume discounts accrue...\": Consolidated billing aggregates spend but neither reduces it nor attributes it to business units."
+  ref: "Question imp-003 (Cost optimization at scale) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [sap]
+
+- id: rm-sap-imp-004
+  kind: choice
+  en: "A multi-tenant SaaS suffers occasional incidents where one tenant's traffic surge degrades the service for every tenant. The company wants to bound the impact of any single tenant without running separate infrastructure per tenant. Which approach best achieves this?"
+  options:
+    - "Add a CloudFront distribution in front of the shared stack."
+    - "Move the shared database to a larger instance class with more connections."
+    - "Partition tenants into a number of independent cells, each a full stack serving a subset of tenants, and route each tenant to its assigned cell."
+    - "Increase the size of the shared Auto Scaling group so it absorbs any tenant's surge."
+  correct: [C]
+  why: "Cell-based architecture bounds blast radius: a tenant's surge can only exhaust the cell it is assigned to, so an incident affects that fraction of tenants rather than all of them. It gives isolation without dedicating a stack to each tenant, since many tenants share a cell. Not \"Increase the size of the shared Auto Scaling group so it absorbs any...\": A bigger shared pool is still shared — one tenant can consume it, and the failure mode is unchanged at a higher cost. Not \"Add a CloudFront distribution in front of the shared stack\": Caching helps read-heavy static content but does nothing to isolate tenants competing for backend capacity. Not \"Move the shared database to a larger instance class with more...\": Scaling the database up raises limits without isolating tenants from one another."
+  ref: "Question imp-004 (Reliability improvements and fault isolation) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [sap]

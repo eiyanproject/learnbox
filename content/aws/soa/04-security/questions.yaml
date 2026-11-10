@@ -153,3 +153,854 @@
   why: "Macie inventories buckets and uses managed and custom data identifiers to find sensitive data such as personal information in objects."
   ref: "Amazon Macie User Guide: Discovering sensitive data"
   exams: [soa]
+
+- id: zg-soa-d4-01
+  kind: choice
+  en: "A company requires IAM users to sign in with MFA before they can do anything other than manage their own MFA device. Some users sign in without MFA and can still stop Amazon EC2 instances. Which IAM policy approach will enforce this requirement?"
+  options:
+    - "Attach a policy that denies all actions whenever the aws:RequestedRegion condition key does not equal us-east-1."
+    - "Attach a policy that denies all but MFA self-management actions when aws:MultiFactorAuthPresent is false."
+    - "Enable an account password policy that requires users to change their passwords every 30 days."
+    - "Attach a policy that allows all actions only when the aws:SecureTransport condition key is set to true."
+  correct: [B]
+  why: "A Deny statement with a condition such as BoolIfExists aws:MultiFactorAuthPresent false blocks every action except the ones a user needs to set up MFA. After the user signs in with MFA, the condition no longer matches, and the user's other permissions apply. Not \"Attach a policy that allows all actions only when the...\": aws:SecureTransport checks whether a request used TLS. It has nothing to do with MFA. Not \"Enable an account password policy that requires users to change their...\": A password policy controls password strength and rotation. It does not require MFA. Not \"Attach a policy that denies all actions whenever the...\": aws:RequestedRegion restricts Regions. It does not check whether the user signed in with MFA."
+  ref: "Question d4-01 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-02
+  kind: choice
+  en: "A company has an application on an Amazon EC2 instance that reads objects from an Amazon S3 bucket. The developers stored an IAM user's access keys in the application's configuration file. A security review flags this as a risk. Which solution will remove this risk in the MOST secure manner?"
+  options:
+    - "Rotate the access keys every 90 days. Store the new keys in the same configuration file."
+    - "Move the access keys into environment variables on the instance. Remove them from the file."
+    - "Encrypt the configuration file with AWS KMS."
+    - "Attach an IAM role with read access to the bucket through an instance profile. Delete the keys."
+  correct: [D]
+  why: "An instance profile gives the application temporary credentials that rotate automatically through the instance metadata service. The SDK picks them up with no keys in files, and the long-lived keys can be deleted. Not \"Encrypt the configuration file with AWS KMS\": The application still has to decrypt and use long-lived keys, so the keys can still leak and never expire. Not \"Move the access keys into environment variables on the instance...\": Environment variables still hold long-lived keys that can leak through logs or process listings. Not \"Rotate the access keys every 90 days. Store the new keys in the same...\": Rotation limits how long a key is exposed, but the keys are still long-lived and stored on the instance."
+  ref: "Question d4-02 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-03
+  kind: choice
+  en: "A company's third-party monitoring vendor needs read-only access to the company's AWS account. The vendor serves many customers and calls the company's account from the vendor's own AWS account. How should a CloudOps engineer grant access in the MOST secure manner?"
+  options:
+    - "Share the company account's root credentials with the vendor."
+    - "Create an IAM user for the vendor with read-only permissions. Send the access keys by email."
+    - "Add the vendor's account to the company's Amazon S3 bucket policies. Allow all read actions on all buckets."
+    - "Create an IAM role that trusts the vendor's account. Require a unique external ID in the trust policy."
+  correct: [D]
+  why: "A cross-account role lets the vendor use temporary credentials from its own account. Requiring a unique external ID in the trust policy (the sts:ExternalId condition) protects against the confused deputy problem, where another of the vendor's customers could trick the vendor into accessing your account. Not \"Create an IAM user for the vendor with read-only permissions. Send...\": Long-lived access keys sent by email can leak and must be rotated by hand, and they are not needed for cross-account access. Not \"Share the company account's root credentials with the vendor\": Root credentials must never be shared. They have unrestricted access to the account. Not \"Add the vendor's account to the company's Amazon S3 bucket policies...\": Bucket policies cover only Amazon S3, and monitoring needs read access across many services."
+  ref: "Question d4-03 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-04
+  kind: choice
+  en: "A company has 25 AWS accounts in AWS Organizations and 2,000 employees in Microsoft Entra ID. Employees must sign in with their corporate credentials and get access to accounts based on their Entra ID groups. The company must stop using IAM users. Which solution will meet these requirements in the MOST operationally efficient way?"
+  options:
+    - "Create an IAM user in every account for each employee, and sync their passwords from Entra ID every night."
+    - "Connect IAM Identity Center to Entra ID with SAML and SCIM, and assign permission sets to groups."
+    - "Create one IAM user per team in the management account. Share the passwords with each team."
+    - "Create a SAML identity provider and roles in each of the 25 accounts, and map groups in each one."
+  correct: [B]
+  why: "IAM Identity Center provides single sign-on to all accounts in the organization. SAML federates sign-in with Entra ID, SCIM provisions users and groups automatically, and permission sets that are assigned to groups create the roles in each account. Not \"Create an IAM user in every account for each employee, and sync their...\": This keeps thousands of IAM users with long-lived credentials, which the company wants to stop. Not \"Create a SAML identity provider and roles in each of the 25 accounts...\": Per-account SAML federation works, but it must be built and maintained in 25 accounts, which is more overhead. Not \"Create one IAM user per team in the management account. Share the...\": Shared credentials break accountability and least privilege."
+  ref: "Question d4-04 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-05
+  kind: choice
+  en: "A company stores sensitive data in an Amazon S3 bucket. The bucket must be accessible only through a specific gateway VPC endpoint in the company's VPC, even by users who have IAM permissions to the bucket. Which solution will meet this requirement?"
+  options:
+    - "Attach a security group to the bucket that allows inbound HTTPS only from the gateway VPC endpoint."
+    - "Add a bucket policy that denies all S3 actions when aws:SourceVpce does not equal the endpoint ID."
+    - "Add a bucket policy that allows access only when aws:SourceIp matches the VPC's CIDR block."
+    - "Add a route in the VPC route table that sends all traffic for the bucket to a NAT gateway."
+  correct: [B]
+  why: "A Deny statement with a StringNotEquals condition on aws:SourceVpce blocks every request that does not arrive through that endpoint. An explicit deny overrides any allow, so even users with IAM permissions cannot reach the bucket from anywhere else. Not \"Add a bucket policy that allows access only when aws:SourceIp matches...\": aws:SourceIp does not contain private VPC addresses for requests that arrive through a VPC endpoint, so this condition would not work as intended. Not \"Attach a security group to the bucket that allows inbound HTTPS only...\": S3 buckets do not have security groups. Not \"Add a route in the VPC route table that sends all traffic for the...\": A NAT gateway sends traffic to the public S3 endpoint, which does not limit access to the VPC endpoint."
+  ref: "Question d4-05 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-06
+  kind: choice
+  en: "A company must keep all workloads in eu-central-1 and eu-west-1 for data residency. Users in member accounts must not be able to create resources in other AWS Regions, but global services such as IAM and Amazon Route 53 must continue to work. Which solution will meet these requirements?"
+  options:
+    - "Attach an IAM policy to each IAM user and role that allows actions only in eu-central-1 and eu-west-1."
+    - "Configure AWS Config in all other Regions with a rule that deletes any new resources that it finds."
+    - "Opt out of every other Region for each member account from the account settings in the management account."
+    - "Attach an SCP that denies requests to other Regions by using aws:RequestedRegion, with global services exempted."
+  correct: [D]
+  why: "An SCP that denies aws:RequestedRegion values other than the two approved Regions sets a guardrail for every principal in member accounts. Exempting global services such as IAM, AWS Organizations, Route 53, CloudFront, and AWS Support keeps them working, because their requests go to us-east-1. Not \"Attach an IAM policy to each IAM user and role that allows actions...\": IAM policies on each identity are easy to miss or change, and new roles would not be covered automatically. Not \"Configure AWS Config in all other Regions with a rule that deletes...\": Deleting resources after they are created is reactive, and data might already be stored in the wrong Region. Not \"Opt out of every other Region for each member account from the...\": Only opt-in Regions can be disabled. Regions that are enabled by default cannot be disabled, so this cannot block them."
+  ref: "Question d4-06 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-07
+  kind: choice
+  en: "A company allows developers to create IAM roles for their AWS Lambda functions. The company's security team must ensure that any role a developer creates can never have more than a defined set of permissions, even if the developer attaches AdministratorAccess to the role. Which solution will meet this requirement?"
+  options:
+    - "Ask developers to use only AWS managed policies when they attach policies to their new roles."
+    - "Attach an SCP to the account that denies the developers access to the iam:CreateRole action."
+    - "Require a permissions boundary on every role that developers create, enforced with an IAM condition key."
+    - "Enable IAM Access Analyzer to delete any role with too many permissions automatically every day."
+  correct: [C]
+  why: "A permissions boundary sets the maximum permissions that identity-based policies can grant to a role. If the developers' own policy allows iam:CreateRole only when the iam:PermissionsBoundary condition matches the approved boundary, every role they create is capped, even with AdministratorAccess attached. Not \"Attach an SCP to the account that denies the developers access to the...\": Denying role creation stops developers from doing their work, which is not the goal. Not \"Enable IAM Access Analyzer to delete any role with too many...\": Access Analyzer reports findings. It does not delete roles or cap their permissions. Not \"Ask developers to use only AWS managed policies when they attach...\": AWS managed policies include AdministratorAccess, and a request to developers is not an enforced control."
+  ref: "Question d4-07 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-08
+  kind: choice
+  en: "A company has hundreds of projects that share one AWS account. Engineers must be able to start and stop only the Amazon EC2 instances that belong to their own project. New projects are added every week, and the company's security team does not want to update IAM policies for each new project. Which solution will meet these requirements?"
+  options:
+    - "Create an IAM group for each project. Add a new group with its own policy every week for each new project."
+    - "Create a separate VPC for each project. Allow the engineers to manage instances only inside their own VPC."
+    - "Tag instances and roles with Project. Allow actions only when the resource and principal Project tags match."
+    - "Create an IAM policy for each project that lists the instance IDs of that project's instances. Update it weekly."
+  correct: [C]
+  why: "Attribute-based access control (ABAC) uses tags in policy conditions. One policy that compares aws:ResourceTag/Project with aws:PrincipalTag/Project works for every project, including new ones, as long as resources and roles are tagged correctly. Engineers must not be allowed to change the Project tag. Not \"Create an IAM policy for each project that lists the instance IDs of...\": Per-project policies with instance IDs must change whenever instances or projects change, which is the work the team wants to avoid. Not \"Create a separate VPC for each project. Allow the engineers to manage...\": IAM does not easily scope EC2 start and stop actions by VPC, and a VPC for each project adds network overhead. Not \"Create an IAM group for each project. Add a new group with its own...\": A new group and policy every week is the manual work the team wants to avoid."
+  ref: "Question d4-08 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-09
+  kind: choice
+  en: "A company's security review finds that the root user of an AWS account has active access keys and no MFA device. Administrators sign in through AWS IAM Identity Center for their daily work. Which combination of steps follows AWS best practices? (Select TWO.)"
+  options:
+    - "Delete the access keys for the root user."
+    - "Rotate the root user's access keys every 90 days."
+    - "Attach a permissions boundary to the root user."
+    - "Store the root user's access keys in AWS Secrets Manager."
+    - "Configure MFA for the root user."
+  correct: [A, E]
+  why: "Root user access keys grant unrestricted access to the account and should not exist. Delete them, and use roles for programmatic access. MFA protects the most powerful identity in the account from a stolen password. In AWS Organizations, centralized root access management can also remove root credentials from member accounts. Not \"Rotate the root user's access keys every 90 days\": Rotation shortens how long a key is valid, but the root user should have no access keys at all. Not \"Store the root user's access keys in AWS Secrets Manager\": Storing the keys more safely still leaves long-lived root credentials that should not exist. Not \"Attach a permissions boundary to the root user\": Permissions boundaries apply to IAM users and roles. They cannot limit the root user."
+  ref: "Question d4-09 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-10
+  kind: choice
+  en: "A company has an application role that sometimes receives AccessDenied errors from AWS KMS when it reads encrypted objects from Amazon S3. A CloudOps engineer needs to find which KMS key, which API action, and which principal were involved in each failure. What should the CloudOps engineer do to meet this requirement?"
+  options:
+    - "Run the IAM policy simulator against every KMS key in the account with every possible KMS action."
+    - "Search AWS CloudTrail for kms.amazonaws.com events with errorCode AccessDenied, and review their details."
+    - "Enable S3 server access logging, and wait for the next failure to see the error in the logs."
+    - "Enable VPC Flow Logs for the application's subnets, and look for rejected traffic going to AWS KMS."
+  correct: [B]
+  why: "CloudTrail records KMS API calls, including failed ones, with the errorCode, the action (such as Decrypt), the key ARN, and the userIdentity of the caller. CloudTrail Lake or CloudWatch Logs Insights can filter these events quickly. Not \"Enable S3 server access logging, and wait for the next failure to see...\": Server access logs show S3 requests, but they do not show the KMS call details or the key that denied access. Not \"Run the IAM policy simulator against every KMS key in the account...\": Simulating every key and action is slow and would not show what actually failed. Not \"Enable VPC Flow Logs for the application's subnets, and look for...\": Flow logs show network traffic. AccessDenied is a permissions error, not a network problem."
+  ref: "Question d4-10 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-11
+  kind: choice
+  en: "A CloudOps engineer needs to attach a new IAM policy to a production role. Before attaching the policy, the CloudOps engineer must confirm that the role will be allowed to call s3:PutObject on one bucket and denied on all other buckets. The check must account for the SCPs and permissions boundary that apply to the role. Which tool should the CloudOps engineer use?"
+  options:
+    - "AWS Config rule evaluations"
+    - "Amazon Inspector findings"
+    - "The IAM policy simulator"
+    - "AWS Trusted Advisor checks"
+  correct: [C]
+  why: "The IAM policy simulator tests identity-based policies, permissions boundaries, resource-based policies, and SCPs against chosen actions and resources. It shows whether each request would be allowed or denied without making real requests. Not \"AWS Trusted Advisor checks\": Trusted Advisor checks for best practices, such as unrestricted security groups. It does not evaluate specific policy decisions. Not \"Amazon Inspector findings\": Inspector finds software vulnerabilities and network exposure. It does not test IAM policies. Not \"AWS Config rule evaluations\": Config evaluates resource configurations against rules. It does not simulate API authorization."
+  ref: "Question d4-11 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-12
+  kind: choice
+  en: "A company's security team must be notified whenever an Amazon S3 bucket, AWS KMS key, IAM role, or AWS Lambda function in any of the organization's accounts is shared with a principal outside the organization. Which solution will meet this requirement with the LEAST operational overhead?"
+  options:
+    - "Use AWS Trusted Advisor to check bucket permissions weekly, and email the results to the security team."
+    - "Write a Lambda function that reads every resource policy each hour and compares the principals with the organization."
+    - "Create an organization external access analyzer in IAM Access Analyzer. Route findings to Amazon SNS with Amazon EventBridge."
+    - "Configure Amazon GuardDuty in every account, and alert on findings that show data being read from S3 buckets."
+  correct: [C]
+  why: "An external access analyzer that uses the organization as its zone of trust analyzes resource-based policies and reports findings for resources shared outside the organization. Findings are sent to EventBridge, so a rule can notify the team through Amazon SNS. Not \"Write a Lambda function that reads every resource policy each hour...\": This is custom code that must understand complex policy logic for many resource types. Not \"Configure Amazon GuardDuty in every account, and alert on findings...\": GuardDuty detects threats from activity. It does not analyze resource policies for external sharing. Not \"Use AWS Trusted Advisor to check bucket permissions weekly, and email...\": The Trusted Advisor check covers only S3 bucket permissions, and a weekly email is not timely."
+  ref: "Question d4-12 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-13
+  kind: choice
+  en: "A company must find IAM roles that have not been used for 90 days, and permissions inside roles that are never used, so that the company can remove them and enforce least privilege across all of its accounts. Which solution will meet this requirement?"
+  options:
+    - "Search the AWS CloudTrail event history in each account for roles that have no events in 90 days."
+    - "Create an unused access analyzer in IAM Access Analyzer with a 90-day tracking period."
+    - "Configure AWS Config. Use a managed rule that deletes IAM roles that are older than 90 days."
+    - "Create an external access analyzer in IAM Access Analyzer with the account as the zone of trust."
+  correct: [B]
+  why: "An unused access analyzer reports unused roles, unused access keys and passwords, and unused service and action permissions, based on a tracking period that you choose. It can cover the whole organization and gives findings that you can act on. Not \"Create an external access analyzer in IAM Access Analyzer with the...\": External access analyzers find resources shared outside the zone of trust. They do not report unused permissions. Not \"Search the AWS CloudTrail event history in each account for roles...\": Event history keeps only 90 days of management events for each Region, and analyzing it by hand across all accounts is slow and incomplete. Not \"Configure AWS Config. Use a managed rule that deletes IAM roles that...\": A role's age does not show whether it is used, and deleting roles automatically could break workloads."
+  ref: "Question d4-13 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-14
+  kind: choice
+  en: "A company has a new application role with broad permissions. The application has run in a test account for 30 days with AWS CloudTrail enabled. The company needs a least-privilege policy based on what the application actually used. What should a CloudOps engineer do to meet this requirement?"
+  options:
+    - "Use IAM Access Analyzer to generate a policy from the role's CloudTrail activity. Review it."
+    - "Use AWS Config to record the role's permissions. Copy the recorded policy to production."
+    - "Use the IAM policy simulator to generate a policy that allows every action the role has access to."
+    - "Attach the ReadOnlyAccess managed policy. Add actions back when the application fails."
+  correct: [A]
+  why: "Access Analyzer policy generation reviews the role's CloudTrail activity for a chosen period and creates a policy with the services and actions that the role actually used. The team reviews and refines the policy before attaching it. Not \"Use the IAM policy simulator to generate a policy that allows every...\": The simulator tests existing policies. It does not generate policies, and allowing every action is not least privilege. Not \"Attach the ReadOnlyAccess managed policy. Add actions back when the...\": Fixing failures one at a time in production causes outages and slow progress. Not \"Use AWS Config to record the role's permissions. Copy the recorded...\": Config records the current broad policy, so copying it does not reduce the permissions."
+  ref: "Question d4-14 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-15
+  kind: choice
+  en: "A user in a member account has an IAM policy that allows ec2:RunInstances on all resources. When the user tries to launch a p4d.24xlarge Amazon EC2 instance, the request fails with an explicit deny, but launches of t3 instances work. No permissions boundary is attached to the user. What is the MOST likely cause of this issue?"
+  options:
+    - "An SCP that applies to the account denies ec2:RunInstances for certain instance types."
+    - "The p4d.24xlarge instance type requires the user to sign in with the AWS account root user."
+    - "The account has an On-Demand Instance quota that is too low for the p4d instance family."
+    - "The user's IAM policy is missing the ec2:DescribeInstanceTypes action for large types."
+  correct: [A]
+  why: "An explicit deny that the user's own policy does not explain often comes from a service control policy. SCPs can deny actions with conditions such as ec2:InstanceType, and an explicit deny overrides the IAM allow. Decoding the authorization message shows which kind of policy denied the request. Not \"The user's IAM policy is missing the ec2:DescribeInstanceTypes action...\": Describe permissions are not needed to launch a specific instance type, and a missing permission would cause an implicit deny, not an explicit deny. Not \"The account has an On-Demand Instance quota that is too low for the...\": A quota problem returns a limit exceeded error, not an access denied error. Not \"The p4d.24xlarge instance type requires the user to sign in with the...\": Launching instances never requires the root user."
+  ref: "Question d4-15 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-16
+  kind: choice
+  en: "An Amazon EC2 API call fails with an error that includes an encoded authorization failure message. A CloudOps engineer needs to see which policy statement denied the request. What should the CloudOps engineer do to meet this requirement?"
+  options:
+    - "Paste the encoded message into the AWS CloudTrail console to decode it."
+    - "Run aws iam simulate-custom-policy with the encoded message text."
+    - "Run aws sts decode-authorization-message with the encoded message."
+    - "Base64 decode the message locally to read the policy statement."
+  correct: [C]
+  why: "STS DecodeAuthorizationMessage turns the encoded message into readable details about the request, including the matched statements and whether the deny was explicit. The caller needs the sts:DecodeAuthorizationMessage permission. Not \"Run aws iam simulate-custom-policy with the encoded message text\": The policy simulator tests policies that you give it. It does not decode authorization messages. Not \"Base64 decode the message locally to read the policy statement\": The message is encrypted, not just encoded, so it cannot be read with a simple Base64 decode. Not \"Paste the encoded message into the AWS CloudTrail console to decode...\": CloudTrail records the failed call, but it does not decode this message."
+  ref: "Question d4-16 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-17
+  kind: choice
+  en: "A company has an Amazon S3 bucket in account A. The bucket's objects are encrypted with a customer managed AWS KMS key in account A. A role in account B has an IAM policy that allows s3:GetObject on the bucket, and the bucket policy allows the role. Downloads from account B continue to fail with AccessDenied. What should a CloudOps engineer do to resolve this issue?"
+  options:
+    - "Enable S3 Object Ownership with the bucket owner preferred setting."
+    - "Change the bucket's default encryption to SSE-S3 for new objects, and leave the existing objects encrypted as they are."
+    - "Add the account B role to the bucket's ACL with full control, in addition to the existing bucket policy."
+    - "Allow the account B role to use kms:Decrypt in the key policy. Allow kms:Decrypt in the role's IAM policy."
+  correct: [D]
+  why: "To read objects encrypted with SSE-KMS, the caller needs permission to use the key. Across accounts, the key policy in account A must allow the account B role (or account B), and the role's IAM policy in account B must also allow kms:Decrypt on the key ARN. Not \"Change the bucket's default encryption to SSE-S3 for new objects, and...\": Existing objects stay encrypted with the KMS key, so reads of them would still fail. Not \"Enable S3 Object Ownership with the bucket owner preferred setting\": Object Ownership controls who owns uploaded objects. It does not grant KMS permissions. Not \"Add the account B role to the bucket's ACL with full control, in...\": ACLs grant S3 permissions only, and S3 access is already allowed. The missing piece is the KMS key permission."
+  ref: "Question d4-17 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-18
+  kind: choice
+  en: "A company attaches an SCP to the organization root that denies stopping AWS CloudTrail trails. During a test, a user in the management account can still stop a trail. Why can the user stop the trail?"
+  options:
+    - "SCPs take 24 hours to apply after they are attached to the root."
+    - "SCPs apply only to the root users of the member accounts."
+    - "SCPs apply only to resources created after the SCP is attached."
+    - "SCPs do not affect users and roles in the management account."
+  correct: [D]
+  why: "Service control policies never restrict the management account, even when they are attached to the organization root. Sensitive actions there must be controlled with IAM policies, and workloads should run in member accounts. Not \"SCPs apply only to the root users of the member accounts\": SCPs apply to all IAM users and roles in member accounts, including the root user of those accounts. Not \"SCPs take 24 hours to apply after they are attached to the root\": SCPs take effect quickly after they are attached. There is no 24-hour delay. Not \"SCPs apply only to resources created after the SCP is attached\": SCPs restrict actions on all resources, no matter when the resources were created."
+  ref: "Question d4-18 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-19
+  kind: choice
+  en: "A company's security team must manage Amazon GuardDuty, AWS Security Hub CSPM, and IAM Access Analyzer for all accounts from a dedicated security account instead of the management account. What should a CloudOps engineer do to meet this requirement?"
+  options:
+    - "Register the security account as the delegated administrator for each service in Organizations."
+    - "Move the security account to the root OU."
+    - "Create IAM users in the management account for the security team. Use them for each service."
+    - "Share the management account's root credentials with the security team for these three services."
+  correct: [A]
+  why: "Many security services support a delegated administrator. Registering the security account as the delegated administrator lets it enable and manage the service for all member accounts, so the security team does not need to work in the management account. Not \"Move the security account to the root OU\": OU placement does not grant administrative powers over other accounts. Not \"Create IAM users in the management account for the security team. Use...\": This keeps the team working in the management account, which AWS recommends limiting to essential tasks. Not \"Share the management account's root credentials with the security...\": Root credentials must never be shared."
+  ref: "Question d4-19 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-20
+  kind: choice
+  en: "A company is setting up a new multi-account environment. New accounts must be created with a standard baseline, central logging, and preventive and detective guardrails that are applied automatically. Which solution will meet these requirements with the LEAST operational overhead?"
+  options:
+    - "Set up AWS Control Tower. Create accounts through Account Factory in governed OUs."
+    - "Create accounts manually, and ask each account owner to follow a written security checklist."
+    - "Create accounts with the Organizations API. Run a script that configures each new account."
+    - "Create one account for every workload. Use IAM policies as the only guardrails."
+  correct: [A]
+  why: "Control Tower sets up a landing zone with log archive and audit accounts, and Account Factory creates new accounts with a standard baseline. Controls are applied to OUs as preventive SCPs, detective AWS Config rules, and proactive CloudFormation hooks. Not \"Create accounts with the Organizations API. Run a script that...\": Scripts can work, but they are custom tooling to build and maintain. Not \"Create accounts manually, and ask each account owner to follow a...\": Manual setup and checklists are inconsistent, and they do not enforce guardrails. Not \"Create one account for every workload. Use IAM policies as the only...\": IAM policies alone can be changed by account administrators, and they give no organization-wide guardrails or central logging."
+  ref: "Question d4-20 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-21
+  kind: choice
+  en: "A company's finance team requires every new Amazon EC2 instance to have a CostCenter tag with one of five approved values. Launches that do not include a valid tag must be blocked in all accounts in the organization. Which combination of steps will meet these requirements? (Select TWO.)"
+  options:
+    - "Enable cost allocation tags in the Billing console for the CostCenter tag key only."
+    - "Create an SCP that denies ec2:RunInstances when aws:RequestTag/CostCenter is missing."
+    - "Create an AWS Config rule that deletes instances without a CostCenter tag once a day."
+    - "Ask each team to add the CostCenter tag in the console when they launch instances."
+    - "Create a tag policy that defines CostCenter and its allowed values, with enforcement for EC2 instances."
+  correct: [B, E]
+  why: "Tag policies standardize tag keys and values across the organization. With enforcement enabled for a resource type, a request that sets the tag to a value that is not allowed is blocked. Tag policies do not block resources that are created without the tag. An SCP that denies ec2:RunInstances when the aws:RequestTag/CostCenter key is null makes the tag required at launch. Not \"Create an AWS Config rule that deletes instances without a CostCenter...\": Deleting instances after they launch is disruptive, and it does not block the launch. Not \"Ask each team to add the CostCenter tag in the console when they...\": A request to teams is not enforced, and it does not cover the CLI or automation. Not \"Enable cost allocation tags in the Billing console for the CostCenter...\": Cost allocation tags make tags appear in billing reports. They do not require or validate tags."
+  ref: "Question d4-21 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-22
+  kind: choice
+  en: "A company stores shared reports in an Amazon S3 bucket. Applications in every account in the company's organization in AWS Organizations must be able to read the reports, and no one outside the organization can have access. New accounts are added often. Which solution will meet these requirements with the LEAST operational overhead?"
+  options:
+    - "Add a bucket policy that allows s3:GetObject when aws:PrincipalOrgID matches the organization ID."
+    - "Create an IAM role in the bucket's account. Have the applications in each account assume it."
+    - "Disable S3 Block Public Access. Allow s3:GetObject for all principals in the bucket policy."
+    - "Add a bucket policy that lists the ID of every member account. Update it for each new account."
+  correct: [A]
+  why: "The aws:PrincipalOrgID condition key checks that the caller belongs to the organization, so new accounts are covered automatically and no account list is needed. Roles in other accounts still need IAM permissions to read the bucket. Resource control policies (RCPs) can enforce a similar boundary across many resources. Not \"Add a bucket policy that lists the ID of every member account. Update...\": An account list works, but someone must update it every time an account is added, which is the overhead the company wants to avoid. Not \"Create an IAM role in the bucket's account. Have the applications in...\": A shared role adds setup in every account and changes how each application reaches the reports. Not \"Disable S3 Block Public Access. Allow s3:GetObject for all principals...\": This makes the bucket public, so anyone on the internet could read the reports."
+  ref: "Question d4-22 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-23
+  kind: choice
+  en: "A company uses a bastion host with SSH keys to administer Amazon EC2 instances in private subnets. The company's security team must remove the bastion host and all inbound SSH rules. The security team also needs a record of each session. Which solution will meet these requirements with the LEAST operational overhead?"
+  options:
+    - "Create an AWS Site-to-Site VPN connection to the VPC. Allow inbound SSH from the on-premises network to the instances."
+    - "Use Amazon EC2 Instance Connect to push temporary SSH keys. Keep inbound port 22 open to the VPC CIDR block."
+    - "Move the bastion host to a public subnet. Restrict inbound SSH to the office IP range, and log each SSH command."
+    - "Use AWS Systems Manager Session Manager with an instance profile on each instance. Send session logs to Amazon S3."
+  correct: [D]
+  why: "Session Manager needs no open inbound ports, no bastion hosts, and no SSH keys. Access is controlled through IAM, and session logs can go to Amazon S3 or Amazon CloudWatch Logs. The instances need an instance profile with the AmazonSSMManagedInstanceCore policy. Not \"Move the bastion host to a public subnet. Restrict inbound SSH to the...\": This keeps the bastion host and the inbound SSH rules, which the security team must remove. Not \"Use Amazon EC2 Instance Connect to push temporary SSH keys. Keep...\": Instance Connect avoids long-term keys, but it still uses SSH and an inbound rule on port 22. Not \"Create an AWS Site-to-Site VPN connection to the VPC. Allow inbound...\": A VPN changes the network path, but the inbound SSH rules and SSH keys remain."
+  ref: "Question d4-23 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-24
+  kind: choice
+  en: "A company's engineers sign in to AWS through AWS IAM Identity Center. The engineers now need to run AWS CLI commands against several accounts, and they must not create IAM access keys. What should the engineers do to meet these requirements?"
+  options:
+    - "Configure an AWS CLI profile for IAM Identity Center. Run aws sso login to get temporary credentials."
+    - "Copy the session cookie from the AWS access portal into the AWS CLI configuration on each workstation."
+    - "Create an IAM user with access keys in each account. Add the keys to the AWS CLI configuration file."
+    - "Ask an administrator to share the management account's access keys with all of the engineers' profiles."
+  correct: [A]
+  why: "The AWS CLI supports IAM Identity Center profiles. aws sso login opens a browser sign-in, and the CLI then gets short-lived credentials for the chosen account and permission set, so no access keys are needed. Not \"Create an IAM user with access keys in each account. Add the keys to...\": This creates long-lived access keys, which the engineers must avoid. Not \"Copy the session cookie from the AWS access portal into the AWS CLI...\": Session cookies are not CLI credentials, and copying them is insecure. Not \"Ask an administrator to share the management account's access keys...\": Sharing access keys breaks least privilege and accountability."
+  ref: "Question d4-24 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-25
+  kind: choice
+  en: "A company uses AWS Organizations. The company's security team must ensure that no one in any member account, including account administrators, can stop AWS CloudTrail logging or delete a trail. Which solution will meet this requirement?"
+  options:
+    - "Enable CloudTrail log file integrity validation."
+    - "Attach an SCP to the member accounts' OUs that denies cloudtrail:StopLogging and cloudtrail:DeleteTrail."
+    - "Create an AWS Config rule that reports when CloudTrail logging is stopped in any member account."
+    - "Attach an IAM policy that denies those actions to every IAM user and role in each of the member accounts."
+  correct: [B]
+  why: "SCPs set the maximum permissions for every principal in member accounts, including administrators and the root user, and account administrators cannot remove them. An organization trail also helps, because member accounts cannot change it. Not \"Attach an IAM policy that denies those actions to every IAM user and...\": Administrators in each account could detach or edit the policy, and new roles would not be covered automatically. Not \"Enable CloudTrail log file integrity validation\": Validation proves whether log files changed after delivery. It does not stop anyone from disabling logging. Not \"Create an AWS Config rule that reports when CloudTrail logging is...\": Config can detect and report the change, but it does not prevent it."
+  ref: "Question d4-25 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-26
+  kind: choice
+  en: "A company's AWS Trusted Advisor dashboard shows a red security check for security groups that allow unrestricted access (0.0.0.0/0) to port 22 on several production instances. Administrators use SSH only for occasional troubleshooting. Which solution will resolve the finding and keep administrative access in the MOST secure manner?"
+  options:
+    - "Remove the SSH rules. Use AWS Systems Manager Session Manager for administrative access."
+    - "Change the SSH rules to allow 0.0.0.0/0 on port 2222 instead of port 22 on the instances."
+    - "Keep the SSH rules. Suppress the AWS Trusted Advisor check for these security groups."
+    - "Keep the SSH rules. Enable Amazon GuardDuty to detect brute force SSH attempts."
+  correct: [A]
+  why: "Session Manager gives shell access through SSM Agent with no inbound ports and no SSH keys, and sessions are controlled by IAM and can be logged. Removing the open SSH rules removes the exposure that Trusted Advisor flagged. Not \"Change the SSH rules to allow 0.0.0.0/0 on port 2222 instead of port...\": Moving SSH to another port still leaves it open to the whole internet. Not \"Keep the SSH rules. Enable Amazon GuardDuty to detect brute force SSH...\": GuardDuty detects attacks, but the open port remains exposed. Not \"Keep the SSH rules. Suppress the AWS Trusted Advisor check for these...\": Hiding the finding does not fix the exposure."
+  ref: "Question d4-26 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-27
+  kind: choice
+  en: "AWS notifies a company that an IAM user's access key was found in a public GitHub repository. The AWS Trusted Advisor Exposed Access Keys check is also red for the key. What should a CloudOps engineer do FIRST?"
+  options:
+    - "Enable AWS CloudTrail Insights to report unusual API activity from the key in the future."
+    - "Deactivate the exposed access key, and replace it with a new key or a role for the workload."
+    - "Make the GitHub repository private to stop others from seeing the access key from now on."
+    - "Add the key to an IAM policy that denies it only for requests that come from outside the VPC."
+  correct: [B]
+  why: "An exposed key must be treated as compromised. Deactivating it stops further use right away. The team should then replace it, preferably with temporary credentials from a role, review CloudTrail for misuse, and delete the old key. Not \"Make the GitHub repository private to stop others from seeing the...\": The key has already been seen and may already be in use by attackers. Hiding the repository does not revoke it. Not \"Enable AWS CloudTrail Insights to report unusual API activity from...\": Detecting unusual activity later does not stop an attacker who already has the key. Not \"Add the key to an IAM policy that denies it only for requests that...\": IAM policies cannot target a single access key in this way, and the key would still be valid."
+  ref: "Question d4-27 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-28
+  kind: choice
+  en: "A company must receive a notification and must start remediation automatically whenever the status of an AWS Trusted Advisor security check changes to red in its account. Which solution will meet these requirements?"
+  options:
+    - "Create an Amazon CloudWatch alarm that watches the Trusted Advisor console page, and refresh the page every 5 minutes."
+    - "Create an Amazon EventBridge rule for Trusted Advisor check status changes in us-east-1 with Amazon SNS and AWS Lambda targets."
+    - "Export the Trusted Advisor report to Amazon S3 weekly, and run an AWS Lambda function that compares the reports."
+    - "Configure AWS Config in us-east-1. Create an AWS Config rule for each of the Trusted Advisor security checks."
+  correct: [B]
+  why: "Trusted Advisor sends check status change events to EventBridge in the us-east-1 Region. A rule that matches red security checks can notify the team through Amazon SNS and invoke a Lambda function or an Automation runbook to remediate. Not \"Create an Amazon CloudWatch alarm that watches the Trusted Advisor...\": CloudWatch alarms watch metrics, not web pages. Not \"Configure AWS Config in us-east-1. Create an AWS Config rule for each...\": Config rules evaluate resource configurations. They do not receive Trusted Advisor check results. Not \"Export the Trusted Advisor report to Amazon S3 weekly, and run an AWS...\": Weekly comparisons are slow and are custom code to maintain."
+  ref: "Question d4-28 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-29
+  kind: choice
+  en: "A company uses AWS Organizations. An auditor requires 40 accounts to be continuously evaluated against a common set of controls based on the CIS AWS Foundations Benchmark, with results for each account. Which solution will meet this requirement in the MOST operationally efficient way?"
+  options:
+    - "Run Amazon Inspector in every account, and export the vulnerability findings to the auditor each month."
+    - "Configure AWS CloudTrail in every account, and ask the auditor to read through the trail logs for each of the controls."
+    - "Deploy an AWS Config conformance pack based on the CIS template to all accounts from the delegated administrator."
+    - "Write custom AWS Lambda functions for each CIS control, and run them in every account of the organization once a week."
+  correct: [C]
+  why: "A conformance pack is a collection of AWS Config rules and remediation actions that is deployed as one unit. Sample templates exist for frameworks such as CIS, and organization conformance packs deploy them to all member accounts and report compliance by account. Not \"Write custom AWS Lambda functions for each CIS control, and run them...\": Custom functions for every control are a lot of code to build and maintain, and weekly runs are not continuous. Not \"Run Amazon Inspector in every account, and export the vulnerability...\": Inspector finds software vulnerabilities and network exposure. It does not evaluate CIS account configuration controls. Not \"Configure AWS CloudTrail in every account, and ask the auditor to...\": Logs alone do not evaluate controls. The auditor would have to analyze configurations by hand."
+  ref: "Question d4-29 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-30
+  kind: choice
+  en: "A company uses AWS Config in 30 accounts and 3 AWS Regions. The company's compliance team needs a single view of noncompliant resources across all of those accounts and Regions. What should a CloudOps engineer do to meet this requirement?"
+  options:
+    - "Copy every Config snapshot to one Amazon S3 bucket, and read the files manually each week."
+    - "Create a Config rule in the central account that evaluates resources in all accounts."
+    - "Create an AWS Config aggregator for the organization in a central account."
+    - "Create an Amazon CloudWatch dashboard in each account that shows Config compliance data."
+  correct: [C]
+  why: "An aggregator collects AWS Config configuration and compliance data from multiple accounts and Regions, or from a whole organization, into one account. The team can view and query noncompliant resources in one place. Not \"Create an Amazon CloudWatch dashboard in each account that shows...\": Per-account dashboards do not give a single cross-account view. Not \"Copy every Config snapshot to one Amazon S3 bucket, and read the...\": Reading snapshot files by hand is slow and does not scale. Not \"Create a Config rule in the central account that evaluates resources...\": Config rules evaluate resources in their own account and Region. An aggregator is needed to combine the results."
+  ref: "Question d4-30 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-31
+  kind: choice
+  en: "A company has an AWS Config managed rule that marks security groups that allow SSH from 0.0.0.0/0 as noncompliant. The company's security team needs these SSH rules removed automatically within minutes of detection. Which solution will meet this requirement with the LEAST operational overhead?"
+  options:
+    - "Email the noncompliant resources to the security team each day to fix them manually."
+    - "Enable Amazon GuardDuty to remove the open SSH rules when it detects SSH brute force activity."
+    - "Add an automatic remediation action to the Config rule that runs the AWS-DisablePublicAccessForSecurityGroup runbook."
+    - "Create an AWS Lambda function that runs every hour, lists every security group in every Region, and removes any open SSH rules."
+  correct: [C]
+  why: "Config rules can have remediation actions that run Systems Manager Automation runbooks. With automatic remediation enabled, Config runs the runbook, such as AWS-DisablePublicAccessForSecurityGroup, on each noncompliant security group by using an IAM role that you provide. Not \"Create an AWS Lambda function that runs every hour, lists every...\": A scheduled function is custom code and runs only hourly, so open rules could exist for up to an hour. Not \"Enable Amazon GuardDuty to remove the open SSH rules when it detects...\": GuardDuty detects threats. It does not change security groups by itself. Not \"Email the noncompliant resources to the security team each day to fix...\": Manual fixes are slow, and open SSH rules would stay in place for up to a day."
+  ref: "Question d4-31 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-32
+  kind: choice
+  en: "A company's policy requires every Amazon EBS volume to have a DataClass tag and to be encrypted. The company needs one AWS Config rule that checks both conditions together, but no managed rule does this. What should a CloudOps engineer create to meet this requirement?"
+  options:
+    - "An AWS Config custom rule that uses AWS CloudFormation Guard or an AWS Lambda function"
+    - "An AWS CloudTrail Insights selector for all of the EBS volume creation events"
+    - "An Amazon CloudWatch alarm on the VolumeQueueLength metric for each volume"
+    - "An AWS Trusted Advisor custom check that covers each of the EBS volumes"
+  correct: [A]
+  why: "When no managed rule fits, a custom rule can evaluate configuration items with a policy written in CloudFormation Guard, or with a Lambda function for more complex logic. One rule can check both the tag and the encryption setting. Not \"An AWS CloudTrail Insights selector for all of the EBS volume...\": CloudTrail Insights detects unusual API activity rates. It does not evaluate resource configurations. Not \"An AWS Trusted Advisor custom check that covers each of the EBS...\": Trusted Advisor does not support custom checks of this kind. Not \"An Amazon CloudWatch alarm on the VolumeQueueLength metric for each...\": VolumeQueueLength measures pending I/O. It says nothing about tags or encryption."
+  ref: "Question d4-32 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-33
+  kind: choice
+  en: "A company must be able to determine how each of its security groups was configured at any point in time. The company also must evaluate each configuration change against company rules. Which solution will meet these requirements?"
+  options:
+    - "Review the AWS Trusted Advisor security checks each week. Export the results of each check to an Amazon S3 bucket."
+    - "Enable VPC Flow Logs for each network interface. Run Amazon Athena queries against the logs to review accepted connections."
+    - "Enable AWS Config to record security groups. Create AWS Config rules, and review the resource timeline for each security group."
+    - "Enable AWS CloudTrail Insights on the account's trail. Review the Insights events that are recorded for each security group."
+  correct: [C]
+  why: "AWS Config records how resources are configured and how they change over time, and the resource timeline shows each past configuration. AWS Config rules evaluate each change against the company's desired settings. CloudTrail shows who made the API call, while AWS Config shows the resulting configuration. Not \"Enable AWS CloudTrail Insights on the account's trail. Review the...\": CloudTrail Insights detects unusual API call rates. It does not keep the configuration of a security group at each point in time. Not \"Enable VPC Flow Logs for each network interface. Run Amazon Athena...\": Flow logs show traffic that the security groups allowed or rejected, not the rules that were configured. Not \"Review the AWS Trusted Advisor security checks each week. Export the...\": Trusted Advisor checks show current best-practice results. They do not provide a history of each configuration change."
+  ref: "Question d4-33 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-34
+  kind: choice
+  en: "A company has 2,000 Amazon S3 buckets across many accounts. The company's security team needs to find which buckets contain personally identifiable information (PII), such as passport numbers and credit card numbers, and must continue to check as the data changes. Which solution will meet these requirements with the LEAST operational overhead?"
+  options:
+    - "Configure Amazon Macie with automated sensitive data discovery for the organization."
+    - "Use S3 Inventory reports to list object names that contain the words passport or card."
+    - "Enable Amazon GuardDuty S3 Protection to inspect every object for sensitive data."
+    - "Run Amazon Athena queries over every bucket each week to search for PII patterns."
+  correct: [A]
+  why: "Macie uses managed and custom data identifiers to find sensitive data, such as PII and financial data, in Amazon S3. Automated sensitive data discovery samples objects across buckets continuously and keeps a sensitivity score for each bucket, across the organization. Not \"Enable Amazon GuardDuty S3 Protection to inspect every object for...\": GuardDuty S3 Protection detects suspicious access to S3. It does not inspect object contents for sensitive data. Not \"Run Amazon Athena queries over every bucket each week to search for...\": Athena works only on data that you define tables for, and weekly custom queries across 2,000 buckets are a lot of work. Not \"Use S3 Inventory reports to list object names that contain the words...\": Object names do not show what the objects contain."
+  ref: "Question d4-34 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-35
+  kind: choice
+  en: "A company must continuously scan its Amazon EC2 instances and Amazon ECR container images for software vulnerabilities and unintended network exposure. New resources must be included automatically. Which solution will meet these requirements with the LEAST operational overhead?"
+  options:
+    - "Enable Amazon Inspector in the account. Review the findings for the EC2 instances and the container images."
+    - "Enable Amazon GuardDuty in the account. Review the threat findings for the EC2 instances and the container images."
+    - "Enable Amazon Macie in the account. Review the sensitive data findings for the EC2 instances and the container images."
+    - "Enable AWS Config in the account. Review the compliance results for the EC2 instances and the container images."
+  correct: [A]
+  why: "Amazon Inspector is a vulnerability management service. It automatically discovers EC2 instances, container images, and Lambda functions, and it continually scans them for software vulnerabilities and unintended network exposure. Not \"Enable Amazon GuardDuty in the account. Review the threat findings...\": GuardDuty detects active threats from logs and runtime activity. It does not inventory software vulnerabilities. Not \"Enable Amazon Macie in the account. Review the sensitive data...\": Macie finds sensitive data in Amazon S3. It does not scan instances or container images. Not \"Enable AWS Config in the account. Review the compliance results for...\": AWS Config evaluates resource configuration. It does not scan installed software for known vulnerabilities."
+  ref: "Question d4-35 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-36
+  kind: choice
+  en: "A company is implementing a data classification scheme. Every Amazon S3 bucket must be labeled Public, Internal, or Confidential, and only the security team can read Confidential buckets. The company also must detect buckets that have no label. Which combination of steps will meet these requirements? (Select TWO.)"
+  options:
+    - "Use bucket policies or tag-based conditions that let only the security team's roles read Confidential buckets."
+    - "Encrypt Confidential buckets with SSE-S3 to allow only the security team to decrypt the objects."
+    - "Tag each bucket with a DataClassification key, and find missing tags with the AWS Config required-tags rule."
+    - "Enable S3 Versioning for Confidential buckets to stop other users from reading the objects."
+    - "Record each bucket's classification in a spreadsheet, and review it with the security team every quarter."
+  correct: [A, C]
+  why: "Tags are a common way to label resources with their classification. The AWS Config required-tags managed rule reports buckets that are missing the DataClassification key, so missing labels are found continuously. Access controls based on the classification, such as a bucket policy or a condition on aws:ResourceTag/DataClassification, make sure that only the security team's roles can read Confidential data. Encryption with a customer managed KMS key adds another layer. Not \"Record each bucket's classification in a spreadsheet, and review it...\": A spreadsheet is not linked to the resources and goes out of date quickly. Not \"Encrypt Confidential buckets with SSE-S3 to allow only the security...\": S3 manages SSE-S3 keys for every authorized user, so SSE-S3 does not limit who can read the objects. Not \"Enable S3 Versioning for Confidential buckets to stop other users...\": Versioning keeps object versions. It does not restrict who can read objects."
+  ref: "Question d4-36 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-37
+  kind: choice
+  en: "A company's security team must receive an email notification whenever the root user of the company's AWS account is used. An AWS CloudTrail trail already delivers events to an Amazon CloudWatch Logs log group. Which solution will meet this requirement?"
+  options:
+    - "Create an IAM Access Analyzer external access analyzer. Send each new analyzer finding to an Amazon SNS topic."
+    - "Create a metric filter on the log group that matches root user activity. Create an alarm on the metric that notifies an Amazon SNS topic."
+    - "Enable AWS Config with the root-account-mfa-enabled managed rule. Send each rule compliance change to an Amazon SNS topic."
+    - "Review the AWS Trusted Advisor security checks each week. Send the summary to the security team's email address."
+  correct: [B]
+  why: "A metric filter on CloudTrail logs can match events where userIdentity.type is Root. An alarm on the resulting metric then notifies an SNS topic with an email subscription. AWS security standards recommend this exact control for root user use. Not \"Enable AWS Config with the root-account-mfa-enabled managed rule...\": This rule checks whether the root user has MFA. It does not report when the root user is used. Not \"Create an IAM Access Analyzer external access analyzer. Send each new...\": Access Analyzer finds resources that are shared outside the zone of trust. It does not report root user activity. Not \"Review the AWS Trusted Advisor security checks each week. Send the...\": A weekly manual review does not notify the team whenever the root user is used."
+  ref: "Question d4-37 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-38
+  kind: choice
+  en: "A company has an Amazon RDS for MySQL DB instance that was created without encryption. A new policy requires all databases to be encrypted at rest with a customer managed AWS KMS key. What should a CloudOps engineer do to meet this requirement?"
+  options:
+    - "Enable default Amazon EBS encryption in the Region."
+    - "Modify the DB instance. Enable encryption with the KMS key. Apply the change immediately."
+    - "Take a snapshot, copy it with encryption using the KMS key, and restore a new DB instance from the copy."
+    - "Create an encrypted read replica of the unencrypted DB instance. Promote that read replica to primary."
+  correct: [C]
+  why: "Encryption cannot be enabled for an existing unencrypted RDS DB instance. Copying a snapshot with encryption and restoring it creates an encrypted instance. The application then moves to the new endpoint, so the change needs a planned cutover. An RDS blue/green deployment is a newer way to encrypt an unencrypted DB instance. Not \"Modify the DB instance. Enable encryption with the KMS key. Apply the...\": RDS does not support enabling encryption for an existing unencrypted DB instance. Not \"Create an encrypted read replica of the unencrypted DB instance...\": RDS cannot create an encrypted read replica from an unencrypted DB instance. Not \"Enable default Amazon EBS encryption in the Region\": EBS encryption by default applies to EBS volumes that you create. It does not change RDS storage."
+  ref: "Question d4-38 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-39
+  kind: choice
+  en: "A company needs every new Amazon EBS volume in an AWS Region to be encrypted automatically. The company also has an unencrypted data volume, attached to a running instance, that must be encrypted. Which combination of steps will meet these requirements? (Select TWO.)"
+  options:
+    - "Attach an IAM policy that denies the creation of unencrypted EBS volumes only."
+    - "Enable Amazon S3 default encryption for the bucket that stores the EBS snapshots."
+    - "Run the modify-volume command with the encrypted option on the existing volume."
+    - "Enable EBS encryption by default for the account in the Region."
+    - "Snapshot the volume, create an encrypted volume from it, and swap the volumes."
+  correct: [D, E]
+  why: "EBS encryption by default is a Regional account setting. After it is enabled, all new volumes and snapshot copies in the Region are encrypted with the default KMS key or a key that you choose. An existing volume cannot be encrypted in place. Creating an encrypted volume from a snapshot, and then attaching it in place of the old volume, encrypts the data. The switch needs a short planned stop for the data volume. Not \"Run the modify-volume command with the encrypted option on the...\": Elastic Volumes can change size, type, and performance, but it cannot encrypt an existing volume. Not \"Attach an IAM policy that denies the creation of unencrypted EBS...\": A deny policy blocks unencrypted volumes, but it does not encrypt anything automatically, and it does nothing for the existing volume. Not \"Enable Amazon S3 default encryption for the bucket that stores the...\": EBS snapshots are not stored in a bucket that you manage, so S3 bucket settings do not apply."
+  ref: "Question d4-39 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-40
+  kind: choice
+  en: "A company has a data pipeline that writes millions of small objects every hour to an Amazon S3 bucket that uses SSE-KMS with a customer managed key. The pipeline receives ThrottlingException errors from AWS KMS, and KMS request costs are high. Which solution will reduce the KMS requests with the LEAST operational overhead?"
+  options:
+    - "Configure S3 Bucket Keys for the bucket's SSE-KMS encryption setting."
+    - "Request a higher limit for the S3 PUT request rate on the bucket's prefixes."
+    - "Create a second KMS key, and split the objects across the two keys at random."
+    - "Switch the bucket to dual-layer encryption with DSSE-KMS for every object."
+  correct: [A]
+  why: "With S3 Bucket Keys, S3 uses a short-lived bucket-level key from AWS KMS to create data keys for objects, instead of calling KMS for every object. This can reduce KMS requests and costs by up to 99%. Not \"Switch the bucket to dual-layer encryption with DSSE-KMS for every...\": Dual-layer encryption adds a second layer of encryption and increases KMS use instead of reducing it. Not \"Create a second KMS key, and split the objects across the two keys at...\": Splitting traffic across keys needs application changes and does not reduce the total number of KMS requests, because request quotas are shared across keys in the account and Region. Not \"Request a higher limit for the S3 PUT request rate on the bucket's...\": The errors come from AWS KMS, not from S3 request rates."
+  ref: "Question d4-40 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-41
+  kind: choice
+  en: "A company's compliance standard requires the key material of a customer managed AWS KMS key to be rotated every 180 days. The key was created with key material that AWS KMS generated. What should a CloudOps engineer do to meet this requirement?"
+  options:
+    - "Enable automatic key rotation for the key with a rotation period of 180 days."
+    - "Schedule the key for deletion every 180 days."
+    - "Enable automatic rotation for the AWS managed key that the service uses by default."
+    - "Create a new key every 180 days, and re-encrypt all of the data with the new key manually."
+  correct: [A]
+  why: "Automatic rotation for customer managed keys supports a custom rotation period from 90 to 2,560 days. KMS creates new key material on that schedule and keeps the older material to decrypt existing data, so nothing needs to be re-encrypted. On-demand rotation is also available. Not \"Create a new key every 180 days, and re-encrypt all of the data with...\": Manual rotation with re-encryption is a lot of work and is not needed for keys with KMS-generated key material. Not \"Enable automatic rotation for the AWS managed key that the service...\": AWS managed keys rotate every year on a schedule that you cannot change. Not \"Schedule the key for deletion every 180 days\": Deleting a key makes all data encrypted under it unrecoverable."
+  ref: "Question d4-41 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-42
+  kind: choice
+  en: "A company has an application that encrypts data in us-east-1 with an AWS KMS key and replicates the encrypted data to eu-west-1 for disaster recovery. The application in eu-west-1 must decrypt the data locally without calling the KMS key in us-east-1. Which solution will meet this requirement?"
+  options:
+    - "Export the key material from us-east-1, and import it into the AWS managed key in eu-west-1."
+    - "Use a KMS multi-Region primary key in us-east-1 and a replica key in eu-west-1."
+    - "Create a new single-Region key in eu-west-1. Use it to decrypt the replicated data."
+    - "Share the us-east-1 key with eu-west-1 by using AWS RAM."
+  correct: [B]
+  why: "Multi-Region keys are related keys in different Regions that share the same key ID and key material. Data encrypted with the primary key in us-east-1 can be decrypted with the replica key in eu-west-1 without any cross-Region KMS calls. Not \"Create a new single-Region key in eu-west-1. Use it to decrypt the...\": A different key cannot decrypt data that was encrypted under the original key. Not \"Export the key material from us-east-1, and import it into the AWS...\": AWS KMS does not let you export key material that it generated, and AWS managed keys cannot import key material. Not \"Share the us-east-1 key with eu-west-1 by using AWS RAM\": KMS keys are not shared across Regions through AWS RAM."
+  ref: "Question d4-42 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-43
+  kind: choice
+  en: "A CloudOps engineer schedules a customer managed AWS KMS key for deletion with a 30-day waiting period because the company believes that the key is unused. The company must be alerted if anything tries to use the key during the waiting period. Which solution will meet this requirement?"
+  options:
+    - "Shorten the waiting period to 7 days to find any problems with the deletion sooner."
+    - "Disable the key instead, and wait for the users of the key to open a support ticket with the team."
+    - "Enable automatic key rotation to write a new entry in AWS CloudTrail each time that the key is used."
+    - "Create a metric filter and alarm on AWS CloudTrail logs for requests that fail because the key is pending deletion."
+  correct: [D]
+  why: "During the waiting period, the key cannot be used, and requests that try to use it fail and are recorded in CloudTrail. A metric filter on those events in CloudWatch Logs, with an alarm, alerts the team so that it can cancel the deletion if the key is still needed. Not \"Enable automatic key rotation to write a new entry in AWS CloudTrail...\": Rotation creates new key material. It does not alert anyone about attempted use. Not \"Disable the key instead, and wait for the users of the key to open a...\": Disabling a key first is a safer test, but waiting for tickets is not an alert and may come too late. Not \"Shorten the waiting period to 7 days to find any problems with the...\": A shorter waiting period gives less time to find problems before the key, and any data encrypted under it, is lost for good."
+  ref: "Question d4-43 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-44
+  kind: choice
+  en: "A company has an Amazon S3 bucket with default encryption that uses SSE-KMS with a specific customer managed key. Some applications upload objects with an explicit header that requests SSE-S3, which overrides the default. The company's security team requires every object to be encrypted with that KMS key. Which solution will enforce this requirement?"
+  options:
+    - "Rely on the bucket's default encryption setting, because it always overrides any headers that applications send."
+    - "Add a bucket policy that denies PutObject requests whose encryption headers do not specify the required KMS key."
+    - "Enable S3 Bucket Keys to make all objects use the bucket-level key no matter which headers are sent."
+    - "Enable S3 Object Lock in compliance mode to prevent objects from being uploaded with SSE-S3."
+  correct: [B]
+  why: "A bucket policy can deny PutObject requests unless the encryption headers name SSE-KMS and the required key, by using condition keys such as s3:x-amz-server-side-encryption-aws-kms-key-id. Uploads that ask for SSE-S3 or for a different key are rejected. Not \"Enable S3 Bucket Keys to make all objects use the bucket-level key no...\": S3 Bucket Keys reduce KMS request costs. They do not override an explicit request for SSE-S3. Not \"Enable S3 Object Lock in compliance mode to prevent objects from...\": Object Lock protects object versions from deletion. It does not control encryption settings. Not \"Rely on the bucket's default encryption setting, because it always...\": Default encryption applies only when a request does not specify encryption. An explicit header overrides it."
+  ref: "Question d4-44 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-45
+  kind: choice
+  en: "A company runs a public website behind an Application Load Balancer that has only an HTTP listener on port 80. The company must serve all traffic over HTTPS with a free certificate that renews automatically. Users who type http:// must be sent to HTTPS. Which combination of steps will meet these requirements? (Select TWO.)"
+  options:
+    - "Request a public ACM certificate with DNS validation. Add an HTTPS listener on port 443 that uses it."
+    - "Import a certificate bought from a third-party CA into ACM, and renew it manually every year."
+    - "Change the port 80 listener's default action to redirect requests to HTTPS on port 443."
+    - "Add a rule to the ALB security group that blocks inbound port 80 traffic from the internet."
+    - "Install a self-signed certificate on each Amazon EC2 instance. Keep the ALB listener on port 80."
+  correct: [A, C]
+  why: "Public ACM certificates are free, and ACM renews DNS-validated certificates automatically as long as the validation CNAME record stays in place. An HTTPS listener on the ALB terminates TLS with the certificate. A listener rule with a redirect action returns an HTTP 301 response to the HTTPS URL, so users who type http:// are moved to HTTPS. Not \"Install a self-signed certificate on each Amazon EC2 instance. Keep...\": Browsers do not trust self-signed certificates, and the ALB would still serve plain HTTP to users. Not \"Import a certificate bought from a third-party CA into ACM, and renew...\": Imported certificates cost money from the CA and are not renewed automatically by ACM. Not \"Add a rule to the ALB security group that blocks inbound port 80...\": Security groups cannot block traffic from the internet with a deny rule, and blocking port 80 would break users who type http:// instead of redirecting them."
+  ref: "Question d4-45 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-46
+  kind: choice
+  en: "AWS Certificate Manager (ACM) sends a company a notice that a DNS-validated public certificate used by an Amazon CloudFront distribution is not eligible for automatic renewal. Someone recently cleaned up old records in the domain's Amazon Route 53 hosted zone. What should a CloudOps engineer do to resolve this issue?"
+  options:
+    - "Re-create the ACM validation CNAME record in the hosted zone."
+    - "Request a new certificate with email validation. Attach it to the distribution each year."
+    - "Export the certificate from ACM, and import it again."
+    - "Move the certificate to the Region of the CloudFront origin."
+  correct: [A]
+  why: "ACM renews DNS-validated certificates automatically only while the CNAME validation record is present and resolvable. Restoring the record lets ACM validate the domain again and renew the certificate before it expires. Not \"Request a new certificate with email validation. Attach it to the...\": Email validation requires someone to approve each renewal, which adds manual work and risk. Not \"Export the certificate from ACM, and import it again\": Re-importing does not extend a certificate's expiration date, and ACM does not renew imported certificates. Not \"Move the certificate to the Region of the CloudFront origin\": Certificates for CloudFront must be in us-east-1, regardless of where the origin is."
+  ref: "Question d4-46 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-47
+  kind: choice
+  en: "A CloudOps engineer requested an AWS Certificate Manager (ACM) certificate for www.example.com in eu-west-1 and needs to use the certificate with an Amazon CloudFront distribution. The certificate does not appear in the certificate list in the CloudFront console. What should the CloudOps engineer do to resolve this issue?"
+  options:
+    - "Wait 24 hours for the certificate to replicate from eu-west-1 to all CloudFront locations."
+    - "Attach the certificate to an ALB in eu-west-1. Set that ALB as the CloudFront origin."
+    - "Share the certificate with the CloudFront service principal by using AWS Resource Access Manager."
+    - "Request or import the certificate in the us-east-1 Region, and select it in CloudFront."
+  correct: [D]
+  why: "CloudFront can use only ACM certificates that are in the US East (N. Virginia) Region, us-east-1. The certificate must be requested or imported there. Not \"Wait 24 hours for the certificate to replicate from eu-west-1 to all...\": ACM certificates do not replicate between Regions. Not \"Attach the certificate to an ALB in eu-west-1. Set that ALB as the...\": A certificate on the origin load balancer secures traffic from CloudFront to the origin. It does not serve the viewer-facing domain on CloudFront. Not \"Share the certificate with the CloudFront service principal by using...\": ACM certificates are not shared with CloudFront through AWS RAM."
+  ref: "Question d4-47 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-48
+  kind: choice
+  en: "An auditor finds that clients can download objects from a company's Amazon S3 bucket over plain HTTP. The company requires all requests to the bucket to use TLS. What should a CloudOps engineer do to meet this requirement?"
+  options:
+    - "Enable S3 Transfer Acceleration to route requests over encrypted connections."
+    - "Enable default encryption with SSE-KMS to encrypt all requests in transit."
+    - "Enable S3 Block Public Access to reject HTTP requests from the internet."
+    - "Add a bucket policy that denies all S3 actions when aws:SecureTransport is false."
+  correct: [D]
+  why: "aws:SecureTransport is false for requests made over HTTP. A Deny statement with that condition rejects every unencrypted request, so clients must use HTTPS. Not \"Enable default encryption with SSE-KMS to encrypt all requests in...\": Server-side encryption protects data at rest. It does not stop requests from using plain HTTP. Not \"Enable S3 Transfer Acceleration to route requests over encrypted...\": Transfer Acceleration speeds up transfers. It does not block HTTP requests. Not \"Enable S3 Block Public Access to reject HTTP requests from the...\": Block Public Access controls public permissions. It does not decide whether authorized requests use TLS."
+  ref: "Question d4-48 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-49
+  kind: choice
+  en: "A company requires every connection to its Amazon RDS for PostgreSQL DB instance to use TLS. Some older clients still connect without TLS. How should a CloudOps engineer enforce this requirement?"
+  options:
+    - "Configure IAM database authentication."
+    - "Add a security group rule that allows only port 443 to the DB instance from the application."
+    - "Configure encryption at rest for the DB instance by restoring it from an encrypted snapshot copy."
+    - "Set the rds.force_ssl parameter to 1 in the DB parameter group. Update the clients."
+  correct: [D]
+  why: "The rds.force_ssl parameter makes the database reject connections that do not use SSL/TLS. Clients must be updated to connect with TLS and to trust the RDS certificate authority before the change, or they will fail to connect. Not \"Configure encryption at rest for the DB instance by restoring it from...\": Encryption at rest protects stored data. It does not force connections to use TLS. Not \"Add a security group rule that allows only port 443 to the DB...\": PostgreSQL listens on its own port, usually 5432. A port 443 rule does not control whether database connections use TLS. Not \"Configure IAM database authentication\": IAM authentication changes how users authenticate. It does not force other clients to use TLS."
+  ref: "Question d4-49 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-50
+  kind: choice
+  en: "A company imports certificates from a third-party certificate authority into AWS Certificate Manager (ACM) for several load balancers. ACM does not renew imported certificates, and one of the certificates expired last month and caused an outage. Which solution will warn the company at least 30 days before an imported certificate expires?"
+  options:
+    - "Enable automatic renewal for each imported certificate in the ACM console settings."
+    - "Create an Amazon Route 53 health check for each of the domains to fail on the day that the certificate expires."
+    - "Create an Amazon CloudWatch alarm on the ACM DaysToExpiry metric, or an Amazon EventBridge rule for expiration events."
+    - "Enable AWS CloudTrail data events for ACM to log each expiration in the trail."
+  correct: [C]
+  why: "ACM publishes the DaysToExpiry metric for certificates and sends approaching expiration events to EventBridge, starting 45 days before expiration by default. An alarm or rule can notify the team in time to renew the certificate and import it again. The acm-certificate-expiration-check Config rule is another option. Not \"Enable automatic renewal for each imported certificate in the ACM...\": ACM cannot renew imported certificates. They must be renewed with the issuing CA and imported again. Not \"Enable AWS CloudTrail data events for ACM to log each expiration in...\": Expiration is not an API call, so CloudTrail does not record it. Not \"Create an Amazon Route 53 health check for each of the domains to...\": A health check that fails on the expiration day gives no warning in advance."
+  ref: "Question d4-50 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-51
+  kind: choice
+  en: "A company's security standard requires an Application Load Balancer to accept only TLS 1.2 and TLS 1.3 with strong ciphers. A scan shows that the HTTPS listener still accepts TLS 1.0 and TLS 1.1. What should a CloudOps engineer do to meet this requirement?"
+  options:
+    - "Import a new certificate into ACM that was issued with the TLS 1.3 protocol enabled for it."
+    - "Change the HTTPS listener's security policy to one that allows only TLS 1.2 and TLS 1.3."
+    - "Add a security group rule that blocks clients that try to connect with TLS 1.0 or 1.1."
+    - "Configure AWS WAF with a rule that blocks TLS 1.0 and TLS 1.1 requests at the listener."
+  correct: [B]
+  why: "The listener's security policy, such as ELBSecurityPolicy-TLS13-1-2-2021-06, sets which TLS versions and ciphers the load balancer negotiates. Choosing a policy that allows only TLS 1.2 and 1.3 stops the older protocols. Not \"Import a new certificate into ACM that was issued with the TLS 1.3...\": Certificates are not tied to a TLS version. The protocol versions come from the listener's security policy. Not \"Add a security group rule that blocks clients that try to connect...\": Security groups filter by IP address, port, and protocol. They cannot see TLS versions. Not \"Configure AWS WAF with a rule that blocks TLS 1.0 and TLS 1.1...\": AWS WAF inspects HTTP requests after TLS is negotiated, so it cannot control which TLS versions the listener accepts."
+  ref: "Question d4-51 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-52
+  kind: choice
+  en: "A company has an application that keeps the master password for an Amazon RDS for MySQL database in a configuration file. The password must be stored securely and rotated every 30 days without custom code. Which solution will meet these requirements in the MOST secure manner?"
+  options:
+    - "Let RDS manage the master user password in AWS Secrets Manager. Set the rotation schedule to 30 days."
+    - "Store the password as a SecureString in Parameter Store. Enable its automatic rotation feature."
+    - "Store the password in an AWS Lambda environment variable. Update the variable manually each month."
+    - "Store the password in an encrypted Amazon S3 object. Replace it every 30 days by using a scheduled AWS Lambda script."
+  correct: [A]
+  why: "When RDS manages the master user password, it stores the password in Secrets Manager and rotates it with managed rotation, with no Lambda function to write. The application reads the current value from Secrets Manager. The default rotation period is 7 days, and it can be changed. Not \"Store the password as a SecureString in Parameter Store. Enable its...\": Parameter Store does not rotate SecureString parameters automatically. Not \"Store the password in an encrypted Amazon S3 object. Replace it every...\": This is custom code, and the database password would still have to be changed and kept in sync correctly. Not \"Store the password in an AWS Lambda environment variable. Update the...\": Manual updates are error prone, and environment variables are not a secure secret store."
+  ref: "Question d4-52 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-53
+  kind: choice
+  en: "A company has an AWS Secrets Manager rotation function that runs in private subnets so that the function can reach an Amazon RDS database. Rotation fails, and the function's logs show timeouts when the function calls the Secrets Manager API. The subnets have no NAT gateway. What should a CloudOps engineer do to resolve this issue?"
+  options:
+    - "Attach the SecretsManagerReadWrite policy to the database's IAM role to complete the rotation."
+    - "Create an interface VPC endpoint for Secrets Manager that allows HTTPS from the function's security group."
+    - "Increase the rotation function's timeout from 30 seconds to 15 minutes to give the API call time to finish."
+    - "Move the rotation function out of the VPC to reach both Secrets Manager and the database."
+  correct: [B]
+  why: "A function in private subnets without a NAT gateway has no path to the public Secrets Manager endpoint. An interface VPC endpoint gives it a private path, and the endpoint's security group must allow inbound HTTPS from the function. Not \"Move the rotation function out of the VPC to reach both Secrets...\": Outside the VPC, the function could reach Secrets Manager but not the private database. Not \"Increase the rotation function's timeout from 30 seconds to 15...\": The calls time out because there is no network path, so a longer timeout only delays the failure. Not \"Attach the SecretsManagerReadWrite policy to the database's IAM role...\": This is a network problem, not a permissions problem, and the database does not call Secrets Manager."
+  ref: "Question d4-53 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-54
+  kind: choice
+  en: "A company has a secret in AWS Secrets Manager in account A that stores API credentials. An application role in account B must read the secret. The secret is encrypted with the AWS managed key aws/secretsmanager. Which solution will allow the role in account B to read the secret?"
+  options:
+    - "Share the secret with account B by using AWS RAM. Keep using the aws/secretsmanager key for it."
+    - "Encrypt the secret with a customer managed key. Allow account B in the key policy and the secret policy."
+    - "Add a resource policy to the secret that allows account B to read it. Keep using the aws/secretsmanager key."
+    - "Replicate the secret to account B by using Secrets Manager replication to a Region in that account."
+  correct: [B]
+  why: "Cross-account access to a secret needs a resource policy on the secret that allows the role, a customer managed KMS key whose key policy allows account B to decrypt, and an IAM policy in account B that allows GetSecretValue and kms:Decrypt. The policy of the AWS managed key cannot be changed to allow another account. Not \"Add a resource policy to the secret that allows account B to read it...\": The resource policy alone is not enough, because account B cannot use the AWS managed key. Not \"Share the secret with account B by using AWS RAM. Keep using the...\": Secrets Manager uses resource policies, not AWS RAM, for cross-account access, and account B still could not use the AWS managed key. Not \"Replicate the secret to account B by using Secrets Manager...\": Replication copies a secret to other Regions in the same account, not to another account."
+  ref: "Question d4-54 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-55
+  kind: choice
+  en: "A company has a multi-Region application that reads database credentials from AWS Secrets Manager in us-east-1. During a disaster recovery test in us-west-2, the application cannot start because it cannot reach the secret. Which solution will make the secret available in us-west-2 and keep it in sync with rotations?"
+  options:
+    - "Grant the us-west-2 application access to the us-east-1 secret's AWS KMS key in that Region."
+    - "Replicate the secret to us-west-2 with Secrets Manager multi-Region secret replication."
+    - "Store a copy of the secret value in Parameter Store in us-west-2 as a String parameter."
+    - "Create a new secret in us-west-2 manually. Copy the value each time the secret rotates."
+  correct: [B]
+  why: "Secrets Manager can replicate a secret to other Regions. Replicas stay in sync when the primary secret's value changes, including through rotation, and the application can read the replica locally during a Regional outage. Not \"Create a new secret in us-west-2 manually. Copy the value each time...\": Manual copies drift out of sync after each rotation. Not \"Store a copy of the secret value in Parameter Store in us-west-2 as a...\": A String parameter stores the credentials in plain text, and it does not stay in sync with rotations. Not \"Grant the us-west-2 application access to the us-east-1 secret's AWS...\": The secret itself would still exist only in us-east-1, which might be unavailable during a disaster."
+  ref: "Question d4-55 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-56
+  kind: choice
+  en: "A company has an application that needs a third-party license key that never rotates, along with 30 other configuration values. The license key must be encrypted at rest at the lowest cost. Where should a CloudOps engineer store the license key?"
+  options:
+    - "In AWS Secrets Manager with a 30-day automatic rotation schedule"
+    - "In the application's source code repository"
+    - "In a plaintext String parameter in Parameter Store"
+    - "In Parameter Store as a SecureString standard parameter"
+  correct: [D]
+  why: "SecureString parameters are encrypted with AWS KMS, and standard parameters have no storage charge. They suit secrets that do not need automatic rotation, such as a fixed license key. Not \"In AWS Secrets Manager with a 30-day automatic rotation schedule\": Secrets Manager charges for each secret every month and is built for rotation, which this key does not need. Not \"In a plaintext String parameter in Parameter Store\": A String parameter is not encrypted, so the license key would be stored in plain text. Not \"In the application's source code repository\": Secrets in source code can leak through the repository and its history."
+  ref: "Question d4-56 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-57
+  kind: choice
+  en: "Amazon GuardDuty reports a CryptoCurrency:EC2/BitcoinTool.B!DNS finding for a company's Amazon EC2 instance. For future findings of this type, the company's security team needs the instance isolated automatically and its disks preserved for forensics. Which solution will meet these requirements?"
+  options:
+    - "Use an Amazon EventBridge rule on the finding type to start automation that isolates the instance and snapshots its volumes."
+    - "Add a GuardDuty trusted IP list that contains the instance's IP address to block its traffic."
+    - "Enable GuardDuty Malware Protection for EC2 to terminate the instance as soon as malware is found."
+    - "Create a suppression rule for the finding type to stop the instance from sending cryptocurrency DNS queries."
+  correct: [A]
+  why: "GuardDuty sends findings to EventBridge. A rule that matches the finding type can start a Systems Manager Automation runbook or a Lambda function that replaces the instance's security groups with an isolation security group and creates EBS snapshots for forensics. Not \"Enable GuardDuty Malware Protection for EC2 to terminate the instance...\": Malware Protection scans EBS volumes and reports findings. It does not terminate instances, and terminating would destroy evidence. Not \"Create a suppression rule for the finding type to stop the instance...\": Suppression rules hide findings from view. They do not stop the activity, and they would hide a real threat. Not \"Add a GuardDuty trusted IP list that contains the instance's IP...\": Trusted IP lists tell GuardDuty not to generate findings for those addresses. They do not block traffic."
+  ref: "Question d4-57 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-58
+  kind: choice
+  en: "A company runs an approved vulnerability scanner from a fixed Amazon EC2 instance. Every day, Amazon GuardDuty generates many Recon:EC2/Portscan findings for this scanner, which hides real findings. What should a CloudOps engineer do to resolve this issue?"
+  options:
+    - "Create a GuardDuty suppression rule that matches the finding type and the scanner instance."
+    - "Archive each Portscan finding manually from the GuardDuty console after the security team reviews it."
+    - "Add the scanner's IP address to a GuardDuty threat list."
+    - "Disable GuardDuty in the account during the hours of each day when the scanner is running."
+  correct: [A]
+  why: "Suppression rules automatically archive new findings that match criteria such as the finding type and the instance ID. The expected scanner findings no longer appear in the active list, while other findings are unaffected. Not \"Disable GuardDuty in the account during the hours of each day when...\": Turning off GuardDuty leaves the account unmonitored for real threats during those hours. Not \"Archive each Portscan finding manually from the GuardDuty console...\": Archiving findings by hand every day is repetitive work that suppression rules automate. Not \"Add the scanner's IP address to a GuardDuty threat list\": Threat lists contain known malicious IP addresses and would generate more findings, not fewer."
+  ref: "Question d4-58 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-59
+  kind: choice
+  en: "A company must detect threats in its AWS account, such as Amazon EC2 instances that communicate with known malicious IP addresses and unusual API activity. The solution must analyze existing AWS logs and must not require agents on the instances. Which solution will meet these requirements with the LEAST operational overhead?"
+  options:
+    - "Enable AWS CloudTrail data events. Run a weekly Amazon Athena query to find unusual activity in the events."
+    - "Enable Amazon GuardDuty in the account. Send the findings to the security team through Amazon EventBridge."
+    - "Enable Amazon Macie in the account. Send the findings to the security team through Amazon EventBridge."
+    - "Enable Amazon Inspector in the account. Send the findings to the security team through Amazon EventBridge."
+  correct: [B]
+  why: "GuardDuty is a threat detection service that analyzes data sources such as CloudTrail events, VPC Flow Logs, and DNS logs. It uses threat intelligence and machine learning, and its foundational detection needs no agents. Not \"Enable Amazon Inspector in the account. Send the findings to the...\": Inspector finds software vulnerabilities and network exposure. It does not detect active threats such as communication with malicious IP addresses. Not \"Enable Amazon Macie in the account. Send the findings to the security...\": Macie finds sensitive data in Amazon S3. It does not monitor instance traffic or API activity. Not \"Enable AWS CloudTrail data events. Run a weekly Amazon Athena query...\": This needs custom queries and a weekly review. It would not use threat intelligence to identify malicious IP addresses."
+  ref: "Question d4-59 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-60
+  kind: choice
+  en: "A company uses Amazon Inspector agent-based scanning for the Amazon EC2 instances in an account. Several instances show no vulnerability findings and are listed as unmanaged. SSM Agent is installed on these instances, but the instances have no instance profile. What should a CloudOps engineer do to resolve this issue?"
+  options:
+    - "Enable Amazon GuardDuty Runtime Monitoring to send vulnerability data to Amazon Inspector."
+    - "Enable AWS Config recording for the instances to allow Amazon Inspector to read their package list."
+    - "Enable VPC Flow Logs for the instances to allow Amazon Inspector to find old software packages."
+    - "Attach an instance profile with the AmazonSSMManagedInstanceCore policy to the instances."
+  correct: [D]
+  why: "For agent-based scanning, an instance must be managed by Systems Manager: SSM Agent must be running, and the instance needs permission. AmazonSSMManagedInstanceCore provides that permission. With hybrid or agentless scanning enabled, Inspector can also scan unmanaged instances by using EBS snapshots. Not \"Enable Amazon GuardDuty Runtime Monitoring to send vulnerability data...\": Runtime Monitoring detects threats in running workloads for GuardDuty. It does not supply package inventories to Inspector. Not \"Enable AWS Config recording for the instances to allow Amazon...\": Inspector does not use Config data to find software vulnerabilities. Not \"Enable VPC Flow Logs for the instances to allow Amazon Inspector to...\": Flow logs record network traffic metadata. They do not show installed software versions."
+  ref: "Question d4-60 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-61
+  kind: choice
+  en: "A company's security team needs all accounts in the organization evaluated against the AWS Foundational Security Best Practices standard. The same standards and controls must be enabled in every account and AWS Region and must be managed from one place. Which solution will meet these requirements with the LEAST operational overhead?"
+  options:
+    - "Deploy a separate AWS Config rule for each control in the standard by using a StackSet for every account."
+    - "Configure AWS Security Hub CSPM in each account and Region manually. Enable the standard in each one."
+    - "Use AWS Security Hub CSPM central configuration from the delegated administrator with a configuration policy."
+    - "Configure Amazon Inspector in every account."
+  correct: [C]
+  why: "Central configuration lets the delegated administrator create configuration policies that enable Security Hub CSPM, standards, and controls for chosen accounts, OUs, and Regions. New accounts get the same settings automatically. Not \"Configure AWS Security Hub CSPM in each account and Region manually...\": Configuring every account and Region by hand is slow and drifts over time. Not \"Deploy a separate AWS Config rule for each control in the standard by...\": Rebuilding the standard as separate Config rules is a large effort that Security Hub CSPM already provides. Not \"Configure Amazon Inspector in every account\": Inspector finds software vulnerabilities. It does not evaluate the best practices controls."
+  ref: "Question d4-61 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-62
+  kind: choice
+  en: "AWS Security Hub CSPM generates findings for a control whose risk a company has accepted for its development accounts only. These findings must be marked as suppressed automatically in development accounts, while the same findings stay active in production accounts. What should a CloudOps engineer do to meet these requirements?"
+  options:
+    - "Archive each finding in the development accounts manually after it appears in the Security Hub console."
+    - "Disable Security Hub CSPM in the development accounts."
+    - "Disable the control in every account and Region in the organization, including the production accounts."
+    - "Create an automation rule that matches the control in development accounts and sets the status to SUPPRESSED."
+  correct: [D]
+  why: "Automation rules update findings as Security Hub receives them, based on criteria such as the control ID and the account ID. Setting the workflow status to SUPPRESSED for development accounts hides the accepted findings there, while production findings stay active. Not \"Disable the control in every account and Region in the organization...\": Disabling the control everywhere removes the check from production too. Not \"Archive each finding in the development accounts manually after it...\": Manual handling is repetitive and easy to forget. Not \"Disable Security Hub CSPM in the development accounts\": Turning off Security Hub CSPM removes all of the other checks in those accounts."
+  ref: "Question d4-62 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-63
+  kind: choice
+  en: "A company's security team receives separate findings from Amazon GuardDuty, Amazon Inspector, Amazon Macie, and AWS Security Hub CSPM. The security team needs these signals correlated to show which resources face the highest risk. Which solution will meet this requirement with the LEAST operational overhead?"
+  options:
+    - "Enable AWS Config aggregators."
+    - "Export all findings to Amazon S3, and write Amazon Athena queries that join them by resource ID."
+    - "Enable AWS Security Hub, which correlates the signals into exposures and prioritizes risks."
+    - "Create an Amazon CloudWatch dashboard that shows the finding counts for each service side by side."
+  correct: [C]
+  why: "AWS Security Hub correlates signals from GuardDuty, Inspector, Macie, and Security Hub CSPM and identifies exposures, such as a reachable resource with an exploitable vulnerability. It prioritizes risks so that the team can act on the most important issues first. Not \"Export all findings to Amazon S3, and write Amazon Athena queries...\": Custom queries can join findings, but building and maintaining risk correlation logic is a large effort. Not \"Enable AWS Config aggregators\": Config aggregators combine configuration and compliance data. They do not correlate security findings from these services. Not \"Create an Amazon CloudWatch dashboard that shows the finding counts...\": Counts side by side do not show which specific resources combine several risks."
+  ref: "Question d4-63 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-64
+  kind: choice
+  en: "A company needs to test a new customer-facing web application for exploitable vulnerabilities before each major release. The company has no penetration testing staff and needs on-demand tests that take the application's design and code into account. Which solution will meet these requirements?"
+  options:
+    - "Use AWS Security Agent to run on-demand penetration tests against the application."
+    - "Enable AWS Shield Advanced to simulate attacks against the application."
+    - "Enable Amazon GuardDuty for the account to test the application for attacks."
+    - "Enable Amazon Inspector to perform penetration tests on the web application."
+  correct: [A]
+  why: "AWS Security Agent performs on-demand penetration testing that uses context from the application's design documents, source code, and infrastructure as code. It reports exploitable vulnerabilities with guidance for fixing them, and it also offers design and code security reviews. Not \"Enable Amazon GuardDuty for the account to test the application for...\": GuardDuty detects threats from activity in the account. It does not attack your application to find vulnerabilities. Not \"Enable Amazon Inspector to perform penetration tests on the web...\": Inspector scans for known software vulnerabilities and network reachability. It does not perform penetration tests of application logic. Not \"Enable AWS Shield Advanced to simulate attacks against the...\": Shield Advanced protects against DDoS attacks. It does not test applications for vulnerabilities."
+  ref: "Question d4-64 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d4-65
+  kind: choice
+  en: "A company's administrators use AWS Systems Manager Session Manager to access Amazon EC2 instances. Auditors require a record of every command typed in each session, and the session data must be encrypted with a key that the company controls. Which combination of steps will meet these requirements? (Select TWO.)"
+  options:
+    - "Install the Amazon CloudWatch agent to capture the keyboard input of each session."
+    - "Configure AWS KMS encryption of session data with a customer managed key in the preferences."
+    - "Enable AWS CloudTrail data events to record every command that is typed in a session."
+    - "Open port 22 on the instances to capture session commands by using VPC Flow Logs."
+    - "Configure Session Manager preferences to send session logs to Amazon S3 or Amazon CloudWatch Logs."
+  correct: [B, E]
+  why: "Session Manager can upload or stream session output, including the commands that are run, to an S3 bucket or a CloudWatch Logs log group for auditing. Session Manager preferences can require that session data is encrypted with a customer managed KMS key, in addition to the TLS encryption that protects data in transit. Not \"Open port 22 on the instances to capture session commands by using...\": Session Manager does not use SSH, and flow logs record only traffic metadata, not commands. Not \"Enable AWS CloudTrail data events to record every command that is...\": CloudTrail records the StartSession API call and who started it, but not the commands typed inside the session. Not \"Install the Amazon CloudWatch agent to capture the keyboard input of...\": The CloudWatch agent collects metrics and log files. It is not the way to record session activity."
+  ref: "Question d4-65 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]

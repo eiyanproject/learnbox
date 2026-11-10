@@ -246,3 +246,29 @@
   why: "Rotation adds new key material for future encryptions while keeping previous material, so existing ciphertexts decrypt transparently. Nothing needs re-encrypting."
   ref: "AWS KMS Developer Guide: Rotating AWS KMS keys"
   exams: [dva]
+
+- id: rm-dva-dsec-001
+  kind: choice
+  en: "A mobile app must let users sign up and sign in with an email and password, and must then allow the signed-in user's device to upload directly to a private S3 prefix scoped to that user. Which Cognito configuration meets both needs?"
+  options:
+    - "A user pool for sign-up and sign-in, and an identity pool that exchanges the user pool token for temporary AWS credentials scoped by an IAM role."
+    - "A user pool alone — its access token can be sent directly to S3 as the request signature."
+    - "An identity pool alone, using unauthenticated identities for every user."
+    - "A user pool alone, with the app embedding an IAM user's access keys to perform uploads on the user's behalf."
+  correct: [A]
+  why: "The two Cognito components do different jobs. A user pool is the user directory that handles registration, sign-in, and token issuance. An identity pool takes that token and returns temporary AWS credentials tied to an IAM role, whose policy can scope access to a per-user S3 prefix using a policy variable. Not \"A user pool alone — its access token can be sent directly to S3 as...\": S3 authenticates SigV4-signed requests using AWS credentials. A user pool token is not an AWS credential and cannot sign an S3 request. Not \"An identity pool alone, using unauthenticated identities for every...\": Unauthenticated identities give every guest the same role, which cannot scope a prefix to a specific user and defeats the sign-in requirement. Not \"A user pool alone, with the app embedding an IAM user's access keys...\": Embedding IAM access keys in a mobile app exposes them to anyone who inspects the binary, and gives every user identical permissions."
+  ref: "Question dsec-001 (Cognito user pools vs identity pools) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dva]
+
+- id: rm-dva-dsec-002
+  kind: choice
+  en: "An application must encrypt 500 MB files before writing them to S3, using a customer managed KMS key so decryption is auditable. Calls to the KMS Encrypt API fail for these payloads. What is the correct approach?"
+  options:
+    - "Split the file into 4 KB chunks and call Encrypt once per chunk."
+    - "Switch to an AWS managed key, which has no payload size limit."
+    - "Call GenerateDataKey, encrypt the file locally with the returned plaintext data key, then store the encrypted data key alongside the object and discard the plaintext key."
+    - "Request a KMS service quota increase for the maximum payload size."
+  correct: [C]
+  why: "This is envelope encryption, and it is why GenerateDataKey exists. KMS returns both a plaintext data key and an encrypted copy of it; the application encrypts the payload locally with the plaintext key, stores the encrypted key with the ciphertext, and discards the plaintext. Decryption calls KMS only to unwrap the small data key, which keeps the CloudTrail audit trail intact. Not \"Split the file into 4 KB chunks and call Encrypt once per chunk\": This would mean over 100,000 KMS calls per file, with matching cost and latency, and leaves the application managing chunk boundaries for no benefit. Not \"Request a KMS service quota increase for the maximum payload size\": The 4 KB limit on direct Encrypt is a design constraint of the API, not an adjustable quota. Not \"Switch to an AWS managed key, which has no payload size limit\": The payload limit applies to the Encrypt operation regardless of key type, and an AWS managed key would also lose the per-key control the audit requirement implies."
+  ref: "Question dsec-002 (KMS envelope encryption) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dva]

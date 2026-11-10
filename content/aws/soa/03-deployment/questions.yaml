@@ -206,3 +206,853 @@
   why: "S3 event notifications (or S3 events through EventBridge) invoke a function as soon as an object is created, filtered by prefix and suffix."
   ref: "Amazon S3 User Guide: Amazon S3 Event Notifications"
   exams: [soa]
+
+- id: zg-soa-d3-01
+  kind: choice
+  en: "A company builds its golden AMI manually each month. A CloudOps engineer launches an Amazon EC2 instance; installs patches, the Amazon CloudWatch agent, and security hardening; creates an AMI; and copies the AMI to three AWS Regions. The process takes a day and sometimes misses steps. Which solution will automate this process with the LEAST operational overhead?"
+  options:
+    - "Create an Auto Scaling group whose user data installs everything. Create an AMI from the newest instance each month."
+    - "Use AWS CloudFormation to launch an instance each month with cfn-init. Create the AMI manually after the stack completes."
+    - "Write an AWS Lambda function that launches an instance, runs a script with Run Command, creates an AMI, and copies it to each Region."
+    - "Create an EC2 Image Builder pipeline with a recipe, test components, a monthly schedule, and distribution to the three Regions."
+  correct: [D]
+  why: "EC2 Image Builder automates building, testing, and distributing images. A recipe lists the base image and components such as patching, the CloudWatch agent, and hardening. Test components validate the image, a schedule runs the pipeline monthly, and distribution settings copy the AMI to other Regions and accounts. Not \"Write an AWS Lambda function that launches an instance, runs a script...\": This works, but it is custom code that must handle failures, testing, and cleanup, which Image Builder already provides. Not \"Create an Auto Scaling group whose user data installs everything...\": Creating AMIs from running instances is not repeatable or tested, and running the install in user data adds boot time to every launch. Not \"Use AWS CloudFormation to launch an instance each month with...\": The AMI step is still manual, and there is no built-in testing or multi-Region distribution."
+  ref: "Question d3-01 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-02
+  kind: choice
+  en: "A company has development Amazon EC2 instances that are used only during business hours. The instances must stop at 19:00 and must start at 07:00 on weekdays. Which solution will meet these requirements with the LEAST operational overhead?"
+  options:
+    - "Create an Auto Scaling group for the instances. Set the group's capacity to 0 each evening to terminate the instances."
+    - "Create a cron job on a separate EC2 instance that runs AWS CLI commands to stop and start the development instances."
+    - "Create an AWS Lambda function for each instance. Run each function from a cron job on an on-premises server."
+    - "Create Amazon EventBridge Scheduler schedules that start the AWS-StopEC2Instance and AWS-StartEC2Instance Automation runbooks."
+  correct: [D]
+  why: "EventBridge Scheduler runs on a cron schedule with no servers to manage, and it can start AWS Systems Manager Automation runbooks. The AWS-StopEC2Instance and AWS-StartEC2Instance runbooks already exist, so no custom code is needed. Not \"Create a cron job on a separate EC2 instance that runs AWS CLI...\": The separate instance must itself be patched, monitored, and kept running, which adds work. Not \"Create an AWS Lambda function for each instance. Run each function...\": This needs custom code for each instance and depends on an on-premises server to run the schedule. Not \"Create an Auto Scaling group for the instances. Set the group's...\": Scaling to 0 terminates the instances instead of stopping them, so development data on local volumes can be lost."
+  ref: "Question d3-02 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-03
+  kind: choice
+  en: "A CloudOps engineer shares an AMI with another AWS account. The AMI's snapshots are encrypted with a customer managed AWS KMS key. Users in the other account can see the AMI, but their launches fail with a KMS error. What should the CloudOps engineer do to resolve this issue?"
+  options:
+    - "Re-encrypt the snapshots with the AWS managed key aws/ebs to allow the other account to use the AMI."
+    - "Update the KMS key policy to allow the other account to use the key. Have that account grant its users access."
+    - "Share the AMI with the whole organization instead of sharing it with only the one account."
+    - "Make the AMI public to allow any account to launch it without access to the KMS key."
+  correct: [B]
+  why: "To launch an AMI with encrypted snapshots, the other account needs permission to use the KMS key, such as kms:Decrypt, kms:DescribeKey, kms:CreateGrant, and kms:ReEncrypt*. The key policy must allow the other account, and that account's IAM policies must allow its users. The other account can also copy the AMI and re-encrypt it with its own key. Not \"Re-encrypt the snapshots with the AWS managed key aws/ebs to allow...\": Snapshots encrypted with the AWS managed key cannot be shared with other accounts, because the policy of that key cannot be changed. Not \"Make the AMI public to allow any account to launch it without access...\": AMIs with encrypted snapshots cannot be made public, and public images are a security risk. Not \"Share the AMI with the whole organization instead of sharing it with...\": Sharing with an organization still requires access to the KMS key, so launches would fail in the same way."
+  ref: "Question d3-03 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-04
+  kind: choice
+  en: "A company has a CI pipeline that pushes a new container image to an Amazon ECR repository on every commit. The repository now has thousands of untagged images, and storage costs are rising. The company needs only the last 20 release images and no untagged images older than 7 days. Which solution will meet these requirements in the MOST operationally efficient way?"
+  options:
+    - "Enable enhanced scanning to have Amazon Inspector delete the old and vulnerable images."
+    - "Add an ECR lifecycle policy that expires untagged images after 7 days and keeps the last 20 release images."
+    - "Add a step to the CI pipeline that lists and deletes old images after each push by using the AWS CLI."
+    - "Configure ECR replication to another Region. Delete the source repository once each month."
+  correct: [B]
+  why: "ECR lifecycle policies expire images automatically based on rules such as tag status, tag prefix, image count, and image age. One policy can expire untagged images older than 7 days and keep only the 20 newest images with a release tag prefix. Not \"Add a step to the CI pipeline that lists and deletes old images after...\": Custom cleanup in the pipeline is code to maintain, and it runs only when the pipeline runs. Not \"Configure ECR replication to another Region. Delete the source...\": Replication copies images. Deleting the repository each month would destroy images that are still needed. Not \"Enable enhanced scanning to have Amazon Inspector delete the old and...\": Enhanced scanning finds vulnerabilities. It does not delete images."
+  ref: "Question d3-04 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-05
+  kind: choice
+  en: "A company's security team requires all container images in Amazon ECR to be scanned for vulnerabilities in both operating system packages and programming language packages when the images are pushed. Images also must be rescanned automatically when new CVEs are published. Which solution will meet these requirements?"
+  options:
+    - "Enable enhanced scanning for the registry with continuous scanning, which uses Amazon Inspector."
+    - "Configure Amazon GuardDuty Runtime Monitoring for the Amazon ECS clusters that run the images."
+    - "Configure basic scanning with scan on push for each repository in the registry."
+    - "Run a vulnerability scanner in the CI pipeline before each image is pushed to the registry."
+  correct: [A]
+  why: "Enhanced scanning integrates Amazon ECR with Amazon Inspector. It scans images for operating system and programming language package vulnerabilities on push and keeps rescanning them as new vulnerabilities are published. Not \"Configure basic scanning with scan on push for each repository in the...\": Basic scanning checks operating system packages when images are pushed or scanned manually. It does not rescan images continuously or cover language packages. Not \"Run a vulnerability scanner in the CI pipeline before each image is...\": A pipeline scan checks the image once, before it is pushed. It does not rescan stored images when new CVEs appear. Not \"Configure Amazon GuardDuty Runtime Monitoring for the Amazon ECS...\": Runtime Monitoring detects threats in running workloads. It does not scan images for known vulnerabilities."
+  ref: "Question d3-05 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-06
+  kind: choice
+  en: "A company has an AWS CloudFormation template that hardcodes Amazon Linux AMI IDs for each AWS Region in a Mappings section. The IDs go out of date, and new stacks launch old, unpatched images. How should a CloudOps engineer ensure that the template always uses the latest Amazon Linux AMI?"
+  options:
+    - "Update the Mappings section manually each month with the latest AMI IDs for every Region."
+    - "Set the ImageId property to latest."
+    - "Use an SSM parameter type that reads the latest AMI ID from the public AWS Systems Manager parameter."
+    - "Add a Lambda-backed custom resource that searches for the newest image by name in each Region."
+  correct: [C]
+  why: "AWS publishes the latest Amazon Linux AMI IDs as public Systems Manager parameters, such as /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64. A template parameter of type AWS::SSM::Parameter::Value<AWS::EC2::Image::Id> resolves the current ID in each Region when the stack is created or updated. Not \"Add a Lambda-backed custom resource that searches for the newest...\": A custom resource works, but it is code to maintain, and the public parameters already provide this data. Not \"Update the Mappings section manually each month with the latest AMI...\": Manual updates are what caused the problem. They are slow and easy to forget. Not \"Set the ImageId property to latest\": ImageId must be a real AMI ID. Amazon EC2 does not accept latest as a value."
+  ref: "Question d3-06 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-07
+  kind: choice
+  en: "A CloudOps engineer needs to update a production AWS CloudFormation stack that contains an Amazon RDS DB instance. Before the update runs, the CloudOps engineer must confirm that no resource will be replaced. What should the CloudOps engineer do to meet this requirement?"
+  options:
+    - "Create a change set. Review the Replacement value for each resource before executing it."
+    - "Update the stack directly with termination protection enabled."
+    - "Run drift detection on the stack, and check whether the database shows a status of MODIFIED."
+    - "Delete the stack with a Retain deletion policy. Create a new stack from the updated template."
+  correct: [A]
+  why: "A change set shows how an update will change each resource before anything happens, including whether each resource will be replaced (True, False, or Conditional). The engineer can review it and execute it only if it is safe. Not \"Run drift detection on the stack, and check whether the database...\": Drift detection compares resources with the current template. It does not preview the changes in a new template. Not \"Update the stack directly with termination protection enabled\": Termination protection prevents the whole stack from being deleted. It does not stop an update from replacing a resource. Not \"Delete the stack with a Retain deletion policy. Create a new stack...\": Deleting and re-creating the stack is risky and unnecessary just to preview changes."
+  ref: "Question d3-07 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-08
+  kind: choice
+  en: "A company's security audit finds that a security group created by an AWS CloudFormation stack allows SSH from 0.0.0.0/0, but the template does not include that rule. A CloudOps engineer suspects that someone changed the security group in the AWS Management Console. Which CloudFormation feature will confirm this and show the difference?"
+  options:
+    - "Termination protection on the stack"
+    - "Drift detection on the stack"
+    - "A change set for the stack"
+    - "A stack policy on the stack"
+  correct: [B]
+  why: "Drift detection compares the current configuration of stack resources with the configuration that the template expects. It reports the security group as MODIFIED and shows the exact property differences, such as the extra ingress rule. Not \"A change set for the stack\": A change set previews the changes from a new template. It does not detect changes made outside CloudFormation. Not \"A stack policy on the stack\": A stack policy limits which resources stack updates can change. It does not detect or block console changes. Not \"Termination protection on the stack\": Termination protection prevents the stack from being deleted. It does not detect changes."
+  ref: "Question d3-08 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-09
+  kind: choice
+  en: "A company has an AWS CloudFormation stack that contains an Amazon RDS DB instance. A final snapshot must be created if the stack is deleted and also if a stack update replaces the DB instance. Which attributes should a CloudOps engineer set on the DB instance resource to meet these requirements?"
+  options:
+    - "DeletionPolicy: Retain and a stack policy that denies Update:*"
+    - "DeletionPolicy: Snapshot and UpdateReplacePolicy: Snapshot"
+    - "A CreationPolicy with a ResourceSignal and DeletionPolicy: Delete"
+    - "DependsOn the stack's Amazon S3 bucket and UpdatePolicy: Snapshot"
+  correct: [B]
+  why: "DeletionPolicy controls what happens when the resource is removed from the stack or the stack is deleted. UpdateReplacePolicy controls what happens to the old resource when an update replaces it. Snapshot on both creates a final DB snapshot in each case. Not \"DeletionPolicy: Retain and a stack policy that denies Update:*\": Retain keeps the instance instead of taking a snapshot, and denying all updates blocks legitimate changes. Not \"DependsOn the stack's Amazon S3 bucket and UpdatePolicy: Snapshot\": DependsOn controls creation order, and UpdatePolicy applies to resources such as Auto Scaling groups. Neither creates snapshots. Not \"A CreationPolicy with a ResourceSignal and DeletionPolicy: Delete\": A CreationPolicy waits for signals during creation, and a Delete policy removes the instance without a snapshot."
+  ref: "Question d3-09 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-10
+  kind: choice
+  en: "A company uses an AWS CloudFormation stack to manage a production web tier and a production database. The company updates the web tier often. Stack updates must never modify or replace the database unless someone explicitly overrides the protection. What should a CloudOps engineer do to meet these requirements?"
+  options:
+    - "Enable termination protection for the stack to prevent updates to the database resource."
+    - "Create an IAM policy that denies the cloudformation:UpdateStack action for every user in the account."
+    - "Set a DeletionPolicy of Retain on the database to prevent updates to any of its properties."
+    - "Apply a stack policy that denies Update:* on the database resource and allows updates on all other resources."
+  correct: [D]
+  why: "A stack policy defines which resources stack updates can change. Denying Update:* on the database protects it from modification and replacement, while the rest of the stack can still change. A temporary override policy can be supplied with an update when a database change is really needed. Not \"Enable termination protection for the stack to prevent updates to the...\": Termination protection prevents deleting the stack. It does not stop updates. Not \"Set a DeletionPolicy of Retain on the database to prevent updates to...\": DeletionPolicy affects deletion, not updates. An update could still modify or replace the database. Not \"Create an IAM policy that denies the cloudformation:UpdateStack...\": Denying all stack updates also blocks the frequent web tier changes."
+  ref: "Question d3-10 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-11
+  kind: choice
+  en: "A company has an AWS CloudFormation stack that creates an Auto Scaling group. The group's instances install an application through user data. The stack reports CREATE_COMPLETE before the application is installed, and sometimes the installation fails without the stack noticing. How should a CloudOps engineer make the stack wait for a successful installation?"
+  options:
+    - "Add a stack output that checks the application URL to make the stack wait for a response."
+    - "Add a DependsOn attribute to the group to wait for the user data script to finish."
+    - "Increase the stack's timeout to make CloudFormation wait longer before it reports success."
+    - "Add a CreationPolicy to the group. Run cfn-signal at the end of the user data script."
+  correct: [D]
+  why: "A CreationPolicy makes CloudFormation wait for a set number of success signals within a timeout before it marks the resource complete. cfn-signal sends success or failure based on the script's exit code, and a failure or timeout makes the stack roll back. Not \"Add a DependsOn attribute to the group to wait for the user data...\": DependsOn orders resource creation inside the stack. It cannot see whether a script inside an instance has finished. Not \"Add a stack output that checks the application URL to make the stack...\": Outputs are values that the stack returns. They do not test URLs or make the stack wait. Not \"Increase the stack's timeout to make CloudFormation wait longer...\": The stack timeout limits how long the stack can take. It does not make CloudFormation wait for the installation."
+  ref: "Question d3-11 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-12
+  kind: choice
+  en: "A company launches Amazon EC2 instances by using an AWS CloudFormation stack. The instances are configured by cfn-init from AWS::CloudFormation::Init metadata. A CloudOps engineer changes a configuration file in the metadata and updates the stack, but the running instances do not get the new file. What should the CloudOps engineer do so that running instances apply metadata changes automatically?"
+  options:
+    - "Enable drift detection to make CloudFormation push the new file to the instances."
+    - "Add the configuration file to the user data to run it again on every stack update."
+    - "Run the cfn-hup daemon on the instances to detect metadata changes and rerun cfn-init."
+    - "Add an UpdatePolicy to the instances to make cfn-init read the metadata on each boot."
+  correct: [C]
+  why: "cfn-hup is a helper daemon that polls the resource metadata for changes. When it detects a change, it runs the actions in its hooks, typically cfn-init, so running instances apply the new configuration without being replaced. Not \"Add the configuration file to the user data to run it again on every...\": User data runs only at first launch by default, so changing it does not update running instances. Not \"Enable drift detection to make CloudFormation push the new file to...\": Drift detection reports differences. It does not change resources or push files. Not \"Add an UpdatePolicy to the instances to make cfn-init read the...\": UpdatePolicy applies to resources such as Auto Scaling groups during updates. It does not make instances rerun cfn-init."
+  ref: "Question d3-12 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-13
+  kind: choice
+  en: "A company has an AWS CloudFormation stack that contains a Lambda-backed custom resource. The stack has been in the CREATE_IN_PROGRESS state for more than 50 minutes. The AWS Lambda function's logs show that it ran successfully and then exited. What is the MOST likely cause of this issue?"
+  options:
+    - "The function did not send a response to the presigned Amazon S3 URL in the request."
+    - "The function's execution role does not allow it to write logs to Amazon CloudWatch Logs."
+    - "The stack's service role is missing permission to invoke the Lambda function."
+    - "The custom resource type name does not start with the prefix AWS::Custom::."
+  correct: [A]
+  why: "CloudFormation waits for the custom resource to send SUCCESS or FAILED to the presigned Amazon S3 response URL. If the function exits without sending a response, the stack waits until the timeout, which defaults to 1 hour. The ServiceTimeout property of the custom resource can shorten this wait. Not \"The function's execution role does not allow it to write logs to...\": The logs show that the function ran and wrote logs, so its log permissions are fine. Not \"The stack's service role is missing permission to invoke the Lambda...\": The function was invoked, as the logs show, so invocation permissions are not the problem. Not \"The custom resource type name does not start with the prefix...\": Custom resource types use the Custom:: prefix or AWS::CloudFormation::CustomResource. A wrong type name would fail validation at once, not hang."
+  ref: "Question d3-13 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-14
+  kind: choice
+  en: "An AWS CloudFormation stack update failed, and the rollback also failed because someone deleted one of the stack's resources outside CloudFormation. The stack is now in the UPDATE_ROLLBACK_FAILED state. What should a CloudOps engineer do to return the stack to a working state?"
+  options:
+    - "Continue the update rollback, and skip the resource that was deleted outside CloudFormation."
+    - "Delete the stack. Create a new stack from the original template with the same name."
+    - "Update the stack again with the new template, because updates are allowed in this state."
+    - "Run drift detection on the stack, and then execute the most recent change set again."
+  correct: [A]
+  why: "From UPDATE_ROLLBACK_FAILED, you can continue the update rollback and list resources to skip, such as one that no longer exists. CloudFormation marks the skipped resources as complete and finishes the rollback to UPDATE_ROLLBACK_COMPLETE, after which the stack can be updated again. Not \"Delete the stack. Create a new stack from the original template with...\": Deleting and re-creating the stack is disruptive and could delete production resources that still work. Not \"Run drift detection on the stack, and then execute the most recent...\": Drift detection only reports differences, and a change set cannot be executed while the stack is in UPDATE_ROLLBACK_FAILED. Not \"Update the stack again with the new template, because updates are...\": A stack in UPDATE_ROLLBACK_FAILED cannot be updated until its rollback is continued and completes."
+  ref: "Question d3-14 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-15
+  kind: choice
+  en: "A company has an AWS CloudFormation networking stack that exports its VPC ID. Three application stacks read the ID by using Fn::ImportValue. A CloudOps engineer tries to update the networking stack to rename the export, and the update fails. Why does the update fail?"
+  options:
+    - "An export cannot be changed or removed while another stack imports it."
+    - "Exports can be renamed only by deleting and re-creating the networking stack."
+    - "Fn::ImportValue works only between stacks that are nested in the same parent."
+    - "The networking stack needs termination protection before exports can change."
+  correct: [A]
+  why: "CloudFormation blocks changes to, and deletion of, an output export that other stacks import. The engineer must first update the importing stacks to stop using the export, and then change it. Not \"Exports can be renamed only by deleting and re-creating the...\": Re-creating the networking stack is not required, and deleting it would also be blocked while the export is in use. Not \"Fn::ImportValue works only between stacks that are nested in the same...\": Fn::ImportValue works between any stacks in the same account and Region. Nested stacks are not required. Not \"The networking stack needs termination protection before exports can...\": Termination protection prevents stack deletion. It has nothing to do with changing exports."
+  ref: "Question d3-15 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-16
+  kind: choice
+  en: "Several teams at a company copy the same 300 lines of AWS CloudFormation code for a standard load balancer and Auto Scaling setup into their own templates. When the standard changes, each copy must be updated manually, and some copies no longer match the standard. Which solution will reduce this duplication?"
+  options:
+    - "Use Fn::ImportValue to import the 300 lines of resources from a stack that one team owns."
+    - "Add the standard setup to a Mappings section that every template copies from a shared file."
+    - "Enable drift detection for every stack."
+    - "Move the standard setup into its own template. Use it in each stack as a nested stack."
+  correct: [D]
+  why: "Nested stacks let a template include another template through an AWS::CloudFormation::Stack resource. The standard setup lives in one template that every team uses as a nested stack, so a change to the standard is made in one place. Not \"Add the standard setup to a Mappings section that every template...\": Mappings hold static lookup values. They cannot hold resources, and copying a file still duplicates it. Not \"Use Fn::ImportValue to import the 300 lines of resources from a stack...\": Fn::ImportValue imports output values, such as IDs. It cannot import resource definitions. Not \"Enable drift detection for every stack\": Drift detection compares stacks with their own templates. It does not keep templates in sync with each other."
+  ref: "Question d3-16 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-17
+  kind: choice
+  en: "A company has an AWS CloudFormation template that creates an Amazon RDS DB instance. The master password is passed as a plaintext parameter and appears in deployment logs. The password is already stored in AWS Secrets Manager. How should a CloudOps engineer supply the password without exposing it?"
+  options:
+    - "Pass the password as a parameter with a default value."
+    - "Store the password in the template's Mappings section, and mark the mapping as encrypted."
+    - "Use a dynamic reference such as {{resolve:secretsmanager:prod-db:SecretString:password}}."
+    - "Put the password in an exported stack output, and import it into the DB instance resource."
+  correct: [C]
+  why: "Dynamic references retrieve values from Secrets Manager or Systems Manager Parameter Store while the stack operation runs. CloudFormation does not store or display the resolved secret value. Setting ManageMasterUserPassword so that RDS manages the secret in Secrets Manager is another option. Not \"Store the password in the template's Mappings section, and mark the...\": Mappings are plain text in the template, and there is no encryption setting for them. Not \"Pass the password as a parameter with a default value\": Default values are stored in plain text in the template, which spreads the secret further. Not \"Put the password in an exported stack output, and import it into the...\": Outputs are visible to anyone who can describe the stack, so this exposes the password further."
+  ref: "Question d3-17 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-18
+  kind: choice
+  en: "A company created dozens of resources manually in the AWS Management Console over several years. The company now needs to manage these existing resources with AWS CloudFormation without re-creating them. Which solution will meet this requirement with the LEAST operational overhead?"
+  options:
+    - "Write a new template from scratch, deploy it as a stack, and delete the original resources after testing."
+    - "Use AWS Config to export the resource configurations, and upload the export as a CloudFormation stack."
+    - "Use the CloudFormation IaC generator to scan the resources, generate a template, and import them into a stack."
+    - "Configure drift detection in the account."
+  correct: [C]
+  why: "The IaC generator scans existing resources in the account and generates a template for the resources that you select. You can then import those resources into a new stack, so CloudFormation manages them without re-creating them. Not \"Write a new template from scratch, deploy it as a stack, and delete...\": Re-creating resources causes downtime and data migration work, which the company wants to avoid. Not \"Configure drift detection in the account\": Drift detection works only on resources that are already in a stack. It does not adopt unmanaged resources. Not \"Use AWS Config to export the resource configurations, and upload the...\": Config configuration items are not CloudFormation templates, and uploading them would not create a valid stack."
+  ref: "Question d3-18 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-19
+  kind: choice
+  en: "A CloudOps engineer runs cdk deploy for the first time in a new AWS account and AWS Region. The deployment fails with an error that says that the stack uses assets and that the toolkit stack must be deployed to the environment. What should the CloudOps engineer do to resolve this issue?"
+  options:
+    - "Run cdk bootstrap for that account and Region. Run cdk deploy again."
+    - "Run cdk synth to create a template. Deploy it manually in the AWS CloudFormation console."
+    - "Run cdk diff to see the asset differences. Add the assets to the stack manually."
+    - "Create an Amazon S3 bucket with the same name as the stack. Run cdk deploy again."
+  correct: [A]
+  why: "Bootstrapping deploys the CDKToolkit stack, which creates the S3 bucket, ECR repository, and IAM roles that the CDK uses to upload assets and deploy stacks. Each account and Region must be bootstrapped once before you deploy CDK apps that use assets. Not \"Run cdk synth to create a template. Deploy it manually in the AWS...\": The synthesized template still references assets that must be uploaded to the bootstrap resources, so a manual deployment would also fail. Not \"Run cdk diff to see the asset differences. Add the assets to the...\": cdk diff only shows changes. It does not create the resources needed for assets. Not \"Create an Amazon S3 bucket with the same name as the stack. Run cdk...\": The CDK expects its own bootstrap resources and roles, not a bucket named after the stack."
+  ref: "Question d3-19 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-20
+  kind: choice
+  en: "A company manages infrastructure with the AWS CDK. Before each deployment, a reviewer must see exactly which AWS resources and IAM permissions will change compared with the deployed stack. Which CDK command should a CloudOps engineer run to meet this requirement?"
+  options:
+    - "cdk synth"
+    - "cdk diff"
+    - "cdk doctor"
+    - "cdk bootstrap"
+  correct: [B]
+  why: "cdk diff compares the synthesized template with the deployed stack and lists added, changed, and removed resources. It also highlights security-related changes such as IAM policy statements and security group rules. Not \"cdk synth\": cdk synth generates the CloudFormation template, but it does not compare the template with the deployed stack. Not \"cdk doctor\": cdk doctor checks the local CDK setup for problems. It does not show infrastructure changes. Not \"cdk bootstrap\": cdk bootstrap prepares an environment for deployments. It does not preview changes."
+  ref: "Question d3-20 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-21
+  kind: choice
+  en: "A company keeps AWS CloudFormation templates and parameter files in a GitHub repository. Stacks must update automatically whenever changes are merged into the main branch, without a CI/CD pipeline. Which solution will meet these requirements?"
+  options:
+    - "Enable CloudFormation Git sync for each stack, and link it to the repository and branch."
+    - "Set up Amazon S3 Event Notifications on a bucket that GitHub copies the templates into after merges."
+    - "Create an Amazon EventBridge rule for GitHub commits that runs cfn-init on the stack's instances."
+    - "Configure drift detection for each stack."
+  correct: [A]
+  why: "Git sync connects a stack to a Git repository through an AWS CodeConnections connection. When a commit changes the template or deployment file on the tracked branch, CloudFormation updates the stack automatically. Not \"Create an Amazon EventBridge rule for GitHub commits that runs...\": cfn-init configures software on instances. It does not update stacks, and GitHub commits do not arrive as EventBridge events by default. Not \"Set up Amazon S3 Event Notifications on a bucket that GitHub copies...\": GitHub does not copy files to a bucket on its own, and this would still need custom code to update the stacks. Not \"Configure drift detection for each stack\": Drift detection compares resources with their templates. It does not watch a Git repository."
+  ref: "Question d3-21 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-22
+  kind: choice
+  en: "A company has an Auto Scaling group that fails to launch instances during scale-out. The activity history shows that the subnets do not have enough free IP addresses. The group uses one /28 subnet in each of two Availability Zones. What should a CloudOps engineer do to resolve this issue?"
+  options:
+    - "Release the five IP addresses that AWS reserves in each subnet."
+    - "Add larger subnets to the VPC. Add them to the Auto Scaling group."
+    - "Change to a larger instance type that needs fewer IP addresses in total."
+    - "Configure auto-assign public IPv4 addresses for the existing subnets."
+  correct: [B]
+  why: "A /28 subnet has 16 addresses, and AWS reserves 5 addresses in every subnet, so only 11 are usable. Adding larger subnets, after adding a secondary CIDR block to the VPC if needed, gives the group room to launch instances. Not \"Change to a larger instance type that needs fewer IP addresses in...\": Every instance still needs at least one private IP address, so larger instances do not fix the shortage, and they cost more. Not \"Configure auto-assign public IPv4 addresses for the existing subnets\": Public IPv4 addresses do not replace the private addresses that each instance needs from the subnet. Not \"Release the five IP addresses that AWS reserves in each subnet\": AWS uses the five reserved addresses for the network address, the VPC router, DNS, future use, and broadcast. They cannot be released."
+  ref: "Question d3-22 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-23
+  kind: choice
+  en: "A CloudOps engineer's IAM user can create AWS CloudFormation stacks. A stack that launches an Amazon EC2 instance with an instance profile fails with an error that says that the user is not authorized to perform iam:PassRole on the role. What should be done to resolve this issue while following the principle of least privilege?"
+  options:
+    - "Add the engineer's IAM user as a principal in the trust policy of the instance profile role."
+    - "Allow iam:PassRole on that specific role's ARN in the engineer's IAM policy."
+    - "Remove the instance profile from the template."
+    - "Attach the AdministratorAccess managed policy to the engineer's IAM user."
+  correct: [B]
+  why: "Passing a role to a service, such as attaching an instance profile to an EC2 instance, requires iam:PassRole on that role. Allowing it only on the specific role ARN, optionally with an iam:PassedToService condition for ec2.amazonaws.com, follows least privilege. Not \"Attach the AdministratorAccess managed policy to the engineer's IAM...\": Administrator access fixes the error but grants far more than is needed. Not \"Add the engineer's IAM user as a principal in the trust policy of the...\": The trust policy decides who can assume the role. Amazon EC2 assumes it here, and the user needs permission to pass it, not to assume it. Not \"Remove the instance profile from the template\": Removing the instance profile breaks the application's access to AWS services."
+  ref: "Question d3-23 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-24
+  kind: choice
+  en: "A company has an AWS CloudFormation stack that creates a new VPC. The stack fails with the error The maximum number of VPCs has been reached. The account already has 5 VPCs in the AWS Region, and all of them are in use. What should a CloudOps engineer do to resolve this issue?"
+  options:
+    - "Add a DependsOn attribute to create the VPC after the other resources in the stack."
+    - "Delete the default VPC's subnets to stop the VPC from counting toward the quota."
+    - "Change the VPC's CIDR block to a smaller range to fit within the current quota."
+    - "Request a VPC quota increase for the Region through Service Quotas, and retry the stack."
+  correct: [D]
+  why: "The default quota is 5 VPCs per Region, and it is adjustable. Requesting an increase through Service Quotas lets the stack create the VPC once the increase is approved. Not \"Delete the default VPC's subnets to stop the VPC from counting toward...\": Deleting subnets does not remove the VPC, so it still counts toward the quota. Not \"Add a DependsOn attribute to create the VPC after the other resources...\": The order in which resources are created does not change the account's VPC quota. Not \"Change the VPC's CIDR block to a smaller range to fit within the...\": The quota counts VPCs, not address space, so a smaller CIDR block does not help."
+  ref: "Question d3-24 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-25
+  kind: choice
+  en: "A company has an Auto Scaling group that uses a single instance type in one Availability Zone. During a large scaling event, the group fails to launch instances. The activity history shows InsufficientInstanceCapacity errors. Which solution will MOST improve the group's ability to launch instances?"
+  options:
+    - "Request a higher quota for On-Demand Instances of that type through Service Quotas."
+    - "Configure the group to use several instance types across multiple Availability Zones."
+    - "Increase the group's maximum capacity to retry more launches at once."
+    - "Change the group's health check type from EC2 to ELB to replace failed launches."
+  correct: [B]
+  why: "InsufficientInstanceCapacity means that AWS does not have enough capacity of that instance type in that Availability Zone at that moment. Allowing more instance types and more zones gives Auto Scaling other capacity pools to launch from. On-Demand Capacity Reservations can guarantee capacity for planned events. Not \"Increase the group's maximum capacity to retry more launches at once\": Raising the maximum does not create capacity, so more launches would fail in the same way. Not \"Request a higher quota for On-Demand Instances of that type through...\": This error is about AWS capacity in the zone, not the account's quota. A quota error would say that a limit was exceeded. Not \"Change the group's health check type from EC2 to ELB to replace...\": The health check type affects how running instances are judged. It does not help instances launch."
+  ref: "Question d3-25 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-26
+  kind: choice
+  en: "A company has an AWS CloudFormation template that creates an Amazon S3 bucket with the BucketName property set to app-logs. The stack fails in the first account where the company deploys it, with an error that the bucket already exists. What should a CloudOps engineer do so that the template can be deployed in any account and AWS Region?"
+  options:
+    - "Remove the BucketName property."
+    - "Delete any existing bucket called app-logs in the account. Deploy the stack again."
+    - "Add a DeletionPolicy of Retain to the bucket."
+    - "Create the stack with termination protection."
+  correct: [A]
+  why: "S3 bucket names in the general purpose namespace are globally unique across all AWS accounts, so a fixed name such as app-logs is almost certainly taken. If BucketName is left out, CloudFormation generates a unique name that other resources can reference with Ref. A name can also be built from the account ID and Region. Not \"Delete any existing bucket called app-logs in the account. Deploy the...\": The existing bucket is probably in another AWS account, so it cannot be deleted from this account. Not \"Add a DeletionPolicy of Retain to the bucket\": A Retain policy affects what happens on deletion. It does not reserve a name. Not \"Create the stack with termination protection\": Termination protection prevents the stack from being deleted. It has no effect on bucket names."
+  ref: "Question d3-26 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-27
+  kind: choice
+  en: "A company has a launch template that uses Amazon EBS volumes that are encrypted with a customer managed AWS KMS key. When the Auto Scaling group launches instances, the instances move to the terminated state almost immediately with the reason Client.InternalError: Client error on launch. What is the MOST likely cause of this issue?"
+  options:
+    - "The launch template does not specify an IAM instance profile for the new instances."
+    - "The KMS key has automatic key rotation enabled, which blocks new EBS volumes."
+    - "The Auto Scaling service-linked role does not have permission to use the KMS key."
+    - "The subnet for the Auto Scaling group does not have a route to an internet gateway."
+  correct: [C]
+  why: "Auto Scaling launches instances by using its service-linked role, AWSServiceRoleForAutoScaling. If the key policy does not allow that role to use the customer managed key, EBS cannot create the encrypted volumes, and the instances terminate at once with this error. Adding the role to the key policy, or creating a grant, fixes it. Not \"The launch template does not specify an IAM instance profile for the...\": Instances can launch without an instance profile. A missing profile affects the application's AWS access, not the launch. Not \"The subnet for the Auto Scaling group does not have a route to an...\": Private subnets without an internet route can still launch instances. Routing does not cause this launch error. Not \"The KMS key has automatic key rotation enabled, which blocks new EBS...\": Key rotation does not block use of the key. Older key material stays available for decryption."
+  ref: "Question d3-27 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-28
+  kind: choice
+  en: "A company uses AWS Organizations. The company's security team must deploy a standard set of IAM roles and an AWS Config rule to every account in the Workloads OU, including accounts that are added later. Which solution will meet these requirements in the MOST operationally efficient way?"
+  options:
+    - "Write an AWS Lambda function that runs when an account is created and deploys the stack by assuming a role in it."
+    - "Create a StackSet with self-managed permissions. Add each new account's ID to the StackSet when it joins."
+    - "Ask each account owner to deploy the template from a shared Amazon S3 bucket when their account is created."
+    - "Create a StackSet with service-managed permissions that targets the OU and has automatic deployment enabled."
+  correct: [D]
+  why: "With service-managed permissions, StackSets uses Organizations to create the required roles for you. Targeting the OU with automatic deployment enabled deploys stack instances to accounts that join the OU later, and it can remove them from accounts that leave. Not \"Create a StackSet with self-managed permissions. Add each new...\": Self-managed permissions require you to create administration and execution roles in every account, and each new account must be added by hand. Not \"Write an AWS Lambda function that runs when an account is created and...\": Custom code can work, but StackSets provides this behavior natively. Not \"Ask each account owner to deploy the template from a shared Amazon S3...\": Relying on account owners is slow and error prone, and some accounts would be missed."
+  ref: "Question d3-28 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-29
+  kind: choice
+  en: "A company does not use AWS Organizations. A CloudOps engineer needs to deploy an AWS CloudFormation template to 10 accounts by using a StackSet with self-managed permissions. The stack instances fail with an error that the StackSet could not assume a role in the target accounts. What should the CloudOps engineer do to resolve this issue?"
+  options:
+    - "Add the target account IDs to the template's Parameters section. Run the operation again."
+    - "Share the template with each target account through AWS RAM, and then retry the stack instances."
+    - "Create the AWSCloudFormationStackSetExecutionRole in each target account. Trust the administrator account."
+    - "Configure trusted access for StackSets in AWS Organizations."
+  correct: [C]
+  why: "Self-managed StackSets need an administration role in the administrator account (AWSCloudFormationStackSetAdministrationRole) and an execution role in each target account (AWSCloudFormationStackSetExecutionRole) that trusts it. Without the execution role, StackSets cannot assume a role to create the stack. Not \"Configure trusted access for StackSets in AWS Organizations\": Trusted access and service-managed permissions require AWS Organizations, which the company does not use. Not \"Share the template with each target account through AWS RAM, and then...\": StackSets does not need the template to be shared. The failure is about assuming a role. Not \"Add the target account IDs to the template's Parameters section. Run...\": Target accounts are chosen when you create stack instances, not in template parameters, and this does not create the missing roles."
+  ref: "Question d3-29 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-30
+  kind: choice
+  en: "A CloudOps engineer must roll out an update through an AWS CloudFormation StackSet to 200 accounts in 4 AWS Regions. The rollout must update no more than 10 accounts at a time and must stop if more than 2 accounts fail in a Region. Which StackSet settings should the CloudOps engineer use?"
+  options:
+    - "Set Region concurrency to parallel and failure tolerance to 100%."
+    - "Set maximum concurrent accounts to 100% and failure tolerance to 0."
+    - "Set maximum concurrent accounts to 10 and failure tolerance to 2."
+    - "Create 20 StackSets with 10 accounts each. Run them in turn."
+  correct: [C]
+  why: "Operation preferences control rollout speed and safety. Maximum concurrent accounts limits how many accounts are updated at the same time in each Region, and failure tolerance sets how many failures are allowed in a Region before the operation stops. In the default strict mode, the actual concurrency starts at the lower of 10 and the failure tolerance plus 1, which stays within the limit. Not \"Set maximum concurrent accounts to 100% and failure tolerance to 0\": 100% concurrency updates every account at once, and a tolerance of 0 stops after the first failure, so neither requirement is met. Not \"Set Region concurrency to parallel and failure tolerance to 100%\": A tolerance of 100% never stops the rollout, and parallel Regions do not limit how many accounts are updated at once. Not \"Create 20 StackSets with 10 accounts each. Run them in turn\": Twenty StackSets add a lot of management effort, and they would still need operation preferences to stop on failures."
+  ref: "Question d3-30 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-31
+  kind: choice
+  en: "A company's network team owns a central VPC in a networking account. Application teams in other accounts in the same organization must launch Amazon EC2 instances and Amazon RDS databases into subnets of that VPC. The network team must keep control of routing and network ACLs. Which solution will meet these requirements?"
+  options:
+    - "Use an AWS CloudFormation StackSet to copy the central VPC into each of the application accounts."
+    - "Create a cross-account IAM role in the networking account for the application teams to assume."
+    - "Share the subnets with the application accounts by using AWS Resource Access Manager."
+    - "Create VPC peering connections between the central VPC and a VPC in each application account."
+  correct: [C]
+  why: "VPC sharing uses AWS RAM to share subnets with other accounts. Participants launch their own resources into the shared subnets, while the owner account keeps control of the VPC, route tables, network ACLs, and gateways. Not \"Create VPC peering connections between the central VPC and a VPC in...\": Peering connects separate VPCs. The application resources would live in their own VPCs, not in the central VPC's subnets. Not \"Create a cross-account IAM role in the networking account for the...\": Assuming a role in the networking account would create the application resources in that account, which mixes ownership and billing. Not \"Use an AWS CloudFormation StackSet to copy the central VPC into each...\": Copying the VPC creates separate VPCs in each account, so the network team would not control a single shared network."
+  ref: "Question d3-31 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-32
+  kind: choice
+  en: "A company has Amazon Route 53 Resolver forwarding rules in a shared services account. The rules send queries for corp.example.com to on-premises DNS servers. Fifty VPCs in other accounts in the organization must use the same rules. Which solution will meet this requirement in the MOST operationally efficient way?"
+  options:
+    - "Share the Resolver rules through AWS RAM. Associate them with the VPCs in each account."
+    - "Create an outbound endpoint and identical forwarding rules in every account and every VPC."
+    - "Create a private hosted zone named corp.example.com. Associate it with all 50 VPCs."
+    - "Change the DHCP options set in each VPC to use the on-premises DNS servers directly."
+  correct: [A]
+  why: "Resolver rules can be shared with other accounts through AWS RAM. The other accounts associate the shared rules with their VPCs, and queries are forwarded through the outbound endpoint in the shared services account, so there is only one set of rules and endpoints to maintain. Not \"Create an outbound endpoint and identical forwarding rules in every...\": Duplicating endpoints and rules in every account adds cost and makes changes harder. Not \"Create a private hosted zone named corp.example.com. Associate it...\": A private hosted zone would answer the queries itself in AWS. It would not forward them to the on-premises DNS servers. Not \"Change the DHCP options set in each VPC to use the on-premises DNS...\": Pointing VPCs directly at on-premises DNS servers breaks resolution of AWS private names and makes every query depend on the hybrid link."
+  ref: "Question d3-32 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-33
+  kind: choice
+  en: "A company's developers must be able to launch a standard, approved environment from an AWS CloudFormation template on their own. The developers must not have IAM permissions to create the underlying resources, such as VPCs and IAM roles, directly. Which solution will meet these requirements?"
+  options:
+    - "Create a StackSet in the management account that deploys the environment into every developer account daily."
+    - "Publish the template as an AWS Service Catalog product with a launch constraint role that has the needed permissions."
+    - "Share the template in an Amazon S3 bucket. Let the developers deploy it with their own IAM permissions."
+    - "Give the developers the AdministratorAccess policy, and ask them to deploy only the approved template."
+  correct: [B]
+  why: "AWS Service Catalog lets administrators publish approved products in portfolios. A launch constraint names an IAM role that Service Catalog uses to provision the product, so developers need permission only to launch the product, not to create each resource. Not \"Give the developers the AdministratorAccess policy, and ask them to...\": Administrator access breaks the requirement that developers cannot create the resources directly. Not \"Share the template in an Amazon S3 bucket. Let the developers deploy...\": Deploying with their own permissions requires developers to have rights to create VPCs and IAM roles. Not \"Create a StackSet in the management account that deploys the...\": Daily deployments into every account do not let developers launch environments on demand, and they create environments that might not be needed."
+  ref: "Question d3-33 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-34
+  kind: choice
+  en: "A company runs an Amazon ECS service behind an Application Load Balancer. Each new version must run alongside the current version and must be tested before it receives production traffic. The company must be able to roll back quickly. Which deployment approach will meet these requirements?"
+  options:
+    - "Stop the service, update the task definition, and start the service again during a maintenance window."
+    - "Use an ECS blue/green deployment that tests the new version before it shifts production traffic."
+    - "Increase the service's desired count, and register the new task definition with the same target group."
+    - "Use an ECS rolling update with a minimum healthy percent of 100 and a maximum percent of 200."
+  correct: [B]
+  why: "ECS blue/green deployments start the new revision (green) alongside the current one (blue) and can send test traffic to it first. Lifecycle hooks can run validation, production traffic then shifts, and ECS can roll back to blue quickly if CloudWatch alarms fire. ECS supports this natively, and CodeDeploy can also orchestrate it. Not \"Use an ECS rolling update with a minimum healthy percent of 100 and a...\": A rolling update replaces tasks gradually behind the same listener, so there is no separate test traffic path, and rolling back means another rolling deployment. Not \"Stop the service, update the task definition, and start the service...\": Stopping the service causes downtime and gives no way to test before release. Not \"Increase the service's desired count, and register the new task...\": Mixing new tasks into the same target group sends production traffic to them right away, with no validation step or quick rollback."
+  ref: "Question d3-34 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-35
+  kind: choice
+  en: "A company deploys a new version of an AWS Lambda function that handles payments. The company needs 10% of traffic to go to the new version for 10 minutes and the rest to shift automatically if no errors occur. The release must roll back automatically if an Amazon CloudWatch alarm fires. Which solution will meet these requirements?"
+  options:
+    - "Publish the new version. Update the alias to send all traffic to it after testing it in the console."
+    - "Use AWS CodeDeploy with the LambdaCanary10Percent10Minutes configuration and a rollback alarm on the alias."
+    - "Increase the provisioned concurrency of the new version."
+    - "Create a second function for the new code. Use Amazon Route 53 weighted records to split the traffic."
+  correct: [B]
+  why: "CodeDeploy shifts traffic between versions on a Lambda alias. The canary configuration sends 10% of traffic to the new version for 10 minutes and then shifts the rest, and a CloudWatch alarm on the deployment triggers an automatic rollback. Not \"Publish the new version. Update the alias to send all traffic to it...\": Moving all traffic at once is not a canary release, and there is no automatic rollback. Not \"Create a second function for the new code. Use Amazon Route 53...\": Route 53 weighted records apply to DNS names, not to direct Lambda invocations, and this setup has no automatic rollback. Not \"Increase the provisioned concurrency of the new version\": Provisioned concurrency reduces cold starts. It does not split or shift traffic between versions."
+  ref: "Question d3-35 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-36
+  kind: choice
+  en: "A company releases a new AMI for a 40-instance Auto Scaling group. The company must replace instances gradually, keep at least 90% of capacity healthy, and pause after the first 25% of instances so that a CloudOps engineer can verify the release. Which solution will meet these requirements?"
+  options:
+    - "Start an instance refresh with a minimum healthy percentage of 90 and a checkpoint at 25%."
+    - "Update the launch template, and terminate 10 instances manually every hour until all are new."
+    - "Update the launch template, and wait for the group to replace instances during normal scaling."
+    - "Create a new Auto Scaling group with the new AMI. Delete the old group after it launches."
+  correct: [A]
+  why: "An instance refresh replaces instances in rolling batches and keeps at least the minimum healthy percentage in service. A checkpoint pauses the refresh after a set percentage of instances is replaced, so the team can verify before it continues. Auto rollback can also be enabled. Not \"Update the launch template, and terminate 10 instances manually every...\": Manual terminations are slow and error prone, and there is no built-in pause or health threshold. Not \"Create a new Auto Scaling group with the new AMI. Delete the old...\": Deleting the old group after launching a new one does not give a gradual, verified rollout, and it needs traffic switching work. Not \"Update the launch template, and wait for the group to replace...\": Normal scaling might never replace some instances, so the fleet would run mixed versions for a long time."
+  ref: "Question d3-36 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-37
+  kind: choice
+  en: "A company deployed a faulty container image to an Amazon ECS service. The new tasks continued to fail their health checks, and the deployment continued to start new tasks for hours until a CloudOps engineer noticed. What should the CloudOps engineer configure so that Amazon ECS detects failed deployments and returns to the last working version automatically?"
+  options:
+    - "Enable the ECS deployment circuit breaker with the rollback option."
+    - "Enable ECS Exec."
+    - "Increase the health check grace period of the service to 2 hours."
+    - "Set the service's minimum healthy percent to 0 during deployments."
+  correct: [A]
+  why: "The deployment circuit breaker detects when a rolling deployment cannot reach a steady state, for example when new tasks keep failing health checks. With rollback enabled, ECS returns the service to the last completed deployment automatically. Not \"Set the service's minimum healthy percent to 0 during deployments\": A minimum healthy percent of 0 lets ECS stop all old tasks during a deployment, which can cause an outage. Not \"Enable ECS Exec\": ECS Exec helps with debugging inside containers. It does not detect failed deployments or roll back. Not \"Increase the health check grace period of the service to 2 hours\": A longer grace period makes ECS wait longer before it acts on failed health checks, which makes the problem worse."
+  ref: "Question d3-37 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-38
+  kind: choice
+  en: "A company uses an AWS CloudFormation stack update to change a web application's configuration. CloudFormation must roll back the update automatically if the application's 5XX error alarm goes into the ALARM state during the update or within 15 minutes after the update. What should a CloudOps engineer configure to meet these requirements?"
+  options:
+    - "Add a CreationPolicy that waits 15 minutes for a signal from the 5XX error alarm on update."
+    - "Add a stack policy that denies updates whenever the 5XX error alarm is in the ALARM state."
+    - "Enable termination protection."
+    - "Add the alarm as a rollback trigger on the stack with a monitoring time of 15 minutes."
+  correct: [D]
+  why: "Rollback triggers make CloudFormation monitor CloudWatch alarms during a stack create or update and for a monitoring period afterward of up to 180 minutes. If an alarm goes into ALARM, CloudFormation rolls back the whole operation. Not \"Add a stack policy that denies updates whenever the 5XX error alarm...\": Stack policies are static rules about which resources can be updated. They do not react to alarm states. Not \"Add a CreationPolicy that waits 15 minutes for a signal from the 5XX...\": A CreationPolicy waits for signals from instances during creation. CloudWatch alarms do not send these signals. Not \"Enable termination protection\": Termination protection blocks stack deletion. It does not roll back failed updates."
+  ref: "Question d3-38 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-39
+  kind: choice
+  en: "A company uses an AWS CloudFormation stack to manage a VPC and its subnets. Several application stacks in the same account and AWS Region must use the subnet IDs. Engineers currently copy the IDs into parameter files, and the copies often go out of date. Which solution will resolve this issue with the LEAST operational overhead?"
+  options:
+    - "Store the subnet IDs in an Amazon S3 object. Update the application stacks to read the object during each deployment."
+    - "Export the subnet IDs in the Outputs section of the networking stack. Use Fn::ImportValue in the application stacks."
+    - "Add the VPC and the subnets to every application template. Create a separate network for each application stack."
+    - "Use the Mappings section in each application template to hardcode the subnet IDs for each AWS Region and account."
+  correct: [B]
+  why: "A cross-stack reference shares values between stacks in the same account and Region. The networking stack exports a value from its Outputs section, and other stacks read it with Fn::ImportValue, so there are no copies to keep up to date. Not \"Store the subnet IDs in an Amazon S3 object. Update the application...\": CloudFormation cannot read values from an S3 object without custom code, and someone must still keep the object up to date. Not \"Add the VPC and the subnets to every application template. Create a...\": This creates many separate networks instead of sharing one, which does not meet the requirement to use the existing subnets. Not \"Use the Mappings section in each application template to hardcode the...\": Mappings are still hardcoded copies, so they go out of date in the same way as the parameter files."
+  ref: "Question d3-39 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-40
+  kind: choice
+  en: "A company manages most of its infrastructure with AWS CloudFormation. An Amazon S3 bucket was created manually in the AWS Management Console. The bucket must now be managed by an existing stack without being deleted or re-created. What should a CloudOps engineer do to meet these requirements?"
+  options:
+    - "Run drift detection on the stack. Accept the bucket that drift detection finds as a new resource in the stack."
+    - "Add the bucket to the stack's template with a DeletionPolicy attribute. Import the bucket by using a change set of type IMPORT."
+    - "Add the bucket to the stack's template with the same BucketName. Update the stack so that CloudFormation adopts the bucket."
+    - "Empty and delete the bucket. Add a new bucket with the same name to the stack's template, and update the stack."
+  correct: [B]
+  why: "A resource import brings an existing resource under stack management. The template must describe the resource and include a DeletionPolicy attribute, and you provide the resource's identifier, which is the bucket name here. A change set of type IMPORT then adds the bucket to the stack without changing it. Not \"Add the bucket to the stack's template with the same BucketName...\": Without an import, CloudFormation tries to create a new bucket with that name, and the update fails because the bucket already exists. Not \"Empty and delete the bucket. Add a new bucket with the same name to...\": Deleting the bucket destroys its data, and the requirement is to keep the bucket. Not \"Run drift detection on the stack. Accept the bucket that drift...\": Drift detection compares resources that are already in the stack with the template. It does not find or adopt resources outside the stack."
+  ref: "Question d3-40 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-41
+  kind: choice
+  en: "A company's developers deploy their own AWS CloudFormation templates. The developers must be able to create and update stacks, but they must not have direct IAM permissions to create the underlying resources. The company must follow the principle of least privilege. Which solution will meet these requirements?"
+  options:
+    - "Add a stack policy to each stack that allows updates. Remove the developers' IAM permissions for CloudFormation actions."
+    - "Create an IAM service role for CloudFormation with the needed permissions. Allow the developers to pass the role when they create stacks."
+    - "Attach the AdministratorAccess policy to the developers' IAM roles. Add a permissions boundary that denies all resource creation."
+    - "Create an IAM user with the needed permissions. Share the user's access keys with the developers for each deployment."
+  correct: [B]
+  why: "A CloudFormation service role lets CloudFormation make the calls to create, update, and delete resources, so the developers do not need those permissions themselves. Developers need CloudFormation permissions and iam:PassRole for that one role. Not \"Attach the AdministratorAccess policy to the developers' IAM roles...\": A boundary that denies resource creation would also block the stack operations, because CloudFormation would use the developers' permissions. Not \"Create an IAM user with the needed permissions. Share the user's...\": Shared long-term access keys cannot be traced to one person and are against IAM best practices. Not \"Add a stack policy to each stack that allows updates. Remove the...\": A stack policy protects stack resources from updates. It does not grant permissions, and the developers would no longer be able to use CloudFormation."
+  ref: "Question d3-41 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-42
+  kind: choice
+  en: "A company has thousands of Amazon EC2 instances in 30 accounts and 4 AWS Regions in AWS Organizations. The company must scan instances for missing patches daily and install approved security patches every Sunday, managed from one central configuration. Which solution will meet these requirements with the LEAST operational overhead?"
+  options:
+    - "Create a patch policy in Quick Setup for Patch Manager that targets the organization and its Regions."
+    - "Add a cron job to each instance's user data that runs the operating system package update command."
+    - "Create a maintenance window and a patch baseline in each account and Region. Register the instances as targets."
+    - "Build a new AMI each Sunday with the latest patches, and replace every instance in the organization."
+  correct: [A]
+  why: "Patch policies, created through Quick Setup, configure Patch Manager scan and install schedules and patch baselines across an organization's accounts and Regions from one place. Not \"Create a maintenance window and a patch baseline in each account and...\": This works, but it must be built and maintained in 120 account and Region combinations. Not \"Add a cron job to each instance's user data that runs the operating...\": Cron jobs on each instance are hard to manage, give no compliance reporting, and do not use approved baselines. Not \"Build a new AMI each Sunday with the latest patches, and replace...\": Replacing thousands of instances every week is disruptive and not feasible for every workload."
+  ref: "Question d3-42 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-43
+  kind: choice
+  en: "A company uses AWS Systems Manager Patch Manager. Security updates must be installed on production Linux instances only after the updates have been available for 7 days, so that problems can be found in testing first. Patches must then be approved automatically. How should a CloudOps engineer configure Patch Manager to meet these requirements?"
+  options:
+    - "Create a custom patch baseline with a rule that auto-approves security patches 7 days after release."
+    - "Configure Amazon Inspector, and patch only CVEs that Amazon Inspector has reported for at least 7 days."
+    - "Use the default predefined patch baseline. Schedule the patch installation to run every 7 days."
+    - "Create a patch group that excludes patches from the last 7 days by listing each one as rejected."
+  correct: [A]
+  why: "Patch baseline approval rules can auto-approve patches by classification and severity a set number of days after they are released. A 7-day delay for security patches gives time for testing before production installs them. Not \"Use the default predefined patch baseline. Schedule the patch...\": Running the installation every 7 days does not delay approval. A patch released the day before could still be installed. Not \"Create a patch group that excludes patches from the last 7 days by...\": Rejecting each new patch by hand is constant manual work and easy to get wrong. Not \"Configure Amazon Inspector, and patch only CVEs that Amazon Inspector...\": Inspector finds vulnerabilities but does not control patch approval timing, and this would still need a patching process."
+  ref: "Question d3-43 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-44
+  kind: choice
+  en: "A company's policy requires a specific security agent to be installed and running on every Amazon EC2 instance. Engineers sometimes stop the agent while troubleshooting and forget to start it again. Which solution will keep the agent in the required state automatically?"
+  options:
+    - "Create an AWS Config rule that reports instances where the agent is not running."
+    - "Create a State Manager association that installs and starts the agent on a schedule."
+    - "Add the agent installation to the AMI."
+    - "Run a Run Command document once to install the agent on all of the instances in the fleet."
+  correct: [B]
+  why: "A State Manager association applies a document to targets on a schedule, such as every 30 minutes, and reports compliance. If someone stops the agent, the next run installs or starts it again. Not \"Run a Run Command document once to install the agent on all of the...\": A one-time command installs the agent once but does not fix it when someone stops it later. Not \"Add the agent installation to the AMI\": Baking the agent into the AMI covers new instances, but it does not restart the agent on running instances. Not \"Create an AWS Config rule that reports instances where the agent is...\": Config can report the problem, but reporting alone does not keep the agent running."
+  ref: "Question d3-44 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-45
+  kind: choice
+  en: "A CloudOps engineer launches Amazon EC2 instances in a private subnet that has no NAT gateway or other internet access. The instances use an AMI with SSM Agent preinstalled, but the instances do not appear as managed nodes in AWS Systems Manager Fleet Manager. Which combination of steps will resolve this issue? (Select TWO.)"
+  options:
+    - "Attach an instance profile that includes the AmazonSSMManagedInstanceCore policy."
+    - "Create interface VPC endpoints for the Systems Manager services, such as ssm and ssmmessages."
+    - "Install the Amazon CloudWatch agent to report each instance's status to Fleet Manager."
+    - "Assign an Elastic IP address to each instance to allow Systems Manager to reach it."
+    - "Open inbound port 22 on the instance security group from the Systems Manager service."
+  correct: [A, B]
+  why: "SSM Agent needs AWS credentials with Systems Manager permissions, which the AmazonSSMManagedInstanceCore managed policy provides through an instance profile. Default Host Management Configuration is another way to provide them. SSM Agent connects outbound to Systems Manager endpoints over HTTPS. Without internet access, interface endpoints for ssm and ssmmessages (and ec2messages for older agent versions) give the agent a private path. The endpoint security group must allow HTTPS from the instances. Not \"Open inbound port 22 on the instance security group from the Systems...\": Systems Manager does not connect inbound to instances, and it does not use SSH. The agent makes outbound connections. Not \"Assign an Elastic IP address to each instance to allow Systems...\": Elastic IP addresses do not help in a subnet with no route to an internet gateway, and Systems Manager does not need inbound access. Not \"Install the Amazon CloudWatch agent to report each instance's status...\": The CloudWatch agent publishes metrics and logs. Managed node registration depends on SSM Agent, credentials, and network access."
+  ref: "Question d3-45 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-46
+  kind: choice
+  en: "A company has hundreds of Amazon EC2 instances in one account, and many were launched without instance profiles. Every instance in the AWS Region must be managed by AWS Systems Manager without an instance profile attached to each instance. Which solution will meet this requirement in the MOST operationally efficient way?"
+  options:
+    - "Create a hybrid activation. Register each EC2 instance as a hybrid node."
+    - "Attach the AmazonSSMManagedInstanceCore policy to each user who launches instances."
+    - "Add the ssm:* permission to the default VPC security group that the instances use."
+    - "Configure Default Host Management Configuration for the account and Region."
+  correct: [D]
+  why: "Default Host Management Configuration lets Systems Manager manage EC2 instances automatically through an account-level IAM role, without an instance profile on each instance. The instances need IMDSv2 and a supported version of SSM Agent. Not \"Create a hybrid activation. Register each EC2 instance as a hybrid...\": Hybrid activations are for servers outside AWS. Registering EC2 instances this way adds work and cost that are not needed. Not \"Attach the AmazonSSMManagedInstanceCore policy to each user who...\": Permissions on users do not give SSM Agent on the instances any credentials. Not \"Add the ssm:* permission to the default VPC security group that the...\": Security groups control network traffic, not IAM permissions."
+  ref: "Question d3-46 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-47
+  kind: choice
+  en: "A company needs to patch and run commands on 300 on-premises Linux servers by using the same AWS Systems Manager tools that it uses for its Amazon EC2 instances. What should a CloudOps engineer do to meet this requirement?"
+  options:
+    - "Open inbound port 443 on each server to allow Systems Manager to push commands to the servers."
+    - "Attach an EC2 instance profile to each on-premises server to give SSM Agent role credentials."
+    - "Install the Amazon CloudWatch agent on each server. Send Run Command documents through CloudWatch."
+    - "Create a hybrid activation. Install SSM Agent on each server with the activation code and ID."
+  correct: [D]
+  why: "A hybrid activation creates an activation code and ID that are tied to an IAM service role. Installing SSM Agent with them registers each server as a managed node, so Run Command, Patch Manager, and the other tools work the same way as they do on EC2. Not \"Attach an EC2 instance profile to each on-premises server to give SSM...\": Instance profiles exist only for EC2 instances. On-premises servers get credentials through a hybrid activation. Not \"Install the Amazon CloudWatch agent on each server. Send Run Command...\": The CloudWatch agent collects metrics and logs. It does not run Systems Manager commands. Not \"Open inbound port 443 on each server to allow Systems Manager to push...\": SSM Agent makes outbound HTTPS connections to Systems Manager. Systems Manager does not push commands through inbound ports."
+  ref: "Question d3-47 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-48
+  kind: choice
+  en: "A CloudOps engineer needs to run a shell script once on 500 Linux Amazon EC2 instances that are tagged Role=Web to change a local log configuration. The output of every run must be kept for later review, and SSH access is not allowed. Which solution will meet these requirements with the LEAST operational overhead?"
+  options:
+    - "Use EC2 Instance Connect to open a session to each instance, and save the output in a document."
+    - "Use Run Command with AWS-RunShellScript. Target the Role=Web tag. Send output to an Amazon S3 bucket."
+    - "Add the script to each instance's user data, and reboot the instances."
+    - "Create an EC2 Image Builder pipeline that adds the script to a new AMI. Replace all of the instances."
+  correct: [B]
+  why: "Run Command runs a document on many managed nodes at once, selected by tag, with rate controls and no SSH. Command output can be written to Amazon S3 or CloudWatch Logs for review. Not \"Create an EC2 Image Builder pipeline that adds the script to a new...\": Building a new AMI and replacing instances is far more work than running one script once. Not \"Add the script to each instance's user data, and reboot the instances\": User data runs only on first boot by default, so a reboot does not run it again, and the output is not kept centrally. Not \"Use EC2 Instance Connect to open a session to each instance, and save...\": Instance Connect uses SSH, which is not allowed, and connecting to 500 instances by hand is slow."
+  ref: "Question d3-48 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-49
+  kind: choice
+  en: "A company's security team needs a report of which software packages and versions are installed on every Amazon EC2 instance across 20 accounts. The report must be queryable with SQL and must stay up to date automatically. Which solution will meet these requirements?"
+  options:
+    - "Enable AWS Config recording for EC2 instances, and download each configuration item as a CSV file."
+    - "Run a script on each instance every day that emails its package list to the security team."
+    - "Enable AWS Systems Manager Inventory. Use a resource data sync to an Amazon S3 bucket that Amazon Athena can query."
+    - "Configure AWS CloudTrail data events for Amazon EC2, and search the trail for package install API calls."
+  correct: [C]
+  why: "Inventory collects metadata such as installed applications and versions from managed nodes. A resource data sync gathers inventory from many accounts and Regions into one S3 bucket, where Amazon Athena can query it with SQL. Not \"Run a script on each instance every day that emails its package list...\": Daily emails from each instance are hard to combine and query, and the script must be maintained. Not \"Enable AWS Config recording for EC2 instances, and download each...\": Downloading configuration items by hand does not give an automatic, SQL-queryable report across accounts, and software data comes from Systems Manager anyway. Not \"Configure AWS CloudTrail data events for Amazon EC2, and search the...\": Installing a package inside an operating system is not an AWS API call, so CloudTrail does not record it."
+  ref: "Question d3-49 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-50
+  kind: choice
+  en: "A company has an application with 80 configuration values for each of three environments: dev, test, and prod. Developers store the values in AWS Systems Manager Parameter Store as one long flat list of parameter names, and loading the right set for an environment is error prone. Some of the values are secrets. How should a CloudOps engineer organize the parameters?"
+  options:
+    - "Put all values in environment variables in the AMI."
+    - "Store each value as a separate secret in AWS Secrets Manager with the environment in a tag."
+    - "Use a path hierarchy such as /app/prod/db-url. Use SecureString for the secret values."
+    - "Store all values for each environment in one String parameter as a large JSON document."
+  correct: [C]
+  why: "Hierarchical names group parameters by application and environment, and GetParametersByPath loads every parameter under /app/prod/ in one call. IAM policies can grant access by path, and SecureString encrypts the secret values with AWS KMS. Not \"Store all values for each environment in one String parameter as a...\": One large document is hard to update safely and can exceed the 4 KB size limit of standard parameters. The secrets would also be stored as plain text. Not \"Store each value as a separate secret in AWS Secrets Manager with the...\": Secrets Manager suits secrets that need rotation, but storing 240 ordinary configuration values there costs more and is not needed. Not \"Put all values in environment variables in the AMI\": Values in an AMI are hard to change, are visible to anyone on the instance, and need a new AMI for each change."
+  ref: "Question d3-50 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-51
+  kind: choice
+  en: "A company has users who upload images and PDF files to the uploads/ prefix of an Amazon S3 bucket. An AWS Lambda function must create a thumbnail for every .jpg file within seconds of upload. Other files must not invoke the function. Which solution will meet these requirements in the MOST operationally efficient way?"
+  options:
+    - "Enable S3 Inventory each day. Invoke the function for each .jpg file listed in the report."
+    - "Configure AWS CloudTrail data events. Invoke the function from a metric filter on PutObject calls."
+    - "Schedule the function every minute to list the bucket. Create thumbnails for any new .jpg files."
+    - "Add an S3 event notification for object creation with prefix uploads/ and suffix .jpg that invokes the function."
+  correct: [D]
+  why: "S3 Event Notifications can invoke a Lambda function directly when objects are created, with prefix and suffix filters so that only .jpg files under uploads/ trigger it. Events usually arrive within seconds. Not \"Schedule the function every minute to list the bucket. Create...\": Polling the bucket every minute is slower, costs more as the bucket grows, and must track which files were already processed. Not \"Enable S3 Inventory each day. Invoke the function for each .jpg file...\": S3 Inventory reports are produced daily or weekly, which is far too slow. Not \"Configure AWS CloudTrail data events. Invoke the function from a...\": Metric filters create metrics and cannot pass object details to a function, so this is slow and indirect."
+  ref: "Question d3-51 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-52
+  kind: choice
+  en: "A company has an Amazon S3 bucket. When objects are created in the bucket, three teams must each process them: one with an AWS Lambda function, one with an AWS Step Functions workflow, and one through an Amazon SQS queue. The third team needs only objects larger than 1 GB. Which combination of steps will meet these requirements with the LEAST operational overhead? (Select TWO.)"
+  options:
+    - "Create three S3 Event Notifications with the same event type and prefix, one for each target."
+    - "Configure Amazon EventBridge notifications for the bucket."
+    - "Create Amazon EventBridge rules for each team, with a size filter in the pattern for the team that needs it."
+    - "Write a Lambda function that receives each S3 event and forwards it to the other two targets."
+    - "Configure S3 Replication to three buckets, one for each team. Configure events on each copy."
+  correct: [B, C]
+  why: "When EventBridge notifications are enabled, Amazon S3 sends the bucket's events to the default event bus, where many rules can use them. EventBridge rules can match fields in the event, such as the object size with a numeric filter, and each rule can send to targets such as Lambda, Step Functions, and SQS. Each team gets its own routing without code. Not \"Create three S3 Event Notifications with the same event type and...\": S3 Event Notifications cannot have overlapping configurations for the same event type and prefix, and they cannot filter by object size. Not \"Write a Lambda function that receives each S3 event and forwards it...\": A forwarding function is custom code to maintain and a single point of failure. Not \"Configure S3 Replication to three buckets, one for each team...\": Replicating every object three times adds storage cost and delay just to send events to three teams."
+  ref: "Question d3-52 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-53
+  kind: choice
+  en: "A company has an AWS Lambda function that is invoked by Amazon S3 object creation events on a bucket. The function resizes each image and writes the result back to the same bucket. After deployment, invocations and costs grow out of control. What should a CloudOps engineer do to resolve the root cause of this issue?"
+  options:
+    - "Increase the function's reserved concurrency to keep up with the number of events."
+    - "Write the resized images to a different bucket, or use a prefix filter that excludes the output prefix."
+    - "Add a dead-letter queue to the function to move the extra invocations into the queue."
+    - "Enable S3 Versioning to send only one event notification for each object key that is written."
+  correct: [B]
+  why: "Each resized image written to the same bucket creates a new event, which invokes the function again in a loop. Writing output to a separate bucket, or triggering only on an input prefix that the output never uses, breaks the loop. Lambda recursive loop detection can stop some loops, but the design still needs fixing. Not \"Increase the function's reserved concurrency to keep up with the...\": More concurrency lets the loop grow even faster and raises costs. Not \"Enable S3 Versioning to send only one event notification for each...\": Versioning does not reduce events. Every write still creates a new event. Not \"Add a dead-letter queue to the function to move the extra invocations...\": A dead-letter queue holds failed asynchronous invocations. These invocations succeed, so the loop continues."
+  ref: "Question d3-53 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-54
+  kind: choice
+  en: "A company has an AWS Lambda function that processes messages from an Amazon SQS standard queue. The function's timeout is 5 minutes, and the queue's visibility timeout is 30 seconds. Some messages are processed several times, and a few malformed messages fail repeatedly. Which combination of steps will resolve these issues? (Select TWO.)"
+  options:
+    - "Add a dead-letter queue with a redrive policy that sets a maxReceiveCount."
+    - "Set the queue's visibility timeout to at least six times the function's timeout."
+    - "Change the function's timeout to 30 seconds to match the visibility timeout."
+    - "Enable long polling for the queue by setting a receive wait time of 20 seconds."
+    - "Increase the queue's message retention period from 4 days to 14 days."
+  correct: [A, B]
+  why: "If the visibility timeout is shorter than the processing time, messages become visible again while the function is still working on them, so they are processed again. AWS recommends a visibility timeout of at least six times the function timeout for Lambda event source mappings. A redrive policy moves a message to a dead-letter queue after it has been received maxReceiveCount times without being deleted. Malformed messages stop retrying and can be examined separately. Not \"Change the function's timeout to 30 seconds to match the visibility...\": A shorter function timeout could cut off valid processing that needs more than 30 seconds. Not \"Enable long polling for the queue by setting a receive wait time of...\": Long polling reduces empty receives and cost. It does not stop duplicates or failing messages. Not \"Increase the queue's message retention period from 4 days to 14 days\": Longer retention keeps failing messages around even longer."
+  ref: "Question d3-54 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-55
+  kind: choice
+  en: "A company has a monthly database maintenance process with five steps: take a snapshot, run an AWS Lambda function to verify the snapshot, wait for a DBA to approve, apply a parameter change, and send a report. Each step must retry on failure, and the process must wait up to 24 hours for the approval. Which solution will orchestrate this process with the LEAST custom code?"
+  options:
+    - "Chain five Lambda functions that call each other directly, and sleep inside the approval function."
+    - "Run a cron job on an Amazon EC2 instance that calls each step in order and polls a file for the approval."
+    - "Create five Amazon EventBridge rules that each start the next step when the previous one writes a log."
+    - "Build an AWS Step Functions state machine with retries and a callback task that waits for an approval token."
+  correct: [D]
+  why: "Step Functions coordinates multi-step workflows with built-in retries and error handling. A task that uses the waitForTaskToken pattern pauses until an approver returns the token, and standard workflows can run for up to a year, so a 24-hour wait is fine. Not \"Chain five Lambda functions that call each other directly, and sleep...\": Lambda functions time out after 15 minutes, so a function cannot sleep for 24 hours, and chained calls make retries hard to manage. Not \"Run a cron job on an Amazon EC2 instance that calls each step in...\": A server-based script must be patched and monitored, and it needs its own retry logic. Not \"Create five Amazon EventBridge rules that each start the next step...\": Chaining rules through log messages is fragile and hard to follow, and it gives no clear way to wait for approval."
+  ref: "Question d3-55 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-56
+  kind: choice
+  en: "A company uses AWS DevOps Agent to investigate incidents. When an investigation completes, the company must create a ticket in its internal ticketing system through an HTTP API and must post a summary to a chat channel automatically. Which solution will meet these requirements with the LEAST operational overhead?"
+  options:
+    - "Poll the DevOps Agent API every 5 minutes from an Amazon EC2 instance, and create tickets for any new results."
+    - "Have an engineer copy each finished investigation from the DevOps Agent web app into the ticketing system."
+    - "Create an Amazon CloudWatch alarm on a DevOps Agent metric that opens a ticket whenever an investigation ends."
+    - "Create an Amazon EventBridge rule for DevOps Agent investigation events that targets an API destination and the chat function."
+  correct: [D]
+  why: "AWS DevOps Agent publishes investigation events to Amazon EventBridge for custom automation. A rule that matches completed investigations can call the ticketing system through an API destination and invoke the function that posts to chat, with no polling. Not \"Have an engineer copy each finished investigation from the DevOps...\": Manual copying is slow and depends on someone remembering to do it. Not \"Poll the DevOps Agent API every 5 minutes from an Amazon EC2...\": Polling from a server is custom code and infrastructure to maintain, and EventBridge already delivers the events. Not \"Create an Amazon CloudWatch alarm on a DevOps Agent metric that opens...\": An alarm watches metric values. It cannot carry investigation details to create a ticket."
+  ref: "Question d3-56 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-57
+  kind: choice
+  en: "A CloudOps engineer edits AWS CloudFormation templates in Kiro. Kiro must run cfn-lint and fix simple problems automatically every time a template file is saved, without being asked each time. Which Kiro feature should the CloudOps engineer configure?"
+  options:
+    - "An agent hook that is triggered when a template file is saved"
+    - "A steering file that lists all of the cfn-lint rules for the project"
+    - "An MCP server that stores the most recent lint results"
+    - "A spec that describes how the templates should be linted"
+  correct: [A]
+  why: "Agent hooks run an agent action automatically when an event happens in the IDE, such as saving a file that matches a pattern. A hook on template saves can run cfn-lint and fix simple findings without a manual prompt. Not \"A steering file that lists all of the cfn-lint rules for the project\": Steering files give Kiro persistent guidance, but they do not run anything when a file is saved. Not \"A spec that describes how the templates should be linted\": Specs plan the requirements, design, and tasks for a feature. They do not react to file events. Not \"An MCP server that stores the most recent lint results\": MCP servers connect Kiro to external tools and data. Storing results does not run the linter on each save."
+  ref: "Question d3-57 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-58
+  kind: choice
+  en: "A company's finance team needs every new Amazon EC2 instance to be tagged with the IAM identity of the person who launched it, within minutes of launch, no matter how the instance was launched. AWS CloudTrail is enabled in the account. Which combination of steps will meet this requirement? (Select TWO.)"
+  options:
+    - "Run an AWS Config rule once a day that tags instances with the name of the account's root user."
+    - "Require every user to add an Owner tag in the console launch wizard before launching an instance."
+    - "Target an AWS Lambda function that reads userIdentity from the event and tags the new instances."
+    - "Create an Amazon EventBridge rule that matches the RunInstances event from AWS API Call via CloudTrail."
+    - "Add a user data script to the launch template that tags each instance with its instance profile."
+  correct: [C, D]
+  why: "EventBridge receives CloudTrail management events as AWS API Call via CloudTrail events. A rule on ec2:RunInstances matches every launch, whether it comes from the console, the CLI, an SDK, or infrastructure as code. The event's userIdentity field shows who made the call, and responseElements lists the new instance IDs. A Lambda function can call CreateTags with that identity. Not \"Require every user to add an Owner tag in the console launch wizard...\": Relying on users is not reliable, and it does not cover launches from the CLI, SDKs, or automation. Not \"Run an AWS Config rule once a day that tags instances with the name...\": The root user is not the person who launched the instance, and a daily rule does not tag within minutes. Not \"Add a user data script to the launch template that tags each instance...\": The instance profile identifies the instance's role, not the person who launched it, and not every launch uses this template."
+  ref: "Question d3-58 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-59
+  kind: choice
+  en: "A company runs version 1 of an application in an Auto Scaling group behind an Application Load Balancer. Version 2 is deployed to a second Auto Scaling group with its own target group. The company must shift 10%, then 50%, then 100% of traffic to version 2 and must be able to switch back instantly if needed, without DNS changes. Which solution will meet these requirements?"
+  options:
+    - "Use weighted target groups in the ALB listener rule. Change the weights at each step."
+    - "Register the version 2 instances in the version 1 target group. Remove old instances gradually."
+    - "Run an instance refresh on the version 1 group with checkpoints at 10% and 50% of the instances."
+    - "Create an Amazon Route 53 weighted record for each group. Change the record weights at each step."
+  correct: [A]
+  why: "An ALB listener rule can forward to several target groups with weights. Changing the weights moves traffic between versions within seconds, with no DNS caching delays, and setting the old group back to 100% rolls back instantly. Not \"Create an Amazon Route 53 weighted record for each group. Change the...\": Weighted DNS records can split traffic, but the scenario rules out DNS changes, and clients that cache DNS make shifts and rollbacks slow. Not \"Register the version 2 instances in the version 1 target group...\": Mixing both versions in one target group gives no control over the share of traffic and no instant rollback. Not \"Run an instance refresh on the version 1 group with checkpoints at...\": An instance refresh replaces instances in one group. Rolling back means another refresh, which is not instant."
+  ref: "Question d3-59 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-60
+  kind: choice
+  en: "A CloudOps engineer deletes an AWS CloudFormation stack for a retired application. The deletion fails with DELETE_FAILED because the stack's Amazon S3 bucket is not empty. The data in the bucket is no longer needed. What should the CloudOps engineer do to resolve this issue?"
+  options:
+    - "Empty the bucket, and then delete the stack again."
+    - "Add a DeletionPolicy of Delete to the bucket only."
+    - "Run drift detection, and then execute a change set."
+    - "Enable termination protection on the stack. Delete the stack again."
+  correct: [A]
+  why: "CloudFormation cannot delete an S3 bucket that still contains objects. After the objects, and all object versions if versioning is on, are deleted, the stack deletion can finish. If the data were still needed, the bucket could be retained when the stack is deleted. Not \"Enable termination protection on the stack. Delete the stack again\": Termination protection prevents a stack from being deleted, which is the opposite of what is needed. Not \"Add a DeletionPolicy of Delete to the bucket only\": Delete is already the default policy, and it still cannot delete a bucket that has objects in it. Not \"Run drift detection, and then execute a change set\": Drift detection and change sets do not remove objects from the bucket."
+  ref: "Question d3-60 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-61
+  kind: choice
+  en: "A company uses AWS CodeDeploy in-place deployments to release new versions of an application to 10 Amazon EC2 instances. At least 9 instances must stay in service at all times during a deployment. Which deployment configuration should a CloudOps engineer choose to meet this requirement?"
+  options:
+    - "CodeDeployDefault.HalfAtATime"
+    - "A custom configuration with 50% minimum healthy hosts"
+    - "CodeDeployDefault.AllAtOnce"
+    - "CodeDeployDefault.OneAtATime"
+  correct: [D]
+  why: "OneAtATime deploys to one instance at a time, so 9 of the 10 instances stay in service throughout the deployment. Not \"CodeDeployDefault.HalfAtATime\": HalfAtATime deploys to up to half of the instances at once, which leaves only 5 in service. Not \"CodeDeployDefault.AllAtOnce\": AllAtOnce deploys to every instance at the same time, which can take the whole application out of service. Not \"A custom configuration with 50% minimum healthy hosts\": A 50% minimum healthy hosts setting allows 5 instances to be out of service at once."
+  ref: "Question d3-61 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-62
+  kind: choice
+  en: "A company must patch its production Amazon EC2 Linux instances only on Saturdays between 02:00 and 05:00. New patching tasks must not start during the last hour of that period. All instances are managed by AWS Systems Manager. Which solution will meet these requirements with the LEAST operational overhead?"
+  options:
+    - "Create a cron job on each instance that runs the package manager's update command at 02:00 on Saturdays. Send the output of each run to Amazon S3."
+    - "Create an Amazon EventBridge rule that runs at 02:00 on Saturdays. Invoke an AWS Lambda function that connects to each instance over SSH to install patches."
+    - "Create an AWS Config rule that checks for missing patches. Add an automatic remediation action that installs patches as soon as an instance is noncompliant."
+    - "Create a Systems Manager maintenance window with a 3-hour duration and a 1-hour cutoff. Register the instances as targets and AWS-RunPatchBaseline as a task."
+  correct: [D]
+  why: "A maintenance window defines a schedule, a duration, and a cutoff, which is the number of hours before the end of the window when Systems Manager stops starting new tasks. AWS-RunPatchBaseline is the Patch Manager document that scans for and installs patches. Not \"Create a cron job on each instance that runs the package manager's...\": Cron jobs must be set up and maintained on every instance, and they do not stop new work before the end of the period. Not \"Create an AWS Config rule that checks for missing patches. Add an...\": Remediation runs when the rule finds noncompliance, which can be at any time, not only during the allowed period. Not \"Create an Amazon EventBridge rule that runs at 02:00 on Saturdays...\": This needs custom code and inbound SSH access, which Systems Manager makes unnecessary."
+  ref: "Question d3-62 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-63
+  kind: choice
+  en: "A company has a script that refreshes currency exchange rates from a partner API and writes them to an Amazon DynamoDB table every 15 minutes. The script runs as a cron job on a dedicated t3.micro Amazon EC2 instance that must be patched and sometimes stops. The script finishes in under 1 minute. Which solution will run the script with the LEAST operational overhead?"
+  options:
+    - "Move the script to an AWS Lambda function. Invoke it every 15 minutes with Amazon EventBridge Scheduler."
+    - "Configure DynamoDB Streams. Run the script whenever an item in the table is written or changed."
+    - "Move the cron job to a larger instance. Add an Auto Scaling group to keep one instance running."
+    - "Move the script into an Amazon ECS service that runs one task all the time and sleeps 15 minutes in a loop."
+  correct: [A]
+  why: "Lambda runs short tasks with no servers to patch, and EventBridge Scheduler invokes it at a fixed rate with retries. A task that finishes in under 1 minute fits well within the 15-minute Lambda limit. Not \"Move the cron job to a larger instance. Add an Auto Scaling group to...\": This keeps a server to patch and adds cost, which is the overhead the team wants to remove. Not \"Move the script into an Amazon ECS service that runs one task all the...\": A task that runs all the time and sleeps wastes resources and still needs its own scheduling logic. Not \"Configure DynamoDB Streams. Run the script whenever an item in the...\": Streams trigger on table changes, not on a schedule, so the rates would not be refreshed every 15 minutes."
+  ref: "Question d3-63 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-64
+  kind: choice
+  en: "A company manages its production infrastructure with AWS CloudFormation. The company requires a review of the exact resource changes before any stack update is applied. The company also must identify each day any manual changes that were made outside CloudFormation. Which combination of steps will meet these requirements? (Select TWO.)"
+  options:
+    - "Enable termination protection on each stack. Review the stack events after each update."
+    - "Deploy the cloudformation-stack-drift-detection-check AWS Config managed rule."
+    - "Create a change set for each update. Review the change set before executing it."
+    - "Enable AWS CloudTrail Insights on the account's trail to detect manual resource changes."
+    - "Apply a stack policy that denies all updates. Remove the policy during each planned update."
+  correct: [B, C]
+  why: "A change set shows how a stack update will change each resource, including replacements, before anything changes. You execute the change set only after the review. This managed rule runs drift detection on the stacks and marks a stack as noncompliant when its resources differ from the template. It runs on a periodic schedule, so manual changes are found each day. Not \"Enable termination protection on each stack. Review the stack events...\": Termination protection stops a stack from being deleted. Stack events show what already happened, not what will change. Not \"Apply a stack policy that denies all updates. Remove the policy...\": A stack policy can block updates to resources, but it does not show which changes an update will make. Not \"Enable AWS CloudTrail Insights on the account's trail to detect...\": CloudTrail Insights detects unusual rates of API calls. It does not compare resources with a template."
+  ref: "Question d3-64 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]
+
+- id: zg-soa-d3-65
+  kind: choice
+  en: "A company uses Amazon S3 events to invoke an AWS Lambda function asynchronously. When the function continues to fail after its retries, the event is lost. Failed events must be sent to an Amazon SQS queue along with error details, and successful results must be sent to an Amazon EventBridge event bus. Which solution will meet these requirements?"
+  options:
+    - "Set the function's reserved concurrency to 1 to process events one at a time without failures."
+    - "Enable S3 Versioning to replay failed events from the previous versions of the objects."
+    - "Configure Lambda destinations: on failure to the SQS queue, and on success to the event bus."
+    - "Add a try and catch block to the function code that writes every event to both targets before returning."
+  correct: [C]
+  why: "For asynchronous invocations, Lambda destinations send a record of each invocation to a target based on the result. The on-failure record includes the original event and error details, and on-success records can go to an EventBridge event bus, with no code changes. Not \"Add a try and catch block to the function code that writes every...\": Code inside the function cannot capture failures such as timeouts that stop the function, and it adds logic to maintain. Not \"Set the function's reserved concurrency to 1 to process events one at...\": Lower concurrency does not prevent failures, and it slows processing. Not \"Enable S3 Versioning to replay failed events from the previous...\": Object versions are not events, and versioning does not keep a record of failed invocations."
+  ref: "Question d3-65 from github.com/zghanw/aws-cloudops-engineer-associate by zghanw, MIT licence."
+  exams: [soa]

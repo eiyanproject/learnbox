@@ -231,3 +231,29 @@
   why: "The SAM transform tells CloudFormation to expand the serverless resource types into standard resources during deployment."
   ref: "AWS SAM Developer Guide: AWS SAM template anatomy"
   exams: [dva]
+
+- id: rm-dva-dep-001
+  kind: choice
+  en: "A team wants new Lambda function versions to receive 10 percent of traffic for five minutes before the remaining traffic shifts, and wants an automatic return to the previous version if the function's error alarm fires during that window. What should they configure?"
+  options:
+    - "Lambda provisioned concurrency on the new version so it absorbs traffic gradually."
+    - "Publish the new version and update the alias to point at it directly, monitoring manually."
+    - "Two Lambda functions behind an Application Load Balancer with weighted target groups."
+    - "A CodeDeploy deployment group for the Lambda alias using the Canary10Percent5Minutes configuration with a CloudWatch alarm as a rollback trigger."
+  correct: [D]
+  why: "CodeDeploy shifts traffic between two versions behind a Lambda alias using predefined configurations, and Canary10Percent5Minutes matches the stated pattern exactly. Attaching a CloudWatch alarm to the deployment group makes CodeDeploy roll traffic back automatically if the alarm goes off during the deployment. Not \"Two Lambda functions behind an Application Load Balancer with...\": An ALB with weighted targets can split traffic but adds infrastructure, does not use the alias mechanism Lambda already provides, and gives no automatic rollback. Not \"Publish the new version and update the alias to point at it directly...\": Repointing the alias is an instant 100 percent cutover with no canary window and no automated rollback. Not \"Lambda provisioned concurrency on the new version so it absorbs...\": Provisioned concurrency pre-initialises execution environments to cut cold starts. It has nothing to do with routing a percentage of traffic."
+  ref: "Question dep-001 (Lambda traffic shifting with CodeDeploy) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dva]
+
+- id: rm-dva-dep-002
+  kind: choice
+  en: "An Elastic Beanstalk web environment must be updated with zero reduction in capacity during the deployment, and a failed deployment must not leave any updated instances serving traffic. Deployment duration is not a concern. Which deployment policy should the team choose?"
+  options:
+    - "Rolling"
+    - "Rolling with additional batch"
+    - "All at once"
+    - "Immutable"
+  correct: [D]
+  why: "The immutable policy launches a full set of new instances in a temporary Auto Scaling group, and only moves them into the original group once they pass health checks. Existing capacity is untouched throughout, and a failure is discarded by terminating the temporary group, so no updated instance ever serves traffic. Not \"Rolling\": Rolling updates batches of existing instances in place, so capacity drops while a batch is out, and a failure leaves already-updated instances in service. Not \"All at once\": All at once updates every instance simultaneously, causing an outage, and a failure takes the whole environment down. Not \"Rolling with additional batch\": Rolling with additional batch preserves capacity, but it still updates existing instances in place, so a failed deployment can leave updated instances serving traffic."
+  ref: "Question dep-002 (Elastic Beanstalk deployment policies) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dva]

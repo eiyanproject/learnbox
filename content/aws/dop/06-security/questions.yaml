@@ -180,3 +180,42 @@
   why: "Audit Manager continuously collects evidence from Config, CloudTrail, Security Hub and more, mapped to prebuilt frameworks. Artifact provides AWS's own compliance reports, not evidence about your environment."
   ref: "AWS Audit Manager User Guide: What is AWS Audit Manager"
   exams: [dop]
+
+- id: rm-dop-psec-001
+  kind: choice
+  en: "An auditor requires continuous evidence that every account applies the same set of configuration controls, with a single compliance view and the ability to add new controls organization-wide in one action. What should be deployed?"
+  options:
+    - "A Lambda function per account evaluating resources against a JSON policy file."
+    - "AWS Config conformance packs deployed organization-wide, with an aggregator in the audit account."
+    - "Individual Config rules created by each account team, reviewed centrally each quarter."
+    - "AWS Trusted Advisor checks exported monthly to a spreadsheet."
+  correct: [B]
+  why: "A conformance pack is a bundle of Config rules and remediation actions deployed as a single unit, and it can be deployed across an organization so every account gets the identical set. An aggregator collects compliance data from all accounts and Regions into one view for the auditor. Not \"Individual Config rules created by each account team, reviewed...\": Per-account rule authoring guarantees divergence and gives no single view or one-action rollout. Not \"AWS Trusted Advisor checks exported monthly to a spreadsheet\": Trusted Advisor offers a fixed set of best-practice checks, not a customisable control framework with continuous evidence. Not \"A Lambda function per account evaluating resources against a JSON...\": Custom evaluation code in every account is substantial work duplicating a managed service, without aggregation."
+  ref: "Question psec-001 (Automated compliance with Config rules) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dop]
+
+- id: rm-dop-psec-002
+  kind: choice
+  en: "Database credentials used by applications in several accounts must rotate every 30 days with no downtime, and applications must never hold a credential in a configuration file. Which design meets this?"
+  options:
+    - "Store the credential in Systems Manager Parameter Store as a SecureString and rotate it with a scheduled Lambda function the team writes."
+    - "Distribute the credential through an encrypted configuration file deployed by the pipeline every 30 days."
+    - "Store the credential in AWS Secrets Manager with managed rotation, share the secret cross-account via its resource policy and a customer managed KMS key, and have applications retrieve it at runtime through an IAM role."
+    - "Use a single long-lived credential protected by a strong password policy."
+  correct: [C]
+  why: "Secrets Manager provides managed rotation for supported databases, including the two-user strategy that avoids downtime during the swap. A resource policy plus a customer managed KMS key allows other accounts to retrieve the secret, and runtime retrieval through an IAM role means nothing is stored in configuration. Not \"Store the credential in Systems Manager Parameter Store as a...\": Parameter Store has no built-in rotation, so the team owns the rotation logic and its failure modes — the requirement is achievable but with materially more effort and risk. Not \"Distribute the credential through an encrypted configuration file...\": A file on disk is a stored credential, which the requirement forbids, and pipeline-driven replacement risks a window where the old value is still in use. Not \"Use a single long-lived credential protected by a strong password...\": A static credential does not rotate at all."
+  ref: "Question psec-002 (Secrets and credential rotation) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dop]
+
+- id: rm-dop-psec-003
+  kind: choice
+  en: "A platform team must tighten dozens of over-permissive IAM roles without breaking the workloads that use them, and must be alerted if any role or bucket is ever shared with an external principal. Which combination should they use?"
+  options:
+    - "Enable GuardDuty and act on its IAM findings."
+    - "Attach permissions boundaries to all roles and leave the existing policies unchanged."
+    - "Replace every role's policy with a deny-all policy and reinstate permissions as teams report breakage."
+    - "IAM Access Analyzer policy generation from CloudTrail activity to right-size each role, plus external access analyzers to detect resources shared outside the organization."
+  correct: [D]
+  why: "Access Analyzer can generate a policy from the actions a role actually used, recorded in CloudTrail, which is how you tighten permissions without guessing and breaking workloads. Its external access findings separately identify roles, buckets and other resources shared with principals outside the organization. Not \"Replace every role's policy with a deny-all policy and reinstate...\": Deliberately breaking production to discover requirements is an outage strategy, not a least-privilege strategy. Not \"Attach permissions boundaries to all roles and leave the existing...\": Boundaries cap maximum permissions and are useful, but they do not reduce what the existing policies grant within that cap, nor detect external sharing. Not \"Enable GuardDuty and act on its IAM findings\": GuardDuty detects suspicious activity such as credential misuse; it does not right-size policies or enumerate external access."
+  ref: "Question psec-003 (Least-privilege automation and Access Analyzer) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dop]

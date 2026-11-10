@@ -181,3 +181,29 @@
   why: "Lambda publishes the Errors metric automatically; an alarm with a Sum over 5 minutes and an SNS action does the rest."
   ref: "AWS Lambda Developer Guide: Using CloudWatch metrics with Lambda"
   exams: [dva]
+
+- id: rm-dva-tro-001
+  kind: choice
+  en: "A latency-sensitive API backed by Lambda meets its p50 target but badly misses p99, and traces show the slow requests spending several hundred milliseconds initialising the runtime and loading dependencies before the handler runs. Traffic is steady during business hours. What is the most direct fix?"
+  options:
+    - "Increase the function timeout so slow invocations have room to complete."
+    - "Move dependency imports from module scope into the handler body."
+    - "Enable reserved concurrency to guarantee the function a share of account concurrency."
+    - "Configure provisioned concurrency on the function's alias to keep initialised environments warm."
+  correct: [D]
+  why: "The symptom described — initialisation before the handler runs, hitting only the tail of the distribution — is a cold start. Provisioned concurrency keeps a configured number of execution environments initialised and ready, which removes that initialisation from the request path. Steady traffic makes it economical. Not \"Increase the function timeout so slow invocations have room to...\": Timeout is the ceiling before an invocation is killed. Raising it does not make anything faster. Not \"Move dependency imports from module scope into the handler body\": This is backwards: code in module scope runs once per environment and is reused, while moving it into the handler makes it run on every invocation. Not \"Enable reserved concurrency to guarantee the function a share of...\": Reserved concurrency caps and guarantees how many concurrent executions a function may have. It does not pre-initialise anything, so cold starts remain."
+  ref: "Question tro-001 (Lambda cold starts) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dva]
+
+- id: rm-dva-tro-002
+  kind: choice
+  en: "A request path spans API Gateway, a Lambda function, a DynamoDB table, and an external payment API. End-to-end latency has doubled and the team cannot tell which hop is responsible from CloudWatch metrics alone. What should they implement to isolate it?"
+  options:
+    - "Enable CloudWatch detailed monitoring at one-minute granularity on every service in the path."
+    - "Turn on API Gateway access logging and calculate latency from the log timestamps."
+    - "Raise the Lambda log level to DEBUG and grep CloudWatch Logs for slow requests."
+    - "Enable AWS X-Ray tracing and instrument the function with the X-Ray SDK so each downstream call becomes a timed subsegment on a service map."
+  correct: [D]
+  why: "X-Ray is built for exactly this: it correlates one request across services using a trace ID and records each downstream call as a timed subsegment, including calls to external HTTP endpoints. The service map then shows latency per hop, which is what identifies the offending component. Not \"Raise the Lambda log level to DEBUG and grep CloudWatch Logs for slow...\": Ad-hoc log statements give unstructured, uncorrelated timings and require code changes at every hop to approximate what tracing does natively. Not \"Enable CloudWatch detailed monitoring at one-minute granularity on...\": Detailed monitoring improves metric resolution per service but still leaves per-service aggregates that cannot be stitched into a single request's path. Not \"Turn on API Gateway access logging and calculate latency from the log...\": API Gateway logs report integration latency for its own hop only, so they cannot distinguish DynamoDB time from payment-API time inside the function."
+  ref: "Question tro-002 (Distributed tracing with X-Ray) from github.com/renehmj/aws-trainer by Reneh Majnounian, MIT licence."
+  exams: [dva]
