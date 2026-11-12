@@ -32,7 +32,7 @@ prints.
   plain arithmetic.
 - **`java.time` types are immutable**; every method returns a new value.
 
-Each rule, as a line of output - plus one `java.time` edge the exam likes:
+Each rule, as a line of output, plus one `java.time` edge the exam likes. Treat it as a practice question: cover the output, write down what you expect each line to be, then compare.
 
 ```java
 import java.time.LocalDate;
@@ -70,16 +70,33 @@ false
 2026-01-31 2026-02-28
 ```
 
+`parseInt("x")` throws `NumberFormatException`, and the `catch` for its
+parent `IllegalArgumentException` catches it. `f()` throws, but the `return`
+in `finally` replaces the exception with 7. `128` is just outside the
+`Integer` cache, so the two boxes are different objects. And adding a month
+to 31 January cannot give 31 February, so `plusMonths` clamps to the last
+valid day of that month, 28 February (29 in a leap year), rather than
+throwing or spilling into March. The bare `d.plusMonths(1);` line changes
+nothing, as always with immutable types.
+
 ## Your turn
 
 In `Paper4.java`:
 
 - `public static int finallyWins()` — a method whose `try` returns 1 and whose
   `finally` returns 2, demonstrating which one the caller sees
-- `public static String classify(Runnable action)` — the simple name of
-  whatever it throws, or `"none"`
+- `public static String classify(Runnable action)` — run it, and return the
+  simple class name of whatever it throws (`"IllegalStateException"`,
+  `"NumberFormatException"`, `"ArithmeticException"`), or `"none"` if it
+  throws nothing. Report the actual class, not a parent:
+  `e.getClass().getSimpleName()` does that.
 - `public static Integer sumOrNull(Integer a, Integer b)` — their sum, or
-  `null` if either is null
-- `public static boolean isLeap(int year)`
-- `public static String monthName(int month)` — `"JANUARY"` for 1, throwing
-  `java.time.DateTimeException` for an invalid month
+  `null` if either is null. Note the return type is `Integer`, so `null` is a
+  possible result; check before you add, since adding unboxes both.
+- `public static boolean isLeap(int year)` — 2024 and 2000 are leap years;
+  2023, 1900 and 2026 are not
+- `public static String monthName(int month)` — the month's name in capitals,
+  `"JANUARY"` for 1 and `"DECEMBER"` for 12, throwing
+  `java.time.DateTimeException` for an invalid month such as 0 or 13.
+  `java.time.Month.of(month)` does both: it returns the enum constant, whose
+  `name()` is the capitalised name, and throws for anything outside 1 to 12.

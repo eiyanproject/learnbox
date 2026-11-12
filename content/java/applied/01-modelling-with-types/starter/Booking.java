@@ -1,7 +1,7 @@
 public class Booking {
 
-    // enum Status, record BookingRecord... see the lesson: the record is
-    // called Booking too, so put it and the enum below this holder class.
+    // This class only holds main. The enum Status and the record
+    // Reservation (see the lesson) go below it, in this same file.
 
     public static void main(String[] args) {
     }

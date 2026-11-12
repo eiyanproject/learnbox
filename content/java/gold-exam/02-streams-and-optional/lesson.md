@@ -30,7 +30,7 @@ The second Gold paper: pipelines and absence.
 - **`peek` is for debugging.** Using it for side effects on a pipeline that may
   short-circuit gives results that depend on the terminal operation.
 
-Each rule, as a line of output:
+Each rule, as a line of output. Treat it as a practice question: cover the output, write down what you expect each line to be, then compare.
 
 ```java
 import java.util.ArrayList;
@@ -66,15 +66,28 @@ toList() is unmodifiable
 [a, b]
 ```
 
+The working: the average of an empty stream is an empty `OptionalDouble`,
+not 0. The average of 2 and 4 is present, and `getAsDouble()` takes it out
+(safe here only because the stream was not empty). `Stream.toList()` refused
+`add`. And `anyMatch` stopped as soon as `"b"` matched, so `peek` never saw
+`"c"`: a `peek` that collected every element "for later" would have
+silently missed one.
+
 ## Your turn
 
 In `GoldPaper2.java`:
 
-- `public static double averageLength(List<String> items)` — 0 for an empty
-  list
+- `public static double averageLength(List<String> items)` — the average
+  length of the strings (`"ada"` and `"grace"` give 4.0); 0 for an empty list,
+  without throwing
 - `public static Map<Character, List<String>> namesByInitial(List<String> items)`
-- `public static long countLongerThan(List<String> items, int n)`
-- `public static String summarise(List<String> items)` — `"first..last (n)"`,
-  or `"none"` when empty
-- `public static List<String> topN(List<String> items, int n)` — longest first,
-  ties alphabetical
+  — the items grouped by first character, each group in original order; an
+  empty map for an empty list
+- `public static long countLongerThan(List<String> items, int n)` — how many
+  items are strictly longer than `n` (a string of exactly `n` does not count)
+- `public static String summarise(List<String> items)` — the first item, two
+  dots, the last item, and the count in brackets: `{"a", "b", "c"}` gives
+  `"a..c (3)"` and `{"a"}` gives `"a..a (1)"`; `"none"` when empty
+- `public static List<String> topN(List<String> items, int n)` — the `n`
+  longest items, longest first, ties in alphabetical order; if `n` is larger
+  than the list, all of them (`limit(n)` handles that)

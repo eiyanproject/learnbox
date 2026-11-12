@@ -11,9 +11,20 @@ hints:
   - "`transferTo` moves money between two accounts: withdraw here, deposit there, and let the exceptions propagate if either refuses."
 ---
 
+An object bundles data (its **fields**) with the code that works on it (its
+**methods**), and a class is the blueprint objects are made from. This lesson
+covers how methods are chosen when several share a name, the difference
+between what belongs to the class and what belongs to each object, how
+objects are set up by constructors, and what really happens when you pass an
+object to a method, which is the subject of one of Java's most persistent
+myths.
+
 ## Overloading
 
-Several methods can share a name if their **parameter lists** differ:
+Several methods can share a name if their **parameter lists** differ. This is
+**overloading**, and it lets one name cover what is conceptually one
+operation on different kinds of input, as `System.out.println` does for
+numbers, strings and everything else:
 
 ```java
 int add(int a, int b)
@@ -21,8 +32,10 @@ double add(double a, double b)
 int add(int... values)
 ```
 
-The compiler picks one from the argument types, at compile time. Two rules
-matter:
+(Method headers only.) The compiler picks one from the argument types, at
+compile time: `add(1, 2)` and `add(1.5, 2.5)` call different methods. The
+name plus the parameter types is the method's **signature**, and signatures
+must be unique within a class. Two rules matter:
 
 - **The return type is not part of the signature.** Two methods differing only
   in return type do not compile.
@@ -30,6 +43,14 @@ matter:
   match, then widening, then boxing, then varargs. So `add(1, 2)` picks the
   `int` version, and varargs is the last resort — which is why adding a varargs
   overload rarely breaks existing calls.
+
+**Boxing** is Java automatically wrapping a primitive in its matching object
+type: an `int` becomes an `Integer`, a `double` a `Double`. Each primitive
+has such a **wrapper class**, which is how primitives can go into
+collections, since collections only hold objects. Unwrapping again is
+**unboxing**. The order above says that, given an `int`, Java would rather
+widen it to `long` than box it to `Integer`, which the program at the end of
+this lesson shows.
 
 ## static against instance
 
@@ -40,19 +61,50 @@ static int count;         // one, shared
 private double balance;   // one per account
 ```
 
+(Two field declarations.) Every `Account` object gets its own `balance`,
+but there is only one `count`, stored on the class, however many accounts
+exist. A static field is reached through the class name, `Account.count`, and
+a static method is called the same way, `Math.max(1, 2)`, without creating an
+object.
+
 A static method cannot use `this` and cannot touch instance fields, because
-there is no instance. The error — "non-static variable cannot be referenced
-from a static context" — means exactly that, and it is what `main` hits when
-someone tries to use a field from it.
+there is no instance: `this` means "the object this method was called on",
+and a static method was not called on one. The error — "non-static variable
+cannot be referenced from a static context" — means exactly that, and it is
+what `main` hits when someone tries to use a field from it:
+
+```text
+St.java:4: error: non-static variable count cannot be referenced from a static context
+    count++;
+    ^
+```
+
+The fix is either to make the field static, or to create an object
+(`new St()`) and use the field through it.
 
 ## Constructors
 
-A constructor has the class's name and no return type. If you write none, Java
-gives you a no-argument default — **but only if you write none at all**. Add
-any constructor and the free one disappears, which breaks `new Thing()` in a
-way that reads like a bug.
+A **constructor** is the code that runs when an object is created with
+`new`, to give its fields their starting values. It has the class's name and
+no return type, not even `void` (a "constructor" with `void` is an ordinary
+method that happens to share the name, and never runs on `new`). If you write
+none, Java gives you a no-argument default — **but only if you write none at
+all**. Add any constructor and the free one disappears, which breaks
+`new Thing()` in a way that reads like a bug:
 
-Chain them with `this(...)` to keep the logic in one place:
+```text
+error: constructor St in class St cannot be applied to given types;
+    new St();
+    ^
+  required: int
+  found:    no arguments
+```
+
+The class only has `St(int x)` now, so a call with no arguments has nothing
+to match. Write the no-argument constructor yourself if you still want one.
+
+A class can have several constructors, overloaded like methods. Chain them
+with `this(...)` to keep the logic in one place:
 
 ```java
 public Account(String owner) {
@@ -60,12 +112,65 @@ public Account(String owner) {
 }
 ```
 
+`this(owner, 0)` runs the two-argument constructor with a balance of 0, so the
+assignments and any checks are written once, there, rather than copied into
+every constructor.
+
 `this(...)` calls a sibling constructor; `super(...)` calls the parent's. A
-constructor can use one or the other, first, never both.
+constructor can use one or the other, first, never both. If it uses neither,
+Java inserts a call to the parent's no-argument constructor, `super()`, for
+you; every object is built from the top of its class hierarchy down.
 
 ## Pass by value, always
 
-Java passes everything by value. For an object, the **reference** is copied:
+First, what a variable of an object type actually holds. Take one statement
+apart:
+
+```java
+Account acc = new Account("ada");
+```
+
+- `Account acc` declares a variable named `acc` that can refer to an
+  `Account`. On its own, it refers to nothing yet.
+- `new Account("ada")` creates a new object, running the constructor with
+  `"ada"`, and produces a **reference** to it: in effect, the object's address.
+- `=` copies that reference into `acc`.
+
+So `acc` does not contain the account; it contains directions to it. A
+primitive variable is different: it contains the value itself, and
+assignment copies the value:
+
+```java
+public class Copies {
+    public static void main(String[] args) {
+        int first = 10;
+        int second = first;           // copies the number 10
+        second = 5;                   // changes only second
+        System.out.println(first + " " + second);
+
+        StringBuilder a = new StringBuilder("hi");
+        StringBuilder b = a;          // copies the reference: one object, two names
+        b.append("!");                // changes the one object
+        System.out.println(a + " " + b);
+    }
+}
+```
+
+```output
+10 5
+hi! hi!
+```
+
+Changing `second` left `first` alone, because each holds its own number.
+Appending through `b` changed what `a` sees too, because both hold the same
+reference. Keep that picture in mind for what follows.
+
+**Pass by value** means a method receives a *copy* of each argument, so
+assigning a new value to a parameter cannot affect the caller's variable.
+Java passes everything by value. For a primitive, the number itself is
+copied. For an object, the variable never held the object, only a reference
+to it, so the **reference** is copied, and the method gets a second reference
+to the same object:
 
 ```java
 void rename(Account a) { a.setOwner("x"); }   // caller sees the change
@@ -73,8 +178,11 @@ void replace(Account a) { a = new Account(); } // caller sees nothing
 ```
 
 The first mutates the object both references point at. The second repoints the
-local copy and the caller's reference is untouched. "Java is pass by reference"
-is a persistent myth; the exam tests the difference above directly.
+local copy and the caller's reference is untouched. Picture two labels tied to
+one box: through either label you can change what is in the box, but moving
+your own label to another box does nothing to the other label. "Java is pass
+by reference" is a persistent myth; the exam tests the difference above
+directly.
 
 ## Run
 
@@ -110,6 +218,17 @@ x
 x
 ```
 
+`pick(5)` passes an `int`. No `pick(int)` exists, so Java looks for a
+widening first and finds `pick(long)`, before it would consider boxing to
+`Integer`. `pick(Integer.valueOf(5))` passes an `Integer` already, an exact
+match. `pick()` has no arguments, and only varargs accepts none. Then
+`rename` changed the shared object, so `acc.owner` is `x`, and `replace`
+changed only its own copy of the reference, so `acc.owner` is still `x`.
+
+(`static class Account` is a class declared inside another, a **nested
+class**; `static` here means it does not need an instance of `Methods` to
+exist. It keeps the example in one file.)
+
 ## Your turn
 
 In `Account.java`:
@@ -118,7 +237,15 @@ In `Account.java`:
 - `Account(String owner, double balance)` and `Account(String owner)` which
   chains to it with a balance of 0
 - `getOwner()`, `getBalance()`
-- `deposit(double)` — `IllegalArgumentException` if not positive
-- `withdraw(double)` — `IllegalArgumentException` if not positive or more than
-  the balance
-- `transferTo(Account other, double amount)`
+- `deposit(double)` — adds to the balance; `IllegalArgumentException` if the
+  amount is not positive (zero or less)
+- `withdraw(double)` — subtracts from the balance; `IllegalArgumentException`
+  if the amount is not positive or is more than the balance. A rejected
+  withdrawal leaves the balance unchanged, so check before you subtract.
+- `transferTo(Account other, double amount)` — moves the amount from this
+  account to `other`. If the withdrawal is refused, the exception passes
+  through and *neither* account changes, which happens naturally if you
+  withdraw first and deposit second.
+
+`throw new IllegalArgumentException("amount must be positive");` is how to
+reject a value; the Exceptions lesson covers it in full.

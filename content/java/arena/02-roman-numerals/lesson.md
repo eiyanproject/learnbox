@@ -52,4 +52,6 @@ fromRoman("XLIX")     ->  49
 fromRoman("MCMXCIV")  ->  1994
 ```
 
-For every `n` from 1 to 3999, `fromRoman(toRoman(n))` is `n`.
+For every `n` from 1 to 3999, `fromRoman(toRoman(n))` is `n`. And `toRoman`
+never writes the same symbol four times in a row: 4 is `IV`, never `IIII`,
+and 40 is `XL`, never `XXXX`. A test checks every number for that.

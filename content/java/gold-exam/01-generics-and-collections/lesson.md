@@ -30,7 +30,7 @@ The first Gold paper: type parameters, wildcards, and the collection contracts.
   `UnsupportedOperationException` — a favourite question, because the code
   compiles perfectly.
 
-Each rule, as a line of output:
+Each rule, as a line of output. Treat it as a practice question: cover the output, write down what you expect each line to be, then compare.
 
 ```java
 import java.util.ArrayList;
@@ -64,13 +64,29 @@ List.of is immutable
 5
 ```
 
+The working: `List.of` rejected `add` at run time, although it compiled.
+Through `? extends Number`, reading gives a `Number`, and the only value that
+can be added is `null`, since `null` belongs to every type; the list now has
+three entries. Through `? super Integer`, adding an `Integer` is fine, but
+reading back only promises an `Object`, so `back` cannot be declared as an
+`Integer` without a cast.
+
 ## Your turn
 
 In `GoldPaper1.java`:
 
-- `public static <T> void copy(List<? extends T> src, List<? super T> dst)`
-- `public static class Pair<A, B>` with `getFirst`, `getSecond`, and a correct
-  `equals`/`hashCode`
-- `public static <T> Map<T, Integer> frequency(List<T> items)`
-- `public static <T> List<T> intersection(List<T> a, List<T> b)` — no
-  duplicates, first-seen order
+- `public static <T> void copy(List<? extends T> src, List<? super T> dst)` —
+  add every element of `src`, in order, to the **end** of `dst`, keeping what
+  `dst` already held; `dst` may be a wider list, such as a `List<Number>` for
+  `Integer`s
+- `public static class Pair<A, B>` (nested in `GoldPaper1`) with a constructor
+  taking both values, `getFirst`, `getSecond`, and a correct
+  `equals`/`hashCode`: pairs with equal parts are equal and share a hash
+  code, a pair never equals something that is not a pair, and two equal pairs
+  added to a `HashSet` count once. `Objects.equals(a, b)` compares two values
+  safely even when one is `null`, and `Objects.hash(a, b)` combines hash codes.
+- `public static <T> Map<T, Integer> frequency(List<T> items)` — how many
+  times each item occurs; an empty map for an empty list
+- `public static <T> List<T> intersection(List<T> a, List<T> b)` — the items
+  of `a` that also appear in `b`, each once, in the order they first appear
+  in `a`: `{1, 2, 3}` and `{3, 2, 9}` give `[2, 3]`

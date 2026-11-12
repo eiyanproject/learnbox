@@ -31,7 +31,7 @@ filesystem, or what the class file kept.
 - **Annotations default to `CLASS` retention**, which reflection cannot see.
 - **`getDeclaredMethods` has no defined order.** Sort if you compare.
 
-Two of the rules, as output:
+Two of the rules, as output. Treat it as a practice question: cover the output, write down what you expect each line to be, then compare.
 
 ```java
 import java.io.IOException;
@@ -64,14 +64,28 @@ public class GoldConcurrency {
 wrapped: disk
 ```
 
+The working: the parallel stream splits the range across threads, but each
+part is summed separately and the parts are combined at the end, so no two
+threads ever update the same variable, and the total is exactly
+`1 + 2 + ... + 1,000,000`. The lambda given to `forEach` is a `Consumer`,
+whose `accept` method declares no checked exceptions, so the `IOException`
+cannot escape it as itself. Wrapped in `UncheckedIOException` it can, and the
+caller unwraps it with `getCause()`.
+
 ## Your turn
 
 In `GoldPaper3.java`:
 
-- `public static long parallelSum(List<Integer> values)` — correct under
-  parallelism
-- `public static long wordCount(Path path)` — words in a file, stream closed
-- `@interface Checked` retained at runtime, and a `Sample` class using it
-- `public static List<String> annotatedNames(Class<?> type)` — sorted
-- `public static <T> T safely(Callable<T> task, T fallback)` — the fallback on
-  any exception
+- `public static long parallelSum(List<Integer> values)` — the total, computed
+  with a parallel stream and exact under load; 0 for an empty list
+- `public static long wordCount(Path path)` — the number of words in the
+  file, read with `Files.lines` and with the stream closed. Words are
+  separated by any amount of whitespace, and blank lines contain none.
+- `@interface Checked` retained at runtime, and a nested
+  `public static class Sample` whose methods `alpha()` and `beta()` carry
+  `@Checked` and whose method `gamma()` does not
+- `public static List<String> annotatedNames(Class<?> type)` — the names of
+  the type's declared methods carrying `@Checked`, sorted (for `Sample`,
+  `["alpha", "beta"]`)
+- `public static <T> T safely(Callable<T> task, T fallback)` — the task's
+  result, or the fallback if it throws any exception, checked or unchecked

@@ -39,3 +39,8 @@ depth("()[]")          ->  1
 depth("f(a[i], {x})")  ->  2
 depth("(]")            ->  -1
 ```
+
+Depth counts how deeply brackets sit inside each other, not how many pairs
+there are: `"()[]"` is two pairs side by side, depth 1, while `"{[(())]}"` is
+depth 4. Both methods must cope with a long line too: one test nests 5,000
+brackets inside each other.

@@ -43,7 +43,7 @@ The declared type `Animal` decides what you are **allowed to call**. The actual
 object decides **which implementation runs**. Nearly every inheritance question
 on the exam is this sentence in disguise.
 
-One program, four of the rules:
+One program, four of the rules. Treat it as a practice question: cover the output, write down what you expect each line to be, then compare.
 
 ```java
 public class Hiding {
@@ -74,15 +74,32 @@ Dog()
 Woof animal Animal.kind
 ```
 
+Following it through. `new Dog()` runs `Dog`'s constructor, whose hidden
+first line is `super()`, so `Animal()` prints before `Dog()`: objects are
+built from the parent down. Then, with `a` declared as `Animal`:
+
+- `a.speak()` is an instance method, overridden in `Dog`, so the object's
+  type decides: `Woof`.
+- `a.name` is a field, so the declared type decides: `Animal`'s `name`.
+- `a.kind()` is a static method. It belongs to a class, not an object, so it
+  is chosen by the declared type at compile time: `Animal.kind`. Calling a
+  static method through a variable, as here, is legal but misleading (the
+  compiler warns about it); write `Animal.kind()` in real code.
+
 ## Your turn
 
 In `Paper3.java`:
 
+All in the one file: `public class Paper3`, plus the other three classes with
+no access modifier.
+
 - `class Animal` with a `name` field, `Animal(String name)`, a no-argument
-  constructor chaining to it with `"unnamed"`, `getName()`, `String speak()`
-  returning `"..."`, and `String describe()` returning `"<name> says <speak>"`
-- `class Dog extends Animal` — `speak()` returns `"woof"`, constructor takes a
-  name
-- `class Cat extends Animal` — `speak()` returns `"meow"`
+  constructor chaining to it with `"unnamed"` (so `new Animal().getName()` is
+  `"unnamed"`), `getName()`, `String speak()` returning `"..."`, and
+  `String describe()` returning `"<name> says <speak>"`, built by calling
+  `speak()`, so that `new Dog("rex").describe()` is `"rex says woof"`
+- `class Dog extends Animal` — constructor takes a name and passes it up with
+  `super(name)`; `speak()` returns `"woof"`
+- `class Cat extends Animal` — the same, with `speak()` returning `"meow"`
 - `public class Paper3` with
   `public static String soundOf(Animal a)` returning `a.speak()`

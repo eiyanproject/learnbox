@@ -30,7 +30,7 @@ exam asks about it constantly.
 - **`split` takes a regex**, so splitting on `"."` matches every character
   unless you escape it.
 
-Each rule, as a line of output:
+Each rule, as a line of output. Treat it as a practice question: cover the output, write down what you expect each line to be, then compare.
 
 ```java
 import java.util.Arrays;
@@ -60,19 +60,30 @@ false false true
 ```
 
 `Arrays.equals` on a nested array compares the inner arrays with `equals` -
-that is, by reference - which is why only `deepEquals` says `true`.
+that is, by reference - which is why only `deepEquals` says `true`. The
+other lines: `toUpperCase()` returned a new string that nobody kept, so `s`
+is still `java`; the runtime-built string is a different object with the same
+characters; `substring(1, 4)` is positions 1, 2 and 3, so 3 characters; and
+splitting on the regex `.` leaves nothing but empty strings, which `split`
+drops, while `\\.` splits on the real dot.
 
 ## Your turn
 
 In `Paper2.java`:
 
 - `public static String chained(String s)` — trimmed, spaces replaced with
-  underscores, uppercased
+  underscores, uppercased, in that order: `"  hello world "` gives
+  `"HELLO_WORLD"`
 - `public static boolean identical(String a, String b)` — are they the same
-  object?
+  object? (This one really should use `==`: it is the question being asked.)
 - `public static boolean equivalent(String a, String b)` — do they hold the
   same characters?
-- `public static boolean sameElements(int[] a, int[] b)` — element by element
-- `public static String describe(int[] values)` — `"[1, 2, 3] len=3"`
+- `public static boolean sameElements(int[] a, int[] b)` — element by element,
+  so arrays of different lengths, or the same numbers in a different order,
+  are not the same
+- `public static String describe(int[] values)` — `"[1, 2, 3] len=3"`, and
+  `"[] len=0"` for an empty array
 - `public static String middle(String s)` — the middle third of a string whose
-  length divides by three
+  length divides by three: `"123456"` is split into `"12"`, `"34"` and `"56"`,
+  so the answer is `"34"`; for `"abc"` it is `"b"`. With a third `n` long, the
+  middle runs from position `n` up to (not including) `2 * n`.

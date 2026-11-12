@@ -13,7 +13,10 @@ hints:
 
 Real Java programs are mostly the same shape: an interface describing what
 something does, a class doing it, and callers that depend on the interface
-rather than the class.
+rather than the class. This lesson builds the smallest complete example: a
+library that stores books and answers questions about them. It is small
+enough to read in one sitting and has every part a large application has,
+so the shape carries over directly.
 
 ## Program to the interface
 
@@ -27,7 +30,14 @@ interface BookStore {
 
 The interface says *what*, not *how*. Today the implementation is a `HashMap`;
 tomorrow it is a database. Nothing that uses `BookStore` has to change, because
-nothing that uses it knows which one it has.
+nothing that uses it knows which one it has. "Programming to the interface"
+means declaring variables, fields and parameters with the interface type
+(`BookStore store`), and naming the concrete class only at the one place an
+object is created.
+
+`findByTitle` returns `Optional<Book>` rather than a `Book` that might be
+`null`, so the signature itself tells callers that a title may not be found
+(the Optional lesson).
 
 ## Inject the dependency, do not create it
 
@@ -46,8 +56,54 @@ version is welded to one implementation and **cannot be tested** without it —
 no way to substitute a fake, no way to check what the service asked the store
 to do.
 
+A **dependency** is an object another object needs in order to work: the
+service needs a store. **Injecting** it means passing it in from outside,
+usually through the constructor, instead of the object creating its own.
 This is dependency injection, and it is the whole idea before any framework
 gets involved. Spring automates the wiring; it does not change the shape.
+
+Here is what that makes possible. A test can hand the service a store of its
+own, written on the spot, that records what was asked of it:
+
+```java
+import java.util.*;
+
+public class Injection {
+    record Book(String title) {}
+
+    interface BookStore {
+        void save(Book book);
+        Optional<Book> findByTitle(String title);
+    }
+
+    static class LibraryService {
+        private final BookStore store;
+        LibraryService(BookStore store) { this.store = store; }
+        void add(Book b) { store.save(b); }
+    }
+
+    public static void main(String[] args) {
+        List<String> saved = new ArrayList<>();
+        BookStore spy = new BookStore() {               // a fake, made for the test
+            public void save(Book book) { saved.add(book.title()); }
+            public Optional<Book> findByTitle(String t) { return Optional.empty(); }
+        };
+        new LibraryService(spy).add(new Book("Dune"));
+        System.out.println("the service saved " + saved);
+    }
+}
+```
+
+```output
+the service saved [Dune]
+```
+
+The service never knew it was talking to a fake. A fake like this, which
+records the calls made to it, is often called a **spy**. With the store
+created inside the service, none of this would be possible. (`new
+BookStore() { ... }` is an anonymous class, from the Lambdas lesson: an
+interface implemented on the spot. A lambda cannot be used here because
+`BookStore` has more than one method.)
 
 ## Keep the layers apart
 
@@ -60,17 +116,36 @@ gets involved. Spring automates the wiring; it does not change the shape.
 
 Each layer depends downwards only. When a change in storage forces a change in
 the model, the layering has leaked — usually because a type from one layer
-escaped into another's signature.
+escaped into another's signature. For example, if `LibraryService.find`
+returned a database row object instead of a `Book`, every caller would now
+depend on the database, and switching to another store would ripple through
+the whole program.
+
+Rules about what makes a valid book belong in the model, in `Book`'s own
+compact constructor, not in the service. Then every book is valid, however
+it was created, and the service does not have to repeat the check.
 
 ## Your turn
 
 In `Library.java`:
 
-- `record Book(String title, String author, int year)`
-- `interface BookStore` with `save`, `findByTitle` (returning `Optional<Book>`)
-  and `all`
-- `class InMemoryStore implements BookStore` preserving insertion order
-- `class LibraryService` taking a `BookStore` in its constructor, with
-  `add(Book)` rejecting duplicate titles with `IllegalStateException`,
-  `find(String)`, `count()`, and
-  `titlesByAuthor()` returning `Map<String, List<String>>`
+All in the one file, below the public `Library` class:
+
+- `record Book(String title, String author, int year)`, whose compact
+  constructor rejects a null or blank title with `IllegalArgumentException`
+- `interface BookStore` with `void save(Book)`, `Optional<Book>
+  findByTitle(String)` and `List<Book> all()`
+- `class InMemoryStore implements BookStore`, where `all()` returns the books
+  in the order they were saved
+- `class LibraryService` taking a `BookStore` in its constructor, with:
+  - `add(Book)` — stores the book, but rejects a title that is already stored
+    with `IllegalStateException`, without storing anything
+  - `find(String)` — the book with that title, as an `Optional`, empty if
+    there is none
+  - `count()` — how many books are stored
+  - `titlesByAuthor()` — a `Map<String, List<String>>` from each author to
+    their titles, in the order the books were added; an empty map when there
+    are no books
+
+The service must use only the `BookStore` interface: a test hands it a store
+of its own, like the spy above.

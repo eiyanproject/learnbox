@@ -11,6 +11,14 @@ hints:
   - "`dedupe` keeps first-seen order: a LinkedHashSet does it in one line."
 ---
 
+Arrays have a fixed length and almost no methods. Real programs need
+collections that grow, that refuse duplicates, that look things up by key,
+or that keep themselves sorted. The **collections framework** in `java.util`
+provides all of these, as a small set of interfaces (what a collection can
+do) and several classes implementing each one (how it does it, with
+different speed trade-offs). You program against the interface, `List`, and
+choose the class, `ArrayList`, in one place, so it can be changed later.
+
 Three interfaces cover nearly everything:
 
 | | Holds | |
@@ -19,8 +27,19 @@ Three interfaces cover nearly everything:
 | `Set` | no duplicates | membership |
 | `Map` | key to value | lookup by key |
 
-`Queue` and `Deque` add ends-based access. `Collection` is the parent of the
-first two; `Map` is deliberately **not** a `Collection`.
+`Queue` and `Deque` add ends-based access: a **queue** hands items out in the
+order they arrived (first in, first out), and a **deque** ("deck",
+double-ended queue) allows adding and removing at both ends, which also makes
+it a **stack** (last in, first out). `Collection` is the parent of the first
+two; `Map` is deliberately **not** a `Collection`, because it holds pairs
+rather than single elements. It offers views that are: `keySet()`,
+`values()` and `entrySet()`, the last a set of `Map.Entry` objects, each with
+`getKey()` and `getValue()`.
+
+`List.of(...)`, `Set.of(...)` and `Map.of(...)` (Java 9) create small
+**immutable** collections in one call. Trying to add to one throws
+`UnsupportedOperationException`, a run-time error; copy it into an
+`ArrayList` or `HashMap` first if you need to change it.
 
 ## Choosing an implementation
 
@@ -33,13 +52,30 @@ first two; `Map` is deliberately **not** a `Collection`.
 | sorted order | `TreeSet` / `TreeMap` | O(log n), needs ordering |
 | a stack or queue | `ArrayDeque` | faster than `Stack`, which is legacy |
 
+The O(...) column is the Big-O notation for how the cost grows with the
+number of elements `n`: O(1) stays the same however big the collection gets,
+O(log n) grows very slowly, and O(n) grows in proportion to it. A `HashSet`
+finds an element in roughly the same time whether it holds ten or ten
+million.
+
 `ArrayList` beats `LinkedList` in almost every real case, including removal,
-because cache locality outweighs the pointer arithmetic. `LinkedList` is on the
-exam far more than it should be in your code.
+because **cache locality** outweighs the pointer arithmetic: an `ArrayList`'s
+elements sit side by side in memory, which processors read very quickly,
+while a `LinkedList`'s nodes are scattered, and following each pointer is
+slow. `LinkedList` is on the exam far more than it should be in your code.
+
+A `TreeSet` or `TreeMap` keeps its elements sorted, which needs a way to
+order them: either the elements implement `Comparable`, or you pass a
+`Comparator` to the constructor.
 
 ## equals and hashCode
 
-A `HashSet` or `HashMap` finds an object by its hash first. So:
+A `HashSet` or `HashMap` is fast because it does not compare a new element
+with every element already stored. It calls `hashCode()`, which turns the
+object into a number, and uses that number to go straight to one small
+**bucket**, then calls `equals` only on the few objects in that bucket. That
+works only if equal objects always produce the same number, and so lead to
+the same bucket. So:
 
 > If `a.equals(b)`, then `a.hashCode() == b.hashCode()`.
 
@@ -62,8 +98,33 @@ map.computeIfAbsent(k, key -> new ArrayList<>()).add(item)
 map.merge(k, 1, Integer::sum)        // the counting idiom
 ```
 
+(Calls on some `map`.) What each does:
+
+- `getOrDefault(k, 0)` returns the value for `k`, or `0` if there is none,
+  instead of `null`.
+- `putIfAbsent(k, v)` stores `v` only if `k` has no value yet.
+- `computeIfAbsent(k, f)` returns the value for `k`; if there is none, it
+  first calls `f` to make one and stores it. Grouping items into lists is the
+  classic use: the list is created the first time a key is seen.
+- `merge(k, 1, Integer::sum)` stores `1` if `k` is new, and otherwise
+  replaces the old value with `Integer.sum(old, 1)`. `Integer::sum` is a
+  **method reference**, a short way of passing the method `Integer.sum` as a
+  function (the Lambdas lesson).
+
 `computeIfAbsent` for grouping and `merge` for counting replace most of the
-if-then-put code people still write.
+if-then-put code people still write. Counting the old way, for comparison:
+
+```java
+Integer old = counts.get(word);
+if (old == null) {
+    counts.put(word, 1);
+} else {
+    counts.put(word, old + 1);
+}
+```
+
+The single `merge` line says the same thing with none of the ceremony, and
+cannot get the `null` case wrong.
 
 ## Run
 
@@ -106,14 +167,30 @@ false true
 {4=[kiwi, pear], 3=[fig]}
 ```
 
+`BadKey` overrides `equals` but not `hashCode`, so two equal keys get
+different hashes (the default `hashCode` comes from object identity). The set
+looks in the wrong bucket and reports `false` for a key that is, by
+`equals`, right there. The record generates both, so `GoodKey` works. The
+`TreeMap` prints its keys sorted, whatever order they were counted in. The
+`LinkedHashMap` keeps the order keys were first added: 4 (from `kiwi`) before
+3 (from `fig`).
+
 ## Your turn
 
 In `Store.java`:
 
-- `public static Map<String, Integer> countWords(String text)` — lowercase,
-  split on whitespace
-- `public static String firstUnique(String text)` — the first word appearing
-  once, or `null`
+- `public static Map<String, Integer> countWords(String text)` — how many
+  times each word appears, lower-cased, splitting on any run of whitespace:
+  `"The the THE"` gives `{the=3}`, extra spaces make no difference, and an
+  empty string gives an empty map (`"".split(...)` gives one empty string,
+  which must not be counted as a word)
+- `public static String firstUnique(String text)` — the first word, in the
+  order of the text, that appears exactly once, or `null` if every word
+  repeats: in `"the cat the dog"` it is `"cat"`
 - `public static List<Map.Entry<String, Integer>> sortedByValue(Map<String, Integer> counts)`
-  — count descending, then key ascending
-- `public static List<String> dedupe(List<String> items)` — first-seen order
+  — the map's entries as a list, count descending, then key ascending for
+  equal counts. `Map.Entry.comparingByValue()` and `comparingByKey()` give
+  ready-made comparators, and `reversed()` and `thenComparing(...)` combine
+  them.
+- `public static List<String> dedupe(List<String> items)` — the items without
+  duplicates, in first-seen order: `{b, a, b, c, a}` gives `[b, a, c]`

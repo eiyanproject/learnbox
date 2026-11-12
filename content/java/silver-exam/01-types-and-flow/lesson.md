@@ -32,7 +32,7 @@ Worth a re-read before you start, because each appears at least once:
   and gives a wrapped value, where `b = b + 300` does not compile at all. This
   one catches almost everyone.
 
-Each rule, as a line of output:
+Each rule, as a line of output. Treat it as a practice question: cover the output, write down what you expect each line to be, then compare.
 
 ```java
 public class Rules {
@@ -58,18 +58,50 @@ big
 54
 ```
 
+The working for each line:
+
+- `7 / 2` is integer division, `3`, and only then widened to `3.0`.
+- `MAX_VALUE + 1` wraps round to the most negative `int`.
+- `-7 % 3`: `-7 / 3` truncates towards zero to `-2`, and `-2 * 3` is `-6`,
+  so the remainder is `-7 - (-6)`, which is `-1`. It takes the sign of the
+  left operand.
+- `a > 3` is true, so the first branch wins and the rest of the chain is
+  never looked at.
+- `b += 300` computes `10 + 300 = 310` as an `int`, then casts it back to
+  `byte`. A byte holds -128 to 127, so 310 wraps: `310 - 256` is `54`.
+
+The promotion rules as a table, for the `promote` question below. The result
+is the wider of the two operand types, but never narrower than `int`:
+
+| Left | Right | Result |
+|---|---|---|
+| `byte` | `byte` | `int` |
+| `short` | `byte` | `int` |
+| `int` | `long` | `long` |
+| `long` | `float` | `float` |
+| `int` | `double` | `double` |
+
+`long` plus `float` is a `float`, even though a `long` has more bits: in the
+widening order, `float` comes after `long`, because it covers a much wider
+range of values (with less precision).
+
 ## Your turn
 
 In `Paper1.java`:
 
 - `public static int evaluate(int a, int b)` — return `a / b` using integer
-  division
+  division: `evaluate(7, 2)` is `3`, and `evaluate(-7, 2)` is `-3`, because
+  Java truncates towards zero
 - `public static String promote(String leftType, String rightType)` — given two
   of `"byte"`, `"short"`, `"int"`, `"long"`, `"float"`, `"double"`, return the
-  type their sum has
+  name of the type their sum has, as a string, by the table above:
+  `promote("byte", "byte")` is `"int"`. Do not compute any sums; this is a
+  question about the rule.
 - `public static String ternaryChain(int n)` — `"negative"`, `"zero"` or
   `"positive"`, written as a chained ternary
-- `public static String fizzOrBuzz(int n)` — `"FizzBuzz"`, `"Fizz"`, `"Buzz"`
-  or the number as a string
+- `public static String fizzOrBuzz(int n)` — `"FizzBuzz"` for multiples of 15,
+  `"Fizz"` for other multiples of 3, `"Buzz"` for other multiples of 5, or the
+  number as a string (`"7"`)
 - `public static byte compound(byte start, int add)` — the result of
-  `start += add`, which wraps rather than failing
+  `start += add`, which wraps rather than failing: `compound((byte) 10, 300)`
+  is `54`

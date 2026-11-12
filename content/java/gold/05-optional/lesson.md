@@ -11,18 +11,26 @@ hints:
   - "`requireValue` throws NoSuchElementException when empty - `orElseThrow()` with no argument does exactly that."
 ---
 
+Tony Hoare, who introduced the null reference in 1965, later called it his
+"billion-dollar mistake", for the crashes it has caused since.
+
 `null` carries no information. A method returning `String` might return one,
 might return `null`, and the signature does not say which — so every caller
 either checks or eventually throws `NullPointerException`.
 
-`Optional<T>` puts that fact in the type.
+`Optional<T>` (Java 8) puts that fact in the type.
 
 ```java
 Optional<String> found = lookup(key);
 ```
 
-The caller cannot use the value without acknowledging it might not be there,
-which is the entire benefit.
+(A fragment: `lookup` stands for any method that might not find anything.)
+An `Optional<String>` is a small container that holds either one `String` or
+nothing; it is **present** or **empty**. Because the variable's type is
+`Optional<String>` and not `String`, the caller cannot call `String` methods
+on it directly. They cannot use the value without acknowledging it might not
+be there, which is the entire benefit: the compiler, not a crash at 3 a.m.,
+tells them to handle the missing case.
 
 ## Making one
 
@@ -33,7 +41,9 @@ Optional.empty()
 ```
 
 `of` is for values you know are present; using it on a nullable expression just
-moves the `NullPointerException` earlier.
+moves the `NullPointerException` earlier. `ofNullable` is the bridge from code
+that uses `null`, such as `Map.get`, which returns `null` for a missing key:
+`Optional.ofNullable(map.get(key))` turns that `null` into an empty Optional.
 
 ## Using one well
 
@@ -47,9 +57,65 @@ opt.ifPresent(System.out::println)
 opt.or(() -> otherOptional)
 ```
 
+(Calls on some `Optional<String> opt`.) What each does:
+
+- `map(f)` applies `f` to the value if there is one, and gives a new Optional
+  of the result; on an empty Optional it does nothing and stays empty. That is
+  what makes chains safe: `opt.map(String::length)` is an `Optional<Integer>`,
+  present or empty to match.
+- `filter(p)` keeps the value only if `p` is true for it, and is empty
+  otherwise.
+- `orElse(d)`, `orElseGet(s)` and `orElseThrow()` are the ways out: the value
+  if present, otherwise a default, a computed default, or an exception.
+- `ifPresent(c)` runs `c` with the value, only if there is one.
+- `or(s)` (Java 9) is "this Optional if present, otherwise the Optional `s`
+  supplies": a fallback that is itself optional.
+- `flatMap(f)` is `map` for a function that itself returns an `Optional`.
+  `map` would give an `Optional<Optional<...>>`, a box in a box; `flatMap`
+  gives one box.
+- `orElseThrow(() -> new SomeException(...))` throws an exception of your
+  choosing when empty, with a useful message, instead of the generic
+  `NoSuchElementException`.
+
+It helps to think of an `Optional` as a stream that holds at most one element:
+`map`, `filter` and `flatMap` mean the same as they do on streams.
+
+The case `flatMap` exists for is a chain of lookups, each of which may find
+nothing. Written with `null` checks it becomes a pyramid:
+
+```java
+// every step can be missing, so every step needs a check
+User user = findUser(id);
+if (user != null) {
+    Address address = user.getAddress();
+    if (address != null) {
+        return address.getCity();
+    }
+}
+return "unknown";
+```
+
+If `findUser` and `getAddress` return `Optional`s instead, the same logic is
+one chain, and a missing value anywhere simply flows through as empty:
+
+```java
+return findUser(id)                     // Optional<User>
+        .flatMap(User::getAddress)      // Optional<Address>: getAddress returns an Optional
+        .map(Address::getCity)          // Optional<String>: getCity returns a plain String
+        .orElse("unknown");
+```
+
+(Sketches: `findUser`, `User` and `Address` stand for your own code.) The
+rule for choosing: `map` when the function returns a plain value, `flatMap`
+when it returns an `Optional`.
+
 `orElse` evaluates its argument **always**, even when the value is present;
 `orElseGet` takes a supplier and only calls it when needed. If the default is
 costly or has side effects, that difference is a bug rather than a style point.
+It is not something special about `Optional`: Java always works out a method's
+arguments before calling it, so `expensive()` runs before `orElse` even
+starts. Passing a supplier, `() -> expensive()`, passes the *recipe* instead,
+which `orElseGet` only follows when needed.
 
 ## Using one badly
 
@@ -59,12 +125,28 @@ if (opt.isPresent()) { use(opt.get()); }
 
 This is `null`-checking with extra ceremony and no safety: `get()` on an empty
 Optional throws. Prefer `map`, `filter`, `ifPresent` and `orElse` — keep the
-value inside the Optional and transform it there.
+value inside the Optional and transform it there. The same logic, both ways:
+
+```java
+// unwrapping: two steps, and get() is a crash waiting for the check to go missing
+int length;
+if (opt.isPresent()) {
+    length = opt.get().length();
+} else {
+    length = -1;
+}
+
+// keeping it inside: one expression, and nothing can throw
+int length = opt.map(String::length).orElse(-1);
+```
 
 Two more rules from the API's designers:
 
 - **Do not use `Optional` for fields or parameters.** It is a return type. It
-  is not serializable and it adds an allocation for no gain inside an object.
+  is not serializable (cannot be written out with Java's built-in object
+  serialization) and it adds an allocation (an extra object) for no gain
+  inside an object. A parameter of type `Optional` can itself be passed
+  `null`, which defeats it entirely.
 - **Never return `null` from a method that returns `Optional`.** That is the
   worst of both worlds, and it happens more than you would think.
 
@@ -110,14 +192,27 @@ orElseThrow: NoSuchElementException
 of(null): NullPointerException
 ```
 
+`some.orElse(expensive())` printed "computing default" although `some` had a
+value: the argument ran first, and its result was thrown away. `orElseGet`
+was given `Optionals::expensive` as a supplier, and never called it. On the
+empty Optional, `map` did nothing and `orElse(-1)` supplied the answer;
+`orElseThrow()` threw; and `Optional.of(null)` failed immediately.
+
 ## Your turn
 
 In `Maybe.java`:
 
-- `public static Optional<String> find(Map<String, String> map, String key)`
+- `public static Optional<String> find(Map<String, String> map, String key)` —
+  the value for `key`, or an empty Optional (never `null`) when the key is
+  missing
 - `public static int nameLength(Map<String, String> map, String key)` — the
-  length, or -1
+  length of the value for `key`, or -1 when it is missing. Build it from
+  `find`, mapping inside the Optional.
 - `public static Optional<String> firstNonBlank(Optional<String> a, Optional<String> b)`
-- `public static String requireValue(Optional<String> value)` — throws
-  `NoSuchElementException` when empty
-- `public static String orDefault(Optional<String> value, String fallback)`
+  — `a` if it holds a non-blank string, otherwise `b` if it does, otherwise
+  empty. A string of only spaces counts as blank, so `Optional.of("   ")` is
+  skipped just like an empty Optional.
+- `public static String requireValue(Optional<String> value)` — the value;
+  throws `NoSuchElementException` when empty
+- `public static String orDefault(Optional<String> value, String fallback)` —
+  the value, or `fallback` when empty

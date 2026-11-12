@@ -11,10 +11,18 @@ hints:
   - "`describeAnnotation` reads an element from the annotation instance: `m.getAnnotation(Marked.class).value()`."
 ---
 
+This lesson covers three features used far more by frameworks than by
+application code, which is exactly why they are worth understanding: they
+explain what JUnit, Spring and the serialisation libraries are doing to your
+classes. **Modules** control which packages other code may see,
+**annotations** attach information to code, and **reflection** lets a program
+inspect and call classes it has never seen before.
+
 ## Modules
 
-Java 9 added modules on top of packages. A module declares what it exposes and
-what it needs:
+Java 9 added modules on top of packages. A **module** is a named group of
+packages, described by a file called `module-info.java` at the root of the
+source tree. A module declares what it exposes and what it needs:
 
 ```java
 module com.example.app {
@@ -38,7 +46,12 @@ Three ideas worth having:
 
 ## Annotations
 
-An annotation is metadata attached to code. Declaring one:
+An **annotation** is metadata attached to code: a note that does nothing by
+itself, but that tools and frameworks can look for. You have written several
+already: `@Override` (for the compiler), `@Test` (for JUnit),
+`@FunctionalInterface`. An annotation is declared with `@interface`, and its
+**elements** look like methods with no body, optionally with a `default`.
+Declaring one:
 
 ```java
 @Retention(RetentionPolicy.RUNTIME)
@@ -59,7 +72,21 @@ The **retention policy** decides how long it survives:
 That default is the catch. An annotation you intend to read at runtime and
 forget to mark `RUNTIME` simply is not there, and nothing warns you.
 
+`@Retention` and `@Target` are themselves annotations, applied to the
+annotation's declaration (annotations about annotations are called
+**meta-annotations**). `@Target(ElementType.METHOD)` restricts where `Marked`
+may be written; putting it on a class would then be a compile error.
+
+Using it: `@Marked("first")` sets `value` to `"first"`. An element called
+`value` is special, in that it can be given without its name; any other
+element is written by name, `@Marked(label = "x")`. `@Marked` alone uses the
+default, here `""`.
+
 ## Reflection
+
+**Reflection** means a program examining its own structure while it runs:
+asking a class for its methods and fields, reading their annotations, and
+calling them, all by name rather than through code written in advance.
 
 ```java
 Class<?> type = obj.getClass();
@@ -67,6 +94,14 @@ type.getDeclaredMethods();
 method.isAnnotationPresent(Marked.class);
 method.invoke(obj, args);
 ```
+
+(Calls in sequence.) Every class is represented at run time by a `Class`
+object, from `obj.getClass()` or `SomeClass.class`; `Class<?>` means "a class
+object for some unknown class". Its `getDeclaredMethods()` returns `Method`
+objects, which can report their name (`getName()`), their annotations
+(`isAnnotationPresent`, `getAnnotation`), and be called with `invoke`.
+`getDeclaredMethod("one")` looks one up by name, and throws
+`NoSuchMethodException` if there is none.
 
 Reflection is how JUnit finds your `@Test` methods, how Spring wires beans, and
 how serialisers read fields. It costs performance, discards compile-time
@@ -114,16 +149,29 @@ public class Reflect {
 [a+Kept, b, c]
 ```
 
-`b` carries `@Dropped` in the source, and reflection cannot see it.
+`b` carries `@Dropped` in the source, and reflection cannot see it. `@Kept`
+has `RUNTIME` retention and is found on `a`; `@Dropped` has the default
+`CLASS` retention, so it was stored in the class file but never loaded, and
+`isAnnotationPresent` says `false`. The private `c` is listed, because
+`getDeclaredMethods` includes private methods.
 
 ## Your turn
 
 In `Meta.java`:
 
+Declare these inside the `Meta` class (the tests refer to `Meta.Marked` and
+`Meta.Sample`):
+
 - `@interface Marked` with a `String value() default ""`, retained at runtime,
   targeting methods
-- a class `Sample` with three methods, two of them `@Marked` (one with a value)
-- `public static List<String> methodsWith(Class<?> type)` — names of annotated
-  methods, sorted
+- `public static class Sample` with three public methods: `one()` marked
+  `@Marked("first")`, `two()` marked `@Marked` with no value, and `three()`
+  with no annotation
+- `public static List<String> methodsWith(Class<?> type)` — the names of the
+  type's declared methods that carry `@Marked`, sorted alphabetically (for
+  `Sample`, `["one", "two"]`); an empty list for a class with none, such as
+  `String`
 - `public static String describeAnnotation(Class<?> type, String methodName)` —
-  the annotation's value, or `"none"`
+  the annotation's value for that method, or `"none"` when the method has no
+  `@Marked`, when its value is the empty default, or when there is no method
+  of that name at all (catch `NoSuchMethodException`)

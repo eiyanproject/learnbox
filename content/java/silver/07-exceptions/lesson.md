@@ -11,9 +11,25 @@ hints:
   - "`closeOrder` uses try-with-resources with two resources - they are closed in REVERSE order of declaration, which is what the test checks."
 ---
 
+A method that cannot do its job, because a file is missing, a number will not
+parse, or an argument makes no sense, needs a way to say so that the caller
+cannot simply overlook. Java's answer is the **exception**: an object
+describing the problem, **thrown** at the point of failure. Throwing stops the
+method there, and the exception travels back up through the calls until some
+code **catches** it. If none does, the program stops and prints a **stack
+trace**, the list of method calls that led to the failure.
+
+Java is unusual in letting the compiler check some of this, which is what the
+"checked" in checked exceptions means. This lesson covers which exceptions
+are checked, the rules for catching them, and the guarantees `finally` and
+try-with-resources make about clean-up.
+
 ## The hierarchy
 
-```
+Every exception is an object of a class under `Throwable`, and the position
+in this tree decides the rules:
+
+```text
 Throwable
  ├── Error                    (OutOfMemoryError, StackOverflowError - do not catch)
  └── Exception
@@ -25,10 +41,87 @@ Throwable
 enforces it. **Unchecked** ones — anything under `RuntimeException`, plus
 `Error` — need neither.
 
+"Declared" means written in the method's header, which warns every caller:
+
+```java
+String firstLine(Path file) throws IOException {   // callers must deal with it
+    return Files.readAllLines(file).get(0);
+}
+```
+
+(A sketch of one method.) `Files.readAllLines` can throw the checked
+`IOException`. `firstLine` does not catch it, so it must list it after
+`throws`, and every method that calls `firstLine` then faces the same choice:
+catch it, or declare it too. Leave out both and the code does not compile:
+
+```text
+error: unreported exception IOException; must be caught or declared to be thrown
+```
+
+That is a **compile-time** error. Unchecked exceptions, by contrast, only
+ever show up at **run time**, when the bad line actually executes.
+
 The division is about intent: checked means "this can fail for reasons outside
-your control, deal with it"; unchecked means "this is a bug, fix the code".
+your control, deal with it"; unchecked means "this is a bug, fix the code". A
+missing file is not the programmer's fault, so `IOException` is checked; a
+`null` passed where an object was required is, so `NullPointerException` is
+not. `Error`s, such as running out of memory, are problems with the JVM itself
+that a program cannot sensibly recover from.
 
 ## try, catch, finally
+
+First, what happens with no handling at all. This program reads an age that
+is not a number:
+
+```text
+$ java Age.java
+Exception in thread "main" java.lang.NumberFormatException: For input string: "forty"
+	at java.base/java.lang.NumberFormatException.forInputString(NumberFormatException.java:67)
+	at java.base/java.lang.Integer.parseInt(Integer.java:529)
+	...
+	at Age.main(Age.java:3)
+```
+
+The exception was thrown inside `parseInt`, nothing caught it, so the
+program stopped there and printed a stack trace (Environment lesson 1 shows
+how to read one). The line after it, printing "next year", never ran.
+
+Wrapping the risky call in `try` and saying what to do in `catch` lets the
+program carry on. A print placed after the risky line, inside the `try`,
+shows exactly what is skipped:
+
+```java
+public class Age {
+    static void read(String text) {
+        try {
+            int age = Integer.parseInt(text);
+            System.out.println("parsed " + age);      // skipped if parseInt throws
+        } catch (NumberFormatException e) {
+            System.out.println("not a number: " + e.getMessage());
+        }
+        System.out.println("carrying on");
+    }
+
+    public static void main(String[] args) {
+        read("41");
+        read("forty");
+    }
+}
+```
+
+```output
+parsed 41
+carrying on
+not a number: For input string: "forty"
+carrying on
+```
+
+With `"41"` the whole `try` block ran and the `catch` was skipped. With
+`"forty"`, `parseInt` threw, the rest of the `try` block (the "parsed" line)
+was skipped, the `catch` ran, and then the program carried on after the whole
+statement either way.
+
+The full form has several catches and a `finally`:
 
 ```java
 try {
@@ -42,9 +135,29 @@ try {
 }
 ```
 
+(A sketch: `...` stands for handling code.) The steps:
+
+1. The `try` block runs.
+2. If it throws, the rest of the `try` block is skipped, and Java checks the
+   `catch` blocks from the top. The first one whose type matches the
+   exception (the same class or a parent of it) runs, and only that one.
+3. If no `catch` matches, the exception carries on up to the caller.
+4. `finally`, if present, runs last in every case: after a normal finish,
+   after a `catch`, and even when the exception is not caught at all.
+
+Inside a `catch`, `e` is the exception object; `e.getMessage()` is its
+message.
+
 Catch blocks are tried **in order**, and a broader type above a narrower one is
-a compile error — unreachable code. This is checked at compile time, which
-makes it a reliable exam question.
+a compile error — unreachable code. `FileNotFoundException` is a subclass of
+`IOException`, so a `catch (IOException e)` placed first would catch every
+`FileNotFoundException` too, and the block after it could never run:
+
+```text
+error: exception FileNotFoundException has already been caught
+```
+
+This is checked at compile time, which makes it a reliable exam question.
 
 Multi-catch handles unrelated types together:
 
@@ -52,14 +165,18 @@ Multi-catch handles unrelated types together:
 catch (NumberFormatException | ArithmeticException e)
 ```
 
-The variable is effectively final there, and the types may not overlap.
+The variable is effectively final there (it cannot be reassigned), and the
+types may not overlap: listing a class together with its own parent is a
+compile error, since the parent alone would already cover both.
 
 ## What finally guarantees
 
 `finally` runs whether or not an exception was thrown, **and even if the try
 block returns**. A `return` inside `finally` replaces the one from `try`,
 discarding the original — and discarding any in-flight exception with it, which
-is why it is considered a mistake rather than a technique.
+is why it is considered a mistake rather than a technique. (The one way to
+skip `finally` is to end the whole program, with `System.exit()`, before it
+runs.) `f()` and `g()` in the program below show both cases.
 
 ## try-with-resources
 
@@ -69,12 +186,20 @@ try (Scanner in = new Scanner(file); PrintWriter out = new PrintWriter(dest)) {
 }
 ```
 
-Anything implementing `AutoCloseable` is closed automatically, **in reverse
-order of declaration**, before any catch or finally runs. Resources are
+(A sketch: `file` and `dest` stand for real files.) Files, network
+connections and database connections are **resources**: they hold something
+from the operating system that must be handed back by calling `close()`, even
+when the code using them fails. The objects created in the brackets after
+`try` are closed for you when the block ends, however it ends.
+
+Anything implementing `AutoCloseable` (an interface with one method,
+`close()`) is closed automatically, **in reverse order of declaration**,
+before any catch or finally runs. Reverse order is deliberate: `out` was
+opened last and may depend on `in`, so it is closed first. Resources are
 implicitly final. This is strictly better than closing in `finally`, where an
 exception during close can mask the real one — here the close exception is
 *suppressed* and attached to the original, retrievable with
-`getSuppressed()`.
+`getSuppressed()`. You see the real failure, not a secondary one.
 
 ## The order, printed
 
@@ -127,16 +252,40 @@ catch boom
 finally
 ```
 
+Following it through:
+
+- `f()` reaches `return 1`, but before the method actually returns, `finally`
+  runs and prints its line. Then the 1 comes back and is printed.
+- `g()` throws, `finally` runs, and its `return 2` replaces the exception
+  entirely: `"lost"` is never seen. The `@SuppressWarnings("finally")` above
+  it silences the compiler's warning about exactly this.
+- In the `try`-with-resources, the body prints, then throws. Before the
+  `catch` runs, both resources are closed, `b` first because it was declared
+  last. Then the `catch` handles the exception, and `finally` runs last.
+
+`record Res(String name)` is a compact way of declaring a small class that
+holds a `name` (records are covered in the next lesson); here it is the
+simplest possible `AutoCloseable`.
+
 ## Your turn
 
 In `Safe.java`:
 
-- `public static int parseOrDefault(String s, int fallback)` — the parsed int,
-  or the fallback if it will not parse
-- `public static int divide(int a, int b)` — throws `ArithmeticException` when
-  `b` is zero
-- `public static String describe(Runnable action)` — runs it and returns
-  `"ok"`, `"bad argument"` for an `IllegalArgumentException`, or `"failed"` for
-  any other exception
+- `public static int parseOrDefault(String s, int fallback)` — the parsed int
+  (`Integer.parseInt(s)`), or the fallback if it will not parse. `"twelve"`,
+  the empty string and `null` all give the fallback: `parseInt` throws
+  `NumberFormatException` for each of them.
+- `public static int divide(int a, int b)` — `a / b` with integer division
+  (`divide(7, 2)` is 3); throws `ArithmeticException` when `b` is zero
+- `public static String describe(Runnable action)` — runs it (`action.run()`)
+  and returns `"ok"` if nothing is thrown, `"bad argument"` for an
+  `IllegalArgumentException`, or `"failed"` for any other exception. A
+  `Runnable` is an interface for "a piece of code to run", with one method,
+  `run()`; the tests pass lambdas such as `() -> Integer.parseInt("x")`.
+  `NumberFormatException` is a subclass of `IllegalArgumentException`, so
+  that one counts as `"bad argument"`.
 - `public static String closeOrder()` — uses try-with-resources with two
-  `AutoCloseable`s and returns the order they closed in, e.g. `"B,A"`
+  `AutoCloseable`s, named A and B and declared in that order, and returns the
+  order they closed in, which should be `"B,A"`. Each one's `close()` can
+  record its name, for example by appending it to a `StringBuilder` or a list
+  that the method reads afterwards.
