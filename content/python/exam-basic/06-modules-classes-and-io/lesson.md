@@ -49,7 +49,27 @@ class Shape:
 
 Reading `self.created` finds the class attribute; **assigning** `self.created`
 creates a separate instance attribute that shadows it. That distinction is the
-exam's favourite class question.
+exam's favourite class question:
+
+```pycon
+>>> class Counter:
+...     count = 0
+...
+>>> a, b = Counter(), Counter()
+>>> a.count += 1            # reads the class's 0, then assigns 1 to a itself
+>>> a.count, b.count, Counter.count
+(1, 0, 0)
+>>> Counter.count += 1      # changes the one shared value
+>>> a.count, b.count, Counter.count
+(1, 1, 1)
+```
+
+`a.count += 1` means `a.count = a.count + 1`. The right-hand side reads the
+class attribute (0), but the assignment creates a new attribute on `a` alone.
+From then on `a` has its own `count`, which hides the class's, and the class
+value never changed. Updating through the class name, `Counter.count += 1`,
+is the only way to change the shared value, and every instance without its
+own `count` sees it.
 
 ```python
 class Rect(Shape):
@@ -69,8 +89,48 @@ with open(path, "w", encoding="utf-8") as f:
 ```
 
 The `with` block closes the file even if the body raises. Modes: `"r"` read,
-`"w"` truncate, `"a"` append, `"x"` fail if it exists. `read()` gives the whole
-file, `readlines()` a list of lines **with** their newlines.
+`"w"` truncate (empty the file, or create it, then write), `"a"` append,
+`"x"` create, failing if it exists. `read()` gives the whole file,
+`readlines()` a list of lines **with** their newlines, and
+`read().splitlines()` a list of lines without them. `encoding="utf-8"` names
+how the text is stored as bytes; without it, Python uses the system's
+default, which differs between machines.
+
+```pycon
+>>> import os, tempfile
+>>> path = os.path.join(tempfile.mkdtemp(), "demo.txt")
+>>> with open(path, "w", encoding="utf-8") as f:
+...     _ = f.write("one\ntwo\n")
+...
+>>> with open(path, encoding="utf-8") as f:
+...     print(f.readlines())
+...
+['one\n', 'two\n']
+>>> with open(path, encoding="utf-8") as f:
+...     print(f.read().splitlines())
+...
+['one', 'two']
+```
+
+(`write` returns the number of characters written; `_ =` keeps the prompt
+from showing it.)
+
+Format specifications go after a colon inside an f-string's braces. `<`
+aligns left and `>` aligns right, the number after it is the column width,
+and `.1f` means one decimal place:
+
+```pycon
+>>> f"[{'ana':<6}]"
+'[ana   ]'
+>>> f"[{3.14159:>6.1f}]"
+'[   3.1]'
+>>> f"[{'verylongname':<6}]"     # too long: never cut, the column just grows
+'[verylongname]'
+```
+
+Rounding to one decimal follows the same rule as `round()`: an exact half
+goes to the even digit, so `9.25` (which is stored exactly in binary) shows
+as `9.2`, and `8.75` as `8.8`.
 
 ## Your turn
 
@@ -83,9 +143,12 @@ In `parts.py`:
   so that it has a name and is counted, and has an `area()` that works:
   `Rect(2, 3).area()` is `6`.
 - `save_lines(path, lines)` writes each item of the list as one line of the
-  file, and `load_lines(path)` reads them back as a list of strings with no
-  newline characters on the ends. What you load is what you saved.
+  file, each followed by a newline (`["a", "b"]` gives the file `"a\nb\n"`),
+  replacing anything the file held before. `load_lines(path)` reads them back
+  as a list of strings with no newline characters on the ends; an empty file
+  gives `[]`. What you load is what you saved. Use `encoding="utf-8"`.
 - `render(name, score)`: one line of a results table as a string: `name`
   left-aligned in a column 10 characters wide, immediately followed by
   `score` right-aligned in a column 6 wide, to one decimal place.
-  `render("ana", 9.25)` is `"ana          9.2"`.
+  `render("ana", 9.25)` is `"ana          9.2"`. A name longer than 10
+  characters is not cut; it pushes the score along.

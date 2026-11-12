@@ -11,9 +11,18 @@ hints:
   - "`parse_config` returns a `Config` `TypedDict` (`host: str`, `port: int`, `debug: bool`). Convert the port with `int(...)` and debug with `value.lower() in (\"1\", \"true\", \"yes\")`."
 ---
 
-Type hints describe what a function expects and returns. Python ignores them at
-runtime; tools use them: editors for completion, and type checkers such as
-`mypy` or `pyright` to find bugs before the code runs.
+Reading `def send(message, retries):`, you cannot tell whether `message` is
+a string, a dict or an object, or whether `retries` is a count or a flag. You
+have to read the body, or the documentation, or guess. **Type hints** write
+that information into the code itself: what a function expects and what it
+returns.
+
+Python ignores them at runtime: a wrong type is not an error when the code
+runs. Tools use them instead. Editors use them for autocompletion and inline
+warnings, and **type checkers** such as `mypy` or `pyright` read your whole
+program and report type mistakes, such as passing a `str` where an `int` is
+needed, before the code ever runs. On a large codebase, that catches a whole
+category of bugs for free.
 
 ```python
 def greet(name: str, times: int = 1) -> str:
@@ -25,26 +34,84 @@ scores: dict[str, float] = {}
 maybe: int | None = None
 ```
 
-Annotations are stored on the object: `greet.__annotations__`, or
-`typing.get_type_hints(greet)`.
+Reading the syntax:
+
+- `name: str` after a parameter means "this should be a `str`". A default
+  comes after the type: `times: int = 1`.
+- `-> str` before the colon is the type of the return value. A function that
+  returns nothing is `-> None`.
+- `count: int = 0` annotates a variable.
+- Square brackets say what a collection holds: `list[str]` is a list of
+  strings, and `dict[str, float]` a dict from strings to floats.
+- `int | None` means "an `int`, or `None`". Use it for anything that may be
+  missing.
+
+And Python really does not check them:
+
+```pycon
+>>> def greet(name: str, times: int = 1) -> str:
+...     return f"hi {name} " * times
+...
+>>> greet("ana", 2)
+'hi ana hi ana '
+>>> greet(42)           # wrong type, but Python runs it anyway
+'hi 42 '
+```
+
+A type checker would flag `greet(42)`; Python itself only stores the
+annotations on the function, where tools (and tests) can read them:
+
+```pycon
+>>> greet.__annotations__
+{'name': <class 'str'>, 'times': <class 'int'>, 'return': <class 'str'>}
+>>> import typing
+>>> typing.get_type_hints(greet)["times"]
+<class 'int'>
+```
+
+`typing.get_type_hints` is the more reliable of the two, because it also
+resolves annotations written as strings.
 
 ## The useful vocabulary
+
+The `typing` module (and `collections.abc`) provides names for the kinds of
+things functions commonly take:
 
 ```python
 from typing import Any, Callable, Iterable, Iterator, Literal, Sequence, TypeVar
 
-def total(xs: Iterable[float]) -> float: ...            # accept any iterable, not just list
+def total(xs: Iterable[float]) -> float: ...            # accept any iterable, not only list
 def apply(f: Callable[[int], str], x: int) -> str: ...
 Mode = Literal["r", "w", "a"]                            # only these values
 def open_file(path: str, mode: Mode = "r") -> None: ...
 ```
 
+(Signatures only: the `...` bodies stand for real code.)
+
+- `Iterable[float]`: anything you can loop over that gives floats: a list, a
+  tuple, a set, a generator.
+- `Sequence[T]`: something with a length and indexing, such as a list, tuple
+  or string.
+- `Callable[[int], str]`: a function that takes one `int` and returns a
+  `str`. The first part, in its own brackets, lists the argument types.
+- `Literal["r", "w", "a"]`: only these exact values are allowed.
+- `Any`: anything at all; the checker stops checking. Use it sparingly.
+- `Mode = Literal[...]` gives a type a name, a **type alias**, so it can be
+  reused and read easily.
+
 Accept the most general type you can (`Iterable`, `Sequence`, `Mapping`) and
-return the most specific one (`list[str]`).
+return the most specific one (`list[str]`). A function that only loops over
+its argument should say `Iterable`, so callers can pass a tuple or a
+generator, not only a list. A function that returns a list should say
+`list[str]`, so callers know they can index it, append to it and so on.
 
 ## Generics
 
-A `TypeVar` links types together: "whatever type goes in, that same type comes out":
+Some functions work on any type, but connect their types together. `last`
+returns an item of whatever sequence it was given. Writing `-> Any` would
+throw that information away. A `TypeVar` (type variable) is a placeholder
+that links types together: "whatever type goes in, that same type comes
+out":
 
 ```python
 T = TypeVar("T")
@@ -56,7 +123,12 @@ last([1, 2, 3])      # a checker knows this is int
 last("abc")          # and this is str
 ```
 
-Classes too:
+Each call fills in `T` from its argument. With a `list[int]`, `T` is `int`,
+so the checker knows the result is an `int` and can flag `last([1, 2]) + "x"`
+as a mistake.
+
+Classes can be generic too, by inheriting from `Generic[T]`. A `Box[int]` is
+then a box of ints, and its methods' `T` means `int`:
 
 ```python
 from typing import Generic
@@ -69,13 +141,34 @@ class Box(Generic[T]):
         return self.item
 ```
 
+```pycon
+>>> from typing import Generic, TypeVar
+>>> T = TypeVar("T")
+>>> class Box(Generic[T]):
+...     def __init__(self, item: T) -> None:
+...         self.item = item
+...     def get(self) -> T:
+...         return self.item
+...
+>>> b: Box[int] = Box(5)
+>>> b.get()
+5
+>>> Box[str]          # subscripting the class names a specialised type
+__main__.Box[str]
+```
+
 (Python 3.12 adds the shorter `def last[T](items: Sequence[T]) -> T` and
-`class Box[T]:` syntax.)
+`class Box[T]:` syntax, which creates the type variable for you.)
 
 ## Protocol: structural typing
 
-An ABC requires subclasses to inherit from it. A **Protocol** only requires the
-right methods. That matches how Python code is actually written ("duck typing"):
+An abstract base class (from the first lesson of this section) requires
+subclasses to inherit from it: a class is a `Storage` only if it says
+`class X(Storage)`. A **Protocol** only requires the right methods, whatever
+the class inherits from. This is called **structural typing**: a type is
+judged by its structure, the methods it has, not by its ancestry. That
+matches how Python code is actually written, often called **duck typing**
+("if it walks like a duck and quacks like a duck, it is a duck"):
 
 ```python
 from typing import Protocol, runtime_checkable
@@ -89,13 +182,37 @@ def shutdown(things: list[Closeable]) -> None:
         t.close()
 ```
 
-Files, sockets and your own classes all satisfy `Closeable` without knowing it
-exists. `@runtime_checkable` also allows `isinstance(x, Closeable)` (which
-checks only that the methods exist).
+`Closeable` says "anything with a `close()` method that returns nothing".
+Files, sockets and your own classes all satisfy `Closeable` without knowing
+it exists. That is the big advantage over an ABC: you can describe an
+interface for classes you did not write and cannot change.
+
+A protocol is mostly for type checkers. `@runtime_checkable` also allows
+`isinstance(x, Closeable)` at runtime, which checks only that the methods
+exist, not their arguments or return types:
+
+```pycon
+>>> from typing import Protocol, runtime_checkable
+>>> @runtime_checkable
+... class Closeable(Protocol):
+...     def close(self) -> None: ...
+...
+>>> class Door:
+...     def close(self) -> None:
+...         print("bang")
+...
+>>> isinstance(Door(), Closeable)    # Door never mentions Closeable
+True
+>>> isinstance(42, Closeable)        # ints have no close()
+False
+```
 
 ## TypedDict
 
-When data really is a dict (JSON, config), give it a shape:
+Some data really is a dict, and should stay one: parsed JSON, configuration,
+rows from an API. A plain `dict[str, Any]` says nothing about which keys it
+has. A `TypedDict` gives it a shape, a fixed set of keys, each with its own
+type:
 
 ```python
 from typing import TypedDict
@@ -105,18 +222,42 @@ class User(TypedDict):
     age: int
 ```
 
-At runtime it is a plain `dict`.
+A checker then knows `user["age"]` is an `int`, and flags `user["agee"]` as a
+missing key. At runtime it is a plain `dict`; the class only exists for the
+checker:
+
+```pycon
+>>> from typing import TypedDict
+>>> class User(TypedDict):
+...     name: str
+...     age: int
+...
+>>> u: User = {"name": "Ana", "age": 31}
+>>> type(u)
+<class 'dict'>
+```
 
 ## Your turn
 
-In `typed.py`, fully annotated:
+In `typed.py`, write the following, with **complete annotations**: every
+parameter (except `self`) and every return value of every function and
+method. A test checks this, and also checks the behaviour.
 
-- `first(items)`: the first item or `None`, generic over the item type
-- `Stack[T]`: `push`, `pop` (raises `IndexError` when empty), `peek` (or
-  `None`), `__len__`
-- `SupportsArea`: a runtime-checkable `Protocol` with `area() -> float`
-- `total_area(shapes)`: sum of areas of an iterable of `SupportsArea`
-- `Config`: a `TypedDict` with `host: str`, `port: int`, `debug: bool`
-- `parse_config(raw)`: from a `dict[str, str]` like `{"host": "x", "port": "80", "debug": "yes"}`
-
-The tests check behaviour and that every function and method has complete annotations.
+- `first(items)`: the first item, or `None` if `items` is empty. It works on
+  any sequence (`first("xy")` is `"x"`), and is generic over the item type:
+  annotate `items` as a sequence of a `TypeVar`.
+- `Stack[T]`: a generic class (inheriting from `Generic[T]`) with `push(item)`,
+  `pop()` (returns the most recently pushed item, and raises `IndexError` when
+  empty), `peek()` (the top item without removing it, or `None` when empty),
+  and `__len__`.
+- `SupportsArea`: a runtime-checkable `Protocol` with `area() -> float`, so
+  `isinstance(obj, SupportsArea)` is true for any object that has an `area`
+  method.
+- `total_area(shapes)`: the sum of the areas of an iterable of
+  `SupportsArea`; an empty iterable gives `0`.
+- `Config`: a `TypedDict` with `host: str`, `port: int`, `debug: bool`.
+- `parse_config(raw)`: build a `Config` from a `dict[str, str]` like
+  `{"host": "x", "port": "80", "debug": "yes"}`. The port becomes an `int`.
+  `debug` is `True` for `"1"`, `"true"` or `"yes"` in any mix of capitals
+  (`"Yes"` counts), `False` for anything else, and `False` when the key is
+  missing.

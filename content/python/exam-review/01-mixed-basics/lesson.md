@@ -37,17 +37,57 @@ cluster:
   write the branches in *is* the logic.
 - `%` with a positive divisor always gives a non-negative result.
 
+The string methods side by side:
+
+```pycon
+>>> raw = "  ada  LOVELACE "
+>>> raw.strip()                 # the ends only
+'ada  LOVELACE'
+>>> raw.split()                 # any run of spaces, empty pieces dropped
+['ada', 'LOVELACE']
+>>> raw.split(" ")              # single spaces: empty pieces kept
+['', '', 'ada', '', 'LOVELACE', '']
+>>> " ".join(raw.split())       # collapse every run to one space
+'ada LOVELACE'
+>>> "MCDONALD".title(), "ada lovelace".capitalize()
+('Mcdonald', 'Ada lovelace')
+```
+
+And the reason branch order matters, with a ladder of `<` checks:
+
+```pycon
+>>> def size(n):
+...     if n < 10:
+...         return "small"
+...     elif n < 100:         # only reached if n < 10 was false
+...         return "medium"
+...     return "large"
+...
+>>> size(5), size(50), size(500)
+('small', 'medium', 'large')
+```
+
+Each `elif` may assume every branch above it failed, so `n < 100` here
+really means "between 10 and 99". Swap the two checks and `size(5)` would
+say `"medium"`.
+
 ## Your turn
 
 In `review.py`:
 
-- `normalise_name(raw)`: trim surrounding whitespace and capitalise each word,
-  so `"  ada  LOVELACE "` becomes `"Ada Lovelace"`
+- `normalise_name(raw)`: trim surrounding whitespace, collapse any run of
+  spaces between words to a single space, and capitalise each word (first
+  letter upper case, the rest lower case), so `"  ada  LOVELACE "` becomes
+  `"Ada Lovelace"`. An empty string stays `""`.
 - `fizz_report(n)`: a list of strings for 1 through `n` — `"Fizz"` for
-  multiples of 3, `"Buzz"` for 5, `"FizzBuzz"` for both, otherwise the number
-  as a string
-- `initials(full_name)`: `"ada lovelace king"` becomes `"A.L.K."`, and an empty
-  string becomes `""`
-- `bmi_category(weight, height)`: `weight / height ** 2`, returning
-  `"underweight"` below 18.5, `"normal"` below 25, `"overweight"` below 30, and
-  `"obese"` at 30 or above
+  multiples of 3, `"Buzz"` for multiples of 5, `"FizzBuzz"` for multiples of
+  both, otherwise the number as a string (every item is a string, `"1"` not
+  `1`). `fizz_report(0)` is `[]`.
+- `initials(full_name)`: the first letter of each word, upper-cased, each
+  followed by a full stop: `"ada lovelace king"` becomes `"A.L.K."`,
+  `"plato"` becomes `"P."`, extra spaces between or around the words make no
+  difference, and an empty string becomes `""`.
+- `bmi_category(weight, height)`: work out `weight / height ** 2` (weight in
+  kilograms, height in metres), and return `"underweight"` below 18.5,
+  `"normal"` from 18.5 up to but not including 25, `"overweight"` from 25 up
+  to but not including 30, and `"obese"` at 30 or above.

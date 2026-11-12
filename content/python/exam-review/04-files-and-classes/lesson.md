@@ -7,7 +7,7 @@ run: python -i ledger.py
 hints:
   - "Give each `Ledger` its own list in `__init__` (`self.entries = []`). A list assigned in the class body would be shared by every ledger ever made - the same trap as a mutable default argument."
   - "`total` is `sum(amount for _, amount in self.entries)`. Summing an empty sequence gives `0`, which is the right answer for an empty ledger."
-  - "`top_spender`: total each name into a dict first, then `min`/`max` with a key. `max(totals.items(), key=lambda kv: (kv[1], [-ord(c) for c in kv[0]]))` is unreadable - sort instead, with `key=lambda kv: (-kv[1], kv[0])`, and take the first."
+  - "`top_spender`: total each name into a dict first. Then sort the `(name, total)` pairs with `key=lambda kv: (-kv[1], kv[0])` (highest total first, ties alphabetical) and take the first name. `max` with a key could find the highest total, but breaking the tie alphabetically inside `max` gets awkward."
   - "`load` is a `@classmethod`: it builds a new `Ledger`, calls `add` for each line, and returns it. Split each line on the comma and convert the amount with `float`."
 ---
 
@@ -30,7 +30,20 @@ class Right:
 ```
 
 This is the same bug as the mutable default argument, wearing a different hat,
-and it is just as popular in exams.
+and it is equally popular in exams:
+
+```pycon
+>>> class Wrong:
+...     entries = []
+...
+>>> a, b = Wrong(), Wrong()
+>>> a.entries.append("x")    # no assignment, so this finds the class's list
+>>> b.entries                # ...which b shares
+['x']
+```
+
+`a.entries.append(...)` does not assign to `a.entries`; it reads it, finds
+no list on `a` itself, falls back to the one on the class, and changes that.
 
 A `@classmethod` receives the class rather than an instance, which is how you
 write an alternative constructor:
@@ -61,6 +74,11 @@ In `ledger.py`, a `Ledger` class with:
 - `top_spender()`: the name whose entries add up to the most. If two names
   are level, the one that comes first alphabetically wins. `None` when the
   ledger is empty.
-- `save(path)`: write the entries to a file, one `name,amount` line each
+- `save(path)`: write the entries to a file, one `name,amount` line each, in
+  the order they were added, with the amount as Python prints it: an entry of
+  `("ana", 10)` and one of `("budi", 5.5)` give the lines `ana,10` and
+  `budi,5.5`. Saving replaces whatever the file held before.
 - `load(path)`: a **classmethod** that reads a file written by `save` and
-  returns a new `Ledger` holding the same entries
+  returns a new `Ledger` holding the same entries (convert each amount with
+  `float()`, since it comes back as text). Loading a file saved from an
+  empty ledger gives an empty ledger.

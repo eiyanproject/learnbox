@@ -11,11 +11,20 @@ hints:
   - "`done` with an unknown id: `print(f\"error: no task {args.id}\", file=sys.stderr)` and `return 1`. `list` sorts by `(-priority, id)` and prints `[x] 1 (p3) title` style lines."
 ---
 
-A command-line tool is a program whose interface is its arguments, standard
-streams and exit code. Getting those right makes it scriptable, testable and
-pleasant.
+A command-line tool is a program whose whole interface is three things: the
+**arguments** typed after its name (`git commit -m "fix"`), the **standard
+streams** it reads and writes (input from the keyboard or a pipe, output to
+the screen or a file), and the **exit code** it finishes with. Getting those
+three right is what makes a tool scriptable (other programs and shell
+scripts can drive it), testable, and pleasant to use. This lesson builds one
+properly.
 
 ## argparse
+
+`sys.argv` holds the raw arguments as a list of strings, but parsing them by
+hand (which ones are options, which take values, what is missing) gets messy
+fast. The standard library's `argparse` module does it from a description of
+what your tool accepts:
 
 ```python
 import argparse
@@ -34,12 +43,68 @@ def build_parser():
     return p
 ```
 
-You get `--help`, type conversion, `choices`, and useful error messages for
-free. `action="store_true"` makes flags; `nargs="+"` collects several values.
+What each line declares:
+
+- `ArgumentParser(prog=..., description=...)` creates the parser; `prog` is
+  the name shown in help and errors.
+- An argument name starting with `--` is an **option**: optional, and named
+  on the command line (`--file data.json`). One without dashes, like
+  `"text"`, is a **positional** argument: required, and identified by where
+  it appears.
+- `add_subparsers` creates **subcommands**, as in `git add` and
+  `git commit`: each has its own arguments. `dest="command"` stores which one
+  was used in `args.command`, and `required=True` makes choosing one
+  mandatory.
+- `type=int` converts the text to a number (and reports a clear error if it
+  is not one). `action="append"` lets an option be given several times,
+  collecting the values into a list.
+
+`parse_args(list_of_strings)` turns arguments into an object with one
+attribute per argument. Passing a list explicitly, instead of letting it read
+the real command line, is also how you try it out:
+
+```pycon
+>>> import argparse
+>>> def build_parser():
+...     p = argparse.ArgumentParser(prog="notes", description="Keep short notes.")
+...     p.add_argument("--file", default="notes.json", help="where notes are stored")
+...     sub = p.add_subparsers(dest="command", required=True)
+...     add = sub.add_parser("add", help="add a note")
+...     add.add_argument("text")
+...     add.add_argument("--tag", action="append", default=[])
+...     ls = sub.add_parser("list")
+...     ls.add_argument("--limit", type=int, default=10)
+...     return p
+...
+>>> args = build_parser().parse_args(["add", "buy milk", "--tag", "home", "--tag", "today"])
+>>> args.command, args.text, args.tag, args.file
+('add', 'buy milk', ['home', 'today'], 'notes.json')
+>>> build_parser().parse_args(["list", "--limit", "3"]).limit     # already an int
+3
+```
+
+You get `--help`, type conversion, `choices` (only certain values allowed),
+and useful error messages for free. Bad input makes argparse print a usage
+message and an error to stderr, then exit with status 2, which it does by
+raising `SystemExit`:
+
+```pycon
+>>> build_parser().parse_args(["list", "--limit", "many"])
+Traceback (most recent call last):
+  ...
+SystemExit: 2
+```
+
+On screen, that also prints
+`notes list: error: argument --limit: invalid int value: 'many'` (with a
+usage line above it). Two more options you will use often: `action="store_true"`
+makes an on/off flag, `False` unless it is given, and `nargs="+"` collects
+one or more values into a list.
 
 ## A testable main
 
-Put the logic in `main(argv=None)` and return an exit code:
+Put the logic in a `main(argv=None)` function and have it **return** an exit
+code, rather than doing the work at the top level of the file:
 
 ```python
 def main(argv=None):
@@ -52,40 +117,82 @@ if __name__ == "__main__":
     sys.exit(main())
 ```
 
-Tests can now call `main(["add", "buy milk"])` directly instead of spawning a
-process.
+`parse_args(None)` reads the real command line (`sys.argv[1:]`, everything
+after the program name), so running the script works as normal.
+`sys.exit(main())` passes the returned number to the operating system as the
+exit code. Under the `__main__` guard (the Modules lesson), none of this runs
+on import.
+
+The payoff is testing. Tests can now call `main(["add", "buy milk"])` directly
+with any arguments they like, and check the return value and the printed
+output, instead of starting a separate process each time.
 
 ## Exit codes and streams
 
-- `0` means success; anything else is failure. argparse uses `2` for usage
-  errors (it raises `SystemExit(2)`).
-- **stdout** is for results (what a user might pipe into another program).
-- **stderr** is for errors and diagnostics: `print("error: ...", file=sys.stderr)`.
-- Read from stdin when it makes sense: `for line in sys.stdin:`.
+Every process finishes with a small number, its **exit code**, which the
+shell and other programs can check:
 
-Being strict about this is what makes `tool list | grep urgent` and
-`if tool check; then ...` work.
+- `0` means success; anything else is failure. Tools often use different
+  numbers for different failures. argparse uses `2` for usage errors (it
+  raises `SystemExit(2)`).
+
+Every process also starts with three streams:
+
+- **stdout** (standard output) is for results: what a user might **pipe**
+  into another program with `|`. `print()` writes here.
+- **stderr** (standard error) is for errors and diagnostics:
+  `print("error: ...", file=sys.stderr)`. It still shows on the screen, but
+  is kept separate, so error messages are not mixed into piped results.
+- **stdin** (standard input) is where a program reads input from; read it
+  when it makes sense, with `for line in sys.stdin:`, so your tool can sit in
+  the middle of a pipeline.
+
+Being strict about this is what makes `tool list | grep urgent` work (only
+results go down the pipe; errors still reach the screen) and
+`if tool check; then ...` work (the shell's `if` tests the exit code).
+
+```console
+$ python todo_cli.py done 9; echo "exit code: $?"
+error: no task 9
+exit code: 1
+```
+
+(`$?` in the shell holds the exit code of the last command.)
 
 ## Packaging a CLI
 
-In a real project, `pyproject.toml` turns `main` into an installed command:
+In a real project, an entry in `pyproject.toml` (the standard project
+settings file) turns `main` into an installed command, so users can type
+`todo` instead of `python todo_cli.py`:
 
 ```toml
 [project.scripts]
 todo = "todo_cli:main"
 ```
 
+`"todo_cli:main"` means "the function `main` in the module `todo_cli`".
+Installing the project creates a small `todo` program that imports it, calls
+`main()`, and exits with whatever it returns.
+
 ## Your turn
 
-`todo_cli.py` is a to-do tool storing tasks in a JSON file (a list of
-`{"id", "title", "priority", "done"}`). Implement `main(argv=None)` with a
-global `--file` option (default `todo.json`) and subcommands:
+`todo_cli.py` is a to-do tool storing tasks in a JSON file: a list of
+objects like `{"id": 1, "title": "write tests", "priority": 2, "done": false}`.
+Implement `main(argv=None)` with a global `--file` option (default
+`todo.json`; it goes before the subcommand, as in
+`todo_cli.py --file x.json list`) and these subcommands:
 
-- `add TITLE [--priority 1|2|3]` (default 2): ids start at 1 and increase;
-  print `added <id>`
-- `list [--all]`: undone tasks only unless `--all`, sorted by priority (high
-  first) then id, one per line as `[ ] 2 (p3) write tests` (`[x]` when done)
-- `done ID`: mark done and print `done <id>`; an unknown id prints
-  `error: no task <id>` to **stderr** and returns `1`
+- `add TITLE [--priority 1|2|3]` (default 2): ids start at 1 and increase by
+  one for each new task; save the task as not done, and print `added <id>`.
+  Any other priority, such as 5, must make argparse exit with status 2.
+- `list [--all]`: undone tasks only, unless `--all` is given; sorted by
+  priority (3, the highest, first) and then by id; one per line as
+  `[ ] 2 (p3) write tests`, that is, the box (`[x]` when done), the id, the
+  priority as `p` plus its number in brackets, and the title.
+- `done ID`: mark the task done and print `done <id>`. An unknown id prints
+  `error: no task <id>` to **stderr**, prints nothing to stdout, and returns
+  `1`.
 
-Return `0` on success. Invalid arguments (such as priority 5) must exit with status `2`.
+Return `0` on success. Running with no subcommand at all must also exit with
+status `2`. A file that does not exist yet means an empty list. A test also
+runs the file as a real script, so keep the `sys.exit(main())` guard.

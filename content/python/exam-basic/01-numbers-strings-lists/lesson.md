@@ -44,7 +44,25 @@ Floor division floors **towards negative infinity**, not towards zero:
 | `-7 % 2` | `1` | the sign follows the **divisor** |
 
 The identity `a == (a // b) * b + a % b` holds for every pair, which is the
-reason for both oddities.
+reason for both oddities. Python first decides that `//` rounds down, towards
+minus infinity, so `-7 / 2 = -3.5` becomes `-4`. The remainder then has to be
+whatever makes the identity true: `-4 * 2` is `-8`, and getting from `-8`
+back to `-7` takes `+1`, so `-7 % 2` is `1`. With a negative divisor
+everything flips: `7 // -2` is `-4` and `7 % -2` is `-1`, because
+`-4 * -2 + -1` is `7`.
+
+```pycon
+>>> -7 // 2, -7 % 2
+(-4, 1)
+>>> 7 // -2, 7 % -2
+(-4, -1)
+>>> (-7 // 2) * 2 + (-7 % 2)      # the identity gives back -7
+-7
+```
+
+(Some other languages, C and Java among them, round towards zero instead, so
+`-7 / 2` is `-3` there and the remainder is `-1`. That difference is exactly
+what the exam tests.)
 
 ## Strings are immutable, and slices are forgiving
 
@@ -66,7 +84,27 @@ reason for both oddities.
 
 `word[0] = "J"` raises `TypeError` — strings cannot be changed in place. But
 indexing out of range raises `IndexError` while **slicing out of range does
-not**: `word[10:20]` is just `''`. One raises, the other shrugs.
+not**: `word[10:20]` is `''`, an empty string. One raises, the other shrugs:
+
+```pycon
+>>> word[0] = "J"
+Traceback (most recent call last):
+  ...
+TypeError: 'str' object does not support item assignment
+>>> word[10]
+Traceback (most recent call last):
+  ...
+IndexError: string index out of range
+>>> word[10:20]
+''
+>>> word[:10]        # asking for more than there is gives what there is
+'Python'
+>>> word[::2]        # a step of 2: positions 0, 2, 4
+'Pto'
+```
+
+The last line is the third slice number, the **step**. `[::2]` takes every
+second character from the start, and `[::-1]` walks backwards from the end.
 
 ## Lists are the mutable counterpart
 
@@ -79,7 +117,26 @@ Everything above works on lists, and slices can also be assigned:
 [1, 0, 0, 5]
 ```
 
+Assigning to a slice replaces that whole stretch of the list with the new
+items, however many there are, so the list can grow or shrink. Assigning to a
+single index replaces exactly one item and never changes the length.
+
 A nested list is a list of lists, and `matrix[1][2]` reads row 1, column 2.
+
+One classic trap: `[[0] * 3] * 2` looks like a 2 by 3 grid, but `* 2`
+repeats the **same** inner list twice instead of making two lists. Changing
+one row changes "both":
+
+```pycon
+>>> grid = [[0] * 3] * 2
+>>> grid[0][0] = 9
+>>> grid                       # both rows are one list
+[[9, 0, 0], [9, 0, 0]]
+>>> grid = [[0] * 3 for _ in range(2)]   # a new inner list per row
+>>> grid[0][0] = 9
+>>> grid
+[[9, 0, 0], [0, 0, 0]]
+```
 
 ## Your turn
 
@@ -88,14 +145,19 @@ In `basics.py`:
 - `arithmetic_facts(a, b)`: a dict with keys `quotient`, `floor`, `remainder`
   and `power`, holding `a / b`, `a // b`, `a % b` and `a ** b`.
   `arithmetic_facts(7, 2)` is
-  `{"quotient": 3.5, "floor": 3, "remainder": 1, "power": 49}`.
+  `{"quotient": 3.5, "floor": 3, "remainder": 1, "power": 49}`. The tests
+  include negative numbers, where Python's own operators already give the
+  right answers, so use them directly.
 - `slice_word(word)`: a tuple of four slices of the word, in this order: its
   first three characters, its last three, the whole word reversed, and every
   second character starting with the first. `slice_word("python")` is
-  `("pyt", "hon", "nohtyp", "pto")`.
+  `("pyt", "hon", "nohtyp", "pto")`. It must not fail on short words:
+  `slice_word("hi")` is `("hi", "hi", "ih", "h")`.
 - `replace_slice(values)`: replace the items at indexes 1, 2 and 3 of the
   list with two zeros. Change the list you were given and return that same
   list, not a copy: `[10, 11, 12, 13, 14]` becomes `[10, 0, 0, 14]`.
 - `build_matrix(rows, cols)`: a list of `rows` lists, each `cols` long,
   numbered row by row from 0, so that `matrix[r][c] == r * cols + c`.
-  `build_matrix(2, 3)` is `[[0, 1, 2], [3, 4, 5]]`.
+  `build_matrix(2, 3)` is `[[0, 1, 2], [3, 4, 5]]`. Each row must be a
+  separate list (a test changes one row and checks the others did not
+  change), so avoid the `* rows` trap above.

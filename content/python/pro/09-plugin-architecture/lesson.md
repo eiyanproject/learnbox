@@ -11,15 +11,41 @@ hints:
   - "`run_pipeline(text, plugins, order)`: `for name in order: text = plugins[name].transform(text)`; an unknown name raises `KeyError`."
 ---
 
-Many programs are extended by dropping a file into a folder: editors, static
-site generators, test runners, CI tools. The host program **discovers** the
-files, **loads** them as modules, checks they provide what it expects, and
-keeps going if one of them is broken.
+Many programs are extended by dropping a file into a folder: editors,
+static site generators, test runners, CI tools. Nobody edits the program
+itself; it notices the new file and picks up what it offers. This is a
+**plugin architecture**. The host program **discovers** the files, **loads**
+them as modules while it runs, checks they provide what it expects, and keeps
+going if one of them is broken.
+
+Each of those steps uses something from earlier in the course: paths from
+the Files lesson, modules from Modules and packages, protocols from Type
+hints, and exception handling at a boundary. This lesson puts them together.
+
+## Discovering plugins
+
+Discovery is a directory listing. `Path.glob("*.py")` finds every file in a
+folder matching a pattern, here every `.py` file. Files whose names start
+with `_`, such as `__init__.py` or `_helpers.py`, are conventionally private
+and skipped. Sorting the result makes the load order the same on every
+machine, since the operating system lists files in no guaranteed order:
+
+```pycon
+>>> from pathlib import Path
+>>> import tempfile
+>>> folder = Path(tempfile.mkdtemp())            # an empty scratch folder
+>>> for name in ["b.py", "a.py", "_private.py", "notes.txt"]:
+...     _ = (folder / name).write_text("")
+...
+>>> sorted(p.name for p in folder.glob("*.py") if not p.name.startswith("_"))
+['a.py', 'b.py']
+```
 
 ## Loading a module from a path
 
-`import` needs a module on `sys.path`. To load an arbitrary file, use
-`importlib` directly:
+`import name` only finds modules in the folders on `sys.path` (the Modules
+lesson), and the name must be known when you write the code. To load an
+arbitrary file, chosen while the program runs, use `importlib` directly:
 
 ```python
 import importlib.util
@@ -32,17 +58,44 @@ def load_module(path: Path):
     return module
 ```
 
-For modules that **are** importable by name (installed packages, a package
-directory on `sys.path`), `importlib.import_module("myapp.plugins.csv")` is simpler.
+The three steps are what `import` does internally, done by hand:
 
-Installed packages advertise plugins through **entry points**
-(`importlib.metadata.entry_points(group="myapp.plugins")`), which is how pytest
-finds its plugins.
+1. `spec_from_file_location(name, path)` creates a **module spec**: a
+   description of the module to load, with the name it will have and where
+   its code is. The name here is `plugins.` plus the file's stem (its name
+   without `.py`).
+2. `module_from_spec(spec)` creates a new, empty module object.
+3. `spec.loader.exec_module(module)` runs the file's code inside that module,
+   top to bottom, the way an import would. Whatever the file defines becomes
+   an attribute of the module.
+
+```pycon
+>>> _ = (folder / "answer.py").write_text("VALUE = 6 * 7\n")
+>>> import importlib.util
+>>> spec = importlib.util.spec_from_file_location("plugins.answer", folder / "answer.py")
+>>> module = importlib.util.module_from_spec(spec)
+>>> spec.loader.exec_module(module)
+>>> module.VALUE
+42
+```
+
+Because the file is run, every error in it surfaces at step 3: a syntax
+error, or an exception raised by its top-level code.
+
+For modules that **are** importable by name (installed packages, a package
+directory on `sys.path`), `importlib.import_module("myapp.plugins.csv")` is
+simpler: it is `import` with the name given as a string.
+
+Installed packages advertise plugins through **entry points**: a package
+declares in its `pyproject.toml` "I provide a plugin for `myapp`", and the
+host lists them with `importlib.metadata.entry_points(group="myapp.plugins")`.
+That is how pytest finds its plugins, without any of them living in one
+shared folder.
 
 ## Defining the contract
 
-Tell plugin authors exactly what to provide. A `Protocol` documents it and lets
-you check it at runtime:
+Tell plugin authors exactly what to provide. A `Protocol` documents it and
+lets you check it at runtime:
 
 ```python
 from typing import Protocol, runtime_checkable
@@ -53,14 +106,41 @@ class TextPlugin(Protocol):
     def transform(self, text: str) -> str: ...
 ```
 
-Each plugin module exposes a `plugin` object that satisfies it. `isinstance`
-with a runtime-checkable protocol checks the attributes and methods exist; it
-cannot check signatures, so validate what matters.
+The contract in words: each plugin module exposes an object called `plugin`,
+which has a `name` attribute (a string) and a `transform` method that takes
+text and returns text. Plugins do not need to import or inherit anything from
+the host; matching the shape is enough (structural typing, from the Type
+hints lesson).
+
+`isinstance(obj, TextPlugin)` with a runtime-checkable protocol checks that
+the attributes and methods **exist**. It cannot check signatures or types,
+so a `transform` that takes the wrong arguments still passes; validate what
+matters to you separately:
+
+```pycon
+>>> from typing import Protocol, runtime_checkable
+>>> @runtime_checkable
+... class TextPlugin(Protocol):
+...     name: str
+...     def transform(self, text: str) -> str: ...
+...
+>>> class Upper:
+...     name = "upper"
+...     def transform(self, text):
+...         return text.upper()
+...
+>>> isinstance(Upper(), TextPlugin)
+True
+>>> isinstance("not a plugin", TextPlugin)      # a str has no transform
+False
+```
 
 ## Failure isolation
 
-Loading a plugin runs someone else's code. It can have syntax errors, raise at
-import, or provide the wrong thing. None of that should stop the application:
+Loading a plugin runs someone else's code. It can have syntax errors, raise
+at import, or provide the wrong thing. None of that should stop the
+application: one broken plugin should mean one missing feature and a clear
+message, not a program that refuses to start.
 
 ```python
 errors = {}
@@ -70,28 +150,58 @@ except Exception as e:           # deliberately broad: this is a boundary
     errors[path.stem] = f"{type(e).__name__}: {e}"
 ```
 
-Catching broadly is right **at a boundary** like this, as long as the failure
-is recorded and reported, not swallowed.
+Elsewhere in this course the advice has been to catch the specific exception
+you expect. Here you cannot know what to expect: a plugin can fail in any
+way at all. Catching broadly is right **at a boundary** like this, where your
+code meets code you do not control, as long as the failure is recorded and
+reported, not swallowed. `except Exception` still lets Ctrl+C through, which
+derives from `BaseException`. Recording `type(e).__name__` along with the
+message gives errors like `RuntimeError: boom at import`, which tell the
+plugin's author both what kind of failure it was and why.
+
+```pycon
+>>> _ = (folder / "raises.py").write_text("raise RuntimeError('boom at import')\n")
+>>> spec = importlib.util.spec_from_file_location("plugins.raises", folder / "raises.py")
+>>> try:
+...     spec.loader.exec_module(importlib.util.module_from_spec(spec))
+... except Exception as e:
+...     print(f"{type(e).__name__}: {e}")
+...
+RuntimeError: boom at import
+```
 
 ## Security note
 
-Loading a plugin executes arbitrary code with your program's permissions. Only
-load plugins from locations you control. There is no sandboxing a Python module
-from inside Python.
+Loading a plugin executes arbitrary code with your program's permissions: it
+can read and delete your files, open network connections, anything your
+program could do. Only load plugins from locations you control. There is no
+sandboxing a Python module from inside Python; if untrusted code must run,
+it needs a separate, restricted process or machine.
 
 ## Your turn
 
-The workspace has `loader.py` and a `plugins/` folder (the tests add a few
-plugins of their own, including broken ones).
+The workspace has `loader.py` and a `plugins/` folder. The tests add
+folders of their own, with plugins that work and plugins broken in each of
+the ways above.
 
 - `TextPlugin`: a runtime-checkable `Protocol` with `name: str` and
-  `transform(text) -> str`
-- `discover(folder)`: sorted `.py` paths in the folder, skipping names starting with `_`
-- `load_module(path)`: load one file as a module with `importlib.util`
-- `load_plugins(folder)`: returns `(plugins, errors)`: a dict from
-  `plugin.name` to the plugin object, and a dict from file stem to an error
-  string for files that failed to load, lack a `plugin` attribute, or whose
-  `plugin` does not satisfy `TextPlugin`
-- `run_pipeline(text, plugins, order)`: apply plugins in the given order
-- finish `plugins/shout.py` (name `"shout"`, upper-cases and adds `!`) and
-  `plugins/reverse.py` (name `"reverse"`, reverses the text)
+  `transform(text) -> str`.
+- `discover(folder)`: the sorted `.py` paths in the folder, skipping names
+  that start with `_` (and any file that is not `.py`).
+- `load_module(path)`: load one file as a module with `importlib.util`, and
+  return the module.
+- `load_plugins(folder)`: returns two dicts, `(plugins, errors)`. `plugins`
+  maps each `plugin.name` to the plugin object. `errors` maps a file's stem
+  to an error string for every file that failed to load, has no `plugin`
+  attribute, or whose `plugin` does not satisfy `TextPlugin`. For a file that
+  raised, the string starts with the exception's class name and contains its
+  message, such as `"RuntimeError: boom at import"`; a syntax error gives a
+  string starting with `SyntaxError`. A broken file must not stop the others
+  from loading.
+- `run_pipeline(text, plugins, order)`: apply the plugins named in `order`,
+  one after another, each to the result of the one before, and return the
+  final text. An empty `order` returns the text unchanged; an unknown name
+  raises `KeyError`.
+- finish `plugins/shout.py` (name `"shout"`: upper-cases the text and adds
+  `!`) and `plugins/reverse.py` (name `"reverse"`: reverses the text). So
+  `"hello"` through `["reverse", "shout"]` gives `"OLLEH!"`.

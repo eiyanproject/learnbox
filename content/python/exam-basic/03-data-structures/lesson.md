@@ -30,8 +30,11 @@ None
 ```
 
 `sort`, `reverse`, `append`, `extend`, `insert`, `remove` all return `None`.
-`pop` is the exception: it returns the item it removed. `x = values.sort()`
-leaving `x` as `None` is a classic exam question.
+They change the list itself, and returning `None` is Python's way of
+reminding you that no new list was made. `pop` is the exception: it returns
+the item it removed. `x = values.sort()` leaving `x` as `None` is a classic
+exam question. (`print()` was needed above because the `>>>` prompt shows
+nothing at all for `None`.)
 
 | Method | Returns |
 | --- | --- |
@@ -40,6 +43,24 @@ leaving `x` as `None` is a classic exam question.
 | `pop()`, `pop(i)` | the removed item |
 | `index(x)`, `count(x)` | an int |
 | `copy()` | a **shallow** copy |
+
+A **shallow** copy is a new outer list holding the *same* items. For numbers
+and strings that makes no difference, because they cannot change. For a list
+of lists, the inner lists are shared, so changing one through the copy
+changes it in the original too:
+
+```pycon
+>>> grid = [[1, 2], [3, 4]]
+>>> dup = grid.copy()
+>>> dup.append([5, 6])         # the outer lists are separate...
+>>> len(grid), len(dup)
+(2, 3)
+>>> dup[0].append(99)          # ...but the inner lists are shared
+>>> grid[0]
+[1, 2, 99]
+```
+
+`copy.deepcopy()`, from the `copy` module, copies the inner lists as well.
 
 ## Sets are algebra
 
@@ -66,23 +87,42 @@ for i, item in enumerate(values, start=1): ...
 for a, b in zip(names, scores): ...
 ```
 
-`zip` stops at the **shorter** input. `dict.get(key, default)` returns the
+(Loop headers only; `...` stands for the body.) `items()` gives key and value
+pairs, `enumerate` gives a position with each item (from 0 unless you pass
+`start`), and `zip` walks two sequences side by side:
+
+```pycon
+>>> list(enumerate(["a", "b"], start=1))
+[(1, 'a'), (2, 'b')]
+>>> list(zip(["ana", "bo", "cy"], [90, 70]))      # stops at the shorter one
+[('ana', 90), ('bo', 70)]
+>>> ages = {"ana": 31}
+>>> ages.get("bo", 0)              # missing: the default, no error
+0
+>>> ages.setdefault("bo", []), ages
+([], {'ana': 31, 'bo': []})
+```
+
+`zip` stops at the **shorter** input, silently dropping the rest; `cy` has
+no score, so it is left out. `dict.get(key, default)` returns the
 default instead of raising; `dict[key]` raises `KeyError`.
 `setdefault(key, default)` returns the value, inserting the default first if
-the key was missing.
+the key was missing, so after it `bo` is in the dict.
 
 ## Your turn
 
 In `structures.py`:
 
-- `dedupe(values)`: the values with duplicates removed, keeping each value
-  where it **first** appeared: `[3, 1, 3, 2, 1]` gives `[3, 1, 2]`
+- `dedupe(values)`: a new list of the values with duplicates removed, keeping
+  each value where it **first** appeared: `[3, 1, 3, 2, 1]` gives `[3, 1, 2]`.
+  Do not change the list you are given. (`list(set(values))` loses the order,
+  because sets have none.)
 - `invert(mapping)`: a dict from each value to the list of keys that had it.
   `{"a": 1, "b": 1, "c": 2}` gives `{1: ["a", "b"], 2: ["c"]}`, with each
   list in sorted order.
 - `rank_scores(scores)`: `scores` is a dict of name to score. Return a list of
   `(rank, name, score)` tuples, highest score first. Equal scores go in
-  alphabetical order of name, and still get different ranks: the rank is just
+  alphabetical order of name, and still get different ranks: the rank is
   the position in the list, starting at 1.
   `{"bo": 70, "ana": 90, "cy": 70}` gives
   `[(1, "ana", 90), (2, "bo", 70), (3, "cy", 70)]`.

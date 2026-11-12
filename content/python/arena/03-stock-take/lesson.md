@@ -36,15 +36,20 @@ Return a tuple of three things:
 3. **a list of the line numbers that were skipped**, counting from 1, in
    order.
 
+Spaces around each part do not matter: `" WIDGET ,1,2.50"` is a good line.
+
 Skip a line, and record its number, when any of these is true:
 
 - it does not have exactly three parts
 - the name is empty
-- the quantity is not a whole number, or is negative
-- the price is not a number, or is negative
+- the quantity is not a whole number (`1.5`, `two` or nothing at all), or is
+  negative; zero is fine
+- the price is not a number, or is negative; zero is fine
 
-Blank lines and lines starting with `#` are comments: ignore them without
-recording them as skipped. They still count when numbering lines.
+Blank lines (including lines of only spaces) and lines starting with `#` are
+comments: ignore them without recording them as skipped. They still count
+when numbering lines. A skipped line adds nothing to the quantities or the
+total.
 
 ```text
 stock_take([
@@ -56,3 +61,10 @@ stock_take([
 ])
 ->  ({"widget": 5, "gadget": 1}, 22.5, [4])
 ```
+
+Line 1 is 4 widgets at 2.50 (10.00). Line 2 is a comment. Line 3 is one
+gadget at 10 (10.00). Line 4 is skipped, because `two` is not a number. Line
+5 is one more widget at 2.50 (2.50), and its name is `widget` once stripped
+and lower-cased. So there are 5 widgets and 1 gadget, worth 22.50 in all, and
+only line 4 was skipped. With no lines at all, the result is
+`({}, 0.0, [])`.

@@ -14,8 +14,15 @@ hints:
 ## @dataclass
 
 You wrote `__init__`, `__repr__` and `__eq__` by hand in the Classes lesson.
-For classes that mainly hold data, `dataclasses` generates them from type
-annotations:
+For a class that mainly holds data, those methods are always the same shape:
+store each argument, show each field, compare each field. Writing them out is
+repetitive and easy to get subtly wrong, for example by adding a field and
+forgetting to add it to `__eq__`. The `dataclasses` module generates them
+for you from a list of the fields.
+
+Each field is written as a **type annotation**: a name, a colon, and the type
+the field should hold, optionally followed by `=` and a default. The
+`@dataclass` decorator reads those lines and writes the methods:
 
 ```pycon
 >>> from dataclasses import dataclass, field
@@ -33,49 +40,136 @@ Book(title='Dune', author='Herbert', pages=412, tags=[])
 True
 ```
 
+What you got without writing them: an `__init__` that takes the fields in
+order (`pages` and `tags` are optional because they have defaults), a
+`__repr__` that shows every field by name, and an `__eq__` that compares all
+the fields. `list[str]` means "a list of strings"; the square brackets say
+what the list holds.
+
 - The annotations define the fields, in order. Fields with defaults must come
-  after fields without.
-- The annotation is not enforced at runtime. `Book(1, 2, "x")` works; it is
-  documentation, and a type checker's input.
-- Never write `tags: list = []`: dataclasses refuse it, for the same
-  mutable-default reason as functions. Use `field(default_factory=list)`.
+  after fields without, for the same reason as function parameters with
+  defaults.
+- The annotation is not enforced at runtime. Python does not check that
+  `title` really is a `str`; the annotations are documentation, and the input
+  for a **type checker** (a separate tool, such as mypy, that reads your code
+  and reports type mistakes before you run it):
+
+  ```pycon
+  >>> Book(1, 2, "x")          # accepted, although none of these types match
+  Book(title=1, author=2, pages='x', tags=[])
+  ```
+
+- Never write `tags: list[str] = []`. A plain `[]` default would be one list
+  shared by every `Book`, the mutable-default trap from the Functions lesson,
+  and dataclasses refuse it outright:
+
+  ```pycon
+  >>> @dataclass
+  ... class Bad:
+  ...     tags: list = []
+  ...
+  Traceback (most recent call last):
+    ...
+  ValueError: mutable default <class 'list'> for field tags is not allowed: use default_factory
+  ```
+
+  Use `field(default_factory=list)` instead. `default_factory` takes a
+  function, which is called to make a fresh default for each new object, the
+  same idea as `defaultdict(list)`.
 
 ## Options
+
+`@dataclass` takes arguments that switch on extra behaviour:
 
 ```python
 @dataclass(frozen=True)     # immutable: assigning a field raises; instances are hashable
 @dataclass(order=True)      # <, <=, >, >= compare fields as a tuple, in order
-@dataclass(slots=True)      # smaller, faster instances (see the Advanced track)
+@dataclass(slots=True)      # smaller, faster instances (see the Advanced section)
 ```
 
-`field()` tunes single fields: `field(compare=False)`, `field(repr=False)`,
-`field(init=False)`.
+(These are three separate options, shown one per line; you can combine them
+in one call, such as `@dataclass(frozen=True, order=True)`.)
+
+**Frozen** instances cannot be changed after they are created. Because they
+cannot change, they are **hashable**: they can be used as dict keys and
+stored in sets, like tuples and strings. **Ordered** instances can be sorted,
+comparing the first field, then the second on a tie, and so on:
+
+```pycon
+>>> from dataclasses import FrozenInstanceError
+>>> @dataclass(frozen=True, order=True)
+... class Version:
+...     major: int
+...     minor: int
+...
+>>> v = Version(1, 4)
+>>> v.minor = 5
+Traceback (most recent call last):
+  ...
+dataclasses.FrozenInstanceError: cannot assign to field 'minor'
+>>> sorted([Version(2, 0), Version(1, 9), Version(1, 10)])
+[Version(major=1, minor=9), Version(major=1, minor=10), Version(major=2, minor=0)]
+>>> {Version(1, 4): "stable"}[v]       # usable as a dict key
+'stable'
+```
+
+Note that 1.10 sorts after 1.9 here, because the fields are compared as
+numbers, which is what you want for version numbers and would not get from
+comparing strings.
+
+`field()` tunes single fields:
+
+- `field(compare=False)` leaves the field out of `==` and of the ordering.
+- `field(repr=False)` leaves it out of the printed `repr`.
+- `field(init=False)` leaves it out of `__init__`, so it cannot be passed in;
+  something else, usually `__post_init__`, must set it.
 
 ## __post_init__
 
-Runs after the generated `__init__`: validate, or compute derived fields.
+The generated `__init__` only stores the arguments. If you need more, such
+as checking that the values make sense or working out a field from the
+others, write a `__post_init__` method. The generated `__init__` calls it as
+its last step:
 
-```python
-@dataclass
-class Temperature:
-    celsius: float
-    fahrenheit: float = field(init=False)
-
-    def __post_init__(self):
-        if self.celsius < -273.15:
-            raise ValueError("below absolute zero")
-        self.fahrenheit = self.celsius * 9 / 5 + 32
+```pycon
+>>> @dataclass
+... class Temperature:
+...     celsius: float
+...     fahrenheit: float = field(init=False)
+...
+...     def __post_init__(self):
+...         if self.celsius < -273.15:
+...             raise ValueError("below absolute zero")
+...         self.fahrenheit = self.celsius * 9 / 5 + 32
+...
+>>> Temperature(100)
+Temperature(celsius=100, fahrenheit=212.0)
+>>> Temperature(-300)
+Traceback (most recent call last):
+  ...
+ValueError: below absolute zero
 ```
 
-For a frozen dataclass, `__post_init__` has to use
-`object.__setattr__(self, "name", value)`.
+`fahrenheit` has `init=False`, so `Temperature(100)` takes only the Celsius
+value, and `__post_init__` fills in the other.
 
-Frozen instances are "changed" by making a copy: `dataclasses.replace(p, x=5)`.
+For a frozen dataclass, normal assignment in `__post_init__` raises, the same
+as anywhere else, because the object is already frozen by then. It has to use
+`object.__setattr__(self, "name", value)`, which goes around the dataclass's
+block on assignment. Use it only there, while setting the object up.
+
+Frozen instances are "changed" by making a modified copy:
+`dataclasses.replace(v, minor=5)` returns a new `Version(1, 5)` and leaves
+`v` alone, like `_replace` on a namedtuple.
 
 ## Enum
 
-An **enum** names a fixed set of choices, so typos become errors instead of
-silent bugs:
+Many values can only be one of a few fixed choices: an order's status, a
+day of the week, a priority. You could use strings, but `status == "publshed"`
+with a typo is silently false, and nothing stops `"pubished"` being stored.
+An **enum** (short for enumeration) names a fixed set of choices as members
+of a class, so a typo becomes an immediate `AttributeError` instead of a
+silent bug:
 
 ```pycon
 >>> from enum import Enum, auto
@@ -99,7 +193,39 @@ True
 [<Status.DRAFT: 1>, <Status.PUBLISHED: 2>, <Status.ARCHIVED: 3>]
 ```
 
-`IntEnum` members also behave as ints; `StrEnum` members as strings.
+Each member has a **name** (`DRAFT`) and a **value** (`1`). `auto()` picks
+the values for you, counting from 1, when the exact numbers do not matter;
+you can also write values yourself, such as `DRAFT = 1`. Members are written
+in capitals by convention, because they are constants. There is exactly one
+`Status.DRAFT` object, so `is` and `==` both work for comparing members.
+
+And the typo:
+
+```pycon
+>>> Status.PUBLSHED
+Traceback (most recent call last):
+  ...
+AttributeError: ...PUBLSHED...
+```
+
+(The exact wording varies between Python versions; recent ones say the
+class has no attribute `PUBLSHED` and suggest `PUBLISHED`.)
+
+A plain `Enum` member is not equal to its value: `Status.DRAFT == 1` is
+`False`. That is deliberate, so enum members do not get mixed up with
+ordinary numbers. When you do want them to act like numbers or strings, for
+example to compare with values from a database, use `IntEnum` (members also
+behave as ints) or `StrEnum` (members also behave as strings):
+
+```pycon
+>>> from enum import IntEnum
+>>> class Level(IntEnum):
+...     LOW = 1
+...     HIGH = 3
+...
+>>> Level.HIGH == 3, Level.HIGH > Level.LOW
+(True, True)
+```
 
 ## Your turn
 
@@ -121,7 +247,14 @@ In `models.py`:
   `__init__` argument and does not appear in the `repr`; `__post_init__`
   sets it, to a value that sorts the way the tasks should. Every other field
   is left out of comparisons.
+
+  A plain `Enum` member cannot be compared with `<`, so the key has to be
+  built from something that can, such as the member's `.value`. A tuple key
+  sorts by its first part, then its second, and negating a number reverses
+  its order, which are the two tricks from the Functions in depth lesson.
 - `Money`: a frozen dataclass with `amount: int` (in cents) and
   `currency: str`. Creating one with a negative amount raises `ValueError`.
   `a + b` returns a new `Money` holding the sum, and raises `ValueError` when
-  the two currencies differ.
+  the two currencies differ. `+` calls a method named `__add__(self, other)`,
+  so that is the method to write; it returns the new object rather than
+  changing either side, which a frozen class could not do anyway.

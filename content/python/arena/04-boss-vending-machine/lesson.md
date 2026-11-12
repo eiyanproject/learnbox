@@ -55,7 +55,9 @@ Check these in order, and raise without changing anything:
 3. the credit is less than the price: `NotEnoughCredit`
 
 Otherwise take one from the stock, add the price to `sales`, set the credit
-to `0`, and return the change.
+to `0`, and return the change: the credit minus the price, as coins. A
+refused purchase leaves the credit, the stock and `sales` exactly as they
+were, so the customer can try again or ask for a refund.
 
 - `sales` is the total of every price paid so far, starting at `0`.
 
@@ -63,6 +65,10 @@ to `0`, and return the change.
 
 Change, and a refund, is always a list of coins from largest to smallest,
 using as few coins as possible: 660 is `[500, 100, 50, 10]`, and 0 is `[]`.
+A refund is worked out from the amount, not from the coins that went in: ten
+`10`s inserted come back as `[100]`. With these coin values, taking as many of
+the largest coin as fit, then the next, and so on, always gives the fewest
+coins.
 
 ### Looking inside
 

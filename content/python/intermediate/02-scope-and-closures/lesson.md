@@ -11,9 +11,17 @@ hints:
   - "`make_adders`: the loop-variable trap. Bind the current value with a default argument, `lambda x, i=i: x + i`."
 ---
 
+A name's **scope** is the region of a program where that name can be seen.
+A variable created inside a function exists only inside that function, so two
+functions can each have their own `total` without interfering. This lesson is
+about exactly how Python decides which variable a name refers to, and about a
+powerful thing that falls out of the rules: functions that remember values
+from the place where they were created.
+
 ## Where Python looks for a name: LEGB
 
-When code uses a name, Python searches four scopes in order:
+When code uses a name, Python searches four scopes in order, and uses the
+first one where the name exists:
 
 1. **L**ocal: inside the current function
 2. **E**nclosing: inside any function that contains this one
@@ -32,10 +40,25 @@ When code uses a name, Python searches four scopes in order:
 'enclosing'
 ```
 
+There are three different variables called `x` here. `inner` has no `x` of
+its own (no local), so Python looks in the enclosing function, `outer`, finds
+`x = "enclosing"` there, and stops. The global `x` is never reached. When an
+inner name hides an outer one like this, the inner one is said to
+**shadow** it.
+
+The built-in scope is why `len` and `print` work everywhere without being
+imported. It is also why naming your own variable `list` or `str` is a bad
+idea: your global `list` would shadow the built-in one, and `list(...)` would
+stop working in that module.
+
 ## Assigning makes a name local
 
-Assigning to a name anywhere in a function makes it local for the **whole**
-function, which gives this confusing error:
+Reading a global variable from inside a function works fine. Assigning to
+one does not do what you might expect. When Python reads a function's
+definition, before running any of it, any name that is assigned to anywhere
+in its body (with `=`, `+=`, as a loop
+variable, and so on) is treated as local for the **whole** function, even on
+lines before the assignment. That gives this confusing error:
 
 ```pycon
 >>> count = 0
@@ -48,12 +71,24 @@ Traceback (most recent call last):
 UnboundLocalError: cannot access local variable 'count'...
 ```
 
-`global count` would fix it, but module-level state changed from inside
-functions is hard to follow. There is almost always a better design.
+`count += 1` means `count = count + 1`, so it is an assignment, so `count`
+is local to `bump`. The right-hand side then tries to read the *local*
+`count`, which has not been given a value yet, and Python stops with
+`UnboundLocalError` ("unbound" means "has no value"). The global `count = 0`
+is never even considered.
+
+Writing `global count` as the first line of `bump` would fix it: it tells
+Python that `count` in this function means the module-level variable. But
+module-level state changed from inside functions is hard to follow, because
+any function anywhere might be the one that changed it. There is almost
+always a better design: pass the value in as an argument and return the new
+one, or keep the state in an object.
 
 ## nonlocal
 
-`nonlocal` lets an inner function reassign a variable in an enclosing function:
+`nonlocal` is the same idea one level in: it lets an inner function reassign
+a variable that belongs to the function enclosing it, instead of creating a
+new local one:
 
 ```pycon
 >>> def make_counter():
@@ -72,16 +107,44 @@ functions is hard to follow. There is almost always a better design.
 1
 ```
 
-You only need `nonlocal` to **reassign**. Mutating an object the name refers
-to (`items.append(x)`) works without it.
+`make_counter` does not return a number; it returns the `increment` function
+itself (no brackets, so it is not called). `c` is now that function, and each
+`c()` adds one to `count` and returns it. Without `nonlocal`, `count += 1`
+would make a new local `count` inside `increment` and fail exactly as `bump`
+did.
+
+You only need `nonlocal` to **reassign** a name. Mutating an object the name
+refers to, such as `items.append(x)`, does not assign to `items`; it changes
+the list `items` already points at. So it works without `nonlocal`:
+
+```pycon
+>>> def make_log():
+...     items = []
+...     def log(x):
+...         items.append(x)      # no assignment to items, no nonlocal needed
+...         return items
+...     return log
+...
+>>> log = make_log()
+>>> log("a")
+['a']
+>>> log("b")
+['a', 'b']
+```
 
 ## Closures
 
 `increment` above is a **closure**: a function bundled with the variables it
-uses from where it was defined. The variables stay alive as long as the
-closure does, even after `make_counter` has returned.
+uses from where it was defined. Normally a function's local variables vanish
+when it returns. Here, though, `increment` still needs `count`, so Python
+keeps `count` alive for as long as `increment` exists, even after
+`make_counter` has returned. Each call of `make_counter` creates a new
+`count` and a new `increment` that uses it, which is why `d` started again
+from 1 instead of carrying on from `c`'s 3.
 
-Closures are a lightweight alternative to a class with one method:
+Closures are a lightweight alternative to a class with one method. The
+outer function's arguments play the part of `__init__`, and the inner
+function is the method:
 
 ```pycon
 >>> def make_greeter(greeting):
@@ -96,7 +159,9 @@ Closures are a lightweight alternative to a class with one method:
 
 ## The late-binding trap
 
-A closure captures the **variable**, not its value at the time:
+A closure captures the **variable**, not the value it held at the time the
+function was created. Usually the difference does not show, but in a loop it
+does:
 
 ```pycon
 >>> funcs = [lambda: i for i in range(3)]
@@ -104,14 +169,25 @@ A closure captures the **variable**, not its value at the time:
 [2, 2, 2]
 ```
 
-All three lambdas look up `i` when they are **called**, and by then the loop
-has finished with `i == 2`. Capture the current value with a default argument:
+The comprehension creates three separate lambdas, but they all refer to the
+same single variable `i`. None of them looks at `i` until it is **called**,
+and by then the loop has finished, leaving `i` at its last value, 2. So all
+three return 2. This is called **late binding**: the name is looked up late,
+at call time.
+
+The usual fix is to capture the current value with a default argument:
 
 ```pycon
 >>> funcs = [lambda i=i: i for i in range(3)]
 >>> [f() for f in funcs]
 [0, 1, 2]
 ```
+
+`i=i` looks odd, but it reads as "a parameter called `i`, whose default is
+the current value of the loop's `i`". This uses the rule from the previous
+lesson that made mutable defaults a trap: a default is worked out once, when
+the function is created. Here that is exactly what we want, so each lambda
+gets its own copy of the value at the moment it was made.
 
 ## Your turn
 
@@ -123,9 +199,11 @@ In `closures.py`, every function returns a function (or a list of them):
 - `make_multiplier(n)`: the returned function multiplies its argument by `n`:
   `make_multiplier(3)(5)` is `15`
 - `make_accumulator()`: the returned function `add(x)` remembers every value
-  it has been given and returns their average so far. With
+  it has been given, across calls, and returns the average of all of them so
+  far. With
   `add = make_accumulator()`, `add(10)` is `10.0`, then `add(20)` is `15.0`,
   then `add(60)` is `30.0`.
 - `make_adders(n)`: a list of `n` functions, where the one at index `i` adds
   `i` to its argument. Calling each function of `make_adders(3)` with `10`
-  gives `10`, `11` and `12`.
+  gives `10`, `11` and `12`. This is the late-binding trap from above: the
+  obvious version gives `12`, `12`, `12`.

@@ -11,8 +11,10 @@ hints:
   - "For `split_bill`: `share = round(total / people, 2)`, then `return share, round(total - share * people, 2)`."
 ---
 
-A **function** is a named block of code. You define it once and call it as
-often as you like:
+A **function** is a named block of code. You define it once and then **call**
+it, by name, as often as you like. Instead of writing the same calculation
+in five places, you write it once, give it a name, and use the name. If the
+calculation ever needs fixing, there is only one place to fix it.
 
 ```python
 def area(width, height):
@@ -27,15 +29,40 @@ print(area(10, 2))
 20
 ```
 
-- `def` starts the definition; `width` and `height` are **parameters**.
-- The indented lines are the **body**. Python uses indentation (4 spaces)
-  instead of braces to mark blocks.
-- `return` hands a value back to whoever called the function, and ends it.
+Piece by piece:
+
+- `def` (short for define) starts the definition. Then comes the function's
+  name, `area`, and in brackets its **parameters**, `width` and `height`:
+  the names the function uses for the inputs it will be given.
+- The line ends with a colon, `:`. Python uses a colon to say "a block
+  follows".
+- The indented lines under it are the **body**: the code that runs each time
+  the function is called. Many languages mark a block with curly braces;
+  Python uses indentation instead, and the indentation is required, not
+  decoration. The convention is 4 spaces. The body ends at the first line
+  that is no longer indented.
+- `return` hands a value back to the code that called the function, and
+  ends the function at that point. Any lines after a `return` that runs are
+  skipped.
+
+Defining a function does not run it. Python only notes that `area` now
+exists. The body runs when a call happens: `area(3, 4)` runs the body with
+`width` set to `3` and `height` set to `4`, and the call itself then stands
+for the returned value, `12`, which `print()` shows. The values given in a
+call, `3` and `4` here, are called **arguments**; the parameters are the
+names they arrive under.
+
+Variables created inside a function exist only while that call runs. Code
+outside the function cannot see them; it only gets what is returned.
 
 ## print is not return
 
-This trips up almost everyone once. (At the `>>>` prompt, a definition carries
-on over `...` lines; press Enter on an empty `...` line to finish it.)
+This trips up almost everyone at least once. Both of the functions below seem
+to "give you" 5 at the prompt, but only one of them hands 5 back to your code.
+
+(At the `>>>` prompt, typing a line that ends in `:` switches the prompt to
+`...`, meaning Python is waiting for the rest of the block. Type the indented
+lines, then press Enter on an empty `...` line to finish it.)
 
 ```pycon
 >>> def add_print(a, b):
@@ -56,6 +83,12 @@ None
 `print` shows something to a human. `return` gives a value to the code.
 Tests, and other functions, can only use what you `return`.
 
+`None` is Python's value for "nothing here". A function that ends without
+reaching a `return` gives back `None` automatically. That is why `x` above is
+`None`: `add_print` showed 5 on the screen, then finished without returning
+anything. The prompt does not display `None` on its own line, which is why
+`x` had to be printed to see it.
+
 ## Default values and keyword arguments
 
 ```pycon
@@ -70,12 +103,34 @@ Tests, and other functions, can only use what you `return`.
 'Yo, Ana!'
 ```
 
-The `f"..."` is an **f-string**: anything inside `{}` is evaluated and put
-into the text.
+`greeting="Hello"` gives the parameter a **default value**: if the caller
+leaves that argument out, the parameter gets `"Hello"`. A parameter without a
+default must always be given. Parameters with defaults have to come after the
+ones without, which is why `greeting` is last.
+
+Arguments are normally matched to parameters by position: the first argument
+goes to the first parameter, and so on. Writing `name=value` in the call
+instead matches by name, which is called a **keyword argument**. Keyword
+arguments can come in any order, and they make a call easier to read when a
+function takes several values.
+
+The `f"..."` is an **f-string** (f for formatted). Anything inside `{}` in
+it is worked out as Python code, and the result is put into the text at that
+point. Without the `f` in front, the braces are ordinary characters and
+the name inside them is not replaced:
+
+```pycon
+>>> name = "Ana"
+>>> f"Hi, {name}!"
+'Hi, Ana!'
+>>> "Hi, {name}!"
+'Hi, {name}!'
+```
 
 ## Returning more than one value
 
-Separate the values with commas, and unpack them where you call it:
+Separate the values with commas after `return`, and unpack them where you
+call the function:
 
 ```pycon
 >>> def min_max(a, b):
@@ -90,21 +145,45 @@ Separate the values with commas, and unpack them where you call it:
 9
 ```
 
+Strictly speaking the function still returns one value: `return a, b` packs
+the two values into a **tuple**, a fixed group of values written in brackets.
+`low, high = ...` then unpacks the tuple into two names, one value each. You
+can see the tuple if you do not unpack it:
+
+```pycon
+>>> min_max(9, 4)
+(4, 9)
+```
+
+Tuples get a lesson of their own later. For now, "return several values with
+commas, unpack them with commas" is all you need.
+
 ## Docstrings
 
-A string on the first line of a function describes it. Try `help(area)` at
-the `>>>` prompt.
+A string placed as the very first line of a function's body is its
+**docstring**: a description of what the function does. Python stores it with
+the function, and `help()` shows it. Try `help(area)` at the `>>>` prompt
+(press `q` to leave the help screen). Triple quotes, `"""`, are used so the
+description can run over several lines if it needs to.
 
-```python
-def area(width, height):
-    """Area of a rectangle."""
-    return width * height
+```pycon
+>>> def area(width, height):
+...     """Area of a rectangle."""
+...     return width * height
+...
+>>> area.__doc__
+'Area of a rectangle.'
 ```
+
+`area.__doc__` is where Python keeps the docstring; `help(area)` shows the
+same text, laid out with the function's parameters above it. A function
+without a docstring has `None` there.
 
 ## Your turn
 
-Write the four functions in `functions.py`. `pass` means "do nothing yet";
-replace it.
+Write the four functions in `functions.py`. Each one currently has `pass` as
+its body. `pass` is a statement that does nothing; it is there because a
+body cannot be empty. Replace it with your code.
 
 - `square(n)` returns `n` times `n`: `square(4)` is `16`
 - `greet(name, greeting="Hello")` returns text like `"Hello, Ana!"`. A second
