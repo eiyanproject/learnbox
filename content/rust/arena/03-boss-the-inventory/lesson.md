@@ -62,3 +62,25 @@ inv.total_value();                       // 1000
 inv.low_stock(10);                       // ["widget"]
 inv.get("widget").unwrap().to_string();  // "widget x2 @ 2.50"
 ```
+
+## Details the tests check
+
+- Names are case-sensitive: after adding `"widget"`, `get("Widget")` is
+  `None`.
+- `total_value` can exceed what a `u32` holds (4,000,000,000 items at 5,000
+  cents is 20,000,000,000,000), so convert `qty` to `u64` before
+  multiplying.
+- `low_stock(threshold)` is strictly below: with `widget` at 3,
+  `low_stock(3)` does not include it, `low_stock(4)` does.
+- An item at 0 is still known: removing 1 more is
+  `Insufficient { have: 0, wanted: 1 }`, and removing 0 is `Ok(0)`.
+- Prices print as whole units, a dot and exactly two digits: 5 cents is
+  `0.05`, 12000 cents is `120.00`.
+- The test `borrowed_views_do_not_stop_later_changes` copies the names from
+  `low_stock` into `String`s and then calls `add`. Your methods' borrows must
+  end when they return, which they will if the signatures are left as given.
+
+Which collection holds the items is up to you. A `HashMap<String, Item>`
+makes `add`, `remove` and `get` direct; a `BTreeMap<String, Item>` also keeps
+the names in alphabetical order, which `low_stock` and the tie-break in
+`most_valuable` both need.

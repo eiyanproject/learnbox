@@ -11,16 +11,54 @@ hints:
   - "`append_log(path, line)`: `OpenOptions::new().create(true).append(true).open(path)?` and `writeln!`. `copy_upper`: read with `BufReader`, write with `BufWriter`, and `flush` at the end."
 ---
 
+A program that cannot read input or save output is not much use. This
+lesson covers **I/O** (input and output) in Rust: files, but also anything
+else that bytes flow in and out of, such as the terminal, network
+connections, or a buffer in memory. The central idea is that all of these
+look the same to your code, through a few traits, so a function written for
+"any reader" works on a file, the terminal, or a test string alike.
+
+Two facts shape everything below:
+
+- **I/O can always fail**: the file is missing, the disk is full, the network
+  drops. So nearly every I/O function returns `io::Result<T>`, which is
+  `Result<T, io::Error>`, and `?` appears on almost every line.
+- **I/O is slow** compared to everything else a program does, mainly
+  because each read or write goes through the operating system, a
+  **system call**. Doing fewer, larger operations makes a large difference,
+  which is what buffering is for.
+
 ## The core traits
 
-`std::io` is built on a few traits, so the same code works on files, network
-sockets, in-memory buffers and stdin/stdout:
+`std::io` is built on three traits:
 
-- `Read`: `read(&mut buf)` pulls bytes. Implemented by `File`, `TcpStream`, `&[u8]`, `Stdin`.
-- `Write`: `write(&buf)` and `flush()`. Implemented by `File`, `TcpStream`, `Vec<u8>`, `Stdout`.
-- `BufRead`: a `Read` with an internal buffer, adding `read_line` and `lines()`.
+| Trait | Means | Key methods | Implemented by |
+|---|---|---|---|
+| `Read` | bytes can be pulled from it | `read(&mut buf)`, `read_to_string` | `File`, `TcpStream`, `Stdin`, `&[u8]` |
+| `Write` | bytes can be pushed into it | `write_all(&buf)`, `flush()` | `File`, `TcpStream`, `Stdout`, `Vec<u8>` |
+| `BufRead` | a `Read` with a buffer, which can find line ends | `read_line`, `lines()` | `BufReader<R>`, `StdinLock`, `&[u8]` |
 
-Almost every I/O function returns `io::Result<T>`, so `?` is everywhere.
+Note the last column: a `&[u8]` (some bytes in memory) is a reader, and a
+`Vec<u8>` is a writer. That is what lets I/O code be tested without files, below.
+
+These are traits, so their methods only exist where the trait is imported.
+Forget `use std::io::BufRead;` and the compiler says so, and names the trait:
+
+```text
+error[E0599]: no method named `lines` found for reference `&[u8]` in the current scope
+ --> src/lib.rs:3:7
+  |
+3 |     r.lines().count()
+  |       ^^^^^ method not found in `&[u8]`
+  |
+  = help: items from traits can only be used if the trait is in scope
+help: trait `BufRead` which provides `lines` is implemented but not in scope; perhaps you want to import it
+  |
+1 + use std::io::BufRead;
+```
+
+The `write!` and `writeln!` macros need `std::io::Write` in the same way, and
+without it report ``cannot write into `Vec<_>` ``.
 
 ## Be generic over readers and writers
 
@@ -33,15 +71,28 @@ fn longest_line<R: BufRead>(reader: R) -> io::Result<String> {
     let mut best = String::new();
     for line in reader.lines() {
         let line = line?;
-        if line.len() > best.len() { best = line; }
+        if line.len() > best.len() {
+            best = line;
+        }
     }
     Ok(best)
 }
 ```
 
-In production you pass `BufReader::new(File::open(path)?)` or `stdin().lock()`.
-In tests you pass `"a\nbbb\n".as_bytes()` (a `&[u8]` is a `BufRead`) and never
-touch the disk. Writers work the same way with a `Vec<u8>`:
+(A fragment.) `use std::io::{self, ...}` imports the module itself as `io`, so
+`io::Result` works, along with the traits. `reader.lines()` yields one
+`io::Result<String>` per line, since reading each line can fail; `let line =
+line?;` unwraps it. The returned lines have their line ending (`\n` or
+`\r\n`) removed. A last line without a final newline still counts.
+
+The caller decides where the bytes come from:
+
+- in the program: `longest_line(BufReader::new(File::open(path)?))`, or
+  `longest_line(io::stdin().lock())` for the terminal;
+- in a test: `longest_line("a\nbbb\n".as_bytes())`, with no file at all.
+
+Writers work the same way. Writing into a `Vec<u8>` collects the bytes, ready
+to compare:
 
 ```rust
 let mut out = Vec::new();
@@ -49,21 +100,41 @@ writeln!(out, "hello")?;
 assert_eq!(out, b"hello\n");
 ```
 
+(A fragment.) `b"hello\n"` is a **byte string** literal, a `&[u8; 6]`. A
+function taking `W: Write` by value can be passed `&mut out` too, since
+`&mut W` is also a `Write`: that is how the exercise's test passes its
+`Vec` to `write_report` and reads it afterwards. A writer parameter that is
+written to must be `mut`: `fn write_report<W: Write>(mut out: W, ...)`.
+
 ## Buffering matters
 
-`File` performs a system call per `read`/`write`. Reading line by line or
-writing many small pieces without a buffer is dramatically slower. Wrap them:
+A `File` turns every `read` or `write` call into a system call. Reading a
+file line by line straight from a `File` would mean a system call for every
+few bytes; writing a report one small `write!` at a time, the same.
+**Buffered** wrappers fix that by reading or writing a large block (8 KiB by
+default) at once, and serving your small calls from memory:
 
 ```rust
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 
-let reader = BufReader::new(File::open("in.txt")?);
+let reader = BufReader::new(File::open("in.txt")?);         // also gives BufRead: lines()
 let mut writer = BufWriter::new(File::create("out.txt")?);
 ```
 
-A `BufWriter` flushes when dropped, but errors during that final flush are
-lost; call `flush()` yourself to see them.
+(A fragment.) For many small operations, the difference is often ten times
+or more. `BufReader` is also what you need for line-by-line reading, since a
+plain `File` is only `Read`, not `BufRead`.
+
+A `BufWriter` holds unwritten bytes in memory until its buffer fills or it
+is **flushed**. When it is dropped, it flushes itself, but if that final
+write fails (a full disk), the error has nowhere to go and is lost. Call
+`writer.flush()?` yourself at the end, so a failure is reported.
+
+**Streaming**, processing input a line or a block at a time instead of
+reading it all into one `String` first, keeps memory use constant however
+large the file is. `fs::read_to_string` is fine for small files such as
+configuration; for data files of unknown size, stream.
 
 ## Files and paths
 
@@ -71,21 +142,44 @@ lost; call `flush()` yourself to see them.
 use std::fs::{self, File, OpenOptions};
 use std::path::{Path, PathBuf};
 
-fs::read_to_string("config.toml")?;      // whole file, small files only
-fs::write("out.txt", contents)?;
-File::create(path)?;                     // create or truncate
-OpenOptions::new().append(true).create(true).open(path)?;
-fs::create_dir_all("data/cache")?;
+fs::read_to_string("config.toml")?;      // the whole file as a String
+fs::write("out.txt", contents)?;         // create or replace, in one call
+File::open(path)?;                       // open for reading
+File::create(path)?;                     // create, or empty an existing file!
+OpenOptions::new().append(true).create(true).open(path)?;   // add to the end
+fs::create_dir_all("data/cache")?;       // a folder and any missing parents
 let p = Path::new("data").join("scores.csv");
-p.extension(); p.file_stem(); p.exists();
+p.extension();  p.file_stem();  p.exists();
 ```
 
-Functions that take paths usually accept `impl AsRef<Path>` (see Conversions).
+(Fragments.) Notes on each:
 
-## Custom errors
+- `File::create` **truncates**: an existing file is emptied first. To add to
+  a log, open it with `OpenOptions`: `append(true)` makes every write go to
+  the end, and `create(true)` creates the file if it does not exist yet.
+- When a file cannot be opened, the `io::Error` has a **kind** that says why:
+  `err.kind()` is `io::ErrorKind::NotFound`, `PermissionDenied`, and so on.
+  Code can react to that, and the exercise's tests check for `NotFound`.
+- `Path` is to `PathBuf` as `&str` is to `String`: a borrowed path, and an
+  owned one. `join` adds a component with the right separator for the
+  operating system. `display()` prints a path. Paths are not always valid
+  UTF-8, which is why they are separate types from strings.
+- Functions that take a path usually accept `impl AsRef<Path>` (lesson 6),
+  so `"notes.txt"`, a `String`, a `&Path` and a `PathBuf` all work. The
+  exercise's signatures do this.
 
-`io::Error::new(io::ErrorKind::InvalidData, "bad row 3")` makes an `io::Error`
-for data problems, so a function can keep returning `io::Result`.
+## Your own I/O errors
+
+When the *bytes* were read fine but their *content* is wrong, such as a
+number column containing `lots`, you can still report it as an `io::Error`,
+so the function keeps one error type:
+
+```rust
+io::Error::new(io::ErrorKind::InvalidData, format!("line {n}: not a number: {value}"))
+```
+
+(An expression.) `InvalidData` is the kind for "the data is malformed". The
+message is what `to_string()` and `{}` print.
 
 ## Run it
 
@@ -127,15 +221,33 @@ data/scores.csv Some("csv") Some("scores")
 InvalidData: bad row 3
 ```
 
+`main` returns `io::Result<()>`, so `?` works in it (Intermediate lesson 2).
+The `Vec<u8>` holds the bytes of `hello` and the newline, 10. The path parts
+are `Option`s, because a path need not have an extension.
+
 ## Your turn
 
 In `src/lib.rs`:
 
-- `count_lines_and_words(reader)`: for any `BufRead`
-- `write_report(out, rows)`: for any `Write`, one line per row: the name
-  left-aligned in 10 columns, the value right-aligned in 5; then flush
-- `sum_column(path, column)`: sum a numeric column of a CSV file with a header
-  row; a non-numeric value is an `InvalidData` error mentioning the line number
-- `append_log(path, line)`: append a line, creating the file if needed
-- `copy_upper(src, dst)`: stream `src` to `dst` upper-cased, buffered both ways,
-  returning the number of bytes written
+- `count_lines_and_words(reader)`, for any `BufRead`: the number of lines and
+  of whitespace-separated words. An empty line counts as a line with no
+  words, and a last line without a newline still counts:
+  `"one two\n\nthree  four five\n"` is `(3, 5)`, `"no newline"` is `(1, 2)`,
+  `""` is `(0, 0)`.
+- `write_report(out, rows)`, for any `Write`: one line per row, the name
+  left-aligned in 10 columns and the value right-aligned in 5 (`{:<10}` and
+  `{:>5}`), so `("apples", 12)` is `"apples       12\n"`; then `flush()`
+- `sum_column(path, column)`: the sum, as `f64`, of column number `column`
+  (from 0) of a comma-separated file whose first line is a header:
+  - skip the header, and skip empty lines
+  - values may be whole or decimal: `90`, `82.5`
+  - a value that does not parse is an error of kind `InvalidData` whose
+    message contains `line <n>`, counting the file's lines from 1 with the
+    header as line 1 (so the third line of the file is `line 3`)
+  - a missing file is the `NotFound` error from `File::open`, passed up with
+    `?`
+- `append_log(path, line)`: add `line` and a newline to the end of the file,
+  creating it if needed; calling it twice gives `"started\nstopped\n"`
+- `copy_upper(src, dst)`: copy `src` to `dst` with every letter upper-cased,
+  through a `BufReader` and a `BufWriter`, streaming rather than reading the
+  whole file at once; return the number of bytes written and flush at the end

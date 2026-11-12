@@ -40,3 +40,19 @@ into groups of mutual anagrams.
 group_anagrams(&["eat", "tea", "tan", "ate", "nat", "bat"])
 ->  [["eat", "tea", "ate"], ["tan", "nat"], ["bat"]]
 ```
+
+## Details the tests check
+
+- Letters are compared without regard to case, so the groups are too:
+  `"Tea"` and `"EAT"` belong together, and each keeps its own spelling in
+  the output.
+- Digits count as "not a letter": `are_anagrams("r2d2", "dr")` is `true`.
+- Two texts with no letters at all are anagrams of each other:
+  `("", "")` and `("", " !? ")` are both `true`, but `("", "a")` is not.
+- A word that appears twice is kept twice: `["on", "no", "on"]` is one
+  group of three.
+- No words give no groups (an empty `Vec`).
+
+A useful idea: two words are anagrams exactly when their letters, lower-cased
+and sorted, are the same. That sorted form makes a good `HashMap` key; keep
+the groups in a `Vec` so their order follows the input.

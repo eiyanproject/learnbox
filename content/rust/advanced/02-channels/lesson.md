@@ -11,12 +11,23 @@ hints:
   - "`pipeline`: stage 1 thread sends numbers, stage 2 thread receives, squares and forwards, and the main thread collects. Each stage owns its sender and drops it when done."
 ---
 
-"Do not communicate by sharing memory; share memory by communicating." Sending
-owned values between threads through a **channel** avoids most locking entirely.
+Threads that work alone need no coordination. The hard part is getting results and
+instructions from one thread to another. There are two broad approaches:
+let threads **share** some memory and take turns with it (lesson 3), or let
+them **send** each other values, so each value has one owner at a time and
+nothing is shared at all. The Go language's motto sums up the second:
+"Do not communicate by sharing memory; share memory by communicating."
+
+A **channel** is a queue between threads: one end, the **sender**, puts
+values in; the other, the **receiver**, takes them out in the same order.
+Sending a value **moves** it, so ownership travels with the message: the
+sending thread can no longer touch it, and there is nothing for two threads
+to fight over.
 
 ## mpsc
 
-`std::sync::mpsc` is a **m**ulti-**p**roducer, **s**ingle-**c**onsumer channel:
+`std::sync::mpsc` is a **m**ulti-**p**roducer, **s**ingle-**c**onsumer
+channel: any number of senders, exactly one receiver.
 
 ```rust
 use std::sync::mpsc;
@@ -37,44 +48,137 @@ for msg in rx {                              // ends when all senders are droppe
 }
 ```
 
-- `send` moves the value into the channel: ownership travels with the message.
-- `recv()` blocks until a message arrives, or returns `Err` once every sender is gone.
-- Iterating `rx` stops at that point, which is why the **original `tx` must be
-  dropped** or the loop waits forever.
+(A fragment.) `mpsc::channel()` returns the two ends as a tuple, by
+convention named `tx` (transmit) and `rx` (receive). The type of the values,
+here `String`, is worked out from what is sent.
 
-`mpsc::sync_channel(n)` has a bounded buffer: `send` blocks when it is full,
-giving you back-pressure.
+- `tx.clone()` makes another sender for the same channel. Each producer
+  thread gets its own, moved into its closure.
+- `tx.send(value)` moves the value into the channel and returns at once
+  (this channel's buffer has no limit). It returns `Err` only if the
+  receiver no longer exists.
+- `rx.recv()` **blocks**: it waits until a message arrives and returns
+  `Ok(message)`. Once every sender has been dropped **and** the queue is
+  empty, it returns `Err`: nothing can ever arrive again.
+- `for msg in rx` calls `recv` repeatedly, and stops at that `Err`.
+
+That last rule is why the `drop(tx)` line matters. The loop ends only when
+**every** sender is gone. The three clones are dropped when their threads
+finish, but the original `tx` belongs to the main thread, which is itself
+sitting in the loop. Forget the `drop`, and the main thread waits for a
+message from itself, forever. No error, no panic: the program hangs.
+This is the most common channel bug, and the first thing to check when a
+channel program freezes.
+
+`mpsc::sync_channel(n)` makes a channel with room for only `n` messages:
+`send` blocks when it is full until the receiver catches up. That gives
+**back-pressure**: a fast producer is slowed to the speed of the consumer,
+instead of filling memory with a growing queue. `try_send` returns `Err`
+instead of waiting.
 
 ## A worker pool
 
-A pool runs submitted jobs on a fixed set of threads. The jobs are boxed
-closures; one channel carries them to the workers:
+Starting a thread per small task is wasteful. A **worker pool** starts a
+fixed number of threads once, and feeds them tasks, **jobs**, through a
+channel. Each job is a closure, boxed so that different closures can go
+through the same channel (Intermediate lesson 8):
 
 ```rust
 type Job = Box<dyn FnOnce() + Send + 'static>;
 ```
 
-A `Receiver` cannot be cloned (single consumer), so the workers share it
-behind `Arc<Mutex<...>>` and take turns calling `recv`. Hold the lock only
-while receiving, not while running the job, or the workers run one at a time.
+Each part of that type has a reason:
+
+- `FnOnce()`: each job is run exactly once, so it may consume what it
+  captured;
+- `Send`: it will be moved to a worker thread (lesson 1);
+- `'static`: the worker keeps it for an unknown time, so it must not borrow
+  anything that could expire.
+
+The pool has one channel and several workers, but a channel has only one
+`Receiver`, and it cannot be cloned. So the workers **share** it, behind
+`Arc<Mutex<Receiver<Job>>>`: `Arc` lets several threads own it, and `Mutex`
+lets only one at a time call `recv`. (Both are explained properly in lesson
+3; here it is enough that `rx.lock().unwrap()` gives one worker exclusive
+use of the receiver until the lock is released.)
+
+```text
+                         ┌──> worker 1 ─┐
+ execute(job) ─> tx ─> [ rx in a Mutex ] ──> worker 2   each worker: lock, recv,
+                         └──> worker 3 ─┘                unlock, run the job
+```
+
+### Hold the lock only while receiving
+
+The obvious way to write the worker loop has a subtle bug:
+
+```rust
+while let Ok(job) = rx.lock().unwrap().recv() {
+    job();      // the lock is still held here!
+}
+```
+
+`rx.lock().unwrap()` creates a temporary lock guard, and in a `while let`,
+temporaries in the condition live until the **end of the loop body**. So the
+worker keeps the receiver locked while it runs the job, and the other
+workers cannot even fetch theirs. The pool has four threads, but they run
+the jobs one at a time. Measured with four workers and eight jobs of 100 ms
+each:
+
+```text
+while let:       800 ms     (one job at a time)
+let, then run:   200 ms     (four at a time)
+```
+
+The fix is to receive in a separate statement, so the guard is dropped at
+its semicolon, before the job runs:
+
+```rust
+loop {
+    let job = rx.lock().unwrap().recv();    // lock, receive, unlock: all in this line
+    match job {
+        Ok(job) => job(),
+        Err(_) => break,                    // every sender is gone: shut down
+    }
+}
+```
+
+The exercise's tests time the pool and fail with "jobs ran one at a time" if
+the lock is held during the job.
 
 ## Clean shutdown
 
-Graceful shutdown falls out of channel semantics: drop the sender, each worker's
-`recv` returns `Err`, the worker loop exits, and `join` returns. Implementing
-shutdown in a method that takes `self` by value makes "use after shutdown"
-a compile error.
+The channel rules give a graceful shutdown for free. Drop the sender, and
+each worker's `recv` returns `Err` once the queue is empty, so every job
+already submitted is still run first. The worker breaks out of its loop and
+its thread ends, so `join` returns. In order:
+
+1. drop the pool's `Sender`;
+2. `join` every worker thread.
+
+Do it the other way round and you wait for workers that are waiting for
+jobs. Writing it as `fn shutdown(self)`, taking the pool **by value**, has a
+bonus: after `pool.shutdown()`, `pool` has been moved, so calling
+`pool.execute(...)` afterwards is a compile error, not a runtime surprise.
+Inside it, `drop(self.sender);` followed by `for worker in self.workers {
+worker.join().unwrap(); }` is fine: owning `self`, the method may move its
+fields out one at a time.
 
 ## Pipelines
 
-Chain stages, each a thread reading from one channel and writing to the next:
+Channels chain naturally into a **pipeline**: each stage is a thread that
+reads from one channel and writes to the next, like an assembly line:
 
 ```text
-numbers ──▶ [square] ──▶ [collect]
+ stage 1: numbers ──channel──> stage 2: square ──channel──> collect
 ```
 
-Each stage exits when its input channel closes, and drops its own sender,
-which closes the next stage's input: the shutdown ripples down the pipeline.
+All stages run at the same time: while stage 2 squares the first number,
+stage 1 is already sending the second. Shutdown ripples down the line on its
+own. When stage 1 runs out of numbers, its thread ends and its sender is
+dropped. Stage 2's `for n in num_rx` loop then ends, so its thread ends,
+dropping *its* sender, and the collector's loop ends in turn. No stage needs
+to know how many items there are.
 
 ## Run it
 
@@ -123,13 +227,30 @@ true
 Ok(1)
 ```
 
+The messages arrived in whatever order the threads ran, so they are sorted
+before printing. The pipeline's results come out **in order**, because one
+channel keeps the order of what was sent into it, and each stage is a single
+thread. Its threads are never joined: the collector reads until the
+channels close. The bounded channel held one message, so the second
+`try_send` was refused.
+
 ## Your turn
 
 In `src/lib.rs`:
 
-- `collect_from_producers(producers, per_producer)`: `producers` threads each
-  send `per_producer` values `"p<id>-<n>"`; return all messages **sorted**
-- `WorkerPool::new(size)`, `execute(job)`, `shutdown(self)` which waits for all
-  submitted jobs to finish; `size` must be at least 1
-- `pipeline(n)`: stage 1 sends `1..=n`, stage 2 squares, the result is collected
-  in order, each stage on its own thread connected by channels
+- `collect_from_producers(producers, per_producer)`: start `producers`
+  threads; thread `id` sends `per_producer` messages `"p<id>-<n>"`, `n` from
+  0. Return all messages, **sorted**: `(3, 2)` gives `p0-0, p0-1, p1-0, p1-1,
+  p2-0, p2-1`. With 0 producers the result is empty; it must not hang.
+- `WorkerPool`:
+  - `new(size)` starts `size` worker threads; `size` 0 must **panic**
+    (`assert!(size > 0)`)
+  - `execute(&self, job)` sends a job to the workers
+  - `shutdown(self)` returns only after **every** submitted job has finished
+  - jobs must run **concurrently**: the tests run eight 100 ms jobs on four
+    workers and require it to take under 600 ms, so hold the receiver's
+    lock only while receiving
+- `pipeline(n)`: stage 1 (a thread) sends `1..=n`, stage 2 (another thread)
+  squares each number and passes it on, and the function collects the
+  results in order: `pipeline(5)` is `[1, 4, 9, 16, 25]`, `pipeline(0)` is
+  empty

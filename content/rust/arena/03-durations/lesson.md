@@ -64,3 +64,16 @@ format_duration(0)        ->  "0s"
 ```
 
 For any `n`, `parse_duration(&format_duration(n))` is `Ok(n)`.
+
+## Details the tests check
+
+- Leading zeros are fine: `"007s"` is 7 seconds, and `"0h0m"` is 0.
+- Numbers may be larger than the next unit: `"120m"` is 7200.
+- Units are lower-case only: `"5H"` is `UnknownUnit('H')`.
+- No spaces, signs or decimal points: `"1h 30m"` is `UnknownUnit(' ')`,
+  `"-5s"` is `UnknownUnit('-')`, `"1.5h"` is `UnknownUnit('.')`.
+- "Left to right" decides which error wins: `"x5"` is `UnknownUnit('x')`,
+  `"h5"` is `MissingNumber`, `"1h1h5"` is `Repeated('h')` (found before the
+  missing unit at the end), and `"1h?5"` is `UnknownUnit('?')`.
+- `format_duration(86400 * 400)` is `"400d"`: days are the largest unit,
+  with no weeks or years.

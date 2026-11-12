@@ -13,21 +13,39 @@ hints:
 
 ## let and mut
 
-Variables are **immutable** by default:
+`let` creates a variable. Variables are **immutable** by default: once a
+value is bound to a name, it cannot be changed. Trying is a compile error:
 
 ```rust
 let apples = 5;
 apples = 6;         // error: cannot assign twice to immutable variable
 ```
 
-Say so if you mean to change it:
+```text
+error[E0384]: cannot assign twice to immutable variable `apples`
+  |
+2 |     let apples = 5;
+  |         ------ first assignment to `apples`
+3 |     apples = 6;
+  |     ^^^^^^^^^^ cannot assign twice to immutable variable
+  |
+help: consider making this binding mutable
+  |
+2 |     let mut apples = 5;
+  |         +++
+```
+
+The `+++` under `mut` in the `help:` shows exactly what to add. Say so if
+you mean to change it:
 
 ```rust
 let mut apples = 5;
 apples += 1;
 ```
 
-This makes it obvious, when reading code, which values can change.
+This makes it obvious, when reading code, which values can change, and the
+compiler holds you to it: most variables never change, so only the few that
+do carry `mut`.
 
 ## Shadowing
 
@@ -38,6 +56,17 @@ It may even have a different type:
 let input = "42";
 let input: i32 = input.parse().unwrap();   // now an i32
 ```
+
+(A fragment.) `"42"` is text; `parse()` converts it to the type asked for,
+here `i32`. Parsing can fail (`"forty"` is not a number), so it returns a
+value that is either the number or an error, and `unwrap()` takes the
+number out, crashing the program with a message if it was an error. Lesson 8
+shows the proper ways to handle that.
+
+Shadowing differs from `mut`: it makes a *new* variable, so the type can
+change, and the old value is untouched. `mut` changes the value in place, and
+the type can never change. Shadowing is the usual way to convert a value step
+by step while keeping one sensible name.
 
 ## Scalar types
 
@@ -50,8 +79,14 @@ let input: i32 = input.parse().unwrap();   // now an i32
 | `bool` | `true` / `false` |
 | `char` | one Unicode character, in single quotes: `'a'`, `'😀'` |
 
+The number in each name is its size in bits: an `i32` holds about minus to
+plus 2.1 billion, a `u8` 0 to 255. Pick by range, and use the defaults when
+there is no reason not to. Lengths and positions are always `usize`.
+
 Rust never converts between numeric types silently. `i32 + f64` is a
-compile error. Convert explicitly with `as`:
+compile error (``cannot add `f64` to `i32` ``), and so is passing an
+`i32` where a `u64` is expected. Other languages convert quietly and
+sometimes lose data; Rust makes you say so. Convert explicitly with `as`:
 
 ```rust
 let count: i32 = 7;
@@ -67,7 +102,14 @@ Integer division rounds toward zero, and `%` is the remainder:
 7.0 / 2.0  // 3.5
 ```
 
-In a debug build, integer overflow panics instead of silently wrapping.
+(Expressions with their values.) Unlike Python, `-7 / 2` is `-3`: Rust
+rounds toward zero, not down.
+
+In a debug build (what `cargo run` and `cargo test` make), integer overflow
+**panics**, which means the program stops with an error message, instead of
+silently wrapping. A release build (`cargo build --release`) wraps instead,
+for speed, so never rely on either; use the `checked_` methods (below) when
+overflow is possible.
 
 ## Tuples
 
@@ -137,7 +179,15 @@ Mon 3 [0, 0, 0]
 None
 ```
 
-`checked_add` is how you ask for overflow as a value instead of a panic.
+Line by line: shadowing turned the text into a number; `as f64` converted
+before dividing; `as i32` cut 3.9 down to 3, and -3.9 *up* to -3, both toward
+zero. Integer division and remainder, then the tuple taken apart, then the
+array (`{:?}` is **debug formatting**, which can print collections; plain
+`{}` cannot).
+
+`checked_add` is how you ask for overflow as a value instead of a panic:
+250 + 10 does not fit in a `u8`, so it gives `None`, "no result"; a sum that
+fits gives `Some(sum)`. Those two are Rust's `Option` type, lesson 8.
 
 ## Your turn
 
@@ -145,8 +195,11 @@ The **Run** button here runs `cargo test`, which compiles the project and runs
 the (empty) visible tests. It is a fast way to see compile errors.
 In `src/lib.rs`:
 
-- `celsius_to_fahrenheit(c)`: `c * 9 / 5 + 32`, with floats
-- `seconds_to_hms(total)`: split seconds into `(hours, minutes, seconds)`
+- `celsius_to_fahrenheit(c)`: `c * 9 / 5 + 32`, with floats (write `9.0`,
+  `5.0` and `32.0`: float literals need the `.0`)
+- `seconds_to_hms(total)`: split seconds into `(hours, minutes, seconds)`,
+  returned as a tuple: 3,725 seconds is `(1, 2, 5)`
 - `average(a, b)`: the average of two `i32` values as an `f64`, correct even
-  for values near `i32::MAX`
-- `sum_array(values)`: the sum of a `[i64; 5]`
+  for values near `i32::MAX`. `a + b` in `i32` would overflow there, so
+  convert each one to `f64` *before* adding.
+- `sum_array(values)`: the sum of a `[i64; 5]`, an array of five `i64`s

@@ -6,15 +6,27 @@ files: [src/lib.rs]
 run: cargo test
 hints:
   - "`impl Add for Money { type Output = Money; fn add(self, rhs: Money) -> Money { Money::new(self.cents + rhs.cents) } }`. `Mul<i64>` is `impl Mul<i64> for Money` with `rhs: i64`."
-  - "`impl Container for Stack<T> { type Item = T; fn get(&self, i: usize) -> Option<&T> { self.items.get(i) } fn first(&self) -> Option<&T> { self.items.first() } }`, and the `len` part the trait needs."
+  - "`impl<T> Container for Stack<T> { type Item = T; fn get(&self, i: usize) -> Option<&T> { self.items.get(i) } fn len(&self) -> usize { self.items.len() } }`; `first` and `is_empty` are defaults in the trait, written with `get` and `len`."
   - "The supertrait: `pub trait Describe: fmt::Display { fn describe(&self) -> String { format!(\"<{}>\", self) } }`. The default body can use `Display` because every implementer must have it."
   - "The blanket impl: `impl<T: fmt::Display> Describe for T {}` gives every displayable type `describe()` for free. `Money` needs its own `Display` impl."
 ---
 
+Beginner lesson 10 covered the core of traits: define one, implement it,
+use it as a bound or as `dyn Trait`. This lesson covers the four features
+that the standard library is built from, and that you will meet in every
+real crate's documentation:
+
+1. **associated types**: a type the implementer picks, like `Iterator::Item`;
+2. **operator overloading**: `+`, `-`, `*` and friends are traits too;
+3. **supertraits**: "to implement this trait, you must also implement that
+   one";
+4. **blanket implementations**: implementing a trait for *every* type that
+   meets a bound, in one line.
+
 ## Associated types
 
-A trait can name a type that each implementation chooses. `Iterator` is the
-famous example:
+A trait can declare a type, with `type Name;`, that each implementation
+fills in. `Iterator` is the best-known example:
 
 ```rust
 pub trait Iterator {
@@ -23,52 +35,136 @@ pub trait Iterator {
 }
 ```
 
-Why not `trait Iterator<T>`? A generic trait could be implemented many times
-for one type (an iterator of `i32` **and** of `String`), and every use would
-need to say which. An associated type means "exactly one per implementor", so
-`for x in things` knows what `x` is.
+(How the standard library declares it, shortened.) `Self::Item` means "the
+`Item` type that the implementing type chose". An iterator over words sets
+`type Item = &str;`, a counter sets `type Item = u32;`. Leave it out, and the
+compiler asks for it:
+
+```text
+error[E0046]: not all trait items implemented, missing: `Item`
+  |
+2 | impl Iterator for Squares {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^ missing `Item` in implementation
+  |
+  = help: implement the missing item: `type Item = /* Type */;`
+```
+
+Why not a generic trait, `trait Iterator<T>`? Because of what it would
+allow. A type can implement a generic trait several times, once per `T`:
+`Squares` could be both an `Iterator<u32>` and an `Iterator<String>`. Then
+every `for x in squares` would have to say which one it meant, and the
+compiler could not work out the type of `x` alone. An associated type means
+"**exactly one** per implementing type": a `Squares` produces `u32`, full
+stop.
+
+The rule of thumb that follows:
+
+- **associated type** when each type has one natural answer (what does this
+  iterator produce?);
+- **generic parameter** when one type can sensibly do the job for several
+  others (you can add a `Meters` to a `Meters`, *and* multiply it by an
+  `f64`, below).
 
 ## Operator overloading
 
-Operators are traits in `std::ops`:
+Rust's operators are shorthand for trait methods in `std::ops`. `a + b`
+calls `Add::add(a, b)`; `-a` calls `Neg::neg(a)`. Using `+` on your own type
+without implementing the trait fails, and the error names the trait to
+implement:
+
+```text
+error[E0369]: cannot add `Meters` to `Meters`
+  |
+3 | pub fn f() -> Meters { Meters(1.0) + Meters(2.0) }
+  |                        ----------- ^ ----------- Meters
+  |                        |
+  |                        Meters
+  |
+note: an implementation of `Add` might be missing for `Meters`
+```
+
+Implementing it:
 
 ```rust
-use std::ops::{Add, Mul, Neg, Index};
+use std::ops::{Add, Mul};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 struct Meters(f64);
 
 impl Add for Meters {
     type Output = Meters;
-    fn add(self, rhs: Meters) -> Meters { Meters(self.0 + rhs.0) }
+    fn add(self, rhs: Meters) -> Meters {
+        Meters(self.0 + rhs.0)
+    }
 }
 
 impl Mul<f64> for Meters {            // Meters * f64
     type Output = Meters;
-    fn mul(self, k: f64) -> Meters { Meters(self.0 * k) }
+    fn mul(self, k: f64) -> Meters {
+        Meters(self.0 * k)
+    }
 }
 ```
 
-The generic parameter is the right-hand side type (`Add<Rhs = Self>` defaults
-to the same type). `AddAssign` gives `+=`, `Index` gives `v[i]`, `Neg` gives `-x`.
-Comparison is `PartialEq`/`PartialOrd`, usually derived.
+The operator traits use both features from the section above:
+
+- The **generic parameter** is the type on the right-hand side. `Add`
+  declares it as `trait Add<Rhs = Self>`: a generic parameter *with a
+  default*, so a plain `impl Add for Meters` means `Add<Meters>`, "a
+  `Meters` plus a `Meters`". `impl Mul<f64> for Meters` is "a `Meters`
+  times an `f64`". One type may implement `Mul` for several right-hand
+  types.
+- The **associated type** `Output` is the type of the result. For each pair
+  of operand types there is exactly one result type.
+
+The methods take `self` by value, so `a + b` moves `a` and `b`. For a small
+`Copy` type like `Meters` that costs nothing and `a` stays usable; that is
+why such types usually derive `Copy`.
+
+Other operator traits work the same way:
+
+| Trait | Operator | Method |
+|---|---|---|
+| `Add`, `Sub`, `Mul`, `Div`, `Rem` | `+ - * / %` | `fn add(self, rhs) -> Output` |
+| `Neg` | `-x` (unary) | `fn neg(self) -> Output` |
+| `AddAssign`, `SubAssign`, ... | `+=`, `-=`, ... | `fn add_assign(&mut self, rhs)`, changes in place, returns nothing |
+| `Index`, `IndexMut` | `v[i]` | returns a reference to the item |
+
+Comparison (`==`, `<`) is `PartialEq` and `PartialOrd`, from `std::cmp`, and
+usually derived. Overload operators only where the meaning is obvious:
+`money + money` is; `user + group` is not.
 
 ## Supertraits
 
-A trait can require another:
+A trait can require another trait from every implementer:
 
 ```rust
 trait Shape: std::fmt::Debug {
     fn area(&self) -> f64;
+
     fn report(&self) -> String {
         format!("{self:?} has area {}", self.area())   // Debug is guaranteed
     }
 }
 ```
 
+`trait Shape: Debug` reads "a `Shape` is something that is also `Debug`";
+`Debug` is the **supertrait**. It has two effects:
+
+- Implementing `Shape` for a type that does not implement `Debug` is a
+  compile error. The requirement is checked once, at the `impl`.
+- In return, code inside the trait, and any code holding a `T: Shape`, may
+  use `Debug` without asking for it separately. That is what lets the
+  default `report` method write `{self:?}`.
+
+A supertrait is not inheritance: `Shape` does not get `Debug`'s methods
+copied into it, and the `Debug` implementation is written separately (here,
+derived).
+
 ## Blanket implementations
 
-Implement a trait for **every** type that meets a bound:
+So far each `impl` was for one named type. A **blanket implementation** is
+for every type that satisfies a bound:
 
 ```rust
 trait Shout {
@@ -76,24 +172,71 @@ trait Shout {
 }
 
 impl<T: std::fmt::Display> Shout for T {
-    fn shout(&self) -> String { self.to_string().to_uppercase() }
+    fn shout(&self) -> String {
+        self.to_string().to_uppercase()
+    }
 }
 
 42.shout();       // "42"
 "hi".shout();     // "HI"
 ```
 
-The standard library does this constantly: every `T: Display` gets `ToString`
-this way. (The orphan rule stops you implementing foreign traits for foreign
-types; at least one of them must be defined in your crate.)
+`impl<T: Display> Shout for T` reads: "for any type `T` that implements
+`Display`, here is its `Shout`". Integers, strings, and any of your own types
+that implement `Display`, now or in the future, all get `.shout()` at once.
+The standard library does this constantly: the `to_string()` you have been
+calling is from `impl<T: Display> ToString for T`, which is why implementing
+`Display` gave you `to_string` for free in Beginner lesson 10.
 
-## Generic functions vs trait objects
+A blanket impl covers its types completely: you cannot also write a
+specific `impl Shout for MyType` for a type that is `Display`. The compiler
+cannot pick between two implementations, so it refuses both:
 
-`fn total<T: Container>(c: &T)` is compiled separately for each `T` (static
-dispatch, no runtime cost). `&dyn Container` works with any implementor at
-runtime (dynamic dispatch, one function). Traits with associated types or
-generic methods have restrictions as trait objects, which is one reason both
-styles exist.
+```text
+error[E0119]: conflicting implementations of trait `Shout` for type `M`
+  |
+3 | impl<T: fmt::Display> Shout for T {
+  | --------------------------------- first implementation here
+...
+6 | impl Shout for M {
+  | ^^^^^^^^^^^^^^^^ conflicting implementation for `M`
+```
+
+### The orphan rule
+
+There is one restriction on which impls you may write at all, the **orphan
+rule**: at least one of the trait or the type must be defined in your own
+crate. You may implement your trait for `i32`, or `Display` for your type,
+but not `Display` for `Vec<i32>`:
+
+```text
+error[E0117]: only traits defined in the current crate can be implemented for types defined outside of the crate
+  |
+2 | impl fmt::Display for Vec<i32> {
+  | ^^^^^^^^^^^^^^^^^^^^^^--------
+  |                       |
+  |                       `Vec` is not defined in the current crate
+  |
+  = note: define and implement a trait or new type instead
+```
+
+The reason: if two crates could both implement `Display` for `Vec<i32>`, a
+program using both would have two conflicting implementations, and neither
+crate's author could have prevented it. The `note:` gives the standard
+workaround, a **newtype**: a one-field tuple struct such as
+`struct Numbers(Vec<i32>);`, which is your type, so you can implement
+anything for it.
+
+## Generic functions vs trait objects, again
+
+`fn total<T: Container>(c: &T)` is compiled once per type it is used with
+(static dispatch: fast, but more machine code). `fn total(c: &dyn Container)`
+is compiled once and works through a pointer at run time (dynamic dispatch).
+With associated types there is a catch: a `dyn Container` must say its item
+type, as in `&dyn Container<Item = u8>`, because code using it has to know
+what `get` returns. Generic methods (a method with its own `<T>`) make a
+trait unusable as `dyn` at all. Both are reasons generics are the default in
+Rust and trait objects the exception.
 
 ## Run it
 
@@ -145,27 +288,51 @@ impl<T: Display> Shout for T {
 }
 
 fn main() {
-    println!("{:?}", Meters(1.5) + Meters(2.0) * 2.0);
+    let a = Meters(1.5);
+    println!("{:?} {:?}", a + Meters(2.0) * 2.0, a);
     println!("{}", Square(3.0).report());
     println!("{} {}", 42.shout(), "hi".shout());
 }
 ```
 
 ```output
-Meters(5.5)
+Meters(5.5) Meters(1.5)
 Square(3.0) has area 9
 42 HI
 ```
+
+`*` binds tighter than `+`, exactly as with numbers, so the first line is
+1.5 + (2.0 × 2.0). `a` was moved into `+`, but it is `Copy`, so it is still
+printable afterwards. `report` came from the trait's default and used
+`Debug` through the supertrait.
 
 ## Your turn
 
 In `src/lib.rs`:
 
-- `Money { cents: i64 }` supports `a + b`, `a - b`, `money * 3` (an `i64`),
-  `-money`, and `+=`; `Display` shows `12.34` style (negative: `-0.50`)
-- trait `Container` with associated type `Item`, required methods
-  `get(&self, i) -> Option<&Self::Item>` and `len(&self) -> usize`, and default
-  methods `first()` and `is_empty()`; implement it for `Stack<T>`
-- `total_len(a, b)`: sum of lengths of any two containers, generic over both
-- trait `Describe: Display` with a default `describe()` returning `<` + the
-  display text + `>`, implemented for every `Display` type with one blanket impl
+- `Money { cents: i64 }` (already defined, and `Copy`) supports:
+  - `a + b` and `a - b` between two `Money` values
+  - `money * 3`, a `Money` times an `i64`
+  - `-money` (`Neg`)
+  - `a += b` (`AddAssign`)
+- `Display` for `Money`, as units and two-digit cents: `1234` cents is
+  `12.34`, `5` is `0.05`, `100000` is `1000.00`. Negative amounts put the
+  sign in front: `-50` is `-0.50`. Careful: `-50 / 100` is `0`, which has
+  no sign, so print the sign yourself and then format the **absolute** value
+  (`cents.abs()`).
+- trait `Container` with:
+  - an associated type `Item`
+  - required methods `get(&self, i: usize) -> Option<&Self::Item>` and
+    `len(&self) -> usize`
+  - **default** methods `first()` (the item at 0, as `Option<&Self::Item>`)
+    and `is_empty()`, written using `get` and `len`. The tests implement
+    `Container` for a type of their own with only `get` and `len`, and call
+    `first` on it, so these really must be defaults.
+- implement `Container` for `Stack<T>`, for every `T`
+- `total_len(a, b)`: the sum of the lengths of two containers, which may be
+  of **different** types (the signature already has two parameters, `A` and
+  `B`, for that)
+- trait `Describe` with supertrait `Display` and a default `describe()`
+  returning `<`, the display text, and `>`: `42.describe()` is `"<42>"`.
+  Implement it for every `Display` type with a single blanket impl; `Money`
+  then gets it through its `Display`.

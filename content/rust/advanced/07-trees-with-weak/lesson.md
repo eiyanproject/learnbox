@@ -11,21 +11,91 @@ hints:
   - "`find(root, name)`: return `Some(Rc::clone(root))` on a match, else recurse into each child. `depth_first_names` is a recursive pre-order walk."
 ---
 
-`Rc` lets several owners share a value, and `RefCell` lets them mutate it. That
-covers most shared data structures, until one needs to point **back**: a child
-that knows its parent, a doubly-linked list, a graph with cycles.
+`Rc` lets several owners share a value, and `RefCell` lets them change it
+(Intermediate lesson 5). That covers most shared data structures, until one
+of them needs to point **back**: a folder that knows its parent folder, a
+UI widget that knows its window, a doubly-linked list, a graph where two
+nodes point at each other. With only `Rc`, those structures leak memory.
+This lesson shows why, introduces `Weak`, the non-owning pointer that fixes
+it, and builds a tree whose nodes can walk both down to their children and
+up to their parent.
 
 ## The cycle problem
 
-If a parent holds `Rc` to its children and each child holds `Rc` to its parent,
-the counts can never reach zero: parent keeps child alive, child keeps parent
-alive. The memory **leaks**, silently. (Rust's guarantees are about memory
-*safety*; leaking is safe, just wasteful.)
+`Rc` frees its value when the count of `Rc` handles reaches 0. Suppose two
+values hold `Rc`s to **each other**. Each keeps the other's count at 1 or
+more, so neither count can ever reach 0, even after every variable in your
+program that pointed at them is gone.
 
-## Weak<T>: a non-owning pointer
+The program below gives each node a `Drop` implementation, a method Rust
+calls when a value is freed, which prints a line, so we can see what is
+freed:
 
-`Rc::downgrade(&rc)` creates a `Weak<T>`. It does not count towards keeping the
-value alive:
+```rust
+use std::cell::RefCell;
+use std::rc::Rc;
+
+struct Node {
+    name: &'static str,
+    other: RefCell<Option<Rc<Node>>>,
+}
+
+impl Drop for Node {
+    fn drop(&mut self) {
+        println!("dropping {}", self.name);
+    }
+}
+
+fn main() {
+    {
+        let a = Rc::new(Node { name: "a", other: RefCell::new(None) });
+        let b = Rc::new(Node { name: "b", other: RefCell::new(None) });
+        *a.other.borrow_mut() = Some(Rc::clone(&b));      // a -> b only
+        println!("one way: {} {}", Rc::strong_count(&a), Rc::strong_count(&b));
+    }
+    println!("--");
+    {
+        let c = Rc::new(Node { name: "c", other: RefCell::new(None) });
+        let d = Rc::new(Node { name: "d", other: RefCell::new(None) });
+        *c.other.borrow_mut() = Some(Rc::clone(&d));      // c -> d
+        *d.other.borrow_mut() = Some(Rc::clone(&c));      // d -> c: a cycle
+        println!("cycle: {} {}", Rc::strong_count(&c), Rc::strong_count(&d));
+    }
+    println!("end of main");
+}
+```
+
+```output
+one way: 1 2
+dropping a
+dropping b
+--
+cycle: 2 2
+end of main
+```
+
+In the first block, the variable `a` goes out of scope, `a`'s count drops to
+0, and `a` is freed; that drops its `Rc` to `b`, and `b` is freed in turn.
+In the second block, the variables `c` and `d` go away, but each count only
+falls from 2 to 1, because each node still holds the other. Nothing prints:
+the two nodes are unreachable and never freed. That is a **memory leak**.
+
+```text
+ after the block ends:        c ──Rc──> d
+                              ^          │
+                              └───Rc─────┘     counts 1 and 1: never freed
+```
+
+The compiler does not catch this. Rust's guarantees are about memory
+**safety**: never using freed memory, never freeing twice. A leak is safe,
+only wasteful, and in a long-running program with many cycles it grows until
+memory runs out.
+
+## Weak<T>: a pointer that does not own
+
+`Weak<T>` is a second kind of handle to an `Rc`'s value, one that does
+**not** count towards keeping it alive. You make one from an `Rc` with
+`Rc::downgrade`:
 
 ```rust
 use std::rc::{Rc, Weak};
@@ -37,11 +107,23 @@ drop(strong);
 weak.upgrade()                  // None: it was freed
 ```
 
-`upgrade()` returns an `Option<Rc<T>>` because the value may be gone.
+(A fragment.) An `Rc` keeps two counts: the **strong** count (the `Rc`
+handles; the value is freed when it reaches 0) and the **weak** count (the
+`Weak` handles; these only keep the bookkeeping around, so a `Weak` can tell
+that the value is gone). `Rc::strong_count` and `Rc::weak_count` read them.
+
+Since the value might already be freed, a `Weak` cannot be used directly.
+`upgrade()` returns `Option<Rc<T>>`: `Some` with a new strong handle if the
+value is still alive, `None` if it was freed. The `Rc` you get back keeps the
+value alive while you use it, then is dropped as usual. `Weak::new()` makes a
+`Weak` that points at nothing, whose `upgrade()` is always `None`, which is
+handy as "no parent yet".
 
 ## The standard tree shape
 
-Ownership flows **down**; back-references are weak:
+The rule that avoids cycles: **ownership flows one way**. In a tree, a
+parent owns its children with `Rc`, and a child refers back to its parent
+with `Weak`:
 
 ```rust
 use std::cell::RefCell;
@@ -53,26 +135,70 @@ struct Node {
 }
 ```
 
-- `RefCell` around both, because we set a child's parent and push children after
-  the nodes are created, through shared `Rc` handles.
-- Dropping the root drops its children (their strong counts reach zero), and
-  every child's weak parent pointer simply stops upgrading.
+```text
+             root   (strong count 1: the caller's variable)
+            /    \       strong Rc down to children
+          usr    etc
+         /   \           weak back to the parent, not counted
+       bin   lib
+```
 
-`Rc::strong_count` and `Rc::weak_count` let you check what is keeping a value alive.
+- Both fields are in a `RefCell`, because a node is created first and
+  linked afterwards: setting a child's parent and pushing onto a parent's
+  children happen through shared `Rc<Node>` handles, which only give `&`
+  access (interior mutability, Intermediate lesson 5).
+- Dropping the root frees the whole tree: the root's strong count reaches 0,
+  its `children` vector is dropped, which drops the children's `Rc`s, so
+  their counts reach 0 too, and so on down. The children's weak parent
+  pointers were never counted, so they do not stand in the way. If someone
+  still holds an `Rc` to a node deep inside, that node survives, but its
+  parent pointer now `upgrade`s to `None`.
+
+The exercise's starter has the leaking version, with a strong
+`Option<Rc<Node>>` as the parent. The tests check the counts directly:
+the root of the sample tree must have strong count 1 (only the test's
+variable) and weak count 2 (its two children), and after dropping the root,
+a `Weak` to one of its children must fail to upgrade.
 
 ## Walking the tree
 
-Downwards is ordinary recursion over `children.borrow()`. Upwards is a loop over
-`parent.borrow().upgrade()` until it returns `None` at the root.
+**Downwards** is ordinary recursion over each node's children. A
+**pre-order** walk visits a node first, then each child's whole subtree in
+turn, which lists a folder before its contents:
 
-Keep `RefCell` borrows short: holding `children.borrow()` while something else
-calls `children.borrow_mut()` on the same node panics.
+```text
+ visit order:  root, usr, bin, lib, etc
+```
+
+**Upwards** is a loop: `upgrade` the parent; if it is `Some`, record it and
+take *its* parent; stop at `None`, which is the root:
+
+```rust
+let mut names = vec![n.name.clone()];
+let mut cur = n.parent.borrow().upgrade();     // Option<Rc<Node>>
+while let Some(p) = cur {
+    names.push(p.name.clone());
+    cur = p.parent.borrow().upgrade();
+}
+names.reverse();                               // collected from the bottom up
+```
+
+(A fragment.) Keep `RefCell` borrows short. `n.parent.borrow()` here is a
+temporary dropped at the end of its statement, so nothing stays borrowed.
+Holding `children.borrow()` in a variable while other code calls
+`children.borrow_mut()` on the same node panics with "RefCell already
+borrowed" (Intermediate lesson 5).
 
 ## Alternatives
 
-For large or heavily mutated graphs, an **arena** (all nodes in a `Vec`, edges
-as indices) is often simpler and faster than `Rc<RefCell<...>>`. The `Rc`/`Weak`
-style shines for moderate, naturally hierarchical data like UI trees and DOMs.
+`Rc<RefCell<...>>` structures are correct but have costs: a counter update
+on every clone, a run-time borrow check on every access, and one heap
+allocation per node. For large or heavily changing graphs, an **arena** is
+often simpler and faster: keep all nodes in one `Vec<Node>` and refer to
+other nodes by their **index** (a `usize`) instead of by pointer. Cycles are
+then harmless, since nothing is reference counted, and the whole graph is
+freed at once with the `Vec`. The `Rc`/`Weak` style suits moderate,
+naturally hierarchical data, such as UI trees and documents.
 
 ## Run it
 
@@ -143,16 +269,28 @@ true
 false
 ```
 
-`docs` has two strong owners - the variable and `root`'s child list - and one weak one, `a.txt`'s parent pointer, which does not keep it alive.
+`docs` has two strong owners, the variable and `root`'s child list, and one
+weak one, `a.txt`'s parent pointer, which does not keep it alive. After the
+variables `file` and `docs` were dropped, the chain survived, because `root`
+still owned it through its children. Dropping `root` freed all three.
 
 ## Your turn
 
-In `src/lib.rs`:
+In `src/lib.rs`, the starter's `Node` has a **strong** parent pointer, which
+leaks. Change it to `RefCell<Weak<Node>>` and update the code that uses it:
 
-- `Node::new(name) -> Rc<Node>`, `name()`, `parent() -> Option<Rc<Node>>`,
-  `children() -> Vec<Rc<Node>>`
-- `add_child(parent, child)` sets both links
-- `path(node)`: `"root/usr/bin"` style, from the root down to this node
-- `find(root, name)`: depth-first search returning the node
-- `depth_first_names(root)`: all names in pre-order
-- the tree must not leak: after dropping the root, its nodes are freed
+- `Node::new(name) -> Rc<Node>`, with no parent yet (`Weak::new()`)
+- `name()`, `children() -> Vec<Rc<Node>>` (a copy of the list of handles),
+  and `parent() -> Option<Rc<Node>>`, which is now an `upgrade()`:
+  `None` for the root, and also `None` once the parent has been freed
+- `add_child(parent, child)` sets both links: the child's weak parent
+  pointer, and the parent's strong reference to the child
+- `path(node)`: the names from the root down to this node, joined with `/`:
+  `"root/usr/bin"`. For the root alone it is `"root"`, and for a node whose
+  parent was freed, just its own name.
+- `find(root, name)`: a depth-first search returning the first node with
+  that name (the root included) as `Some(Rc<Node>)`, or `None`
+- `depth_first_names(root)`: all names in pre-order:
+  `["root", "usr", "bin", "lib", "etc"]` for the sample tree
+- no leaks: in the sample tree, the root has strong count 1 and weak count 2,
+  and dropping the root frees every node nobody else holds

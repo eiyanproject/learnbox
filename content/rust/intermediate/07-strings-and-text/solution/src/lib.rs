@@ -34,7 +34,7 @@ pub fn parse_rgb(s: &str) -> Option<(u8, u8, u8)> {
 }
 
 pub fn normalize_spaces(s: &str) -> Cow<'_, str> {
-    if !s.contains("  ") {
+    if !s.contains("  ") && !s.starts_with(' ') && !s.ends_with(' ') {
         return Cow::Borrowed(s);
     }
     Cow::Owned(s.split(' ').filter(|w| !w.is_empty()).collect::<Vec<_>>().join(" "))

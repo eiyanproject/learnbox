@@ -12,7 +12,11 @@ hints:
 ---
 
 Moving a value into every function that wants to look at it would be
-tiresome. Instead, you **borrow** it with a reference.
+tiresome: the function would have to hand it back every time, or the caller
+would lose it. Instead, you **borrow** it with a reference. It works like
+lending someone a book: they can read it (or, if you allow it, write in
+it), but it is still yours, and they must give it back before you can throw
+it away.
 
 ## References
 
@@ -26,8 +30,11 @@ let n = length(&name);    // lend it
 println!("{name}");       // still ours
 ```
 
-`&name` creates a reference; the function gets to use the value but not own
-it. When the function returns, nothing is dropped.
+(A fragment.) `&name` creates a **reference**: a pointer to `name` that does
+not own it. The parameter type `&String` says "a reference to a `String`".
+The function gets to use the value but not own it, and when the function
+returns, nothing is dropped, because the reference never owned anything.
+Creating a reference is called **borrowing**.
 
 ## Mutable references
 
@@ -41,6 +48,10 @@ fn add_bang(s: &mut String) {
 let mut msg = String::from("hi");
 add_bang(&mut msg);       // msg is now "hi!"
 ```
+
+Three things have to agree: the variable is `mut`, the call passes
+`&mut msg`, and the parameter type is `&mut String`. A plain `&` reference is
+read-only, so `s.push` through one fails to compile.
 
 ## The borrowing rule
 
@@ -59,11 +70,66 @@ v.push(4);                // error: cannot borrow `v` as mutable
 println!("{first}");      // because `first` is still in use here
 ```
 
-`push` might move the vector's buffer, which would leave `first` pointing at
-freed memory. The compiler refuses.
+The compiler explains exactly which borrows collide, and where:
+
+```text
+error[E0502]: cannot borrow `v` as mutable because it is also borrowed as immutable
+  |
+3 |     let first = &v[0];
+  |                  - immutable borrow occurs here
+4 |     v.push(4);
+  |     ^^^^^^^^^ mutable borrow occurs here
+5 |     println!("{first}");
+  |                ----- immutable borrow later used here
+```
+
+Read the three labels top to bottom: a shared borrow starts on line 3, a
+mutable borrow happens on line 4, and the shared one is still needed on line
+5, so the two overlap.
+
+Why is that dangerous? A vector keeps its items in one block of heap
+memory. When it is full, `push` moves everything to a new, bigger block and
+frees the old one. `first` points into the old block, so after the push it
+would point at freed memory, a **dangling reference**. In C or C++ this
+compiles, and reads garbage or crashes at some later moment. The compiler
+refuses.
 
 A borrow lasts until its **last use**, not until the end of the block. Move
-the `println!` above the `push` and the code compiles.
+the `println!` above the `push` and the code compiles: `first` is no longer
+used after that line, so its borrow has ended before `push` starts. This is
+called **non-lexical lifetimes**: the borrow's length follows how the
+reference is used, not the block it sits in.
+
+## References must always be valid
+
+Let's try to make a reference outlive the value it points to:
+
+```rust
+fn dangle() -> &String {
+    let s = String::from("hello");
+    &s              // s is dropped when the function ends...
+}                   // ...so this reference would point at nothing
+```
+
+```text
+error[E0106]: missing lifetime specifier
+  |
+1 | fn dangle() -> &String {
+  |                ^ expected named lifetime parameter
+  |
+  = help: this function's return type contains a borrowed value, but there is no value for it to be borrowed from
+```
+
+The message mentions lifetimes, which are lesson 12. Ignore that part for
+now; the `help:` line holds the key: there is no value for the reference to
+borrow from. The fix is to return the `String` itself, moving ownership out
+to the caller, which the compiler also suggests further down.
+
+To recap, the two rules of references:
+
+1. At any moment, **either** any number of shared references **or** one
+   mutable reference.
+2. A reference must never outlive the value it points to.
 
 ## Dereferencing
 
@@ -80,7 +146,10 @@ rarely see `*` except when writing through `&mut`.
 
 ## Slices
 
-A slice is a reference to part of a sequence.
+A **slice** is a reference to part of a sequence: a contiguous run of a
+string, array or vector, without copying it. `[start..end]` picks positions
+`start` up to but not including `end`; leave out either end to go to the
+edge.
 
 ```rust
 let s = String::from("hello world");
@@ -150,8 +219,10 @@ hi!
 In `src/lib.rs`:
 
 - `first_word(s)`: the text up to the first space, as a slice of `s` (no new
-  `String`). No space means the whole string.
-- `sum(nums)`: the sum of a slice of `i32`
-- `double_all(nums)`: double every number **in place**
+  `String`): `first_word("hello world")` is `"hello"`. No space means the
+  whole string.
+- `sum(nums)`: the sum of a slice of `i32`, `0` for an empty slice
+- `double_all(nums)`: double every number **in place**, through the mutable
+  slice it is given; it returns nothing
 - `append_greeting(buf, name)`: add the line `Hello, <name>` and a newline to
-  the end of `buf`
+  the end of `buf`, keeping what `buf` already holds

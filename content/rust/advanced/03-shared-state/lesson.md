@@ -11,13 +11,30 @@ hints:
   - "`transfer(from, to, amount)` must lock both accounts in a consistent order (by `id`) to avoid deadlock, then check the balance and move the money while holding both locks."
 ---
 
-Channels move data between threads. When several threads really need to see
-and change the **same** data, you share it.
+Channels (lesson 2) move values between threads, so each value has one
+owner at a time. Some data does not fit that model: a bank balance that many
+threads deposit into, a counter of requests served, settings every thread
+reads. Several threads need to see and change **the same** value. This
+lesson covers the tools for that, which mirror the single-threaded ones from
+Intermediate lesson 5:
+
+| Single-threaded | Thread-safe | Job |
+|---|---|---|
+| `Rc<T>` | `Arc<T>` | several owners of one value |
+| `RefCell<T>` | `Mutex<T>`, `RwLock<T>` | change a value through a shared reference |
+| `Cell<i32>` and friends | `AtomicU64` and friends | change one number without any lock |
+
+The thread-safe versions cost a little more, and the compiler's `Send` and
+`Sync` checks (lesson 1) make sure you cannot use the cheaper ones by
+mistake.
 
 ## Arc: Rc for threads
 
-`Arc<T>` (atomically reference counted) is the thread-safe version of `Rc`:
-cloning it is cheap, and the value lives until the last clone is dropped.
+`Arc<T>` (**a**tomically **r**eference **c**ounted) is the thread-safe
+version of `Rc`. It updates its counter with **atomic** operations, which
+the processor guarantees cannot be interrupted halfway, so two threads
+cloning at the same time can never lose a count. Like `Rc`, cloning it is
+cheap and shares the value, and the value is dropped when the last clone is:
 
 ```rust
 use std::sync::Arc;
@@ -25,14 +42,37 @@ use std::thread;
 
 let config = Arc::new(load_config());
 for _ in 0..4 {
-    let config = Arc::clone(&config);
+    let config = Arc::clone(&config);     // one handle per thread
     thread::spawn(move || use_config(&config));
 }
 ```
 
-Like `Rc`, `Arc` gives only shared (`&`) access.
+(A fragment.) The pattern, clone first and then `move` the clone in, is how
+every thread gets its own owning handle. Why not `move` the value
+itself? Because only one thread could own it then:
 
-## Mutex: one at a time
+```text
+error[E0382]: borrow of moved value: `counter`
+  |
+4 |     let counter = Mutex::new(0);
+  |         ------- move occurs because `counter` has type `std::sync::Mutex<i32>`, which does not implement the `Copy` trait
+5 |     let h = thread::spawn(move || { *counter.lock().unwrap() += 1; });
+  |                           -------    ------- variable moved due to use in closure
+...
+7 |     println!("{}", counter.lock().unwrap());
+  |                    ^^^^^^^ value borrowed here after move
+```
+
+Like `Rc`, `Arc` gives only shared (`&`) access to the value inside.
+Changing it needs one of the types below. (Scoped threads, lesson 1, can
+borrow without `Arc`; `Arc` is for `thread::spawn` and for data that must
+outlive any one function.)
+
+## Mutex: one thread at a time
+
+A **mutex** (from **mut**ual **ex**clusion) is a lock around a value: a
+thread must **lock** it to reach the value, and only one thread can hold the
+lock at a time. The others wait in `lock()` until it is released.
 
 ```rust
 use std::sync::{Arc, Mutex};
@@ -46,49 +86,147 @@ let handles: Vec<_> = (0..8).map(|_| {
 }).collect();
 ```
 
-- `lock()` blocks until the mutex is free, and returns a `MutexGuard` that
-  derefs to the data. The lock is released when the guard is dropped.
-- The data is **inside** the mutex. There is no way to reach it without locking,
-  which is the whole point.
-- `lock()` returns `Err` if another thread panicked while holding the lock
-  ("poisoned"); `.unwrap()` is common when that should never happen.
+(A fragment.) What happens on that line:
 
-Keep the critical section to one logical operation. Checking a balance in one
-lock and subtracting in a second lock lets another thread slip in between.
+1. `counter.lock()` waits until no other thread holds the lock, then takes
+   it, and returns a `MutexGuard`, which acts like `&mut` to the number
+   inside.
+2. `*... += 1` changes the number through the guard.
+3. The guard is a temporary, dropped at the end of the statement, and
+   **dropping the guard releases the lock**. You never unlock by hand, so you
+   cannot forget to.
+
+Rust's design has one big difference from mutexes in most languages: the
+data is **inside** the mutex. In C or Java, a lock and the data it protects
+are separate things, and nothing stops code from touching the data without
+taking the lock. Here there is no way to reach the number except through
+`lock()`.
+
+`lock()` returns a `Result`. It is `Err` if another thread **panicked**
+while holding this lock, which may have left the data half-updated; the
+mutex is then called **poisoned**. `.unwrap()` turns that into a panic in
+this thread too, which is the usual choice when it should never happen.
+
+### Hold the lock for the whole operation
+
+A mutex only protects what happens *while you hold it*. This `withdraw` is
+broken, even though every access is locked:
+
+```rust
+fn withdraw(&self, amount: i64) -> bool {
+    if *self.balance.lock().unwrap() >= amount {      // lock 1: check, unlock
+        *self.balance.lock().unwrap() -= amount;      // lock 2: subtract, unlock
+        true
+    } else {
+        false
+    }
+}
+```
+
+Two threads withdrawing 80 from a balance of 100 can interleave like this:
+
+| Thread A | Thread B | Balance |
+|---|---|---|
+| lock, see 100 ≥ 80, unlock | | 100 |
+| | lock, see 100 ≥ 80, unlock | 100 |
+| lock, subtract 80, unlock | | 20 |
+| | lock, subtract 80, unlock | **-60** |
+
+Both checks passed before either subtraction. This is called a **race
+condition** (not a data race: there was no unsynchronised access, so the
+compiler cannot catch it), and the fix is to check and change under **one**
+lock:
+
+```rust
+fn withdraw(&self, amount: i64) -> bool {
+    let mut balance = self.balance.lock().unwrap();   // locked until `balance` is dropped
+    if *balance < amount {
+        return false;
+    }
+    *balance -= amount;
+    true
+}
+```
+
+Naming the guard (`let mut balance = ...`) keeps the lock held until the
+end of the function. The exercise's tests run ten threads withdrawing at
+once and check that exactly the available money is paid out.
 
 ## RwLock: many readers or one writer
+
+A `Mutex` lets one thread in at a time, even if all of them only want to
+read. An `RwLock` (read-write lock) has the same rule as borrowing: **many
+readers, or one writer**:
 
 ```rust
 use std::sync::RwLock;
 
 let settings = RwLock::new(HashMap::new());
-settings.read().unwrap().get("theme");        // many readers at once
-settings.write().unwrap().insert(k, v);       // exclusive
+settings.read().unwrap().get("theme");        // shared: many readers at once
+settings.write().unwrap().insert(k, v);       // exclusive: waits until no one reads
 ```
 
-Worth it when reads vastly outnumber writes.
+(A fragment.) It is worth it when reads vastly outnumber writes, as with
+configuration. When reads and writes are about equal, or locks are held only
+briefly, a `Mutex` is simpler and often just as fast.
 
 ## Atomics: lock-free counters and flags
 
-For a single integer or bool, atomic types avoid locks altogether:
+For a single integer or `bool`, a whole lock is more than needed. The
+**atomic** types in `std::sync::atomic` (`AtomicU64`, `AtomicUsize`,
+`AtomicBool`, ...) are numbers whose operations the processor performs as
+one indivisible step, without any lock:
 
 ```rust
 use std::sync::atomic::{AtomicU64, Ordering};
 
 static REQUESTS: AtomicU64 = AtomicU64::new(0);
-REQUESTS.fetch_add(1, Ordering::Relaxed);
+REQUESTS.fetch_add(1, Ordering::Relaxed);     // add 1, as one indivisible step
+REQUESTS.load(Ordering::Relaxed)              // read the current value
 ```
 
-(`Ordering` here is about CPU memory ordering, not sorting; `Relaxed` is fine for
-statistics. The Pro track goes deeper.)
+(A fragment.) Note that `fetch_add` takes `&self`: atomics can be changed
+through a shared reference, which is why one can live in a `static` (a
+global variable) or an `Arc` and be updated from every thread.
+
+A plain `counter += 1` is really three steps: read, add, write back. Two
+threads can both read 5 and both write 6, losing one count. `fetch_add` does
+the three steps as one.
+
+`Ordering` here has nothing to do with sorting. It controls how this
+operation is ordered relative to *other* memory operations around it, as
+seen from other threads. `Relaxed`, the weakest, only guarantees the
+operation itself is atomic, which is all a statistics counter needs. The
+Pro track's atomics lesson explains the stronger orderings and when they
+matter.
 
 ## Deadlocks
 
-Thread A locks `x` then waits for `y`; thread B locks `y` then waits for `x`.
-Both wait forever. The standard cure is a **global lock order**: whenever you
-need several locks, always take them in the same order (by id, by address).
+Locks bring a new way to fail. Thread A locks account `x`, then waits to
+lock `y`. At the same moment, thread B has locked `y` and waits for `x`.
+Each waits for the other, forever: a **deadlock**.
 
-Rust prevents data races at compile time, but not deadlocks.
+```text
+ thread A:  holds x ─── wants y ───┐
+                                   │   both wait forever
+ thread B:  holds y ─── wants x ───┘
+```
+
+That is exactly what happens to a `transfer(from, to)` that always locks
+`from` first, the moment two threads transfer in opposite directions.
+
+The standard cure is a **global lock order**: whenever code needs more than
+one lock, it always takes them in the same order, for example by an id
+number. Then both threads try `x` first (say it has the lower id), one of
+them gets it, and the other waits *before* holding anything, so the cycle
+cannot form.
+
+Rust prevents data races at compile time, but **not** deadlocks or the race
+condition above: those are about the logic of your program, which the
+compiler cannot see. (One more consequence: locking the same `Mutex` twice
+in one thread also deadlocks, or panics, since the second `lock()` waits for
+a lock that thread itself holds. So `transfer` from an account to itself
+must not lock both.)
 
 ## Run it
 
@@ -144,15 +282,33 @@ Some("dark") 1
 true
 ```
 
+8 threads × 1000 increments came to exactly 8000 both ways: through the
+mutex and through the atomic. Once the threads finished, their `Arc`
+clones were dropped, leaving 1. The two read guards existed at the same
+time without blocking each other; `drop((r1, r2))` released both. The last
+thread panicked while holding `m`'s lock, so `m` is poisoned. (Its panic
+message goes to standard error, so it is not shown above.)
+
 ## Your turn
 
 In `src/lib.rs`:
 
-- `BankAccount` (cloneable handle to one shared account): `new(id, balance)`,
-  `deposit`, `withdraw` (returns `false` and changes nothing if funds are
-  insufficient), `balance`
-- `transfer(from, to, amount)`: atomic with respect to both accounts; returns
-  `false` if `from` lacks funds; must not deadlock when two threads transfer in
-  opposite directions at the same time
-- `HitCounter`: cloneable, lock-free `hit()` and `total()`
-- `ConfigStore`: cloneable `get(key) -> Option<String>` and `set(key, value)` backed by `RwLock`
+- `BankAccount`: a cloneable handle to one shared account; every clone sees
+  the same balance (the tests deposit from 8 threads at once)
+  - `new(id, balance)`, `deposit(&self, amount)`, `balance(&self)`
+  - `withdraw(&self, amount) -> bool`: takes the money and returns `true`,
+    or, if the balance is less than `amount`, returns `false` and changes
+    nothing. Check and subtract under **one** lock: the tests make 2000
+    withdrawals of 1 from 10 threads against a balance of 1000, and require
+    exactly 1000 to succeed.
+- `transfer(from, to, amount) -> bool`: moves `amount` from `from` to `to`,
+  or returns `false` and changes nothing if `from` has too little. Hold both
+  locks for the whole check-and-move, so no one sees the money in neither
+  account or both. It must **not deadlock** when two threads transfer between
+  the same two accounts in opposite directions (the tests do 20,000 each way):
+  lock the account with the smaller `id` first.
+- `HitCounter`: cloneable, all clones counting together, with `hit()` and
+  `total()`, lock-free: the tests check your source mentions `AtomicU64`
+- `ConfigStore`: cloneable, backed by an `RwLock`, with
+  `get(&self, key) -> Option<String>` (a copy of the value) and
+  `set(&self, key, value)`

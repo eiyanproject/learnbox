@@ -11,21 +11,38 @@ hints:
   - "`shortest_path` is breadth-first search: `VecDeque` of `(node, distance)`, a `HashSet` of visited nodes, `pop_front`, and push unvisited neighbours with `distance + 1`."
 ---
 
+Beginner lesson 9 covered `Vec`, `String` and `HashMap`, which handle most
+needs. The standard library's `std::collections` has a few more, each built
+for one job that the big three do badly. Choosing the right one often turns
+a slow, fiddly function into a few lines, and this lesson's exercise is four
+problems, each with the collection that fits it.
+
 ## The standard collections at a glance
 
-| Need | Use |
-|---|---|
-| a list, push/pop at the end | `Vec<T>` |
-| push/pop at **both** ends (a queue) | `VecDeque<T>` |
-| look up by key, order does not matter | `HashMap<K, V>` |
-| look up by key, **iterate in key order**, ranges | `BTreeMap<K, V>` |
-| membership, no duplicates | `HashSet<T>` / `BTreeSet<T>` |
-| repeatedly take the **largest** item | `BinaryHeap<T>` |
+| Need | Use | Why not the obvious choice? |
+|---|---|---|
+| a list, add and remove at the end | `Vec<T>` | |
+| add at one end, remove at the other (a queue) | `VecDeque<T>` | `Vec::remove(0)` shifts every other item along |
+| look up by key, order does not matter | `HashMap<K, V>` | |
+| look up by key, **walk in key order**, find key ranges | `BTreeMap<K, V>` | a `HashMap` has no order at all |
+| "is it in there?", no duplicates | `HashSet<T>` / `BTreeSet<T>` | a `Vec` must check every item |
+| repeatedly take the **largest** item | `BinaryHeap<T>` | re-sorting a `Vec` after every insert is slow |
 
-`Hash*` collections need `K: Hash + Eq` and are usually fastest. `BTree*`
-collections need `K: Ord`, keep keys sorted, and support `range(..)`.
+The two families of maps and sets make different demands on the key type:
 
-## BTreeMap
+- `HashMap` and `HashSet` need keys that are `Hash + Eq`: they work out a
+  number from each key, its **hash**, and use it to jump straight to the
+  key's slot. They are usually the fastest, and have no order.
+- `BTreeMap` and `BTreeSet` need keys that are `Ord`: they keep keys in a
+  sorted tree, so lookups are a little slower (about one comparison per
+  level of the tree), but iteration is always in key order and you can ask
+  for a range of keys.
+
+Strings, integers, `char`, `bool`, and tuples of those, satisfy both. For your
+own types, `#[derive(PartialEq, Eq, Hash)]` or `#[derive(PartialEq, Eq,
+PartialOrd, Ord)]` provide what is needed.
+
+## BTreeMap: a map that stays sorted
 
 ```rust
 use std::collections::BTreeMap;
@@ -33,47 +50,100 @@ use std::collections::BTreeMap;
 let mut by_date = BTreeMap::new();
 by_date.insert("2026-09-18", "deploy");
 by_date.insert("2026-01-02", "kickoff");
-for (date, event) in &by_date { }          // in date order
-by_date.range("2026-06-01"..)               // everything from June on
-by_date.first_key_value()                   // the smallest key
+for (date, event) in &by_date { }          // in date order, whatever the insert order
+by_date.range("2026-06-01"..)               // the entries from that key onwards
+by_date.first_key_value()                   // Some((smallest key, its value))
 ```
 
+(A fragment.) Dates written as `YYYY-MM-DD` sort correctly as plain strings,
+which is why that format is popular. `range` takes the same ranges as
+slicing: `a..b`, `a..`, `..=b`. Iterating backwards, `.iter().rev()`,
+gives the largest key first, which is how you get "highest score first" in
+the exercise. The API otherwise matches `HashMap`: `insert`, `get`,
+`entry`, `remove`.
+
 ## Set algebra
+
+A set holds each value at most once. Besides fast "is it in there?"
+(`contains`), sets support the classic operations of set theory:
 
 ```rust
 use std::collections::HashSet;
 
 let a: HashSet<i32> = [1, 2, 3].into();
 let b: HashSet<i32> = [2, 3, 4].into();
-a.intersection(&b)           // 2, 3
-a.union(&b)                  // 1, 2, 3, 4
-a.difference(&b)             // 1
-a.symmetric_difference(&b)   // 1, 4
-a.is_subset(&b)
+a.intersection(&b)           // in both:          2, 3
+a.union(&b)                  // in either:        1, 2, 3, 4
+a.difference(&b)             // in a but not b:   1
+a.symmetric_difference(&b)   // in exactly one:   1, 4
+a.is_subset(&b)              // is every item of a also in b? false
 ```
 
-These return iterators of references; `.copied().collect()` or `.cloned()` to own them.
+(A fragment.) As a picture, with `a` holding 1, 2, 3 and `b` holding 2, 3, 4:
+
+```text
+   only in a      in both      only in b
+       1           2, 3            4
+   difference   intersection
+   └───── symmetric difference: 1 and 4 ─────┘
+   └──────────── union: all four ────────────┘
+```
+
+`[1, 2, 3].into()` builds a set from an array, through the `From` trait
+(lesson 3). Building one from a slice with duplicates, such as
+`["rust", "web", "rust"]`, silently keeps one `"rust"`: that de-duplication
+is half of the exercise's tag functions. The operations return **iterators
+of references** into the sets, in no particular order; add `.copied()` (for
+`Copy` items) or `.cloned()` to get owned values, then `collect` and `sort`
+for a stable order.
 
 ## BinaryHeap: a priority queue
 
-`BinaryHeap` is a **max**-heap: `pop` always returns the largest item.
+A **priority queue** is a collection where you can always take out the most
+important item next, however many you add in between: the next job to run,
+the closest unexplored location, the most frequent word. `BinaryHeap` is a
+**max**-heap: `pop` always returns the largest item. Both `push` and `pop`
+are fast, much faster than sorting everything each time.
 
 ```rust
 use std::collections::BinaryHeap;
 use std::cmp::Reverse;
 
 let mut heap = BinaryHeap::new();
-heap.push(5); heap.push(1); heap.push(8);
-heap.pop()                  // Some(8)
+heap.push(5);
+heap.push(1);
+heap.push(8);
+heap.pop()                  // Some(8), then Some(5), then Some(1), then None
 
 let mut min_heap = BinaryHeap::new();
-min_heap.push(Reverse(5));  // Reverse flips the ordering: smallest comes out first
+min_heap.push(Reverse(5));  // Reverse flips the ordering: the smallest comes out first
 ```
 
-Tuples compare field by field, so `(priority, Reverse(name))` means "highest
-priority first, and alphabetical among equals".
+(A fragment.) `std::cmp::Reverse` is a wrapper whose comparison is the
+opposite of what it wraps: `Reverse(1) > Reverse(5)`. The heap still takes
+the "largest", which is now the smallest number.
+
+Priorities with several parts use **tuples**, which compare field by field,
+left to right: the first fields decide, and only on a tie does the second
+field matter. So a heap of `(count, Reverse(word))` gives the highest count
+first, and among equal counts the alphabetically **first** word, because
+`Reverse` flips `"a" < "b"` into `Reverse("a") > Reverse("b")`. That is
+exactly what `top_k_frequent` needs.
 
 ## VecDeque and breadth-first search
+
+A `VecDeque` ("vec-deck", a double-ended queue) can add and remove at
+**both** ends quickly: `push_back`, `push_front`, `pop_back`, `pop_front`.
+Used with `push_back` and `pop_front` only, it is a **queue**: first in,
+first out, like a line at a counter.
+
+The classic use is **breadth-first search** (BFS): exploring a graph of
+connected nodes, nearest first. Start from one node; visit all its
+neighbours (distance 1); then all of *their* unvisited neighbours (distance
+2); and so on, like ripples spreading on water. Because nodes are taken out
+in the order they were found, every node is first reached by a shortest
+route, so BFS finds shortest paths in graphs where every edge counts the
+same:
 
 ```rust
 use std::collections::VecDeque;
@@ -82,13 +152,15 @@ let mut queue = VecDeque::new();
 queue.push_back(start);
 while let Some(node) = queue.pop_front() {
     for next in neighbours(node) {
+        // only if next has not been seen before:
         queue.push_back(next);
     }
 }
 ```
 
-Exploring a graph in order of distance from the start (BFS) finds shortest
-paths in unweighted graphs.
+(A sketch.) You must remember which nodes have been seen already, in a
+`HashSet` or an array, and only queue unseen ones. Otherwise two nodes that
+point at each other send the search round in circles forever.
 
 ## Run it
 
@@ -148,16 +220,42 @@ Some(8) Some(1)
 [0, 1, 1, 2]
 ```
 
-`z` comes first on priority 3; then, on equal priority 2, `Reverse` puts `a` ahead of `b`.
+The map printed in date order although `deploy` was inserted first. In the
+task heap, `z` comes first on priority 3; then, on equal priority 2,
+`Reverse` puts `a` ahead of `b`. (`std::iter::from_fn` makes an iterator
+from a closure, calling it until it returns `None`: a short way to pop
+everything.)
+
+The BFS used `usize::MAX` as "not seen yet". Node 3 is reachable both via 1
+and via 2; it was first found from node 1, with distance 2, and the second
+route was ignored because `dist[3]` was already set:
+
+| Queue before | Take | New neighbours | `dist` after |
+|---|---|---|---|
+| `[0]` | 0 | 1, 2 | `[0, 1, 1, MAX]` |
+| `[1, 2]` | 1 | 3 | `[0, 1, 1, 2]` |
+| `[2, 3]` | 2 | none (3 already seen) | same |
+| `[3]` | 3 | none | same |
 
 ## Your turn
 
-In `src/lib.rs`:
+In `src/lib.rs`, each function with the collection named:
 
-- `leaderboard(scores: &[(&str, u32)])`: lines like `"90: ana, budi"`, highest
-  score first, names sorted within a score, using `BTreeMap`
-- `common_tags(a, b)` and `unique_to_first(a, b)`: sorted, de-duplicated, using `HashSet` operations
-- `top_k_frequent(words, k)`: the `k` most frequent words, ties broken
-  alphabetically, using `BinaryHeap`
-- `shortest_path(edges, start, goal)`: number of edges on the shortest path in
-  an undirected graph given as pairs, or `None` if unreachable (BFS with `VecDeque`)
+- `leaderboard(scores: &[(&str, u32)])`, with `BTreeMap`: one line per
+  score, formatted `"90: ana, budi"`, highest score first, the names for each
+  score sorted alphabetically and joined by `", "`. An empty list gives an
+  empty `Vec`.
+- `common_tags(a, b)` and `unique_to_first(a, b)`, with `HashSet`: the tags in
+  both lists, and the tags in `a` but not in `b`. Each tag appears once even if
+  a list repeats it, and the result is sorted: with `a = ["rust", "web",
+  "cli", "rust"]` and `b = ["cli", "python", "rust"]`, they are
+  `["cli", "rust"]` and `["web"]`.
+- `top_k_frequent(words, k)`, with `BinaryHeap`: the `k` most frequent words,
+  most frequent first; among words with the same count, alphabetical order.
+  If there are fewer than `k` different words, return them all.
+- `shortest_path(edges, start, goal)`, with `VecDeque`: the number of edges
+  on the shortest path from `start` to `goal`, or `None` if there is none.
+  The graph is given as pairs and is **undirected**: `("a", "b")` lets you go
+  from `a` to `b` and from `b` to `a`, so build a map of neighbours with
+  both directions first. `start == goal` is `Some(0)`, and a node that does
+  not appear in any edge cannot be reached.

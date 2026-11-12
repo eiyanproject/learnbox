@@ -50,3 +50,17 @@ What can go wrong, and the error for each:
   holding how many values there are
 
 Stop at the first error.
+
+## Details the tests check
+
+- `-` on its own is the subtraction operator, but `-2` is the number minus
+  two: `eval("5 3 - -2 -")` is `Ok(4)`. Trying `token.parse::<i64>()` first,
+  and treating the token as an operator only if that fails, handles this.
+- Division rounds toward zero, like Rust's `/` on integers:
+  `eval("-7 2 /")` is `Ok(-3)`.
+- Only whole numbers are numbers: `1.5` is `UnknownToken("1.5")`.
+- The words are lower-case: `DUP` is `UnknownToken("DUP")`.
+- Any whitespace separates tokens, tabs and newlines included.
+- "First error" means first in reading order: `"+ nonsense"` is
+  `StackUnderflow`, because `+` fails before `nonsense` is reached, while
+  `"nonsense +"` is `UnknownToken("nonsense")`.
