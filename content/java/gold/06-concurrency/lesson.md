@@ -11,6 +11,82 @@ hints:
   - "Always shut an executor down in a finally block, or the JVM keeps its non-daemon threads alive and the program never exits."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **thread** | a separate line of execution inside one program; threads share memory |
+| **concurrency** | several things in progress at once |
+| **core** | one processing unit of the CPU; each runs one thing at a time |
+| **atomic** | one indivisible step that no other thread can interrupt; `count++` is not |
+| **interleave** | two threads' steps mixing in time |
+| **lost update** | two threads read the same value and one write overwrites the other |
+| **race condition** | a result that depends on the exact timing of threads |
+| **mutual exclusion** | only one thread at a time may run a piece of code |
+| **lock** / **mutex** | the object that enforces mutual exclusion |
+| **visibility** | whether one thread's write is seen by another; `synchronized` guarantees it |
+| **stale value** | an old copy a thread keeps using instead of the latest write |
+| **`volatile`** | gives visibility only, not atomicity |
+| **compare-and-set** | "set to 6 only if it is still 5", retried; how atomic classes work without locks |
+| **contention** | many threads competing for the same thing |
+| **executor** | runs tasks for you, on a pool of threads |
+| **thread pool** | a fixed set of reusable threads; extra tasks queue |
+| **task** | a unit of work: a `Runnable` (no result) or a `Callable` (returns one) |
+| **`Future`** | a handle to a result that may not exist yet |
+| **daemon thread** | one the JVM does not wait for; pool threads are not daemons, so pools must be shut down |
+| **platform thread** | an ordinary thread supplied by the operating system; costly |
+| **virtual thread** | a cheap thread managed by the JVM (Java 21); good for tasks that mostly wait |
+| **block** (a thread) | wait for the network, a file or `sleep` |
+| **thread safe** | correct when used by several threads at once |
+| **check-then-act** | two calls that must happen together; another thread can act in between |
+| **parallel stream** | a stream whose work is split across threads automatically |
+| **join** | wait for a thread to finish |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac Concurrent.java && java Concurrent` | builds and runs this lesson's file |
+
+### Java classes and methods
+
+| Name | What it does |
+|---|---|
+| `synchronized (lock) { count++; }` | one thread at a time in the block |
+| `synchronized` method | locks on the object itself |
+| `AtomicInteger`, `incrementAndGet()`, `get()` | a thread-safe counter; add one and return it; read it |
+| `LongAdder` | a counter that is faster under heavy contention |
+| `new Thread(runnable).start()`, `thread.join()` | start a raw thread; wait for it |
+| `Executors.newFixedThreadPool(4)` | a pool of four threads |
+| `pool.submit(task)`, `pool.invokeAll(tasks)` | run one task; run all and wait, results in task order |
+| `future.get()` | waits for and returns the result |
+| `pool.shutdown()`, `shutdownNow()` | finish queued work and stop; try to interrupt running tasks |
+| `Executors.newVirtualThreadPerTaskExecutor()` | a new virtual thread for each task |
+| `Thread.sleep(1000)` | pauses the thread for one second |
+| `ConcurrentHashMap` | a thread-safe map; `merge` and `compute` are atomic |
+| `CopyOnWriteArrayList` | a thread-safe list for many reads and rare writes |
+| `Collections.synchronizedList(...)` | wraps a list in one coarse lock |
+| `words.parallelStream()` | a stream processed on several threads |
+| `int id = t;` | a fresh effectively-final copy for a lambda to capture |
+| `throws Exception` | lets `main` pass checked exceptions on |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `InterruptedException` | a waiting thread was interrupted; checked |
+| `ExecutionException` | thrown by `future.get()`, wrapping what the task threw |
+| `ConcurrentModificationException` | a collection was changed while being iterated |
+| *(no error at all)* | a race condition: wrong totals that differ from run to run |
+
+---
+
 A **thread** is a separate line of execution inside one program. Several
 threads let a program do several things at once, such as serving many users
 or using every core of the processor, and they all share the program's

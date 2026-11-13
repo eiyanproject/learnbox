@@ -11,6 +11,68 @@ hints:
   - "`requireValue` throws NoSuchElementException when empty - `orElseThrow()` with no argument does exactly that."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **`null`** | "no object"; it carries no information and causes `NullPointerException` |
+| **null reference** | a variable that refers to nothing |
+| **`Optional<T>`** | a small container holding one `T` or nothing |
+| **present** / **empty** | the Optional holds a value / holds nothing |
+| **in the type** | the signature itself says "there may be no answer", so callers must handle it |
+| **bridge** | `ofNullable`: turns code that returns `null` into an `Optional` |
+| **chain** | calls one after another, each on the previous result |
+| **nested Optional** | `Optional<Optional<T>>`, a box in a box; `flatMap` avoids it |
+| **pyramid of null checks** | nested `if (x != null)` blocks, which `flatMap` chains replace |
+| **eager** vs **lazy default** | `orElse(x)` always works `x` out; `orElseGet(() -> x)` only when empty |
+| **supplier** | a function with no arguments that produces a value: the "recipe" for a default |
+| **unwrapping** | taking the value out with `get()`; risky, prefer to work inside the Optional |
+| **return type only** | the rule: use `Optional` for what a method returns, not for fields or parameters |
+| **serializable** | can be written out with Java's built-in object serialization; `Optional` is not |
+| **allocation** | creating one more object in memory |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac Maybe.java && java Maybe` | builds and runs this lesson's file |
+
+### Java classes and methods
+
+| Name | What it does |
+|---|---|
+| `Optional.of(value)` | an Optional holding `value`; throws if it is `null` |
+| `Optional.ofNullable(value)` | empty if `value` is `null` |
+| `Optional.empty()` | an empty Optional |
+| `opt.map(f)` | applies `f` to the value if present |
+| `opt.flatMap(f)` | `map` for an `f` that itself returns an Optional |
+| `opt.filter(p)` | keeps the value only if `p` is true for it |
+| `opt.orElse(d)` | the value, or `d` |
+| `opt.orElseGet(() -> ...)` | the value, or a default computed only when needed |
+| `opt.orElseThrow()` | the value, or `NoSuchElementException` |
+| `opt.orElseThrow(() -> new SomeException(...))` | the value, or your own exception |
+| `opt.ifPresent(c)` | runs `c` with the value, if there is one |
+| `opt.or(() -> other)` | this Optional if present, otherwise `other` |
+| `opt.isPresent()`, `opt.get()` | the unsafe way: check, then unwrap |
+| `map.get(key)` | `null` for a missing key |
+| `s.isBlank()` | `true` for an empty or all-space string |
+| `Optionals::expensive` | a method reference used as a supplier |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `NoSuchElementException` | `get()` or `orElseThrow()` on an empty Optional |
+| `NullPointerException` | `Optional.of(null)`, or using a `null` that was returned instead of an Optional |
+
+---
+
 Tony Hoare, who introduced the null reference in 1965, later called it his
 "billion-dollar mistake", for the crashes it has caused since.
 

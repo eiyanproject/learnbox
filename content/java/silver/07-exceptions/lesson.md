@@ -11,6 +11,83 @@ hints:
   - "`closeOrder` uses try-with-resources with two resources - they are closed in REVERSE order of declaration, which is what the test checks."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **exception** | an object describing a problem, thrown where the problem happens |
+| **throw** | stop the method and send the exception back up the calls |
+| **catch** | handle an exception so the program carries on |
+| **propagate** | an uncaught exception travelling on to the caller |
+| **stack trace** | the exception plus the calls that led to it, printed if nothing catches it |
+| **`Throwable`** | the root of every exception class |
+| **`Error`** | a problem with the JVM itself, such as running out of memory; do not catch |
+| **checked exception** | under `Exception` but not `RuntimeException`; must be caught or declared |
+| **unchecked exception** | under `RuntimeException` (or `Error`); the compiler does not insist |
+| **declare** (`throws`) | list a checked exception in a method's header, warning every caller |
+| **compile-time** vs **run-time** | caught by `javac` vs seen only when the line runs |
+| **`try` block** | the code that might throw |
+| **`catch` block** | runs if a matching exception is thrown; tried in order, first match wins |
+| **unreachable catch** | a narrower catch placed after a broader one; a compile error |
+| **multi-catch** | one `catch` for several unrelated types: `A \| B e` |
+| **effectively final** | never reassigned, even without the word `final` |
+| **`finally`** | runs last in every case: after success, after a catch, even after `return` |
+| **resource** | something from the operating system (a file, a connection) that must be closed |
+| **try-with-resources** | `try (...)`: resources declared there are closed automatically |
+| **`AutoCloseable`** | the interface with `close()`; anything implementing it can go in `try (...)` |
+| **reverse order** | resources close last-opened first |
+| **suppressed exception** | one thrown by `close()` while another was already in flight; attached to it |
+| **record** | a compact class that just holds values (Silver lesson 8) |
+| **`Runnable`** | an interface for "code to run", with one method `run()` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `java Age.java` | runs a single-file program without a separate `javac` step |
+| `javac Safe.java && java Safe` | builds and runs this lesson's file |
+
+### Java keywords, classes and methods
+
+| Name | What it does |
+|---|---|
+| `try { } catch (NumberFormatException e) { } finally { }` | the full form |
+| `catch (NumberFormatException \| ArithmeticException e)` | multi-catch |
+| `String firstLine(Path file) throws IOException` | declares a checked exception |
+| `throw new RuntimeException("lost");` | throws an exception |
+| `e.getMessage()` | the exception's message |
+| `e.getSuppressed()` | exceptions suppressed while closing resources |
+| `try (Scanner in = ...; PrintWriter out = ...) { }` | try-with-resources with two resources |
+| `public void close()` | the method `AutoCloseable` requires |
+| `Integer.parseInt(s)` | text to `int`; throws `NumberFormatException` |
+| `Files.readAllLines(file)` | reads a file's lines; can throw `IOException` |
+| `action.run()` | runs a `Runnable` |
+| `@SuppressWarnings("finally")` | silences the compiler's warning about returning from `finally` |
+| `System.exit()` | ends the program; the one way to skip `finally` |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `NumberFormatException` | text that is not a number, such as `"forty"`; a kind of `IllegalArgumentException` |
+| `ArithmeticException` | integer division by zero |
+| `IllegalArgumentException` | an argument that makes no sense |
+| `IllegalStateException` | the object is not in a state where the call makes sense |
+| `NullPointerException` | used a reference that is `null` |
+| `IOException`, `FileNotFoundException` | checked: an input/output problem; a missing file (a subclass) |
+| `SQLException` | checked: a database problem |
+| `OutOfMemoryError`, `StackOverflowError` | the JVM ran out of memory; calls went too deep |
+| `unreported exception IOException; must be caught or declared to be thrown` | a checked exception neither caught nor declared |
+| `exception FileNotFoundException has already been caught` | a narrower catch after a broader one |
+
+---
+
 A method that cannot do its job, because a file is missing, a number will not
 parse, or an argument makes no sense, needs a way to say so that the caller
 cannot simply overlook. Java's answer is the **exception**: an object

@@ -11,6 +11,47 @@ challenge:
     xp: 1000
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **index** (of a book) | the list at the back saying which lines or pages each word is on |
+| **word** | here, a run of letters; everything else separates words |
+| **case-insensitive** | compared in lower case, so `Cat` and `cat` are one word |
+| **line number** | counted from 1 |
+| **ascending, no repeats** | each list of lines goes up, and a line appears once |
+| **frequency** | how many times a word appears, counting every appearance |
+| **tie** | two words with the same count; break it alphabetically |
+| **top n** | the `n` most frequent words |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac WordIndex.java && java WordIndex` | builds and runs this round's file |
+
+### Java names
+
+| Name | What it does |
+|---|---|
+| `static Map<String, List<Integer>> build(List<String> lines)` | word to line numbers |
+| `static List<String> top(List<String> lines, int n)` | the most frequent words |
+| `TreeMap` | a map whose keys come out sorted |
+| `line.split("[^A-Za-z]+")` | the runs of letters in a line (empty pieces can appear and must be skipped) |
+| `s.toLowerCase()` | lower case |
+| `map.computeIfAbsent(k, x -> new ArrayList<>())` | the list for a word, made the first time |
+| `map.merge(word, 1, Integer::sum)` | counts a word |
+| `Comparator`, `.reversed()`, `.thenComparing(...)` | order by count, then alphabetically |
+| `limit(n)` | keep the first `n` of a stream |
+
+---
+
 The manual goes to print tonight and it has no index.
 
 ## The task

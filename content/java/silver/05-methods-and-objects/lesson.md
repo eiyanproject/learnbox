@@ -11,6 +11,72 @@ hints:
   - "`transferTo` moves money between two accounts: withdraw here, deposit there, and let the exceptions propagate if either refuses."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **object** | a value that bundles data (fields) with the code that works on it (methods) |
+| **class** | the blueprint objects are made from |
+| **field** | a variable belonging to a class or to each object |
+| **method** | a named block of code belonging to a class |
+| **parameter list** | the types of a method's parameters, in order |
+| **overloading** | several methods with one name and different parameter lists |
+| **signature** | a method's name plus its parameter types; the return type is not part of it |
+| **overload resolution** | the compiler's choice: exact match, then widening, then boxing, then varargs |
+| **boxing** / **unboxing** | wrapping a primitive in its object type (`int` to `Integer`) / unwrapping it |
+| **wrapper class** | the object type of a primitive: `Integer`, `Double`, `Boolean`... |
+| **static member** | belongs to the class: one shared copy, used as `Account.count` |
+| **instance member** | belongs to each object: every account has its own `balance` |
+| **`this`** | the object the current method was called on |
+| **static context** | inside a static method, where there is no `this` |
+| **constructor** | code that runs on `new` to set up the fields; the class's name and no return type |
+| **default constructor** | the free no-argument constructor, given only if you write none |
+| **constructor chaining** | one constructor calling another with `this(...)`, as its first statement |
+| **`super(...)`** | calls the parent class's constructor |
+| **class hierarchy** | a class, its parent, the parent's parent, up to `Object` |
+| **reference** | in effect an object's address; an object variable holds one, not the object |
+| **pass by value** | a method gets a copy of each argument; for objects, a copy of the reference |
+| **mutate** vs **repoint** | change the shared object vs make the local copy refer to another one |
+| **nested class** | a class declared inside another; `static` means no outer object is needed |
+| **propagate** | an exception passing on to the caller because nothing caught it |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac Account.java && java Account` | builds and runs this lesson's file |
+
+### Java keywords, classes and methods
+
+| Name | What it does |
+|---|---|
+| `int add(int a, int b)` / `double add(double a, double b)` | two overloads of one name |
+| `static int count;` | one field shared by the whole class |
+| `private double balance;` | one field per object |
+| `private final String owner;` | set once in the constructor, never reassigned |
+| `public Account(String owner, double balance)` | a constructor |
+| `this(owner, 0);` | runs the other constructor, here with a balance of 0 |
+| `new Account("ada")` | creates an object and gives back a reference to it |
+| `Integer.valueOf(5)` | boxes 5 into an `Integer` |
+| `acc.owner` | a field of the object `acc` refers to |
+| `throw new IllegalArgumentException("amount must be positive");` | rejects a bad value |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `non-static variable count cannot be referenced from a static context` | a static method (such as `main`) used an instance field |
+| `constructor St in class St cannot be applied to given types` | no constructor matches those arguments, often because the free one disappeared |
+| `IllegalArgumentException` | thrown on purpose for an amount that is not allowed |
+
+---
+
 An object bundles data (its **fields**) with the code that works on it (its
 **methods**), and a class is the blueprint objects are made from. This lesson
 covers how methods are chosen when several share a name, the difference

@@ -11,6 +11,61 @@ hints:
   - "`itemCount` is the total quantity, not the number of distinct lines - two apples and one pear is 3."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **test suite** | all of a program's tests, run together |
+| **JUnit** | Java's standard testing library |
+| **test method** | a method marked `@Test`, which JUnit finds and runs |
+| **assertion** | a check of one fact that fails the test, showing both values, if it is false |
+| **tolerance** | how close two `double`s must be to count as equal |
+| **behaviour** vs **implementation** | what the code does vs how it is built inside |
+| **brittle test** | one that breaks when the internals change, though nothing is wrong |
+| **arrange, act, assert** | set up, do the one thing, check the outcome |
+| **edge case** (boundary) | empty, one, the maximum, invalid input, a duplicate: where bugs gather |
+| **happy path** | the ordinary case where everything is valid |
+| **test-driven development** (TDD) | write a failing test, then just enough code to pass, then tidy |
+| **refactoring** | changing the structure of code without changing what it does |
+| **ossify** | code that nobody dares change any more |
+| **coupon** | a code that gives a discount |
+| **subtotal** | the sum before the discount |
+| **rounding to 2 decimals** | `Math.round(value * 100) / 100.0` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `jshell` | try one input yourself when a test fails |
+| `javac Cart.java && java Cart` | builds and runs this lesson's file |
+
+### Java classes and methods
+
+| Name | What it does |
+|---|---|
+| `@Test void discountAppliesToTheTotal() { ... }` | a JUnit test method, named for its behaviour |
+| `assertEquals(expected, actual)` | the two must be equal |
+| `assertEquals(2.70, total, 0.001)` | equal to within 0.001 |
+| `assertTrue(c)`, `assertFalse(c)` | the condition must be true / false |
+| `assertThrows(SomeException.class, () -> ...)` | the lambda must throw that exception |
+| `Map<String, Integer>` | one way to store each item's quantity, keyed by name |
+| `Math.round(x)` | the nearest whole number, as a `long` |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `expected: <2.7> but was: <3.0>` | a JUnit failure: the values it compared |
+| `IllegalArgumentException` | a quantity of zero or less, or an unknown coupon |
+
+---
+
 A test suite is not there to prove code works. It is there so you can **change**
 code and find out immediately whether you broke something. That difference
 decides how you write them.

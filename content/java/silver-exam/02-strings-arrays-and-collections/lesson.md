@@ -11,6 +11,44 @@ hints:
   - "`describe` returns e.g. `\"[1, 2, 3] len=3\"` - use Arrays.toString, since printing an array directly gives something like [I@1b6d3586."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **identity** | being the same object; what `==` compares for references |
+| **equivalence** | holding the same value; what `equals` compares |
+| **immutable** | `String` never changes: `s.toUpperCase();` alone does nothing |
+| **reference equality** | `array.equals(other)`: only true for the very same array |
+| **`length`** vs **`length()`** | the field on arrays vs the method on strings |
+| **exclusive end** | `substring(a, b)` stops before `b`, giving `b - a` characters |
+| **regex** | `split` takes a pattern: `"."` means any character, `"\\."` a real full stop |
+| **chaining** | calling one method on the result of another: `s.trim().toUpperCase()` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac Paper2.java && java Paper2` | builds and runs this paper's file |
+
+### Java names
+
+| Name | What it does |
+|---|---|
+| `s.trim()`, `s.toUpperCase()`, `s.replace(" ", "_")` | return new strings |
+| `a == b`, `a.equals(b)` | same object; same text |
+| `Arrays.equals(a, b)`, `Arrays.deepEquals` | compare array contents; nested arrays |
+| `Arrays.toString(values)` | the contents as text, `"[1, 2, 3]"` |
+| `s.substring(a, b)` | part of a string |
+| `s.length() / 3` | a third of the length, by integer division |
+
+---
+
 The second paper covers strings, arrays and the equality rules that sit under
 both. The recurring theme is the difference between **being the same object**
 and **holding the same value** — Java distinguishes them everywhere, and the

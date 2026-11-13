@@ -11,6 +11,83 @@ hints:
   - "`isEven` can use `n % 2 == 0`, and it must work for negative numbers too - in Java -3 % 2 is -1, not 1, so comparing to 1 would be wrong."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **type** | what kind of value a variable holds; fixed when you write the code |
+| **reference type** | the variable holds a reference to an object, such as a `String` |
+| **primitive type** | the variable holds the value itself: one of the eight types below |
+| **bit** | one binary digit; more bits means a bigger range |
+| **literal** | a value written directly in code: `42`, `1.5`, `'A'`, `"hi"` |
+| **suffix** | the `L` in `10L` (a `long`) or the `f` in `1.5f` (a `float`) |
+| **UTF-16 code** | the number that stands for a character: `'A'` is 65 |
+| **local variable** | declared inside a method; it has no starting value until you assign one |
+| **field** | declared in a class, outside methods; it starts at `0`, `false` or `null` |
+| **initialise** | give a variable its first value |
+| **widening** | converting to a type with a bigger range; automatic and safe |
+| **narrowing** | converting to a smaller range; needs a cast and may lose data |
+| **cast** | the target type in brackets before a value: `(int) l` |
+| **lossy conversion** | one that could lose information |
+| **operand** | a value an operator works on: in `7 / 2`, 7 and 2 |
+| **integer division** | `/` with two whole numbers: the fraction is thrown away, rounding towards zero |
+| **remainder** (`%`) | what is left after division; it takes the sign of the left-hand number |
+| **promotion** | values smaller than `int` become `int` inside any arithmetic |
+| **compound assignment** | `+=`, `-=`, `*=` and so on; includes a hidden cast back to the variable's type |
+| **overflow** | a result too big for its type wraps round to the other end, silently |
+| **floating point** | how `double` and `float` store decimals, in binary; most decimal fractions are not exact |
+| **post-increment** (`i++`) | use the old value, then add one |
+| **pre-increment** (`++i`) | add one, then use the new value |
+| **string concatenation** | `+` with a string on either side joins text, read left to right |
+| **thread** | a separate line of execution (Gold lesson 6) |
+
+### The primitive types
+
+| Type | Holds |
+|---|---|
+| `byte`, `short`, `int`, `long` | whole numbers in 8, 16, 32 and 64 bits; `int` is the default |
+| `float`, `double` | decimals in 32 and 64 bits; `double` is the default |
+| `char` | one character, as a 16-bit number |
+| `boolean` | only `true` or `false`, never 0 or 1 |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `jshell` | try an expression at once, such as `(int) 'A'` |
+| `javac Numbers.java && java Numbers` | builds and runs this lesson's file |
+
+### Java classes and methods
+
+| Name | What it does |
+|---|---|
+| `Integer.MAX_VALUE`, `Integer.MIN_VALUE` | the largest and smallest `int` |
+| `Byte.MIN_VALUE` | the smallest `byte`, -128 |
+| `10_000_000_000L` | a `long` literal; the underscores are only for reading |
+| `(int) big`, `(byte) 200`, `(char) (code + 1)` | casts |
+| `Math.addExact(a, b)` | adds, but throws instead of overflowing |
+| `java.math.BigDecimal` | exact decimal arithmetic, for money |
+| `new BigDecimal("0.1").add(...)` | make one from a string, then add |
+| `n % 2 == 0` | true for even numbers, negative ones included |
+| `System.out.println(a + " " + b)` | prints the values with a space between |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `incompatible types: int cannot be converted to boolean` | a number was used where a `boolean` is needed |
+| `variable total might not have been initialized` | a local variable was used before it was given a value |
+| `incompatible types: possible lossy conversion from long to int` | narrowing without a cast |
+| `ArithmeticException` | thrown by `Math.addExact` on overflow (and by integer division by zero) |
+
+---
+
 Every variable in Java has a type fixed when you write the code, and the
 compiler checks every assignment against it. Most types are **reference
 types**: the variable holds a reference to an object, such as a `String`.

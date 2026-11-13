@@ -11,6 +11,74 @@ hints:
   - "`describeAnnotation` reads an element from the annotation instance: `m.getAnnotation(Marked.class).value()`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **framework** | a library that calls your code, such as JUnit or Spring |
+| **module** | a named group of packages, described by `module-info.java` (Java 9) |
+| **`requires`** | a module this one depends on |
+| **`exports`** | a package other modules may use, at compile and run time |
+| **`opens`** | a package reflection may reach into |
+| **strong encapsulation** | a public class in an unexported package is unreachable from outside the module |
+| **unnamed module** | where code without `module-info.java` goes; it reads everything |
+| **annotation** | metadata attached to code, such as `@Override`; does nothing by itself |
+| **metadata** | data about the code rather than part of what it does |
+| **element** | a value an annotation carries, declared like a method: `String value()` |
+| **`value` element** | the one element that may be given without its name: `@Marked("first")` |
+| **retention policy** | how long an annotation survives: `SOURCE`, `CLASS` (the default) or `RUNTIME` |
+| **meta-annotation** | an annotation on an annotation's declaration, such as `@Retention` |
+| **target** | where an annotation may be written, such as on methods |
+| **reflection** | a program examining and calling its own classes by name while it runs |
+| **`Class` object** | the run-time representation of a class |
+| **`Class<?>`** | a class object for some unknown class |
+| **declared** vs **public methods** | this class's own, private included / public ones, inherited included |
+| **invoke** | call a method through reflection |
+| **compile-time safety** | mistakes caught by `javac`; reflection gives this up |
+| **flaky** | passes or fails depending on chance, such as an unpromised order |
+| **serialiser** | a library that turns objects into text or bytes, such as Jackson |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac Meta.java && java Meta` | builds and runs this lesson's file |
+
+### Java keywords, classes and methods
+
+| Name | What it does |
+|---|---|
+| `module com.example.app { requires ...; exports ...; opens ...; }` | a module declaration |
+| `@interface Marked { String value() default ""; }` | declares an annotation |
+| `@Retention(RetentionPolicy.RUNTIME)` | keeps the annotation for reflection |
+| `@Target(ElementType.METHOD)` | allows it only on methods |
+| `@Marked("first")`, `@Marked(label = "x")`, `@Marked` | set `value`; set a named element; use the defaults |
+| `@Test` | JUnit's annotation for a test method |
+| `obj.getClass()`, `SomeClass.class` | the `Class` object |
+| `type.getDeclaredMethods()`, `type.getMethods()` | this class's methods; public ones, inherited too |
+| `type.getDeclaredMethod("one")` | one method by name |
+| `m.getName()` | the method's name |
+| `m.isAnnotationPresent(Marked.class)` | `true` if it carries that annotation |
+| `m.getAnnotation(Marked.class).value()` | reads the annotation's element |
+| `m.invoke(obj, args)` | calls the method on `obj` |
+| `Collections.sort(list)` | sorts a list, because reflection promises no order |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `NoSuchMethodException` | no method of that name, from `getDeclaredMethod` |
+| *(no error at all)* | an annotation without `RUNTIME` retention is silently invisible to reflection |
+| `annotation type not applicable to this kind of declaration` | an annotation used where its `@Target` forbids |
+
+---
+
 This lesson covers three features used far more by frameworks than by
 application code, which is exactly why they are worth understanding: they
 explain what JUnit, Spring and the serialisation libraries are doing to your

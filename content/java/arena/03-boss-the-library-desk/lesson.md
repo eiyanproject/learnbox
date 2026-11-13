@@ -12,6 +12,54 @@ challenge:
     xp: 1400
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **boss round** | the longest arena round, combining several lessons |
+| **ISBN** | a book's unique number, used here as its key |
+| **on loan** | lent to a member and not yet returned |
+| **on the shelf** (available) | not on loan |
+| **member** | a person who borrows books, named by a string |
+| **limit** | the most books one member may have at once: `LIMIT`, 3 |
+| **refused call** | one that throws; it must change nothing |
+| **order of checks** | which refusal wins when several apply: unknown ISBN, then on loan, then the limit |
+| **defensive copy** | returning a new list or map, so the caller's changes cannot reach inside the library |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac Library.java && java Library` | builds and runs this round's file |
+
+### Java names
+
+| Name | What it does |
+|---|---|
+| `addBook`, `available`, `lend`, `giveBack` | add a book; titles on the shelf; lend; return |
+| `whoHas`, `borrowedBy`, `loanCounts` | who has a book; a member's titles; members to their number of books |
+| `Map<String, String>` | one way to hold ISBN to title, or ISBN to member |
+| `Optional<String>`, `Optional.ofNullable(x)`, `Optional.empty()` | "maybe a member" |
+| `new ArrayList<>(list)`, `new HashMap<>(map)` | defensive copies |
+| `Collections.sort(list)`, `sorted()` | alphabetical order |
+| `map.containsKey(k)` | is that ISBN known |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `IllegalArgumentException` | adding an ISBN that is already there |
+| `NoSuchElementException` | an ISBN the library does not have |
+| `IllegalStateException` | a book already on loan, one not on loan, or a member at the limit |
+
+---
+
 The library opens in half an hour and the lending desk has no software.
 
 ## The task

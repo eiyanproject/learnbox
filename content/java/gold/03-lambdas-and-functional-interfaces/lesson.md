@@ -11,6 +11,76 @@ hints:
   - "`counter()` returns a Supplier<Integer> that increments a captured value - use an int[] or AtomicInteger, because a captured local must be effectively final."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **behaviour as a value** | passing "what to do" to a method, such as how to sort |
+| **anonymous class** | a class with no name, declared on the spot to implement an interface |
+| **ceremony** | code that is required but says nothing about the problem |
+| **lambda** | an implementation of a one-method interface written as an expression: `(a, b) -> a + b` |
+| **arrow** (`->`) | separates a lambda's parameters from its body |
+| **expression body** / **block body** | a single expression, returned automatically / braces with a `return` |
+| **type inference** | the compiler working out the lambda's parameter types from the interface |
+| **functional interface** | an interface with exactly one abstract method |
+| **`@FunctionalInterface`** | asks the compiler to check that rule |
+| **capture** | a lambda using a local variable from the surrounding method |
+| **effectively final** | assigned once and never reassigned; only such variables can be captured |
+| **closure** | a function that keeps changeable access to variables around it; Java lambdas do not |
+| **supplier** | produces a value from nothing |
+| **consumer** | uses a value and returns nothing |
+| **function** | turns a value into another |
+| **predicate** | answers yes or no about a value |
+| **arity** | how many arguments a function takes |
+| **unary** / **binary** operator | one argument / two arguments, result of the same type |
+| **compose** | build one function out of two |
+| **method reference** | `Class::method`: a lambda that only calls one existing method |
+| **receiver** | the object a method is called on; in `String::toUpperCase` it becomes the argument |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac Funcs.java && java Funcs` | builds and runs this lesson's file |
+
+### Java interfaces and methods
+
+| Name | What it does |
+|---|---|
+| `Runnable r = () -> ...;` | code to run, with no arguments and no result |
+| `Comparator<String> c = (a, b) -> ...;` | how to order two strings |
+| `Supplier<T>` / `get()` | nothing in, a `T` out |
+| `Consumer<T>` / `accept(t)` | a `T` in, nothing out |
+| `Function<T, R>` / `apply(t)` | a `T` in, an `R` out |
+| `Predicate<T>` / `test(t)` | a `T` in, a `boolean` out |
+| `BiFunction<T, U, R>` | two arguments |
+| `UnaryOperator<T>`, `BinaryOperator<T>` | one / two `T`s in, a `T` out |
+| `IntPredicate` | a predicate on a plain `int`, without boxing |
+| `f.andThen(g)`, `f.compose(g)` | run `f` then `g`; run `g` then `f` |
+| `p.and(q)`, `p.or(q)`, `p.negate()` | combine predicates |
+| `String::toUpperCase` | `s -> s.toUpperCase()` |
+| `System.out::println` | `x -> System.out.println(x)` |
+| `Integer::parseInt` | `s -> Integer.parseInt(s)` |
+| `ArrayList::new` | `() -> new ArrayList<>()` |
+| `list.forEach(action)` | runs `action` on each element |
+| `int[] counter = {0};` | a one-element array, so a lambda can change what is inside |
+| `AtomicInteger` | a changeable integer object, another way to count inside a lambda |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `local variables referenced from a lambda expression must be final or effectively final` | a lambda tried to change, or use a changed, local variable |
+| `Unexpected @FunctionalInterface annotation` | the interface has more than one abstract method |
+
+---
+
 Many methods need to be handed a piece of behaviour rather than a value:
 how to sort, what to do for each element, which items to keep. Before Java 8
 the only way to pass behaviour was an object implementing an interface, and

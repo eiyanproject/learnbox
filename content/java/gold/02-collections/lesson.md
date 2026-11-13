@@ -11,6 +11,75 @@ hints:
   - "`dedupe` keeps first-seen order: a LinkedHashSet does it in one line."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **collections framework** | the interfaces and classes in `java.util` for groups of objects |
+| **interface** vs **implementation** | what a collection can do (`List`) vs how it does it (`ArrayList`) |
+| **`List`** | ordered, duplicates allowed, reached by index |
+| **`Set`** | no duplicates; asks "is it in?" |
+| **`Map`** | key to value; looks up by key; not a `Collection` |
+| **`Queue`** | first in, first out |
+| **`Deque`** ("deck") | add and remove at both ends; also works as a stack |
+| **stack** | last in, first out |
+| **view** | a collection backed by a map: `keySet()`, `values()`, `entrySet()` |
+| **entry** | one key-value pair, a `Map.Entry` |
+| **immutable collection** | made by `List.of` and friends; adding throws |
+| **Big-O** | how cost grows with size `n`: O(1) constant, O(log n) very slow growth, O(n) in proportion |
+| **cache locality** | elements side by side in memory, which processors read fast; why `ArrayList` usually wins |
+| **hash** | the number `hashCode()` turns an object into |
+| **bucket** | the slot a hash leads to inside a `HashSet` or `HashMap` |
+| **equals/hashCode contract** | equal objects must have equal hash codes |
+| **collision** | unequal objects with the same hash; allowed and handled |
+| **mutable key** | a key that can change after insertion; it gets lost, so use immutable keys |
+| **insertion order** | the order items were first added; kept by `LinkedHash...` |
+| **sorted order** | kept by `Tree...`, which needs `Comparable` elements or a `Comparator` |
+| **`Comparator`** | an object that says how to order two values |
+| **method reference** | `Integer::sum`: a method passed as a function (Gold lesson 3) |
+| **idiom** | the usual way to write something, such as counting with `merge` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac Store.java && java Store` | builds and runs this lesson's file |
+
+### Java classes and methods
+
+| Name | What it does |
+|---|---|
+| `ArrayList`, `LinkedList`, `ArrayDeque` | lists and deques |
+| `HashSet`, `LinkedHashSet`, `TreeSet` | sets: no order / insertion order / sorted |
+| `HashMap`, `LinkedHashMap`, `TreeMap` | maps: no order / insertion order / sorted keys |
+| `Stack` | the old, legacy stack class; use `ArrayDeque` |
+| `List.of(...)`, `Set.of(...)`, `Map.of(...)` | small immutable collections |
+| `map.getOrDefault(k, 0)` | the value, or 0 if there is none |
+| `map.putIfAbsent(k, v)` | stores `v` only if `k` has no value |
+| `map.computeIfAbsent(k, key -> new ArrayList<>())` | the value, creating and storing one first if absent |
+| `map.merge(k, 1, Integer::sum)` | the counting idiom: 1 if new, otherwise old + 1 |
+| `entry.getKey()`, `entry.getValue()` | the two halves of an entry |
+| `Map.Entry.comparingByValue()`, `comparingByKey()` | ready-made comparators for entries |
+| `.reversed()`, `.thenComparing(...)` | reverse a comparator; break ties with another |
+| `set.contains(x)` | `true` if `x` is in the set |
+| `text.split("\\s+")` | words separated by any run of whitespace |
+| `record GoodKey(String id) {}` | a key with correct `equals` and `hashCode` for free |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `UnsupportedOperationException` | tried to change an immutable collection such as `List.of(...)` |
+| *(no error at all)* | `equals` without `hashCode`: the set says an object is missing when it is there |
+
+---
+
 Arrays have a fixed length and almost no methods. Real programs need
 collections that grow, that refuse duplicates, that look things up by key,
 or that keep themselves sorted. The **collections framework** in `java.util`

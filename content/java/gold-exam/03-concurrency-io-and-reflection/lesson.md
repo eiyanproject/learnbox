@@ -11,6 +11,54 @@ hints:
   - "`safely` catches Exception and returns the fallback - it is the pattern behind every 'do not let one task kill the pool'."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **atomic** | one indivisible step; `count++` is not |
+| **shared mutable state** | data several threads change; a stream without it parallelises safely |
+| **parallel stream** | a stream run on several threads |
+| **shut down** | an executor must be shut down, in a `finally`, or the program never exits |
+| **open file** | `Files.lines` keeps the file open until the stream is closed |
+| **checked `IOException`** | handle it, declare it, or wrap it in `UncheckedIOException` |
+| **retention** | annotations default to `CLASS`; reflection needs `RUNTIME` |
+| **no defined order** | `getDeclaredMethods` returns methods in any order: sort them |
+| **fallback** | the value returned when a task fails |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac GoldPaper3.java && java GoldPaper3` | builds and runs this paper's file |
+
+### Java names
+
+| Name | What it does |
+|---|---|
+| `values.parallelStream().mapToLong(Integer::longValue).sum()` | a parallel sum |
+| `AtomicInteger`, `synchronized`, `volatile` | atomic counter; lock; visibility only |
+| `try (Stream<String> lines = Files.lines(path)) { }` | reads lines and closes the file |
+| `line.split("\\s+")` | the words on a line |
+| `@Retention(RetentionPolicy.RUNTIME) @interface Checked {}` | an annotation reflection can see |
+| `m.isAnnotationPresent(Checked.class)` | does the method carry it |
+| `Callable<T>`, `task.call()` | a task that returns a value; run it |
+| `e.getCause()` | the exception inside a wrapper |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `IOException`, `UncheckedIOException` | a file problem; its unchecked wrapper |
+| `Exception` | caught broadly in `safely`, which returns the fallback for any failure |
+
+---
+
 The last paper: threads, files and reflection — the three areas where a program
 compiles perfectly and then behaves differently depending on timing, the
 filesystem, or what the class file kept.

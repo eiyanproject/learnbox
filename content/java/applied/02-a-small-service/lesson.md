@@ -11,6 +11,61 @@ hints:
   - "`titlesByAuthor` groups with a stream: `all().stream().collect(groupingBy(Book::author, mapping(Book::title, toList())))`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **service** | the class that holds the program's operations, here `LibraryService` |
+| **store** | where data is kept: a map today, a database tomorrow |
+| **interface** | says what something does, not how |
+| **implementation** | a class that does it, such as `InMemoryStore` |
+| **program to the interface** | declare variables and parameters with the interface type; name the class only where it is created |
+| **dependency** | an object another object needs, as the service needs a store |
+| **dependency injection** | passing the dependency in, usually through the constructor, instead of creating it inside |
+| **welded** | hard-wired to one implementation, so it cannot be swapped or tested |
+| **fake** | a stand-in implementation written for a test |
+| **spy** | a fake that records the calls made to it |
+| **anonymous class** | an interface implemented on the spot: `new BookStore() { ... }` |
+| **layer** | one level of the program: model, store, service, caller |
+| **depends downwards** | each layer knows only the ones below it |
+| **leak** (between layers) | a type from one layer escaping into another's signature |
+| **model** | the data types, such as `Book`; validation rules live here |
+| **Spring** | a framework that automates dependency injection |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac Library.java && java Library` | builds and runs this lesson's file |
+
+### Java keywords, classes and methods
+
+| Name | What it does |
+|---|---|
+| `interface BookStore { void save(Book b); Optional<Book> findByTitle(String t); List<Book> all(); }` | the store's interface |
+| `class InMemoryStore implements BookStore` | the in-memory implementation |
+| `LinkedHashMap` | a map that keeps insertion order, for `all()` |
+| `LibraryService(BookStore store) { this.store = store; }` | constructor injection |
+| `private final BookStore store;` | the injected dependency |
+| `Optional<Book>` | "maybe a book", instead of `null` |
+| `store.findByTitle(t).isPresent()` | is that title already stored |
+| `Collectors.groupingBy(Book::author, LinkedHashMap::new, Collectors.mapping(Book::title, Collectors.toList()))` | author to titles, in insertion order |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `IllegalArgumentException` | an invalid book, such as a blank title |
+| `IllegalStateException` | a duplicate title: the store already has it |
+
+---
+
 Real Java programs are mostly the same shape: an interface describing what
 something does, a class doing it, and callers that depend on the interface
 rather than the class. This lesson builds the smallest complete example: a

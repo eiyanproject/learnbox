@@ -11,6 +11,78 @@ hints:
   - "`firstMatching` returns an Optional: `stream().filter(test).findFirst()`. Do not call .get() on it - return the Optional itself."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **stream** | a pipeline of steps over a source; it holds no data of its own |
+| **source** | where a stream's elements come from, such as a list |
+| **pipeline** | a source, any number of intermediate operations, and one terminal operation |
+| **intermediate operation** | returns a new stream: `filter`, `map`, `sorted`... |
+| **terminal operation** | produces the result and ends the stream: `collect`, `count`, `forEach`... |
+| **lazy** | nothing happens until a terminal operation runs |
+| **short-circuit** | stop as soon as the answer is known, as `findFirst` does |
+| **one at a time** | each element passes through every step before the next one starts |
+| **consumed once** | a stream cannot be used again after its terminal operation |
+| **external iteration** | your loop pulls each element out itself |
+| **internal iteration** | you hand the operations to the library and it does the looping |
+| **side effect** | a change outside the pipeline, such as printing |
+| **flatten** | turn a stream of streams into one stream (`flatMap`) |
+| **reduce** (fold) | combine all elements into one value, starting from an identity |
+| **identity** | the starting value of a reduce, such as 0 for adding |
+| **primitive stream** | `IntStream`, `LongStream`, `DoubleStream`: hold plain numbers and have `sum()` |
+| **boxing** | wrapping `int`s as `Integer` objects; primitive streams avoid it |
+| **`Optional`** | a box holding one value or nothing, instead of `null` (Gold lesson 5) |
+| **collector** | how to gather a stream's elements into a final result |
+| **downstream collector** | what to do with each group in `groupingBy`, such as count it |
+| **partition** | split into exactly two groups, `true` and `false` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac Pipe.java && java Pipe` | builds and runs this lesson's file |
+
+### Java classes and methods
+
+| Name | What it does |
+|---|---|
+| `items.stream()` | starts a stream over a collection |
+| `filter(Predicate)` | keeps the elements that pass |
+| `map(Function)` | transforms each element |
+| `flatMap(Function)` | maps each element to a stream and joins them |
+| `distinct()`, `sorted()`, `limit(n)`, `skip(n)` | remove repeats; sort; take the first `n`; drop the first `n` |
+| `peek(Consumer)` | looks at each element as it passes, for debugging |
+| `collect(Collectors...)` | gathers into a collection, map or string |
+| `forEach(Consumer)` | does something with each element |
+| `reduce(identity, op)` | folds to one value |
+| `count()`, `anyMatch`, `allMatch`, `noneMatch` | how many; does any / every / no element pass |
+| `findFirst()`, `findAny()`, `min`, `max` | return an `Optional` |
+| `mapToInt(String::length)` | an `IntStream` of lengths |
+| `sum()`, `average()`, `summaryStatistics()` | on primitive streams; `average()` gives an `OptionalDouble` |
+| `Collectors.toList()`, `toSet()` | into a list; into a set |
+| `Collectors.joining(", ")` | joins strings with that separator |
+| `Collectors.groupingBy(String::length)` | a `Map<Integer, List<String>>` of length to words |
+| `groupingBy(f, TreeMap::new, Collectors.counting())` | the same into a `TreeMap`, counting each group |
+| `Collectors.partitioningBy(p)` | a `Map<Boolean, List<...>>` |
+| `optional.orElse("none")` | the value, or `"none"` if empty |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `IllegalStateException: stream has already been operated upon or closed` | a stream was used twice |
+| `cannot find symbol: method sum()` | `sum()` called on a `Stream<Integer>`; use `mapToInt` first |
+| *(no error at all)* | a pipeline with no terminal operation does nothing |
+
+---
+
 Most loops over a collection do one of a few things: keep some elements,
 transform each one, and gather the results, or add them up. Written as a loop,
 the *how* (an empty list, a counter, an `if`, an `add`) hides the *what*:

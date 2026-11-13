@@ -11,6 +11,73 @@ hints:
   - "`firstOrDefault` is a generic METHOD: the `<T>` goes before the return type, as in `public static <T> T firstOrDefault(List<T> list, T fallback)`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **generics** | classes and methods with type parameters, checked by the compiler |
+| **raw type** | a generic class used without its type parameter, such as plain `List`; unsafe |
+| **generic class** | a class with a type parameter: `class Box<T>` |
+| **type parameter** | the placeholder in angle brackets, such as `T`, `E`, `K`, `V` |
+| **type argument** | the real type filled in at each use: the `String` in `Box<String>` |
+| **diamond** (`<>`) | `new Box<>()`: let the compiler fill in the type argument |
+| **erasure** | type arguments exist only at compile time; at run time `Box<String>` and `Box<Integer>` are one class |
+| **reified** | keeping type arguments at run time, as C# does; Java does not |
+| **call site** | the place in code where a method is called; erased casts are inserted there |
+| **subtype** | `Integer` is a subtype of `Number` |
+| **invariance** | `List<Integer>` is not a `List<Number>`, even though `Integer` is a `Number` |
+| **wildcard** (`?`) | "some unknown type" |
+| **upper-bounded wildcard** | `? extends Number`: `Number` or any subclass; read only |
+| **lower-bounded wildcard** | `? super Integer`: `Integer` or any parent; write `Integer`s in |
+| **PECS** | Producer Extends, Consumer Super: which wildcard to use |
+| **producer** / **consumer** | a parameter you read values from / write values into |
+| **capture** (`CAP#1`) | the compiler's name for the unknown type a `?` stands for |
+| **generic method** | a method with its own type parameter, written before the return type |
+| **bound** | `T extends Comparable<T>`: what `T` must be, and so what you may call on it |
+| **`Comparable`** | the interface for things with a natural order, via `compareTo` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac Boxes.java && java Boxes` | builds and runs this lesson's file |
+
+### Java classes and methods
+
+| Name | What it does |
+|---|---|
+| `class Box<T> { T get(); void set(T v); }` | a generic class |
+| `Boxes.Box<String>` | a nested generic class used from outside |
+| `List<String> names` | a list that can only hold strings |
+| `List<? extends Number> values` | read `Number`s from any list of numbers |
+| `List<? super Integer> target` | add `Integer`s to a list of `Integer`, `Number` or `Object` |
+| `static <T> T firstOrDefault(List<T> list, T fallback)` | a generic method |
+| `<T extends Comparable<T>> T max(List<T> list)` | a bounded generic method |
+| `<T extends Number & Comparable<T>>` | two bounds |
+| `a.compareTo(b)` | negative if `a` comes first, 0 if equal, positive if after |
+| `n.doubleValue()` | any `Number` as a `double` |
+| `List.of(1, 2.5, 3L)` | an unchangeable list of those values |
+| `Collections.copy(dest, src)` | PECS in the standard library |
+| `@SuppressWarnings({"rawtypes", "unchecked"})` | hides the warnings about raw types |
+| `getClass()` | the object's run-time class |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `ClassCastException` | a cast failed at run time, the problem generics prevent |
+| `incompatible types: List<Integer> cannot be converted to List<Number>` | invariance |
+| `incompatible types: int cannot be converted to CAP#1` | tried to add to a `? extends` list |
+| `IllegalArgumentException` | `largest` on an empty list |
+
+---
+
 Generics move type errors from runtime to compile time. Before them (Java 5),
 every collection held `Object` and every read needed a cast that might fail.
 This is what that looked like, and still compiles today as a **raw type**, a

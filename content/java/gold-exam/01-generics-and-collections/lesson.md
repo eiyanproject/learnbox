@@ -11,6 +11,53 @@ hints:
   - "`intersection` keeps items present in both lists, without duplicates, in first-seen order - a LinkedHashSet plus a contains check."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **PECS** | Producer Extends, Consumer Super (Gold lesson 1) |
+| **`? extends T`** | read `T`s out; you cannot add (except `null`) |
+| **`? super T`** | write `T`s in; what you read is only an `Object` |
+| **invariance** | `List<Integer>` is not a `List<Number>` |
+| **erasure** | type arguments vanish at run time: no `new T()`, no `new T[]`, no `instanceof List<String>` |
+| **equals/hashCode contract** | equal objects must have equal hash codes, or hash collections lose them |
+| **immutable list** | `List.of(...)` throws on `add` |
+| **generic class with two parameters** | `Pair<A, B>` |
+| **frequency** | how many times each item appears |
+| **intersection** | the items in both lists |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac GoldPaper1.java && java GoldPaper1` | builds and runs this paper's file |
+
+### Java names
+
+| Name | What it does |
+|---|---|
+| `static <T> void copy(List<? extends T> src, List<? super T> dst)` | PECS in one header |
+| `public static class Pair<A, B>` | a nested generic class |
+| `Objects.equals(a, b)` | equality that is safe when either is `null` |
+| `Objects.hash(a, b)` | a hash code built from several fields |
+| `map.merge(item, 1, Integer::sum)` | the counting idiom |
+| `map.computeIfAbsent(k, f)` | the grouping idiom |
+| `HashSet`, `LinkedHashSet` | sets: no order / first-seen order |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `UnsupportedOperationException` | changing an immutable collection |
+
+---
+
 The first Gold paper: type parameters, wildcards, and the collection contracts.
 
 ## Worth re-reading

@@ -11,6 +11,51 @@ hints:
   - "`summarise` should return \"none\" for an empty list - reduce with an identity, or findFirst and map, but do not call get() on an empty Optional."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **lazy** | nothing in a stream runs until the terminal operation |
+| **consumed once** | a stream cannot be reused |
+| **primitive stream** | `IntStream`; `Stream<Integer>` has no `sum()` |
+| **`OptionalDouble`** | what `average()` returns, because an empty stream has no average |
+| **eager vs lazy default** | `orElse` always evaluates its argument; `orElseGet` only when empty |
+| **mutability promise** | `Collectors.toList()` promises none; `Stream.toList()` is unmodifiable |
+| **`peek`** | for debugging only |
+| **initial** | a name's first letter |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac GoldPaper2.java && java GoldPaper2` | builds and runs this paper's file |
+
+### Java names
+
+| Name | What it does |
+|---|---|
+| `mapToInt(String::length).average()` | the average length, as an `OptionalDouble` |
+| `getAsDouble()`, `orElse(0.0)` | the value of an `OptionalDouble`; or a default |
+| `Collectors.groupingBy(s -> s.charAt(0))` | a map from first letter to names |
+| `filter(...).count()` | how many pass |
+| `sorted()`, `limit(n)` | sort; keep the first `n` |
+| `findFirst()`, `anyMatch` | short-circuiting terminal operations |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `IllegalStateException` | a stream used twice |
+| `UnsupportedOperationException` | adding to the list `Stream.toList()` returned |
+
+---
+
 The second Gold paper: pipelines and absence.
 
 ## Worth re-reading

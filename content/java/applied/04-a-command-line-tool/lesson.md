@@ -11,6 +11,65 @@ hints:
   - "`count` returns the number of lines, `words` the number of words, `find` the lines containing options.pattern()."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **command-line tool** (CLI) | a program you run in the terminal with words after its name |
+| **command** | the first bare word: what to do, such as `count` |
+| **option** | a word starting with `--` that adjusts how |
+| **value** (of an option) | the word that follows it, as in `--file notes.txt` |
+| **flag** | an option with no value, such as `--verbose` |
+| **arguments** (`args`) | the words after the class name, already split by the shell |
+| **parse** | turn the raw words into a structure, rejecting nonsense |
+| **I/O** | input and output: reading files, printing |
+| **at the edge** | keeping I/O in `main`, so the logic can be tested without it |
+| **fixture file** | a file written to disk just for a test; avoided here |
+| **usage line** | the one-line summary of how to call the tool |
+| **`<a\|b>`**, **`<path>`**, **`[...]`** | in a usage line: one of these; a value you supply; optional |
+| **exit status** | 0 for success, non-zero for failure; 2 means "used wrongly" |
+| **stdout** / **stderr** | where results go / where diagnostics go |
+| **redirect** (`>`) | sends stdout to a file, while stderr still shows on screen |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `java Tool count --file notes.txt` | counts the lines of `notes.txt` |
+| `java Tool find --file notes.txt --pattern cat` | prints the lines containing `cat` |
+| `tool find ... > results.txt` | saves the results in a file |
+| `javac Tool.java && java Tool ...` | builds and runs this lesson's file |
+
+### Java classes and methods
+
+| Name | What it does |
+|---|---|
+| `record Options(String command, String file, String pattern, boolean verbose)` | the parsed arguments |
+| `static Options parse(String[] args)` | words in, `Options` out |
+| `static String run(Options options, List<String> lines)` | does the work on given lines |
+| `args[i]`, `args[i + 1]` | the current word; the option's value |
+| `arg.startsWith("--")` | the word is an option |
+| `line.contains(pattern)` | the line holds the pattern |
+| `String.join("\n", lines)` | joins lines with newlines |
+| `Files.readAllLines(Path.of(file))` | reads the file named in the options |
+| `System.out.println`, `System.err.println` | print to stdout; to stderr |
+| `System.exit(2)` | ends the program with exit status 2 |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `IllegalArgumentException` | an unknown option, a missing value, no command, `find` without `--pattern`, or an unknown command |
+| `Unknown option: --fil` | the tool's own message, printed with the usage line |
+
+---
+
 Everything so far ends here: types to model the input, a service that does the
 work, and tests that do not need a terminal. The program is a small text
 tool, run like this:

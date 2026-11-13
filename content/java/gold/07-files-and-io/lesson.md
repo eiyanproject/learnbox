@@ -11,6 +11,77 @@ hints:
   - "`Path.of(\"a\", \"b\")` joins segments portably; do not concatenate with \"/\"."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **file API** | the classes a language gives you for working with files |
+| **NIO.2** | the modern file API (Java 7), in `java.nio.file` |
+| **`java.io.File`** | the old file API, still common in older code |
+| **`Path`** | a location on disk; creating one touches nothing |
+| **`Files`** | static methods that actually read, write, check and delete |
+| **separator** | the character between folder names: `/` on Linux and macOS, `\` on Windows |
+| **portable** | works on every operating system |
+| **relative path** | one without a leading `/`, resolved against the current directory |
+| **current directory** | the folder the program was started from |
+| **encoding** | how characters map to bytes; UTF-8 is the default since Java 18 |
+| **in memory** vs **streamed** | the whole file loaded at once vs read a line at a time as needed |
+| **file handle** | the operating system's record of an open file; a limited resource |
+| **leak** | failing to close a handle, so they pile up |
+| **truncate** | empty a file before writing, so its old contents are replaced |
+| **append** | add to the end of a file |
+| **parent directory** | the folder that contains a path |
+| **temporary directory** | a fresh folder for short-lived files |
+| **checked exception** | `IOException`: must be caught or declared (Silver lesson 7) |
+| **wrap and rethrow** | catch a checked exception and throw an unchecked one with it as the cause |
+| **cause** | the original exception kept inside a wrapper, from `getCause()` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `mkdir -p a/b/c` | the shell's way to create every missing folder; `Files.createDirectories` does the same |
+| `javac Files2.java && java Files2` | builds and runs this lesson's file |
+
+### Java classes and methods
+
+| Name | What it does |
+|---|---|
+| `Path.of("data", "notes.txt")` | the path `data/notes.txt`, with the right separator |
+| `dir.resolve("notes.txt")`, `p.getParent()` | a path inside `dir`; the folder containing `p` |
+| `Files.writeString(p, text)` | writes the file, replacing what was there |
+| `Files.writeString(p, text, StandardOpenOption.APPEND)` | adds to the end; add `CREATE` to make the file if missing |
+| `Files.readString(p)` | the whole file as one `String` |
+| `Files.readAllLines(p)` | a `List<String>` of every line, all in memory |
+| `Files.lines(p)` | a lazy `Stream<String>` backed by the open file; close it |
+| `Files.newBufferedReader(p)` | a reader for line-by-line control |
+| `Files.createDirectories(dir)` | creates every missing folder |
+| `Files.createTempDirectory("lesson")` | a fresh temporary folder |
+| `Files.exists`, `isDirectory`, `size` | checks |
+| `Files.delete(p)`, `Files.deleteIfExists(p)` | delete, throwing if missing; delete if there |
+| `try (Stream<String> lines = Files.lines(p)) { }` | closes the file when done |
+| `StandardCharsets.UTF_8` | the UTF-8 encoding, passed explicitly in older code |
+| `throw new UncheckedIOException(e);` | rethrows an `IOException` as unchecked |
+| `FileReader`, `BufferedReader` | older reading classes |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `IOException` | checked: an input/output failure |
+| `NoSuchFileException` | the file or folder does not exist (a subclass of `IOException`) |
+| `FileNotFoundException` | the old API's version of a missing file |
+| `UncheckedIOException` | an unchecked wrapper around an `IOException` |
+| `OutOfMemoryError` | `readAllLines` on a file too big for memory |
+
+---
+
 Programs read configuration, write logs, and load and save data, and all of
 that is files. Java has had two file APIs. The old `java.io.File` is still
 everywhere in existing code; the modern one, **NIO.2** (Java 7, in

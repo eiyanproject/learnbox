@@ -11,6 +11,47 @@ hints:
   - "`soundOf(Animal a)` takes the PARENT type and returns a.speak() - the caller passes a Dog, and Dog's version runs."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **constructor** | sets up a new object; constructors are **not inherited** |
+| **`this(...)`** / **`super(...)`** | call another constructor of this class / of the parent; must be first |
+| **implicit `super()`** | inserted for you when a constructor calls neither |
+| **overriding** | same signature in a subclass; needs the same name and parameters |
+| **widen access** | an override may be more public, never less |
+| **`@Override`** | asks the compiler to check that you really override |
+| **dynamic dispatch** | methods run by the object's actual type, at run time |
+| **fields by declared type** | fields are chosen by the variable's type, not the object's |
+| **hiding** | a `static` method with the same signature in a subclass hides, not overrides |
+| **declared type** vs **runtime type** | what you are allowed to call vs which implementation runs |
+| **package-private** | no access modifier: one file can hold several such classes, but only one public |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac Paper3.java && java Paper3` | builds and runs this paper's file |
+
+### Java names
+
+| Name | What it does |
+|---|---|
+| `class Dog extends Animal` | `Dog` is a subclass of `Animal` |
+| `Animal(String name)`, `Animal()` | two constructors; the second can chain with `this("unnamed")` |
+| `Dog(String name) { super(name); }` | passes the name to the parent's constructor |
+| `String speak()` | overridden in each subclass |
+| `"<name> says <speak>"` | built in the parent, using the child's `speak()` |
+| `Animal a = new Dog("rex");` | a parent-type variable holding a child object |
+
+---
+
 The third paper is the object model: constructors, overriding, and which method
 actually runs.
 

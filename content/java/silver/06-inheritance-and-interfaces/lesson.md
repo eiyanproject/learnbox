@@ -11,6 +11,78 @@ hints:
   - "`Named` is an interface with a `String name()` method; both shapes implement it, and a default method in the interface gives `label()` for free."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **inheritance** | a subclass gets a parent class's fields and methods, and can add or replace them |
+| **subclass** / **superclass** (parent) | the class that extends / the class it extends |
+| **"is a"** | the relationship inheritance means: a `Circle` is a `Shape` |
+| **"has a"** | holding another object in a field instead |
+| **composition** | building a class from objects it holds, rather than extending one |
+| **abstract class** | cannot be created with `new`; may declare methods without a body |
+| **abstract method** | declared without a body; a concrete subclass must supply it |
+| **concrete class** | one that can be instantiated: every method has a body |
+| **instantiate** | create an object of a class with `new` |
+| **single inheritance** | a class has exactly one parent; `Object` if you name none |
+| **Javadoc** | Java's official documentation pages, at docs.oracle.com |
+| **overriding** | a subclass giving its own version of an inherited method, same name and parameters |
+| **subtype** | a class that is a kind of another: `Circle` is a subtype of `Shape` |
+| **covariant return** | an override may return a subtype of the original's return type |
+| **checked exception** | one the compiler makes you handle or declare (Silver lesson 7) |
+| **overload** (by accident) | same name, different parameters: unrelated to the parent's method |
+| **polymorphism** | one variable type, many possible behaviours |
+| **declared type** vs **actual type** | the variable's type (what you may call) vs the object's class (what runs) |
+| **dynamic dispatch** | the JVM picks the method by the object's actual type, at run time |
+| **shadowing** a field | declaring a field with the same name in a subclass: two fields, chosen by declared type |
+| **interface** | a named set of methods a class promises to provide: a capability |
+| **implements** | declares that a class keeps an interface's promise |
+| **default method** | an interface method with a body, inherited by every implementing class |
+| **lambda** | a short way to write an object with one abstract method: `() -> s` (Gold lesson 3) |
+| **instance state** | fields belonging to each object; interfaces cannot have them |
+| **cast** | telling the compiler to treat an object as a narrower type |
+| **pattern matching** | `instanceof Circle c`: test and cast in one step |
+| **scope** | the part of the code where a name can be used |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac Shapes.java && java Shapes` | builds and runs this lesson's file |
+
+### Java keywords, classes and methods
+
+| Name | What it does |
+|---|---|
+| `class Circle extends Shape` | makes `Circle` a subclass of `Shape` |
+| `abstract class Shape`, `abstract double area();` | an abstract class and method |
+| `@Override` | asks the compiler to check that this really overrides something |
+| `interface Named { String name(); }` | declares an interface; `name()` is public and abstract |
+| `default String label() { ... }` | a default method |
+| `class Shape implements Named` | promises the interface's methods |
+| `getClass().getSimpleName()` | the object's actual class name, such as `"Circle"` |
+| `Math.PI * r * r` | a circle's area |
+| `s instanceof Circle c` | `true` if `s` is a `Circle`, and then `c` is it, typed as `Circle` |
+| `(Circle) s` | a cast |
+| `Shape[]` | an array that can hold any kind of shape |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `Shape is abstract; cannot be instantiated` | `new` on an abstract class |
+| `attempting to assign weaker access privileges; was public` | an implementation or override narrowed access |
+| `ClassCastException` | a cast to a class the object is not an instance of |
+| `method does not override or implement a method from a supertype` | `@Override` on something that overrides nothing |
+
+---
+
 A drawing program has circles, squares and triangles. They share behaviour
 (every shape has an area and can describe itself) but each computes its area
 differently. **Inheritance** lets the shared parts live in one parent class

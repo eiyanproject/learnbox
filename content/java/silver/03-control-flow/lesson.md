@@ -11,6 +11,78 @@ hints:
   - "`countdown` builds \"3,2,1\" - append the separator between items, not after each, or you get a trailing comma."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **control flow** | how a program chooses which lines run, and how often |
+| **condition** | a `boolean` expression that decides a branch or a loop |
+| **branch** | one of the paths an `if` or a `switch` can take |
+| **block** | statements in curly braces `{ }`, run together |
+| **statement** vs **expression** | does something vs produces a value; `if` is a statement, the ternary an expression |
+| **ternary operator** | `condition ? a : b`: `a` if true, otherwise `b` |
+| **if/else ladder** | a chain of `else if`s; the first true one runs, so order matters |
+| **truthiness** | treating 0 or empty as false; Java has none, conditions must be `boolean` |
+| **`switch`** | compares one value with a list of constant `case` labels |
+| **`case` label** | a value to match; only a place to start running |
+| **`default`** | where a switch goes when no case matches |
+| **fall-through** | in the old switch, running on past the next label until a `break` |
+| **switch expression** | the arrow form (Java 14+): produces a value and never falls through |
+| **arm** | one `case ... ->` line of a switch expression |
+| **`yield`** | gives the value of a block arm in a switch expression |
+| **exhaustive** | covers every possible value; a switch expression must be |
+| **enum** | a type with a fixed list of named constants, such as `DayOfWeek` |
+| **loop** | code that repeats |
+| **iteration** (round) | one run of a loop's body |
+| **classic `for`** | start, condition, step: `for (int i = 0; i < n; i++)` |
+| **`while`** | checks first, so it may run zero times |
+| **`do-while`** | checks after, so it always runs at least once |
+| **enhanced `for`** | `for (String s : items)`: each element in turn, without its index |
+| **trace table** | a table with a row each time the condition is checked, to follow a loop by hand |
+| **`break`** / **`continue`** | leave the loop / skip to the next round |
+| **label** | a name and colon in front of a loop, so `break outer` leaves the outer one |
+| **flag variable** | a `boolean` set to remember that something happened |
+| **separator** | the comma between items; put it between, not after each |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac Flow.java && java Flow` | builds and runs this lesson's file |
+
+### Java keywords and names
+
+| Name | What it does |
+|---|---|
+| `if (c) { } else if (d) { } else { }` | runs the first branch whose condition is true |
+| `score >= 50 ? "pass" : "fail"` | the ternary |
+| `switch (day) { case 6: ... break; default: ... }` | the old switch statement |
+| `case SATURDAY, SUNDAY -> "weekend";` | one arm of a switch expression, with two labels |
+| `case 1 -> { ...; yield x * 2; }` | an arm with a block |
+| `for (int i = 0; i < n; i++)` | count from 0 up to `n - 1` |
+| `while (c) { }`, `do { } while (c);` | loop while `c` holds; check before / after |
+| `for (int day : new int[] {5, 6})` | loop over an array made on the spot |
+| `break outer;` | leaves the loop labelled `outer:` |
+| `return -1;` | the "not found" answer, and an early exit from the loop |
+| `DayOfWeek` | the enum of the seven days |
+| `score / 10` | integer division: 72 becomes 7 |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `incompatible types: int cannot be converted to boolean` | a condition such as `if (1)` or `if (x = 5)` that is not a `boolean` |
+| `the switch expression does not cover all possible input values` | a switch expression without `default` or every case |
+| *(no error at all)* | a forgotten `break`, or an if/else ladder in the wrong order: wrong results, silently |
+
+---
+
 A program that always runs the same lines in the same order cannot react to
 anything. **Control flow** is how it chooses: run this block only if a
 condition holds, pick one of several branches by value, repeat until done.

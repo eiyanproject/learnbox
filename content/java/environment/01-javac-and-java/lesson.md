@@ -11,6 +11,101 @@ hints:
   - "Use `String.format(\"Hello, %s!\", name)` or plain concatenation - either is fine here."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **source code** | the program as you write it, in a `.java` file |
+| **compile** | translate source code into a form the machine runs, all at once, before running |
+| **compiler** | the program that compiles: `javac` |
+| **bytecode** | the compiled form, in a `.class` file: instructions for the JVM, not for one kind of processor |
+| **Java Virtual Machine** (JVM) | the program that runs bytecode; the same `.class` file runs wherever there is a JVM |
+| **class** | the unit a Java program is built from; for now, a named group of methods |
+| **public class** | a class other code may use; it must live in a file with exactly its name |
+| **method** | a named block of statements, such as `greet` or `main` |
+| **class name** vs **file name** | `Greeter` vs `Greeter.java`; `javac` takes the file, `java` takes the class |
+| **single-file launch** | `java Greeter.java`: compile in memory and run, leaving no `.class` file |
+| **compile-time error** | `javac` refused the file; nothing ran |
+| **run-time error** (exception) | the program compiled and started, then failed while running |
+| **launcher** | the `java` command, which starts the JVM and finds your class |
+| **stack trace** | the error plus the chain of method calls that led to it, most recent first |
+| **caret** (`^`) | in a compiler message, the mark under the exact spot it objects to |
+| **case-sensitive** | `Greeter` and `greeter` are different names |
+| **entry point** | the method the launcher calls to start the program: `main` |
+| **signature** | a method's name, parameters and modifiers: `public static void main(String[] args)` |
+| **`public`** | may be used from outside the class |
+| **`static`** | belongs to the class itself, so it runs without creating an object |
+| **`void`** | returns nothing |
+| **instance** (object) | one value made from a class; `main` runs before any exist |
+| **array** | a fixed-length row of values of one type, such as `String[]` |
+| **command-line arguments** | words typed after the class name, which arrive in `args` |
+| **varargs** (`String...`) | a parameter that takes any number of values, as an array |
+| **exit status** | the number a program hands back to the shell when it ends; 0 means success |
+| **return** vs **print** | hand a value back to the caller vs show text on the screen; returned values can be tested |
+| **classpath** | the list of folders and jar files where `javac` and `java` look for classes |
+| **jar** | a zip archive of `.class` files: how libraries are shipped |
+| **reflective lookup** | code asking for a class by its name as a string |
+| **JRE** | the JVM plus the standard library: enough to run Java |
+| **JDK** | the JRE plus `javac` and other tools: enough to build Java |
+| **standard library** | ready-made classes every program can use, such as `String`, `List` and `Files` |
+| **`jshell`** | an interactive prompt that runs Java one line at a time |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac Greeter.java` | compiles the file into `Greeter.class` |
+| `java Greeter` | starts the JVM and runs the class `Greeter` |
+| `java Greeter.java` | compiles in memory and runs, for quick single-file experiments |
+| `java Greeter Ada Bo` | runs it with two command-line arguments |
+| `javac -cp lib/junit.jar:. Greeter.java` | compiles with a classpath of that jar and the current folder (`.`); `:` separates entries on Linux |
+| `java -cp . Greeter` | runs with the current folder as the classpath |
+| `java -version`, `javac -version` | show which Java is installed |
+| `jshell` | starts the interactive prompt; `/exit` (or Ctrl+D) leaves |
+| `a && b` | runs `b` only if `a` succeeded |
+| `#` | in the lesson's command examples, starts a comment: do not type it |
+| `$` | stands for the terminal's prompt: do not type it |
+
+### Java keywords, classes and methods
+
+| Name | What it does |
+|---|---|
+| `public class Greeter { ... }` | declares the public class `Greeter` |
+| `public static void main(String[] args)` | the entry point; all four words are required on Java 21 |
+| `static String greet(String name)` | a method that takes a `String` and returns a `String` |
+| `return value;` | ends the method and hands `value` back |
+| `String` | the type for text |
+| `"Hello, " + name + "!"` | joins strings with `+` |
+| `String.format("Hello, %s!", name)` | builds a string, putting `name` where `%s` is |
+| `name.substring(0, 1)` | the characters from position 0 up to (not including) 1 |
+| `"Greeter".length()` | the number of characters |
+| `System.out.println(x)` | prints `x` and a new line |
+| `System.exit(code)` | ends the program with that exit status |
+| `args[0]` | the first command-line argument |
+| `Integer.MAX_VALUE` | the largest `int`, 2147483647 |
+| `Class.forName("Helper")` | looks a class up by its name, at run time |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `Greeter.java:3: error: ...` | a compile-time error on line 3 of that file |
+| `class Greeter is public, should be declared in a file named Greeter.java` | the public class and the file name do not match |
+| `Error: Could not find or load main class ...` | the launcher could not find the class: wrong name, or not on the classpath |
+| `Error: Main method not found in class ...` | the class has no `main` with the exact signature |
+| `Exception in thread "main" ...` | a run-time error; a stack trace follows |
+| `StringIndexOutOfBoundsException` | asked for characters of a string that are not there |
+| `NoClassDefFoundError` | the class compiled against is missing at run time: a classpath problem |
+| `ClassNotFoundException` | a class asked for by name (or by the launcher) was not found |
+
+---
+
 In Python or JavaScript, you run the source file directly. Java adds a step:
 your source is first **compiled**, translated by a program called the
 **compiler** into a compact form the machine can run quickly, and only then

@@ -11,6 +11,73 @@ hints:
   - "`grid(rows, cols)` returns int[rows][cols] where each cell is row * cols + col. A nested loop, outer over rows."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **array** | a numbered row of values, all of one type |
+| **element** | one value in an array |
+| **index** | an element's position, from 0 to `length - 1` |
+| **offset** | how far along from the start; why indexes begin at 0 |
+| **fixed length** | an array's size is set when it is made and never changes |
+| **default value** | what a new array holds: `0`, `false`, `'\u0000'` or `null` |
+| **`null`** | "no object": the default for reference-type elements |
+| **array literal** | `{1, 2, 3}`: an array made from listed values |
+| **field** vs **method** | `a.length` (no brackets) vs `s.length()` |
+| **in place** | changes the array itself; `Arrays.sort` does and returns nothing |
+| **reference equality** | `a.equals(b)` on arrays only asks "same object?" |
+| **identity hash** | the `@6d06d69c` part of an array's default text |
+| **multidimensional array** | an array of arrays: `int[][]` |
+| **ragged array** | an array of arrays whose rows have different lengths |
+| **varargs** | `int... values`: any number of arguments, received as an array |
+| **resize** | not possible; make a bigger copy instead |
+| **run-time check** | array bounds are checked when the line runs, not by the compiler |
+| **two passes** | loop once to count, once to fill |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac Arrays2.java && java Arrays2` | builds and runs this lesson's file |
+
+### Java classes and methods
+
+| Name | What it does |
+|---|---|
+| `new int[3]` | an array of three `int`s, all 0 |
+| `int[] b = {1, 2, 3};` | an array holding those values |
+| `b[0]`, `b[2] = 9;` | read an element; replace one |
+| `a.length` | the number of elements |
+| `import java.util.Arrays;` | the class of array helpers |
+| `Arrays.toString(a)` | the contents as text, `"[1, 2, 3]"` |
+| `Arrays.sort(a)` | sorts `a` itself |
+| `Arrays.copyOf(a, 5)` | a copy of length 5, padded with defaults |
+| `Arrays.equals(a, b)`, `Arrays.deepEquals` | compare contents; for nested arrays |
+| `Arrays.fill(a, 7)` | sets every element to 7 |
+| `new int[3][4]`, `new int[3][]` | 3 rows of 4; 3 rows still to be made |
+| `grid[1][2]` | row 1, position 2 |
+| `static int sum(int... values)` | a varargs method; `sum()` gives an empty array |
+| `String.format(String, Object...)` | a varargs method you already use |
+| `throw new IllegalArgumentException("empty array");` | refuses an argument that makes no sense |
+| `try { ... } catch (...) { ... }` | catches an exception (Silver lesson 7) |
+| `e.getMessage()` | the exception's message text |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `ArrayIndexOutOfBoundsException` | an index below 0 or at least `length`, such as `Index 2 out of bounds for length 2` |
+| `IllegalArgumentException` | thrown on purpose for a bad argument, such as an empty array |
+| `[I@6d06d69c` | not an error: what printing an array directly shows |
+
+---
+
 An **array** holds a numbered row of values, all of the same type: ten
 scores, a week of temperatures, the cells of a board. It is the most basic
 collection in Java, and the fastest, because its elements sit side by side in

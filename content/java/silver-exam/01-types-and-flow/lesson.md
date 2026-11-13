@@ -11,6 +11,45 @@ hints:
   - "`fizzOrBuzz` uses a switch on a computed key, or plain if/else - either is fine, but check the combined case first."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **exam paper** | mixed questions over earlier lessons, with no new material |
+| **integer division** | `/` on two whole numbers truncates towards zero, before any widening (Silver lesson 1) |
+| **truncate** | drop the fraction: `7 / 2` is 3, `-7 / 2` is -3 |
+| **promotion** | operands smaller than `int` become `int`; a wider operand widens the whole expression |
+| **overflow** | a result too big for its type wraps round silently |
+| **remainder** (`%`) | keeps the sign of the left operand: `-7 % 3` is -1 |
+| **ternary operator** | `c ? x : y`; it is **right-associative**, so `a ? x : b ? y : z` means `a ? x : (b ? y : z)` |
+| **compound assignment** | `+=` and friends cast back to the variable's type: `b += 300` on a `byte` wraps to 54 |
+| **type name** | here, a string such as `"int"` naming the type an expression has |
+| **FizzBuzz** | the classic exercise: "Fizz" for multiples of 3, "Buzz" for 5, "FizzBuzz" for both |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac Paper1.java && java Paper1` | builds and runs this paper's file |
+
+### Java names
+
+| Name | What it does |
+|---|---|
+| `byte`, `short`, `int`, `long`, `float`, `double` | the numeric primitive types, narrowest to widest |
+| `Integer.MAX_VALUE + 1` | wraps to `Integer.MIN_VALUE` |
+| `(byte) x` | a narrowing cast |
+| `n % 15 == 0` | divisible by both 3 and 5 |
+| `String.valueOf(n)` | a number as text, such as `"7"` |
+
+---
+
 No new material. These are the Silver objectives from the first four lessons,
 mixed and without labels, written the way the exam writes them: short methods
 where the answer depends on one rule you either know or do not.

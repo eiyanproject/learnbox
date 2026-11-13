@@ -11,6 +11,75 @@ hints:
   - "`Point` is a record: `record Point(int x, int y) {}` gives you the constructor, accessors `x()` and `y()`, equals, hashCode and toString."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **core library** (API) | the classes every Java program can use |
+| **wrapper class** | the object form of a primitive: `Integer`, `Double`, `Character`, `Boolean` |
+| **autoboxing** / **unboxing** | automatic conversion from primitive to wrapper / back |
+| **integer cache** | boxed values from -128 to 127 are shared objects, so `==` works by accident |
+| **identity** vs **content** | same object (`==`) vs same value (`equals`) |
+| **`null`** | no object; unboxing it throws |
+| **`var`** | let the compiler infer a local variable's type from its value |
+| **type inference** | the compiler working out a type; the type is still fixed at compile time |
+| **dynamic typing** | a variable's type changing at run time; Java does not do this, even with `var` |
+| **initialiser** | the value a variable is declared with |
+| **record** | a compact class that carries data: fields, constructor, accessors, `equals`, `hashCode`, `toString` |
+| **component** | one of the values a record holds, such as `x` in `Point(int x, int y)` |
+| **canonical constructor** | the constructor taking every component in order |
+| **accessor** | the method that reads a component: `x()`, with no `get` prefix |
+| **`hashCode`** | the number hash-based collections use to find an object; equal objects must share it |
+| **compact constructor** | a record constructor with no parameter list, for validation |
+| **immutable** | cannot change; `java.time` methods return new values |
+| **`java.time`** | the modern date and time API |
+| **local date/time** | a wall-clock date or time with no time zone |
+| **`Duration`** / **`Period`** | an amount of time in seconds / in years, months and days |
+| **ISO 8601** | the date format `2026-09-24`; `PT2H` and `P1M` are its durations |
+| **1-based months** | in `java.time`, January is 1 (the old `Calendar` used 0) |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `jshell` | try one line, such as `Integer a = 1000, b = 1000; a == b` |
+| `javac Core.java && java Core` | builds and runs this lesson's file |
+
+### Java classes and methods
+
+| Name | What it does |
+|---|---|
+| `Integer boxed = 5;`, `int back = boxed;` | autoboxing and unboxing |
+| `a.equals(b)` | compares the values of two `Integer`s |
+| `maybe.intValue()` | what unboxing calls behind the scenes |
+| `map.get(key)` | returns `null` for a missing key, which then fails to unbox |
+| `var names = new ArrayList<String>();` | `names` is an `ArrayList<String>` |
+| `record Point(int x, int y) {}` | declares a record |
+| `p.x()`, `new Point(1, 2)` | an accessor; the canonical constructor |
+| `Point { if (x < 0) throw ...; }` | a compact constructor |
+| `LocalDate.of(2026, 9, 24)` | a date |
+| `d.plusDays(10)`, `plusWeeks(n)` | a new, later date |
+| `d.getDayOfWeek()` | the weekday, such as `THURSDAY` |
+| `LocalTime`, `LocalDateTime` | a time of day; a date and time |
+| `ChronoUnit.DAYS.between(a, b)` | days from `a` to `b`, negative if `b` is earlier |
+| `Math.sqrt(x)` | the square root |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `NullPointerException` | unboxing `null`, or calling any method on `null` |
+| `incompatible types: int cannot be converted to ArrayList<String>` | a `var` variable is still its inferred type |
+| `IllegalArgumentException` | thrown by a compact constructor to reject invalid values |
+
+---
+
 This lesson collects four parts of the core library that every Java program
 uses and the Silver exam tests: the wrapper classes and the automatic
 conversions that make `==` misbehave, `var` for shorter declarations, records

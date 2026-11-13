@@ -11,6 +11,73 @@ hints:
   - "`initials`: split on a space, take charAt(0) of each part, uppercase it, and join. `String.join` or a StringBuilder both work."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **`String`** | Java's class for text |
+| **immutable** | can never change once created; `String` methods return new strings |
+| **mutable** | can be changed in place, like a `StringBuilder` |
+| **reference** | the address of an object; a `String` variable holds one |
+| **same object** vs **same content** | `==` asks the first; `equals` asks the second |
+| **string pool** | the one shared copy of each string literal in the code |
+| **interning** | putting a string in the pool |
+| **run time** | while the program runs; strings built then are new objects, not pooled |
+| **position** (index) | where a character is, counting from 0 |
+| **exclusive end** | `substring(a, b)` stops before `b`; the result has `b - a` characters |
+| **whitespace** | spaces, tabs and newlines |
+| **Unicode** | the standard that numbers every character in every language |
+| **CSV** | comma-separated values: one record per line, fields split by commas |
+| **regex** (regular expression) | a pattern language; `split` takes one |
+| **escape** | a backslash that makes the next character literal; in a Java string `\\` is one backslash |
+| **buffer** | the changeable storage inside a `StringBuilder` |
+| **chaining** | calling a method on what the previous call returned: `sb.append("a").append("b")` |
+| **return-this** | a method that changes the object and returns that same object |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac Text.java && java Text` | builds and runs this lesson's file |
+
+### Java classes and methods
+
+| Name | What it does |
+|---|---|
+| `s.length()` | number of characters (a method: brackets; arrays use the field `length`) |
+| `s.charAt(i)` | the character at position `i`, as a `char` |
+| `s.substring(a, b)` | the characters from `a` up to, not including, `b` |
+| `s.indexOf(t)` | where `t` first appears, or -1 |
+| `s.trim()`, `s.strip()` | a copy without spaces at the ends; `strip` knows Unicode spaces |
+| `s.toUpperCase()`, `s.toLowerCase()` | a copy in capitals or small letters |
+| `s.replace(a, b)` | a copy with every `a` replaced by `b` |
+| `s.split(regex)` | the pieces between matches of the pattern, as a `String[]` |
+| `split("\\.")`, `split("\\s+")` | split on a real full stop; on any run of whitespace |
+| `s.isBlank()` | `true` if empty or only whitespace |
+| `a.equals(b)`, `a.equalsIgnoreCase(b)` | same text; same text ignoring capitals |
+| `new String("java")` | a new string object, not the pooled one |
+| `Integer.parseInt("1815")` | text to an `int` |
+| `String.join(".", parts)` | joins pieces with a separator |
+| `new StringBuilder()`, `new StringBuilder(s)` | an empty builder; one starting with `s` |
+| `sb.append(x)`, `insert`, `delete`, `reverse()` | change the builder and return it |
+| `sb.toString()` | the builder's contents as an ordinary `String` |
+| `s += i` | builds a whole new string each time; slow in a loop |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `StringIndexOutOfBoundsException` | a position outside the string, as in `"hello".substring(1, 9)` |
+| *(no error at all)* | `s.trim();` with the result thrown away: it compiles and does nothing |
+
+---
+
 Text is everywhere in programs, and Java's `String` class handles it. It
 behaves differently from strings in some other languages in two ways that
 matter: a `String` can never change, and `==` does not compare the text. Both

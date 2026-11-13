@@ -11,6 +11,64 @@ hints:
   - "Reject a null or blank reference too - `reference == null || reference.isBlank()`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **modelling** | deciding which types a program has and what values they may hold |
+| **invalid state** | a value that should never exist, such as `guests = -3` |
+| **"wrong states cannot be built"** | the design goal: the type itself refuses invalid values |
+| **enum** (enumeration) | a type with a fixed list of possible values |
+| **constant** (of an enum) | one of those values, written in capitals: `PENDING` |
+| **closed set** | possibilities known in advance, such as three booking states |
+| **exhaustive switch** | covers every enum constant, so no `default` is needed |
+| **record** | an immutable data class with generated accessors, `equals`, `hashCode` and `toString` |
+| **component** | one value a record holds: `reference`, `guests`, `status` |
+| **compact constructor** | a record constructor with no parameter list, where validation goes |
+| **canonical constructor** | the one taking every component; every way of creating a record goes through it |
+| **immutable** | cannot change after creation |
+| **derive a new value** | return a changed copy instead of changing the original |
+| **fail fast** | reject bad input at once, at the boundary, with a message naming the rule |
+| **boundary** | where data enters your types, such as a constructor |
+| **static factory** | a static method that creates an object, such as `of(...)` |
+| **blank** | empty or only spaces |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `javac Booking.java && java Booking` | builds and runs this lesson's file |
+
+### Java keywords, classes and methods
+
+| Name | What it does |
+|---|---|
+| `enum Status { PENDING, CONFIRMED, CANCELLED }` | declares an enum |
+| `boolean isFinal() { return this == CANCELLED; }` | a method inside an enum; `this` is the constant |
+| `Status.PENDING` | one constant |
+| `==`, `!=` on enum constants | correct, because each constant is one shared object |
+| `record Reservation(String reference, int guests, Status status)` | declares a record |
+| `Reservation { if (guests < 1) throw ...; }` | a compact constructor |
+| `reference == null \|\| reference.isBlank()` | missing or blank |
+| `new Reservation(reference, guests, Status.CONFIRMED)` | a changed copy |
+| `static Reservation of(String reference, int guests)` | a factory that starts it as `PENDING` |
+| `r.status()` | a record accessor |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `IllegalArgumentException` | thrown by the compact constructor for an invalid value |
+| `cannot find symbol: variable CONFRIMED` | a misspelt enum constant, caught by the compiler |
+
+---
+
 The certification tracks teach the language. This one is about using it: the
 first job in any real program is deciding what the types are.
 
