@@ -11,6 +11,50 @@ hints:
   - "You only need GigabitEthernet0/0 in this lesson. PC1 is already configured and already points at 192.168.1.1 as its gateway."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **interface** | a router port that carries traffic once it has an address |
+| **IOS mode** | where you are in the command tree; the prompt shows it |
+| **user mode** | `R1>`: look, do not touch |
+| **privileged (enable) mode** | `R1#`: show everything, reload, save |
+| **global configuration** | `R1(config)#`: change the device |
+| **interface configuration** | `R1(config-if)#`: change one interface |
+| **mask** | `255.255.255.0`, written out in full here |
+| **administratively down** | an interface nobody has brought up; router interfaces start like this |
+| **`no` form** | `no <command>` undoes a command |
+| **Status** / **Protocol** | physical and administrative state / whether the line is usable; both must say `up` |
+| **default gateway** | the router address a PC sends other-subnet traffic to |
+| **topology** | the lab's layout of devices and cables |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python lab.py` | applies your configuration to the lab topology and runs the pings |
+| `netlab console one-router R1` | opens an interactive console on R1 |
+### IOS commands
+
+| Command | What it does |
+|---|---|
+| `enable` | user mode to privileged mode |
+| `configure terminal` | privileged to global configuration |
+| `interface GigabitEthernet0/0` | selects an interface |
+| `ip address 192.168.1.1 255.255.255.0` | sets its address |
+| `no shutdown` | brings it up |
+| `exit`, `end` | up one level / all the way back to `#` |
+| `show ip interface brief` | each interface's address, status and protocol |
+| `show running-config` | the configuration in use |
+
+---
+
 A router interface with no address does nothing. Giving it one takes four
 commands, and every lesson after this assumes you can type them without
 thinking.

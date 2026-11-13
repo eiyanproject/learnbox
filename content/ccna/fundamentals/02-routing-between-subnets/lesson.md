@@ -11,6 +11,42 @@ hints:
   - "If one direction works and the other does not, check `show ip interface brief` on both interfaces: the usual cause is a missing `no shutdown` on the second one."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **subnet** | the range of addresses a host can reach directly |
+| **default gateway** | where a host sends anything outside its subnet |
+| **MAC address** | the layer 2 (hardware) address a frame is sent to |
+| **IP address** | the layer 3 address of the final destination |
+| **next hop** | the next device on the path |
+| **layer 2** / **layer 3** | frames between neighbours / packets end to end |
+| **connected route** | `C`: a subnet the router has an up interface in; appears by itself |
+| **routing table** | the routes a router knows |
+| **near** / **far interface** | the router interface on your side / the other side |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python lab.py` | applies your configuration to the lab topology and runs the pings |
+
+### IOS commands
+
+| Command | What it does |
+|---|---|
+| `interface`, `ip address`, `no shutdown` | address and bring up each interface |
+| `show ip route` | the routing table; `C` connected, `S` static |
+| `ping ADDRESS` | tests reachability |
+
+---
+
 PC1 is on 192.168.1.0/24. PC2 is on 192.168.2.0/24. They are three metres
 apart and they cannot talk, because a host can only deliver a frame directly
 to something inside its own subnet. Everything else it hands to its **default

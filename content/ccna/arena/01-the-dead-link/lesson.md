@@ -11,6 +11,39 @@ challenge:
     xp: 150
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **fault** | a mistake in the configuration; there are four |
+| **`/24`**, **`/30`** | prefix lengths: 256 addresses / 4 addresses (a point-to-point link) |
+| **mask** | `255.255.255.0` for /24, `255.255.255.252` for /30 |
+| **gateway** | the router address each PC sends other traffic to |
+| **both directions** | a ping must get there and back; the return path needs routes too |
+| **`g0/0`** | short for `GigabitEthernet0/0` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python lab.py` | runs the pings and says where each one dies |
+
+### IOS commands
+
+| Command | What it does |
+|---|---|
+| `interface`, `ip address`, `no shutdown` | the address commands from Fundamentals |
+| `ip route NETWORK MASK NEXT-HOP` | a static route |
+| `show ip interface brief`, `show ip route` | check interfaces and routes |
+
+---
+
 Someone configured this network in a hurry and went home. PC1 cannot reach
 PC2, and you have twelve minutes.
 

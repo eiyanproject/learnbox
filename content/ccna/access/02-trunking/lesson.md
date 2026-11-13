@@ -11,6 +11,44 @@ hints:
   - "If PC1 reaches PC3 but PC2 cannot reach PC4, check you configured both VLANs on both switches - a VLAN that exists on one switch only has nowhere to go."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **trunk** | a link carrying many VLANs by tagging each frame |
+| **tag** | a small header naming a frame's VLAN |
+| **802.1Q** (dot1Q) | the standard for VLAN tags |
+| **native VLAN** | the one VLAN a trunk carries untagged; VLAN 1 by default; must match at both ends |
+| **native VLAN mismatch** | untagged frames silently crossing between two VLANs: a security hole |
+| **VLAN hopping** | an attacker sending tagged frames to reach another VLAN |
+| **pruning** | allowing only some VLANs on a trunk |
+| **GigabitEthernet** | a 1 Gbps port (short form `Gi0/1`) |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python lab.py` | applies your configuration to the lab topology and runs the pings |
+
+### IOS commands
+
+| Command | What it does |
+|---|---|
+| `interface GigabitEthernet0/1` | selects the link between the switches |
+| `switchport mode trunk` | makes it a trunk |
+| `switchport trunk allowed vlan 10,20` | only VLANs 10 and 20 may cross |
+| `switchport trunk native vlan 99` | changes the native VLAN |
+| `vlan 10`, `switchport mode access`, `switchport access vlan 10` | access ports, as in the last lesson |
+| `show interfaces trunk` | shows trunks and their VLANs |
+
+---
+
 One cable between two switches has to carry every VLAN that spans them. An
 access port cannot: it carries one VLAN and sends frames untagged, so the far
 switch has no way to tell which VLAN a frame belonged to.

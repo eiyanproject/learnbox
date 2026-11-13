@@ -11,6 +11,47 @@ hints:
   - "Then `ip nat inside source list 1 interface GigabitEthernet0/1 overload` - 'overload' is the word that makes it PAT, sharing one address across many hosts by port number."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **RFC 1918** | the three private ranges: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 |
+| **private address** | one the public internet drops |
+| **NAT** | rewriting a packet's address as it leaves |
+| **inside** / **outside** | the interfaces facing your network / the world |
+| **static NAT** | one private address to one public address, permanently |
+| **PAT** (NAT overload) | many hosts share one public address, told apart by source port |
+| **dynamic NAT** | addresses from a pool, which can run out |
+| **source port** | the port number a connection leaves from |
+| **inside local**, **inside global**, **outside global**, **outside local** | the private address / how it looks outside / the far server's real address / how it looks inside |
+| **ISP** | internet service provider |
+| **default route** | `0.0.0.0 0.0.0.0`: everything else, towards the ISP |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python lab.py` | applies your configuration to the lab topology and runs the pings |
+
+### IOS commands
+
+| Command | What it does |
+|---|---|
+| `ip nat inside`, `ip nat outside` | marks an interface's side |
+| `ip nat inside source static 192.168.10.11 203.0.113.10` | static NAT |
+| `access-list 1 permit 192.168.10.0 0.0.0.255` | which hosts are translated |
+| `ip nat inside source list 1 interface GigabitEthernet0/1 overload` | PAT using that interface's address |
+| `ip route 0.0.0.0 0.0.0.0 203.0.113.1` | the default route |
+| `show ip nat translations` | the current translations |
+
+---
+
 192.168.10.11 is not an address anyone on the internet can reply to. RFC 1918
 set aside three ranges for private use — 10.0.0.0/8, 172.16.0.0/12,
 192.168.0.0/16 — and every router on the public internet drops them.

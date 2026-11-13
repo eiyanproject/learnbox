@@ -11,6 +11,38 @@ challenge:
     xp: 500
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **VLAN** | a separate broadcast domain on a switch |
+| **access port** | carries one VLAN, untagged |
+| **trunk** | carries several VLANs, tagged; must be a trunk at both ends |
+| **allowed VLANs** | the VLANs a trunk carries |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python lab.py` | runs the two pings that should work |
+
+### IOS commands
+
+| Command | What it does |
+|---|---|
+| `vlan`, `name` | create and name a VLAN |
+| `switchport mode access`, `switchport access vlan` | access ports |
+| `switchport mode trunk`, `switchport trunk allowed vlan` | the trunk |
+| `show vlan brief`, `show interfaces trunk` | check them |
+
+---
+
 Sales and Engineering each have people on both floors. Each team should see
 its own people and nobody else, and right now nothing crosses the stairs.
 

@@ -11,6 +11,49 @@ hints:
   - "`split` is `list(ipaddress.ip_network(cidr).subnets(new_prefix=n))` - return them as strings so they compare cleanly."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **subnetting** | splitting address space into networks |
+| **bit** | one binary digit; an address has 32 |
+| **network part** / **host part** | the bits the mask covers / the rest |
+| **AND** | combining address and mask bit by bit to get the network address |
+| **network address** | all host bits 0; not usable by a host |
+| **broadcast address** | all host bits 1; not usable by a host |
+| **usable hosts** | addresses a host can have: total minus 2 |
+| **prefix** | `/24`: how many bits the mask covers |
+| **octet** | one of the four 8-bit numbers in an address |
+| **/31** | both addresses usable, for router-to-router links |
+| **/32** | a single host, used for loopbacks |
+| **loopback** | a virtual interface that is always up |
+| **borrow bits** | lengthen the prefix to split a block: n bits give 2ⁿ subnets |
+| **block** | a range of addresses to divide, such as 192.168.1.0/24 |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python -i subnetting.py` | runs the file and leaves you at a Python prompt |
+
+### Python names
+
+| Name | What it does |
+|---|---|
+| `ipaddress.ip_network("192.168.1.0/24")` | a network object |
+| `ipaddress.ip_interface("192.168.1.10/24").network` | the network an address is in |
+| `net.network_address`, `net.broadcast_address` | the first and last address |
+| `net.subnets(new_prefix=26)` | splits into smaller networks |
+| `str(x)` | turns an address or network into text |
+
+---
+
 Subnetting is the part of CCNA people fail on time rather than understanding.
 The arithmetic is small; doing it in your head, reliably, under pressure, is
 the skill.

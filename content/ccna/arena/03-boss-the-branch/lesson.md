@@ -12,6 +12,41 @@ challenge:
     xp: 900
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **default route** | `0.0.0.0 0.0.0.0`: where traffic goes when nothing more specific matches |
+| **static route** | a route you type in yourself |
+| **LAN** | the local network behind a router |
+| **standard access list** | an ACL matching only the source address |
+| **outbound** | applied to traffic leaving an interface |
+| **implicit deny** | every ACL ends by denying whatever it did not permit |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python lab.py` | runs the PC-to-server pings |
+
+### IOS commands
+
+| Command | What it does |
+|---|---|
+| `interface`, `ip address`, `no shutdown` | addresses |
+| `ip route 0.0.0.0 0.0.0.0 NEXT-HOP` | a default route |
+| `ip route NETWORK MASK NEXT-HOP` | a route to one LAN |
+| `access-list 10 permit NETWORK WILDCARD` | a standard ACL entry |
+| `ip access-group 10 out` | applies it outbound on an interface |
+
+---
+
 Three routers came out of their boxes this morning. By the time the clock
 runs out the branch PC must reach the server, and nothing else may.
 

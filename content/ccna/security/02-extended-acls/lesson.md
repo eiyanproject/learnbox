@@ -11,6 +11,42 @@ hints:
   - "Apply it inbound on Gi0/0 with `ip access-group BLOCK_WEB in`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **extended ACL** | matches protocol, source and destination; numbered 100-199, or named |
+| **named ACL** | identified by a name; lines can be edited individually |
+| **rule shape** | `action protocol source destination` |
+| **`any`** | every address: `0.0.0.0 255.255.255.255` |
+| **`host X`** | one address: `X 0.0.0.0` |
+| **near the source** | where an extended list goes, so unwanted traffic is dropped early |
+| **unreachable rule** | one after a broader rule that already matches everything |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python lab.py` | applies your configuration to the lab topology and runs the pings |
+
+### IOS commands
+
+| Command | What it does |
+|---|---|
+| `ip access-list extended BLOCK_WEB` | creates a named extended list |
+| `deny ip any host 8.8.8.8` | denies all IP traffic to 8.8.8.8 |
+| `permit ip any any` | permits everything else |
+| `access-list 100 deny ip any host 8.8.8.8` | the numbered form |
+| `ip access-group BLOCK_WEB in` | applies it to arriving traffic |
+
+---
+
 A standard list can only ask who sent the packet. An extended list can ask
 where it is going and what protocol it is, which is usually what you actually
 want.

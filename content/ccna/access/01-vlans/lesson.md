@@ -11,6 +11,50 @@ hints:
   - "`show vlan brief` lists which ports ended up where - the quickest way to spot a port you forgot."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **switch** | joins devices in one network and forwards frames between its ports |
+| **port** | a socket on the switch a cable plugs into |
+| **broadcast domain** | the set of ports a broadcast reaches |
+| **broadcast** | a frame sent to every device in the domain |
+| **VLAN** | virtual LAN: splits one switch into separate broadcast domains |
+| **router** | forwards traffic between networks; the only way between VLANs |
+| **access port** | carries exactly one VLAN; frames arrive untagged |
+| **frame** | one unit of Ethernet traffic |
+| **untagged** | an ordinary Ethernet frame with no VLAN label |
+| **trunk** | a link carrying several VLANs (next lesson) |
+| **negotiate** | a port deciding by itself to become a trunk; `switchport mode access` stops it |
+| **VLAN 1** | the default VLAN every port starts in |
+| **IOS** | Cisco's device operating system and command language |
+| **`!`** | a comment line in an IOS configuration |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python lab.py` | applies your configuration to the lab topology and runs the pings |
+
+### IOS commands
+
+| Command | What it does |
+|---|---|
+| `vlan 10` | creates VLAN 10 and enters its configuration |
+| `name STAFF` | names the VLAN |
+| `interface FastEthernet0/1` | selects a port (short form `Fa0/1`) |
+| `switchport mode access` | fixes the port as an access port |
+| `switchport access vlan 10` | puts the port in VLAN 10 |
+| `show vlan brief` | lists each VLAN and its ports |
+
+---
+
 A switch out of the box is one flat broadcast domain: every port can talk to
 every other port. A VLAN divides that switch into several, and the division is
 absolute — traffic cannot cross from one VLAN to another without a router,

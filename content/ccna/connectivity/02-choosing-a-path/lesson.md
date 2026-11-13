@@ -11,6 +11,44 @@ hints:
   - "`ipaddress.ip_network(cidr)` gives `.prefixlen`, and `ipaddress.ip_address(ip) in network` is the membership test."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **longest prefix match** | the most specific matching route wins |
+| **prefix** | the network part of a route, such as `/26` |
+| **default route** | `0.0.0.0/0`: the shortest prefix, the last resort |
+| **administrative distance** | breaks ties between sources: connected 0, static 1, eBGP 20, OSPF 110, RIP 120, 255 unusable |
+| **metric** | breaks ties within one protocol: OSPF cost, RIP hop count |
+| **eBGP** | external Border Gateway Protocol, between organisations |
+| **RIP** | an old routing protocol using hop count |
+| **hop count** | how many routers a path crosses |
+| **CIDR string** | `"192.168.1.0/26"`: a network written with its prefix |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python -i routing.py` | runs the file and leaves you at a Python prompt |
+
+### Python names
+
+| Name | What it does |
+|---|---|
+| `ipaddress.ip_network("192.168.1.0/26")` | a network object |
+| `ipaddress.ip_address(ip) in network` | whether an address is inside |
+| `network.prefixlen` | the prefix length |
+| `min(routes, key=...)` | the best by a rule |
+| `None` | "no route matches" |
+
+---
+
 Every packet a router forwards goes through the same decision, in a fixed
 order. Knowing the order answers most routing questions on the exam without
 any configuration at all.

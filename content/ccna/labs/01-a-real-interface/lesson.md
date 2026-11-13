@@ -11,6 +11,47 @@ hints:
   - "Give veth0 10.1.1.1/24 and veth1 10.1.1.2/24 so the two ends are in the same subnet and can reach each other."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **networking stack** | the kernel code that handles interfaces, ARP and routing |
+| **ARP** | finds the hardware address for an IP address |
+| **ICMP** | the protocol ping uses |
+| **kernel** | the core of the operating system |
+| **network namespace** | a private copy of the networking stack |
+| **veth pair** | a virtual cable: two interfaces, what goes in one comes out the other |
+| **prefix length** | Linux writes `/24`, never a dotted mask |
+| **additive** | `ip addr add` adds another address; IOS replaces |
+| **`lo`** | the loopback interface; down in a fresh namespace |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python run.py` | builds your `lab.sh` network in a private namespace and tests it |
+| `unshare -Urn bash` | a shell in your own private network namespace, no privileges needed |
+
+### Linux commands (in `lab.sh`)
+
+| Command | What it does |
+|---|---|
+| `ip link add veth0 type veth peer name veth1` | creates a veth pair |
+| `ip addr add 10.1.1.1/24 dev veth0` | gives an interface an address |
+| `ip link set veth0 up` / `down` | brings it up / down |
+| `ip -br addr` | every interface and address, briefly |
+| `ip route` | the routing table |
+| `ping -c1 10.1.1.2` | one ping |
+| `ip link set lo up` | brings up loopback |
+
+---
+
 Everything so far has been a simulator. This runs on the actual Linux
 networking stack: real interfaces, real ARP, real ICMP. If you get it wrong the
 kernel tells you, not a model of one.

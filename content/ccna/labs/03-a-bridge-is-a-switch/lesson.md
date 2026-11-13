@@ -11,6 +11,42 @@ hints:
   - "Give the bridge side NO address - a switch port has no IP. Put 10.0.0.1/24, .2 and .3 on h1, h2, h3 and let the bridge switch between them."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **Linux bridge** | a switch: learns MAC addresses, floods unknowns, forwards in one broadcast domain |
+| **flood** | send a frame out of every port because the destination is unknown |
+| **MAC address table** (FDB) | where the bridge remembers which port each MAC is on |
+| **switch port** | the bridge end of a veth pair; it has no address |
+| **host end** | the other end, which holds the address |
+| **`master br0`** | plugs an interface into the bridge |
+| **layer 2 vs layer 3** | reaching hosts in one broadcast domain without any route, vs needing a router |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python run.py` | builds your `lab.sh` network in a private namespace and tests it |
+
+### Linux commands (in `lab.sh`)
+
+| Command | What it does |
+|---|---|
+| `ip link add br0 type bridge` | creates a bridge |
+| `ip link set h1br master br0` | attaches a port to it |
+| `bridge link` | which ports belong to the bridge |
+| `bridge fdb show` | the learned MAC address table, like `show mac address-table` |
+| `ip link add h1 type veth peer name h1br`, `ip addr add`, `ip link set ... up` | the hosts |
+
+---
+
 A Linux bridge is a switch. Not "like" a switch — it learns MAC addresses,
 floods what it does not know, and forwards within one broadcast domain, which
 is the definition.

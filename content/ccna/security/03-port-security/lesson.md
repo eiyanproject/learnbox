@@ -11,6 +11,49 @@ hints:
   - "Fa0/1 and Fa0/2 get port security. Leave Fa0/3 and Fa0/4 alone so the tests can tell configured ports from unconfigured ones."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **access layer** | the switches where end devices plug in |
+| **port security** | limits which MAC addresses a port serves |
+| **MAC address** | a device's hardware address |
+| **maximum** | how many MAC addresses a port may learn |
+| **violation** | a frame from a MAC address that is not allowed |
+| **`protect`**, **`restrict`**, **`shutdown`** | drop silently / drop and log / disable the port (the default) |
+| **err-disabled** | a port shut down by a violation, until cleared |
+| **errdisable recovery** | a timer that brings such a port back |
+| **sticky** | learn the current MAC and write it into the configuration |
+| **running configuration** | the configuration in use now |
+| **VLAN hopping** | reaching another VLAN through the native VLAN |
+| **native VLAN** | the untagged VLAN on a trunk; set it to an unused one |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python lab.py` | applies your configuration to the lab topology and runs the pings |
+
+### IOS commands
+
+| Command | What it does |
+|---|---|
+| `switchport mode access` | required before port security |
+| `switchport port-security` | turns it on |
+| `switchport port-security maximum 1` | one device |
+| `switchport port-security violation restrict` | drop and log |
+| `switchport port-security mac-address sticky` | learn and save the MAC |
+| `shutdown` | turns off an unused port |
+| `show port-security interface Fa0/1` | shows its state and violations |
+
+---
+
 The access layer is where untrusted things get plugged in. Port security is the
 switch's answer to "someone unplugged the printer and connected a laptop".
 

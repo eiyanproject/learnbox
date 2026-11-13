@@ -11,6 +11,43 @@ hints:
   - "The SVI address is the gateway the PCs point at: 10.0.10.1 for Vlan10, 10.0.20.1 for Vlan20."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **layer 3 switch** | a switch that also routes between VLANs, in hardware |
+| **layer 2 switch** | one that only switches frames |
+| **SVI** | switched virtual interface: the switch's own interface inside a VLAN |
+| **inter-VLAN routing** | forwarding packets from one VLAN to another |
+| **`ip routing`** | turns routing on; off by default on a switch |
+| **packet** | one unit of IP traffic |
+| **ping** | a test message that asks a device to reply |
+| **campus network** | the network of a building or site |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python lab.py` | applies your configuration to the lab topology and runs the pings |
+
+### IOS commands
+
+| Command | What it does |
+|---|---|
+| `interface Vlan10` | creates the SVI for VLAN 10 |
+| `ip address 10.0.10.1 255.255.255.0` | its address: the VLAN's gateway |
+| `ip routing` | lets the switch forward between VLANs |
+| `show ip interface brief` | lists interfaces, addresses and state |
+| `vlan`, `switchport mode access`, `switchport access vlan` | the access ports |
+
+---
+
 Router on a stick works and it has one obvious flaw: every packet between two
 VLANs crosses the same cable twice. A layer 3 switch removes the cable
 entirely by doing the routing itself.

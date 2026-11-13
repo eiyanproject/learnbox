@@ -11,6 +11,53 @@ hints:
   - "`summarise` counts by a key: build a dict with `counts[value] = counts.get(value, 0) + 1`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **API** | a way for programs to talk to a device or service |
+| **JSON** | the text format network APIs return: objects, arrays, strings, numbers, `true`/`false`, `null` |
+| **object** / **array** | `{...}` maps to a Python `dict` / `[...]` to a `list` |
+| **serialise** | turn data into text |
+| **YAML**, **JSON5** | similar formats that allow comments; JSON does not |
+| **REST API** | URLs you act on with HTTP verbs |
+| **HTTP verb** | GET read, POST create, PUT replace, PATCH modify part, DELETE remove |
+| **idempotent** | doing it twice has the same effect as once |
+| **status code** | 2xx worked, 4xx you got it wrong, 5xx the server did; 401 who are you, 403 no |
+| **control plane** | deciding where traffic goes |
+| **data plane** | carrying the traffic |
+| **controller-based networking** | decisions made in one central place, such as Cisco DNA Center |
+| **CLI** | command-line interface: configuring each device by typing |
+| **Ansible** | configuration tool, agentless, pushes over SSH |
+| **Puppet**, **Chef** | configuration tools that pull, with an agent on the target |
+| **agent** | software installed on the managed device |
+| **payload** | the data an API returns |
+| **tuple** | a fixed group of values, such as `(device, interface)` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python -i api.py` | runs the file and leaves you at a Python prompt to try the functions |
+
+### Python names
+
+| Name | What it does |
+|---|---|
+| `json.loads(text)` | JSON text to Python |
+| `json.dumps(data, sort_keys=True)` | Python to JSON text, keys sorted |
+| `payload["devices"]`, `d.get("key")` | read a value |
+| `for d in devices:` | loop over a list |
+| `collections.Counter` | counts how many of each value |
+
+---
+
 Ten devices can be configured by hand. Ten thousand cannot, and the industry
 answer is that devices expose an API and you write code against it. The exam
 does not ask you to be a programmer, but it does ask you to recognise JSON,

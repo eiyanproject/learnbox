@@ -11,6 +11,42 @@ hints:
   - "Apply it with `ip access-group 20 in` on Gi0/0 - inbound on the interface where the traffic arrives."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **access list (ACL)** | an ordered list of permit and deny rules |
+| **first match wins** | the first matching rule decides; later ones are not consulted |
+| **standard ACL** | numbered 1-99 or 1300-1999; matches the source address only |
+| **implicit deny** | the invisible `deny any` at the end of every list |
+| **wildcard** | `0.0.0.0` matches exactly one address |
+| **`in`** / **`out`** | traffic arriving on / leaving the interface, from the router's view |
+| **close to the destination** | where a standard list goes |
+| **NAT** | address translation, already working in this lab |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python lab.py` | applies your configuration to the lab topology and runs the pings |
+
+### IOS commands
+
+| Command | What it does |
+|---|---|
+| `access-list 20 deny 192.168.10.12 0.0.0.0` | denies one host |
+| `access-list 20 permit any` | permits everything else |
+| `interface GigabitEthernet0/0` then `ip access-group 20 in` | applies list 20 to arriving traffic |
+| `show access-lists` | lists the rules and their match counts |
+
+---
+
 An access list is an ordered list of permit and deny rules. A packet is tested
 against each in turn and the **first match wins**; nothing after it is
 consulted.

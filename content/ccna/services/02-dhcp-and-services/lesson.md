@@ -11,6 +11,52 @@ hints:
   - "Interface addressing is the same as the first lesson: g0/0 is 192.168.1.1/24 and needs 'no shutdown'."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **DHCP** | hands out addresses to hosts automatically |
+| **pool** | the range DHCP gives addresses from |
+| **excluded address** | one DHCP must not hand out, such as the router's own |
+| **duplicate address** | two hosts with one address: intermittent, horrible failures |
+| **lease** | how long a host may keep its address, in days |
+| **DNS server** | turns names into addresses |
+| **DORA** | Discover, Offer, Request, Acknowledge: the DHCP exchange |
+| **broadcast** | Discover and Request go to everyone on the subnet |
+| **helper address** | forwards DHCP broadcasts to a server on another subnet |
+| **NTP** | Network Time Protocol: keeps clocks in agreement |
+| **syslog** | sends log messages to a central server |
+| **severity** | 0 emergency to 7 debugging; 0 is the most severe |
+| **`logging trap`** | the most verbose level sent: `informational` (6) sends 0 to 6 |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python lab.py` | applies your configuration to the lab topology and runs the pings |
+
+### IOS commands
+
+| Command | What it does |
+|---|---|
+| `ip dhcp excluded-address 192.168.1.1 192.168.1.10` | keeps a range out of the pool |
+| `ip dhcp pool LAN` | creates a pool |
+| `network 192.168.1.0 255.255.255.0` | its subnet |
+| `default-router 192.168.1.1` | the gateway clients get |
+| `dns-server 8.8.8.8` | the DNS server clients get |
+| `lease 7` | a seven-day lease |
+| `ip helper-address ADDRESS` | forwards DHCP to another subnet |
+| `ntp server 216.239.35.0` | sets the time source |
+| `logging host 192.168.1.50`, `logging trap informational` | syslog destination and level |
+
+---
+
 Three services appear on every exam and every real network, for the same
 reason: without them a network works but cannot be run.
 

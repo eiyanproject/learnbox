@@ -11,6 +11,50 @@ hints:
   - "Both routers also need their uplink g0/1 addressed and a route to 10.10.10.0/24 via CORE, or the active router has nowhere to forward to."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **first hop redundancy protocol (FHRP)** | a virtual gateway address in front of two real routers |
+| **HSRP** | Hot Standby Router Protocol, Cisco's FHRP |
+| **virtual IP** | the gateway address hosts use; owned by neither router |
+| **group number** | identifies the HSRP group; must match |
+| **priority** | higher wins the active role; default 100 |
+| **preempt** | a recovered router with higher priority takes the role back |
+| **active** / **standby** | forwarding / waiting to take over |
+| **hello** | the messages HSRP routers exchange |
+| **virtual MAC** | the group's hardware address, so hosts' ARP entries stay valid |
+| **ARP** | finds the hardware address for an IP address |
+| **failover** | the standby taking over |
+| **re-converge** | the routing upstream adapting to the failure |
+| **VRRP** | the open-standard equivalent of HSRP |
+| **GLBP** | Cisco's FHRP that load-balances |
+| **uplink** | the link from a router towards the core |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python lab.py` | applies your configuration to the lab topology and runs the pings |
+
+### IOS commands
+
+| Command | What it does |
+|---|---|
+| `standby 1 ip 192.168.1.254` | joins HSRP group 1 with that virtual IP |
+| `standby 1 priority 110` | sets the priority |
+| `standby 1 preempt` | takes the active role back after recovering |
+| `ip route NETWORK MASK NEXT-HOP` | the route to the server's subnet |
+| `show standby brief` | shows each group's active and standby router |
+
+---
+
 A default gateway is a single address configured on every host. If the router
 holding it fails, every host on that subnet is stranded — they have no way to
 learn about the perfectly good second router next to it.

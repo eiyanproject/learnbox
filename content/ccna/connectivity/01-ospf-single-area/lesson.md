@@ -11,6 +11,48 @@ hints:
   - "Both the LAN and the link need network statements on each router. Advertising only the link means the far LAN is never learned."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **OSPF** | Open Shortest Path First: routers tell each other what they are connected to |
+| **dynamic routing** | routes learned from other routers instead of typed in |
+| **process id** | the `1` in `router ospf 1`; local, need not match |
+| **area** | a group of OSPF routers; must match |
+| **area 0** | the backbone; in a single-area design everything is in it |
+| **network statement** | which interfaces take part: advertise their subnet and look for neighbours |
+| **advertise** | tell neighbours about a subnet |
+| **neighbour** / **adjacency** | another OSPF router / the working relationship with it |
+| **wildcard mask** | an inverted mask: 0 means "must match", 1 "don't care" |
+| **octet** | one of the four numbers in an address |
+| **`O`** | marks an OSPF-learned route in the routing table |
+| **administrative distance** | how much a route source is trusted; OSPF 110, static 1 |
+| **cost** | OSPF's metric, from bandwidth: the `2` in `[110/2]` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python lab.py` | applies your configuration to the lab topology and runs the pings |
+
+### IOS commands
+
+| Command | What it does |
+|---|---|
+| `router ospf 1` | starts OSPF process 1 |
+| `network 192.168.1.0 0.0.0.255 area 0` | interfaces in 192.168.1.0/24 join area 0 |
+| `network 10.0.0.0 0.0.0.3 area 0` | the /30 link between the routers |
+| `show ip route` | the routing table, OSPF routes marked `O` |
+| `show ip ospf neighbor` | the neighbours found |
+
+---
+
 Static routes work until the fourth router. Every new subnet means editing
 every other device, and forgetting one is invisible until something breaks in
 one direction only.

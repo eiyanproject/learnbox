@@ -11,6 +11,42 @@ hints:
   - "Now do it in reverse. R2 needs `ip route 192.168.1.0 255.255.255.0 10.0.0.1`, or the echo request arrives and the reply has nowhere to go."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **static route** | a route you type in: network, mask, next hop |
+| **next hop** | the neighbour to send to; must be reachable through a connected interface |
+| **`S`** | marks a static route in `show ip route` |
+| **`[1/0]`** | administrative distance / metric |
+| **administrative distance** | how trusted a route source is; static is 1 |
+| **/30 link** | four addresses, two usable: the usual link between routers |
+| **echo request** / **echo reply** | the two halves of a ping, travelling opposite ways |
+| **return path** | the route home; every route needs a matching one |
+| **traceroute** | shows each hop a packet takes |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python lab.py` | applies your configuration to the lab topology and runs the pings |
+
+### IOS commands
+
+| Command | What it does |
+|---|---|
+| `ip route 192.168.3.0 255.255.255.0 10.0.0.2` | to reach 192.168.3.0/24, send to 10.0.0.2 |
+| `show ip route` | the routing table |
+| `traceroute ADDRESS` | lists the hops |
+
+---
+
 A router knows the subnets it is attached to. Everything else has to be
 learned — by a routing protocol, or by you.
 

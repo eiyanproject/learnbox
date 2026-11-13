@@ -11,6 +11,39 @@ challenge:
     xp: 700
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **router on a stick** | one router link carrying both VLANs, split into subinterfaces |
+| **physical interface** | the real port; must be up for its subinterfaces to work |
+| **subinterface** | `Gi0/0.10`: tags one VLAN and holds that VLAN's gateway |
+| **trunk** | the switch side of the router link |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python lab.py` | runs the pings and says where each one dies |
+
+### IOS commands
+
+| Command | What it does |
+|---|---|
+| `switchport mode access`, `switchport access vlan` | the PC ports |
+| `switchport mode trunk` | the link to the router |
+| `no shutdown` | brings up the physical interface |
+| `encapsulation dot1Q VLAN` | which VLAN a subinterface tags |
+| `ip address ADDRESS MASK` | the subinterface's gateway address |
+
+---
+
 Accounts and the warehouse sit on one switch in separate VLANs, and the only
 way between them is the router hanging off a single cable. Since the weekend
 nothing crosses it.
