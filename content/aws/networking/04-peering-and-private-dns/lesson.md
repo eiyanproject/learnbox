@@ -11,47 +11,187 @@ hints:
   - "A record: `aws route53 change-resource-record-sets --hosted-zone-id \"$ZONE\" --change-batch '{\"Changes\":[{\"Action\":\"UPSERT\",\"ResourceRecordSet\":{\"Name\":\"db.internal.example\",\"Type\":\"A\",\"TTL\":60,\"ResourceRecords\":[{\"Value\":\"10.1.11.10\"}]}}]}'`."
 ---
 
+Companies rarely have just one VPC. The data team's databases sit in their
+own VPC, a partner runs another, each environment (development, production)
+has its own. A VPC is isolated by default: nothing in one can reach the
+other, even in the same account. When the application in `lb-vpc` needs the
+database in `data-vpc`, the two have to be **connected**, and the
+application needs a way to **find** the database that does not break when
+its address changes. This lesson does both:
+
+```text
+ lb-vpc 10.0.0.0/16                              data-vpc 10.1.0.0/16
+ ┌──────────────────────┐   peering connection   ┌──────────────────────┐
+ │ private subnets      │ <────── pcx-... ─────> │ data-a 10.1.11.0/24   │
+ │ route: 10.1.0.0/16   │                        │ route: 10.0.0.0/16    │
+ │        -> pcx-...    │                        │        -> pcx-...     │
+ └──────────────────────┘                        │ database 10.1.11.10   │
+                                                 └──────────────────────┘
+ private DNS zone internal.example (both VPCs):  db.internal.example -> 10.1.11.10
+```
+
 ## VPC peering
 
-A **peering connection** joins two VPCs - in the same account or another,
-the same Region or another - so their instances talk over private
-addresses, on the AWS network.
+A **peering connection** joins two VPCs, in the same account or different
+ones, in the same Region or different ones, so that their instances talk to
+each other over private addresses, on AWS's own network, without the
+internet.
+
+It is a request and an answer: one side **requests** the connection, and
+the owner of the other VPC **accepts** it. Until then its status is
+`pending-acceptance` (the emulator says `initiating-request`) and no traffic
+flows. Both VPCs are yours here, so you accept it yourself.
 
 Three rules the exam loves:
 
-- **No overlapping CIDR ranges.** 10.0.0.0/16 cannot peer with 10.0.0.0/16 -
-  plan address space before you need it.
-- **Not transitive.** If A peers with B and B with C, A cannot reach C
-  through B. Each pair needs its own connection - which is why many VPCs
-  usually means **Transit Gateway**, a hub that routes between all of them.
+- **No overlapping CIDR ranges.** `10.0.0.0/16` cannot peer with
+  `10.0.0.0/16`: if both sides have an address `10.0.1.5`, a route could not
+  say which one it means. Real AWS refuses the request (the emulator is
+  more forgiving). Plan address space before you need it, as Foundations
+  lesson 7 advised.
+- **Not transitive.** If A peers with B, and B with C, A still cannot reach
+  C through B. Each pair that must talk needs its own connection. With many
+  VPCs that becomes a tangle (10 VPCs, 45 connections), which is why larger
+  setups use a **Transit Gateway**, a hub that routes between all the VPCs
+  attached to it.
 - **Routes on both sides.** The connection does nothing until each VPC's
-  route tables send the other's range to it.
+  route tables send the **other** VPC's range to it. Traffic going there
+  needs a route, and so do the replies coming back. Forgetting the return
+  route is the classic mistake: requests leave, replies have nowhere to go.
 
-Peering has no hourly charge; traffic across AZs or Regions is billed as
-usual. Security groups can reference groups in a peered VPC in the same
-Region.
+💸 Peering has no hourly charge; traffic between AZs or Regions is billed as
+usual. Security groups in one VPC can refer to groups in a peered VPC in the
+same Region, as in Foundations lesson 8.
 
 ## Private DNS with Route 53
 
-A **private hosted zone** holds DNS records that only the VPCs associated
-with it can resolve. The app asks for `db.internal.example`; only your VPCs
-get an answer. When the database moves, you change one record, not every
-application's configuration.
+The application could use the database's address, `10.1.11.10`, directly.
+But when the database is moved or replaced, its address changes, and every
+application's configuration has to change with it. **DNS** (the Domain Name
+System) solves this the way it does on the internet: programs ask for a
+**name**, and DNS answers with the current address.
 
-The VPCs need `enableDnsSupport` and `enableDnsHostnames` on (both are on
-by default for VPCs made by the console wizard; `enableDnsHostnames` is off
-for CLI-made ones).
+**Route 53** is AWS's DNS service. A **hosted zone** is a collection of DNS
+records for one domain, such as `internal.example`. A **private hosted
+zone** holds records that only the VPCs **associated** with it can look up;
+nobody on the internet can see them. The application asks for
+`db.internal.example`, and only your VPCs get the answer.
+
+A record has a **name**, a **type** and a **value**. An **A record** maps a
+name to an IPv4 address. Its **TTL** (time to live, in seconds) says how
+long a client may remember the answer before asking again; a short TTL such
+as 60 means a change reaches clients within a minute.
+
+Records are changed with a **change batch**: a JSON document listing
+changes, each with an `Action`. `UPSERT` means "create the record, or
+replace it if it exists", so the same script can run twice:
+
+```json
+{
+  "Changes": [{
+    "Action": "UPSERT",
+    "ResourceRecordSet": {
+      "Name": "db.internal.example", "Type": "A", "TTL": 60,
+      "ResourceRecords": [{"Value": "10.1.11.10"}]
+    }
+  }]
+}
+```
+
+### Creating the zone
+
+```
+ZONE=$(aws route53 create-hosted-zone --name internal.example \
+  --caller-reference "lb-$(date +%s)" \
+  --vpc "VPCRegion=us-east-1,VPCId=$VPC_ID" \
+  --hosted-zone-config PrivateZone=true \
+  --query HostedZone.Id --output text)
+```
+
+- `--caller-reference` is a unique string per request, so that a request
+  retried after a network glitch does not create two zones. `$(date +%s)`,
+  the current time in seconds, makes a new one each run.
+- A private zone must be created with one VPC (`--vpc`); more are added
+  with `associate-vpc-with-hosted-zone`.
+- The ID comes back as `/hostedzone/E49GPUGJ2S7GY1OWNI38TE`, with the prefix,
+  which the other Route 53 commands accept as it is.
+
+### VPC DNS settings
+
+Two VPC attributes control DNS inside a VPC: `enableDnsSupport` (the VPC's
+own DNS resolver answers queries; on by default) and `enableDnsHostnames`
+(instances get DNS names, needed for private hosted zones to work). The
+second is **on** for VPCs made by the console's wizard and **off** for VPCs
+made with the CLI:
+
+```
+$ aws ec2 describe-vpc-attribute --vpc-id "$DATA_VPC" --attribute enableDnsHostnames
+{
+    "EnableDnsHostnames": {
+        "Value": false
+    },
+    ...
+}
+```
+
+Turn it on with `aws ec2 modify-vpc-attribute --vpc-id ...
+--enable-dns-hostnames '{"Value":true}'`, one attribute per call.
+
+## Choosing a connection
+
+Peering has one more rule: **no edge-to-edge routing**. A VPC cannot use its
+peer's internet gateway, NAT gateway, VPN, Direct Connect or gateway
+endpoints; peering connects the two networks' own addresses only.
+
+| Option | Use when | Key limits |
+|---|---|---|
+| **VPC peering** | a few VPCs, high traffic, lowest cost | non-transitive; no overlapping ranges; routes on both sides |
+| **Transit Gateway** | many VPCs and on-premises networks | billed per attachment-hour and per GB; you add the VPC routes yourself |
+| **PrivateLink** | expose **one service**, not a whole network | one-way; overlap allowed (lesson 3) |
+| **Site-to-Site VPN** | a quick, encrypted link to an office | runs over the internet, two tunnels |
+| **Direct Connect** | steady high bandwidth, predictable latency | weeks to set up; **not encrypted** by default |
+
+Inside every VPC, the **Route 53 Resolver** answers DNS queries at the VPC's
+base address plus two (`10.0.0.2` here). It is what consults the private
+hosted zones associated with the VPC; on-premises servers cannot query it
+directly and use a **Resolver inbound endpoint** instead.
 
 ## Your task
 
-A second VPC holds the data tier. On top of the foundations VPC (lb-vpc,
-10.0.0.0/16), the script already creates **`data-vpc`** (10.1.0.0/16) with
-a subnet **data-a** and a route table **data**, and gives lb-vpc's private
-subnets a route table **private**. Add:
+A second VPC holds the data tier. On top of the Foundations VPC (`lb-vpc`,
+`10.0.0.0/16`), the script already creates **`data-vpc`** (`10.1.0.0/16`,
+in `DATA_VPC`) with a subnet **`data-a`** and a route table **`data`** (in
+`DATA_RT`), and gives lb-vpc's private subnets a route table **`private`**
+(in `PRIVATE_RT`). Add:
 
-1. a **peering connection** between lb-vpc and data-vpc, **accepted**;
-2. a route in **private** to 10.1.0.0/16 through it, and in **data** to
-   10.0.0.0/16 through it;
+1. a **peering connection** between lb-vpc and data-vpc, **accepted**, so
+   its status is `active`;
+2. a route in **`private`** for `10.1.0.0/16` through the peering
+   connection, and in **`data`** for `10.0.0.0/16` through it (both
+   directions);
 3. **DNS hostnames on** for both VPCs;
-4. a **private hosted zone** `internal.example` associated with **both VPCs**,
-   with an **A record** `db.internal.example` -> **10.1.11.10**.
+4. a **private** hosted zone **`internal.example`** associated with **both
+   VPCs**, with an **A record** `db.internal.example` pointing to
+   **`10.1.11.10`**.
+
+After **Run**, `aws ec2 describe-vpc-peering-connections --query
+'VpcPeeringConnections[].[VpcPeeringConnectionId,Status.Code]'` should
+show the connection `active`, and `aws route53 list-resource-record-sets
+--hosted-zone-id "<zone id>"` the record. (The emulator has no running
+resolver, so `db.internal.example` cannot actually be looked up here; in a
+real VPC, `dig db.internal.example` on an instance would answer
+`10.1.11.10`.)
+
+## Check yourself
+
+1. A peers with B, and B with C. Can A reach C?
+   *No: peering is not transitive. Add A-C peering, or use a Transit
+   Gateway.*
+2. The peering connection is active, with a route only in lb-vpc. Why do
+   connections fail?
+   *The replies have no route back from data-vpc.*
+3. Can lb-vpc and a VPC also using 10.0.0.0/16 be peered?
+   *No: overlapping ranges cannot be peered.*
+4. Why use `db.internal.example` rather than `10.1.11.10` in the app's
+   configuration?
+   *When the database moves, one DNS record changes instead of every app.*

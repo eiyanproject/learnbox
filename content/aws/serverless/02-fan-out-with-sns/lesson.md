@@ -11,57 +11,170 @@ hints:
   - "Publishing with an attribute: `aws sns publish --topic-arn \"$TOPIC\" --message '{\"order\":7}' --message-attributes '{\"event\":{\"DataType\":\"String\",\"StringValue\":\"order_paid\"}}'`."
 ---
 
-A queue has one set of consumers. When several independent services each
-need every order - billing, shipping, analytics - put **SNS** in front:
-publish once to a **topic**, and SNS delivers a copy to every
-**subscription**. With an SQS queue per consumer (the **fan-out** pattern),
-each service keeps its own buffer, its own pace and its own dead-letter
-queue.
+A queue's messages are shared by its consumers: each message is handled by
+**one** of them. That suits a pool of identical workers. But when several
+**different** services each need **every** order (billing to invoice it,
+shipping to pack it, analytics to count it), one queue is the wrong shape:
+whichever service takes a message, the others never see it.
+
+**SNS** (Simple Notification Service) solves this. A producer **publishes**
+a message once to a **topic**, and SNS delivers a copy to every
+**subscription** on it. Subscribe one SQS queue per service, and you have
+the **fan-out** pattern: each service keeps its own queue, works at its own
+pace, retries on its own, and can have its own dead-letter queue, while the
+producer knows nothing about who is listening.
+
+```text
+                              ┌──> queue billing   (every event)
+ producer ──publish──> topic ─┤
+   order-events               └──> queue shipping  (filter: event = order_paid)
+```
 
 ## Letting the topic in
 
-SNS delivers to a queue by calling `sqs:SendMessage` on it, so the queue's
-**access policy** must allow the SNS service - and only for *your* topic,
-which is what the `aws:SourceArn` condition is for:
+SNS delivers to a queue by calling `sqs:SendMessage` on it, as an AWS
+service. A queue refuses that unless its **access policy**, a resource
+policy on the queue like a bucket policy (Foundations lesson 6), allows it.
+And it should allow it only for **your** topic, not for any SNS topic in any
+account, which is what the `aws:SourceArn` condition is for:
 
 ```json
 {
-  "Effect": "Allow",
-  "Principal": { "Service": "sns.amazonaws.com" },
-  "Action": "sqs:SendMessage",
-  "Resource": "arn:aws:sqs:us-east-1:123456789012:billing",
-  "Condition": { "ArnEquals": { "aws:SourceArn": "arn:aws:sns:us-east-1:123456789012:order-events" } }
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": { "Service": "sns.amazonaws.com" },
+    "Action": "sqs:SendMessage",
+    "Resource": "arn:aws:sqs:us-east-1:123456789012:billing",
+    "Condition": { "ArnEquals": { "aws:SourceArn": "arn:aws:sns:us-east-1:123456789012:order-events" } }
+  }]
 }
 ```
 
-## Raw delivery
+Read it as "allow **the SNS service** to **send messages** to **this
+queue**, **when** the message comes from the topic `order-events`".
 
-Without it, each queue message is an SNS envelope (JSON with `Type`,
-`MessageId`, `Message`...) around your message. **Raw message delivery**
-passes just your message through - simpler for consumers.
+The policy is set as the queue's `Policy` **attribute**, with
+`set-queue-attributes`, and like last lesson's redrive policy it is a JSON
+document inside a JSON string: the same `python3` and `json.dumps` approach
+saves the quoting. Each queue's policy names its own ARN and the topic's,
+both only known at run time, so a small shell function that creates a queue,
+looks up its ARN, writes its policy and applies it keeps the script short.
+
+(In real AWS, a queue without this policy silently receives nothing from
+the topic, and the subscription still looks fine: a classic hour-long
+puzzle. The emulator delivers anyway, so the check reads the policy
+itself.)
+
+## Subscribing
+
+```
+aws sns subscribe --topic-arn "$TOPIC" --protocol sqs \
+  --notification-endpoint "$QUEUE_ARN" \
+  --attributes '{"RawMessageDelivery":"true"}'
+```
+
+The endpoint of an SQS subscription is the queue's **ARN**, not its URL.
+`create-topic` prints the topic's ARN, `arn:aws:sns:us-east-1:123456789012:order-events`.
+
+### Raw delivery
+
+By default, what arrives in the queue is not your message but an SNS
+**envelope** around it, with your message as a string inside:
+
+```json
+{
+    "Type": "Notification",
+    "MessageId": "2aa686f7-158a-4d10-9d63-eba91634c8e5",
+    "Message": "{\"order\":7}",
+    "MessageAttributes": { "event": { "Type": "String", "Value": "order_paid" } },
+    "Signature": "D3td91P9EEPT...",
+    ...
+}
+```
+
+Every consumer then has to unwrap it. **Raw message delivery**, a
+subscription attribute, passes just your message through, `{"order":7}`,
+with the message attributes carried as SQS message attributes.
 
 ## Filter policies
 
-A subscription can have a **filter policy** on message attributes (or on the
-message body). Shipping does not care about orders until they are paid, so
-its subscription asks for `event = order_paid` only, and SNS drops the rest
-for that subscriber - no code, no wasted messages.
+Shipping does not care about an order until it is paid. Without filtering,
+it would receive every event and throw most away, paying for each one. A
+subscription can have a **filter policy**, matched against the message's
+**attributes** (or, optionally, its body), and SNS only delivers the
+messages that match, to that subscription:
+
+```json
+{"event": ["order_paid"]}
+```
+
+means "only messages whose attribute `event` is `order_paid`" (a list, since
+several values can be allowed). Other subscriptions are unaffected: billing
+still gets everything. A change to a filter policy can take up to 15
+minutes to take effect, so test a new filter before relying on it.
+
+**Message attributes** are typed key-value pairs sent alongside the message
+body, set when publishing:
+
+```
+aws sns publish --topic-arn "$TOPIC" --message '{"order":7}' \
+  --message-attributes '{"event":{"DataType":"String","StringValue":"order_paid"}}'
+```
+
+The filter policy goes into the subscription's attributes as a **string**,
+so inside the `--attributes` JSON its quotes need backslashes:
+`'{"RawMessageDelivery":"true","FilterPolicy":"{\"event\":[\"order_paid\"]}"}'`.
 
 ## SNS or EventBridge?
 
-Both fan out. **SNS** is high-throughput push to many subscribers (queues,
-Lambda, HTTP, email, SMS, mobile push). **EventBridge** routes by rich rules
-on event content, takes events from AWS services and SaaS partners, and can
-archive and replay. Choose by what the events are and where they go.
+Both deliver one event to many targets. The exam asks which fits:
+
+| | SNS | EventBridge |
+|---|---|---|
+| Strength | high-throughput **push** to many subscribers | **routing by rules** on the content of events |
+| Targets | SQS, Lambda, HTTP endpoints, email, SMS, mobile push | many AWS services, API destinations |
+| Event sources | your own publishers | your publishers, **AWS services' own events**, SaaS partners |
+| Extras | message filtering, FIFO topics | schemas, **archive and replay**, scheduling (lesson 4) |
+
+SNS itself **stores nothing**: a message that cannot be delivered right now
+can be lost. That is the other half of why fan-out puts **queues** behind
+the topic: they keep each copy until its consumer is ready. (An **SNS FIFO**
+topic gives ordering and deduplication too, and only accepts SQS FIFO
+queues as subscribers.)
 
 ## Your task
 
 1. A topic **`order-events`**.
-2. Queues **`billing`** and **`shipping`**, each with a policy letting
-   **only that topic** send to it.
-3. Subscribe both with **raw delivery**; give **shipping** a filter policy
-   for `event` = **`order_paid`**.
-4. Publish two messages: one with `event` = **`order_placed`**, one with
-   `event` = **`order_paid`**.
+2. Queues **`billing`** and **`shipping`**, each with an access policy
+   allowing the SNS service (`sns.amazonaws.com`) to `sqs:SendMessage` to
+   that queue, **only** from `order-events` (`aws:SourceArn`).
+3. Subscribe both queues to the topic with **raw delivery**. Give
+   **shipping** (only) a filter policy for `event` = **`order_paid`**;
+   billing gets every event.
+4. Publish two messages, each with a message attribute `event`: one with
+   **`order_placed`**, one with **`order_paid`**. Put the event name in the body
+   too (`{"order":7,"event":"order_paid"}`): the check looks for it there.
 
-Billing should end up with both, shipping with one.
+The check then receives from both queues: billing should hold **both**
+messages, as your plain JSON (no envelope), and shipping only the
+`order_paid` one. After **Run**, try it yourself:
+
+```
+aws sqs receive-message --max-number-of-messages 10 \
+  --queue-url "$(aws sqs get-queue-url --queue-name shipping --query QueueUrl --output text)" \
+  --query 'Messages[].Body'
+```
+
+## Check yourself
+
+1. Why one queue per service instead of one shared queue?
+   *A message on a queue goes to one consumer; each service needs its own
+   copy.*
+2. The shipping queue receives nothing. What do you check first?
+   *Its access policy: SNS must be allowed to `sqs:SendMessage`, from this
+   topic.*
+3. Without raw delivery, what does the consumer receive?
+   *An SNS envelope with the message as a string inside.*
+4. Where does a filter policy look?
+   *At the message attributes (or the body, if so configured).*

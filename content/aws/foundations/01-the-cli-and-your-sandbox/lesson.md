@@ -11,41 +11,61 @@ hints:
   - "Tags go on with `aws s3api put-bucket-tagging --bucket NAME --tagging 'TagSet=[{Key=project,Value=learnbox}]'`."
 ---
 
-Everything in AWS is an API call. The console is a web page that makes the
-calls for you; the **AWS CLI** makes them from a terminal, which means they
-can be written down, repeated, reviewed and put in a script. That is how this
-course works: every lesson's work is a script, `setup.sh`, and the check runs
-it against an empty account and looks at what it built.
+**AWS** (Amazon Web Services) rents out computing as a service: servers,
+storage, databases, networks, by the hour or by the request. Everything in
+it is an **API call**: a request to one of its web services, such as "create
+a bucket" or "start a server". The web console is a website that makes those
+calls for you when you click. The **AWS CLI** (command line interface) makes
+them from a terminal, which means they can be written down, repeated,
+reviewed and put in a script.
+
+That is how this course works: every lesson's work is a shell script,
+`setup.sh`, and the check runs it against an empty account and looks at what
+it built. This first lesson covers the shape of every command, who you are
+and where you are working, and ends with two storage buckets.
 
 ## Your sandbox account
 
-The `aws` command in the terminal is the real AWS CLI. It is pointed at
-**moto**, an emulator of the AWS APIs running inside this box, so:
+The `aws` command in this terminal is the real AWS CLI, version 1. It is
+pointed at **moto**, an emulator of the AWS APIs running inside this box:
+a program that answers the same requests the way AWS would. So:
 
 - there is no AWS account, no password and no bill;
 - nothing you type reaches the real AWS;
-- the account lives in memory - `awslab reset` empties it.
+- the account lives in memory: `awslab reset` empties it.
 
-Try it. In the terminal:
+Try it. In the terminal (the `$` is the prompt, not part of the command):
 
 ```
-aws sts get-caller-identity
+$ aws sts get-caller-identity
+{
+    "UserId": "AKIAIOSFODNN7EXAMPLE",
+    "Account": "123456789012",
+    "Arn": "arn:aws:sts::123456789012:user/moto"
+}
 ```
 
-STS (Security Token Service) answers "who am I?". The reply names an
-**account** (a 12-digit number - here the emulator's `123456789012`) and an
-**ARN**, the Amazon Resource Name that identifies anything in AWS:
+STS, the **Security Token Service**, answers "who am I?". The reply names
+an **account**, a 12-digit number (here the emulator's `123456789012`;
+every real account has its own), and an **ARN**.
+
+An **ARN** (Amazon Resource Name) identifies anything in AWS, and every ARN
+has the same parts, separated by colons:
 
 ```
 arn:aws:sts::123456789012:user/moto
 arn:partition:service:region:account-id:resource
 ```
 
-The Region part is empty because identities are global, not Regional. (A
-real account answers with an `arn:aws:iam::...` ARN for an IAM user; the
-emulator says `sts`. Same shape.)
+The **partition** is `aws` for the normal regions (`aws-cn` for China). The
+Region part is empty here because identities are global, not tied to one
+Region. (A real account answers with an `arn:aws:iam::...` ARN for an IAM
+user; the emulator says `sts`. Same shape.) You will read and write ARNs in
+almost every lesson.
 
 ## The shape of a command
+
+Every command has the same three parts:
 
 ```
 aws  <service>  <operation>  --option value ...
@@ -53,42 +73,86 @@ aws  s3api      list-buckets
 aws  ec2        describe-regions  --output table
 ```
 
-`aws help`, `aws s3api help` and `aws s3api create-bucket help` show the
-manual at each level. Three options work on every command:
+The **service** is the AWS service to call (`s3api`, `ec2`, `iam`), the
+**operation** is the API call (`create-bucket`, `describe-regions`), and the
+options are its parameters. `aws help`, `aws s3api help` and
+`aws s3api create-bucket help` show the manual at each level, with every
+option the call accepts.
+
+Three options work on every command:
 
 | Option | What it does |
 |---|---|
 | `--region ap-northeast-1` | Which Region to call. Most services are Regional. |
 | `--output json\|table\|text` | How to print the answer. JSON is the default. |
-| `--query 'Buckets[].Name'` | Pick fields out of the answer (JMESPath). |
+| `--query 'Buckets[].Name'` | Pick fields out of the answer, using the JMESPath query language. |
 
-`--query` is worth learning early. `aws s3api list-buckets --query
-'Buckets[].Name' --output text` prints just the names, ready for a script.
+`--query` is worth learning early, because scripts need single values rather
+than whole JSON documents. `Buckets[].Name` means "the `Name` of every item
+in the `Buckets` list":
+
+```
+$ aws s3api list-buckets --query 'Buckets[].Name' --output text
+lb-first-bucket	lb-tokyo-bucket
+```
+
+With `--output text` the names come out separated by tabs, ready for a
+script, instead of as a JSON list. Later lessons capture a single value this
+way into a shell variable, as in `ID=$(aws ... --query X --output text)`.
 
 ## Regions and Availability Zones
 
-A **Region** (`us-east-1`, `ap-northeast-1` for Tokyo) is a separate
-geographic area with its own copy of most services. Inside each are several
-**Availability Zones** - separate data centres with their own power and
-networking, close enough for fast links. Resilient designs spread across AZs;
-some go further and use more than one Region.
+A **Region** is a separate geographic area, such as `us-east-1` (northern
+Virginia) or `ap-northeast-1` (Tokyo), with its own independent copy of most
+services. Resources you create in one Region are not visible from another:
+asking us-east-1 for a Tokyo server finds nothing. Commands go to the
+default Region, us-east-1 in this sandbox, unless you pass `--region`.
 
-`aws ec2 describe-availability-zones --region ap-northeast-1 --query
-'AvailabilityZones[].ZoneName'` lists Tokyo's.
+Inside each Region are several **Availability Zones** (AZs): separate data
+centres, or groups of them, with their own power, cooling and networking,
+far enough apart that a fire or flood takes out one, and close enough for
+fast links between them. Designs that must survive a failure spread across
+AZs; some go further and use more than one Region.
+
+```
+$ aws ec2 describe-availability-zones --region ap-northeast-1 --query 'AvailabilityZones[].ZoneName'
+[
+    "ap-northeast-1a",
+    "ap-northeast-1c",
+    "ap-northeast-1d"
+]
+```
+
+AZ names are the Region plus a letter. (There is no `1b`: Tokyo does not
+offer it to new accounts.) The letters are shuffled per account, so your
+`ap-northeast-1a` may be a different data centre from someone else's; the
+**AZ ID** (`apne1-az4`) is the same for everyone, and is what to compare
+across accounts.
 
 ## S3 buckets
 
-S3 stores objects in **buckets**. A bucket name is global - unique across
-every AWS account in the world - and the bucket itself lives in one Region.
-There are two CLIs for S3: `aws s3` (high level: `mb`, `cp`, `sync`, `ls`)
-and `aws s3api` (one command per API call). This lesson uses `s3api`, because
-it shows what is really being asked:
+**S3** (Simple Storage Service) stores files, called **objects**, in
+containers called **buckets**. Two rules about buckets surprise people:
+
+- A bucket's **name is global**: unique across every AWS account in the
+  world, because it becomes part of a web address. `lb-first-bucket` may
+  already be taken in real AWS; in this sandbox it is yours. Names are 3 to
+  63 characters of lower-case letters, digits, dots and hyphens.
+- The bucket itself **lives in one Region**, and its data stays there.
+
+There are two CLIs for S3: `aws s3` (high level: `mb`, `cp`, `sync`, `ls`,
+for moving files around) and `aws s3api` (one command per API call). This
+lesson uses `s3api`, because it shows what is really being asked:
 
 ```
-aws s3api create-bucket --bucket my-example-bucket
+$ aws s3api create-bucket --bucket my-example-bucket
+{
+    "Location": "/my-example-bucket"
+}
 ```
 
-Outside us-east-1 the call also has to say where the bucket goes:
+Outside us-east-1 the call also has to say where the bucket goes, both with
+`--region` (which endpoint to call) and in the request body:
 
 ```
 aws s3api create-bucket --bucket my-example-bucket \
@@ -96,15 +160,115 @@ aws s3api create-bucket --bucket my-example-bucket \
   --create-bucket-configuration LocationConstraint=eu-west-1
 ```
 
+The `\` at the end of a line continues the command on the next line, so a
+long command can be read one option per line. Leave out
+`--create-bucket-configuration` and S3 refuses:
+
+```
+An error occurred (IllegalLocationConstraintException) when calling the CreateBucket operation: The unspecified location constraint is incompatible for the region specific endpoint this request was sent to.
+```
+
+Every CLI error has this shape: an error **code** in brackets
+(`IllegalLocationConstraintException`), the **operation** that failed
+(`CreateBucket`), then a message. The code is what to search for.
+
+### Tags
+
+A **tag** is a key-value label you attach to a resource, such as
+`project=learnbox`. AWS does nothing with tags by itself; people use them to
+find resources, split the bill by project, and limit permissions. S3 sets a
+bucket's tags all at once, as a `TagSet` list:
+
+```
+aws s3api put-bucket-tagging --bucket lb-first-bucket \
+  --tagging 'TagSet=[{Key=project,Value=learnbox}]'
+```
+
+The `'TagSet=[{Key=...,Value=...}]'` form is the CLI's **shorthand** for a
+JSON structure; the single quotes stop the shell from interpreting the
+brackets. `put-bucket-tagging` prints nothing when it succeeds, as many
+"put" and "update" calls do.
+
+## The script, and how Run shows it
+
+The starter `setup.sh` begins with two lines you will see in every lesson:
+
+```
+#!/usr/bin/env bash
+set -euo pipefail
+```
+
+The first says "run this with bash". The second makes the script **stop at
+the first failing command** instead of carrying on with half the work done:
+`-e` stops on an error, `-u` treats a misspelt, unset variable as an error,
+and `-o pipefail` catches a failure in the middle of a `|` pipeline.
+
+**Run** empties the sandbox account and runs your script, showing each
+command and its answer. When a command fails, the output ends with the error
+and the exit status:
+
+```
+awslab: empty sandbox account, region us-east-1; running setup.sh
+
+$ aws s3api create-bucket --bucket lb-first-bucket
+{
+    "Location": "/lb-first-bucket"
+}
+$ aws s3api create-bucket --bucket lb-tokyo-bucket --region ap-northeast-1
+
+An error occurred (IllegalLocationConstraintException) when calling the CreateBucket operation: ...
+
+awslab: setup.sh exited 255. What it built is still there - look around with aws, or `awslab reset` to clear it.
+```
+
+## Three ways in, one API
+
+The console, the CLI and the **SDKs** (libraries for Python, JavaScript,
+Java and other languages that programs use) are three front ends to the
+same API calls. Whatever one can do, the others can too, and the
+permissions that apply are the same. A real CLI is configured with
+credentials first (`aws configure`, or `aws configure sso` for single
+sign-on); in this sandbox the wrapper does that for you, with fake keys the
+emulator accepts.
+
 ## Your task
 
 Fill in `setup.sh` so that it:
 
-1. creates a bucket named **`lb-first-bucket`** in us-east-1;
+1. creates a bucket named **`lb-first-bucket`** in us-east-1, the default
+   Region;
 2. tags it **`project=learnbox`**;
 3. creates a bucket named **`lb-tokyo-bucket`** in **ap-northeast-1**.
 
-Press **Run** to try it against your sandbox: it empties the account, runs the
-script and shows every command. Then look around - `aws s3api list-buckets`,
-`aws s3api get-bucket-location --bucket lb-tokyo-bucket`. **Check** runs it
-again against a fresh account and inspects the result.
+Press **Run** to try it, then look around:
+
+```
+$ aws s3api get-bucket-location --bucket lb-tokyo-bucket
+{
+    "LocationConstraint": "ap-northeast-1"
+}
+$ aws s3api get-bucket-location --bucket lb-first-bucket
+{
+    "LocationConstraint": null
+}
+```
+
+The `null` is not a mistake: S3 reports us-east-1 as "no location
+constraint", a quirk from before it had other Regions. The check accepts
+that. `aws s3api get-bucket-tagging --bucket lb-first-bucket` shows the tag.
+**Check** runs your script again against a fresh account and inspects the
+result.
+
+## Check yourself
+
+1. What are the parts of `aws ec2 describe-regions --output table`?
+   *Service `ec2`, operation `describe-regions`, and an option choosing the
+   output format.*
+2. A bucket called `lb-tokyo-bucket` is in ap-northeast-1. Why can't someone
+   else create `lb-tokyo-bucket` in eu-west-1?
+   *Bucket names are global, unique across every account and Region.*
+3. `get-bucket-location` returns `null`. Where is the bucket?
+   *In us-east-1: S3 reports it as having no location constraint.*
+4. Why does the Run output end with `exited 255` when a command fails?
+   *`set -e` stops the script at the first failing command, and the CLI
+   exits with status 255 on an error.*

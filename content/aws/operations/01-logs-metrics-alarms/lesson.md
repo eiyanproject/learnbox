@@ -11,58 +11,185 @@ hints:
   - "The CPU alarm needs a dimension: `--dimensions Name=AutoScalingGroupName,Value=web-asg`, with `--statistic Average --period 300 --evaluation-periods 3 --threshold 80 --comparison-operator GreaterThanThreshold`."
 ---
 
-**CloudWatch** is where AWS keeps the numbers and the logs.
+The earlier sections built a web tier, a database and a queue. Once real
+users arrive, the questions change: is it working right now? Is it getting
+slower? Did errors start after this morning's deploy? And, most of all:
+will someone **find out** when it breaks, before the customers do?
+**CloudWatch** is where AWS keeps the numbers (**metrics**) and the text
+(**logs**) that answer those questions, and the **alarms** that tell someone.
+
+This lesson wires up all three for the web application:
+
+```text
+ app writes log lines ──> log group /app/web (kept 30 days)
+                              │ metric filter "errors": each line containing ERROR counts 1
+                              v
+                         metric Learnbox/AppErrors ──> alarm app-errors (>= 5 in 5 minutes) ──┐
+ EC2 publishes ──> metric AWS/EC2 CPUUtilization (web-asg) ──> alarm high-cpu (> 80% for 15 min) ┤
+                                                                                              v
+                                                                  SNS topic ops-alerts ──> email ops@example.com
+```
 
 ## Metrics
 
-A **metric** is a time series in a **namespace** (`AWS/EC2`,
-`AWS/ApplicationELB`, or your own), identified by its name and
-**dimensions** - `CPUUtilization` for `AutoScalingGroupName=web-asg`. AWS
-services publish theirs automatically: EC2 every 5 minutes by default (1
-minute with detailed monitoring). Memory and disk use are *inside* the
-instance, so EC2 cannot see them - the **CloudWatch agent** publishes those.
+A **metric** is a series of numbers over time, such as "CPU use, every 5
+minutes". Each metric lives in a **namespace**, a group of related metrics
+(`AWS/EC2` for EC2's, `AWS/ApplicationELB` for load balancers', or your own,
+like `Learnbox`), and is identified by its **name** and its **dimensions**:
+name-value pairs saying *which* thing it measures. `CPUUtilization` with
+`AutoScalingGroupName=web-asg` is the average CPU of that group's
+instances; with `InstanceId=i-...` it is one instance's.
+
+AWS services publish their metrics automatically: EC2 every 5 minutes by
+default, every minute with **detailed monitoring**. Memory and disk use are
+**inside** the instance's operating system, where EC2 cannot see them; the
+**CloudWatch agent**, installed on the instance, publishes those. ("Why is
+there no memory metric for my instance?" is a classic exam question.)
 
 ## Logs
 
-**CloudWatch Logs** stores log events in **log groups** (one per
-application or function) made of **streams** (one per instance or
-container). Lambda writes to `/aws/lambda/<function>` by itself. Log groups
-keep everything **forever** unless you set a **retention period** - a classic
-source of a slowly growing bill.
+**CloudWatch Logs** stores log lines (**log events**) in **log groups**,
+usually one per application or function, each made of **log streams**,
+usually one per instance or container. Lambda writes to
+`/aws/lambda/<function name>` by itself.
 
-A **metric filter** turns matching log lines into a metric: count every line
-containing `ERROR`, and the error rate becomes something you can graph and
-alarm on. **Logs Insights** queries logs ad hoc.
+💸 A log group keeps everything **forever** unless you give it a
+**retention period** (1 day to 10 years), and stored logs are billed per GB
+per month. A group nobody set retention on is a classic slowly growing
+bill.
+
+### Metric filters
+
+Logs are text, and alarms watch numbers. A **metric filter** connects them:
+it watches a log group, and for every log event matching a **filter
+pattern**, adds a value to a metric. With pattern `ERROR` and value `1`,
+each line containing `ERROR` counts one, and the error rate becomes a
+metric you can graph and alarm on. Its `defaultValue` of `0` is published
+for periods with log events but no matches, so the metric reads "0 errors"
+instead of having gaps.
+
+```
+$ aws logs filter-log-events --log-group-name /app/web --filter-pattern ERROR \
+    --query 'events[].message'
+[
+    "ERROR payment declined"
+]
+```
+
+A metric filter is **not retroactive**: it only counts log events that
+arrive after it was created, so errors from before it existed never appear
+in the metric.
+
+(`filter-log-events` searches stored events with the same pattern syntax.
+For anything more complex, **Logs Insights** runs queries over logs.)
 
 ## Alarms
 
-An **alarm** watches one metric (or a math expression) and changes state -
-`OK`, `ALARM`, `INSUFFICIENT_DATA` - when it crosses a threshold for a number
-of **evaluation periods**. On a state change it can notify an **SNS topic**,
-scale an Auto Scaling group, or stop, reboot or recover an instance.
+An **alarm** watches one metric (or a calculation over several) and is in
+one of three **states**: `OK`, `ALARM`, or `INSUFFICIENT_DATA` (not enough
+data to decide, as for a brand-new alarm). It changes state when the metric
+crosses a **threshold** for a number of periods, and on each change it can
+**act**: notify an SNS topic, scale an Auto Scaling group, or stop, reboot
+or recover an instance.
 
-**Treat missing data** matters for sparse metrics: an error count that is
-only published when errors happen has *no data* most of the time, which
-should count as fine (`notBreaching`), not as unknown.
+Reading `put-metric-alarm`'s main options as a sentence, for `high-cpu`:
+
+| Option | Value | Meaning |
+|---|---|---|
+| `--statistic` | `Average` | combine the data points in each period by averaging (`Sum` for counts, `Maximum` for peaks) |
+| `--period` | `300` | each period is 300 seconds (5 minutes) |
+| `--comparison-operator`, `--threshold` | `GreaterThanThreshold`, `80` | a period is "breaching" when the average is above 80 |
+| `--evaluation-periods` | `3` | go to `ALARM` after 3 breaching periods in a row: 15 minutes, so a short spike does not page anyone (`--datapoints-to-alarm 2` would mean "2 of the last 3", for an "M out of N" alarm) |
+| `--alarm-actions` | the topic's ARN | notify this SNS topic on entering `ALARM` |
+
+### Treat missing data
+
+Some metrics are **sparse**: `AppErrors` only gets data when the app logs
+something. When nothing is logged at all, there is **no data**, and by
+default (the `missing` setting) an alarm with no data goes to `INSUFFICIENT_DATA`, which would make
+the error alarm look broken every quiet night. `--treat-missing-data
+notBreaching` says "no data counts as fine". (The other choices are
+`breaching`, for metrics where silence itself is bad, `ignore` and
+`missing`.)
+
+### Notifying people
+
+The alarm notifies an **SNS topic** (Serverless lesson 2), and the topic
+delivers to its subscribers, here by **email**. An email subscription
+stays **pending** until the recipient clicks the link in the confirmation
+email SNS sends, and until then nothing is delivered to it. In this sandbox
+no email is sent, and that is fine for the check.
+
+## More of CloudWatch
+
+- **Logs Insights** queries stored logs with a query language, for
+  investigations; it is not real-time.
+- Logs leave CloudWatch in two ways: **export to S3** (batch, can take up to
+  12 hours) or a **subscription filter** (real time, to Kinesis, Firehose or
+  Lambda).
+- Log groups are **encrypted** by default; a KMS key of your own is
+  optional.
+- The CloudWatch agent on an instance needs an **IAM role** allowing it to
+  publish metrics and logs.
+- A **composite alarm** combines several alarms with AND and OR ("CPU high
+  AND errors high"), to cut noise.
+- An alarm on an instance's **status check** can **recover** the instance
+  onto new hardware, keeping its IP addresses.
+- To test that an alarm's action works, force its state:
+  `aws cloudwatch set-alarm-state --alarm-name app-errors --state-value ALARM --state-reason testing`
+  (try it after Run; the emulator supports it).
 
 ## Your task
 
-1. A log group **`/app/web`** keeping logs **30 days**.
-2. A metric filter **`errors`** on it: pattern **`ERROR`**, publishing
-   **`AppErrors`** in the namespace **`Learnbox`**, value **1** (default 0).
+1. A log group **`/app/web`** keeping logs for **30 days**.
+2. A metric filter **`errors`** on it, with the pattern **`ERROR`**,
+   publishing the metric **`AppErrors`** in the namespace **`Learnbox`**,
+   value **1**, default value **0**.
 3. An SNS topic **`ops-alerts`** with an **email** subscription for
-   **ops@example.com** (it stays pending until confirmed - fine here).
-4. An alarm **`app-errors`**: **Sum** of `AppErrors` over **300** s, **1**
-   period, **>= 5**, missing data **notBreaching**, notifying `ops-alerts`.
-5. An alarm **`high-cpu`**: **Average** `CPUUtilization` (`AWS/EC2`) for
-   **AutoScalingGroupName=web-asg** over **300** s, **3** periods, **> 80**,
-   notifying `ops-alerts`.
+   **`ops@example.com`**.
+4. An alarm **`app-errors`**: the **Sum** of `Learnbox`/`AppErrors` over
+   **300**-second periods, **1** evaluation period, threshold **5** with
+   **`GreaterThanOrEqualToThreshold`** (5 or more errors in 5 minutes),
+   missing data **notBreaching**, notifying `ops-alerts`.
+5. An alarm **`high-cpu`**: the **Average** of `AWS/EC2`/`CPUUtilization`
+   for the dimension **`AutoScalingGroupName=web-asg`**, over **300**-second
+   periods, **3** evaluation periods, threshold **80** with
+   **`GreaterThanThreshold`**, notifying `ops-alerts`.
 
-After **Run**, push a log line and look at it:
+After **Run**, push two log lines and search for the error:
 
 ```
 aws logs create-log-stream --log-group-name /app/web --log-stream-name test
 aws logs put-log-events --log-group-name /app/web --log-stream-name test \
-  --log-events timestamp=$(date +%s000),message="ERROR payment declined"
+  --log-events timestamp=$(date +%s000),message="ERROR payment declined" \
+               timestamp=$(date +%s000),message="INFO ok"
 aws logs filter-log-events --log-group-name /app/web --filter-pattern ERROR
 ```
+
+(`$(date +%s000)` is the time in milliseconds, which log events need.) And
+see the alarms:
+
+```
+$ aws cloudwatch describe-alarms --query 'MetricAlarms[].[AlarmName,StateValue,Threshold,ComparisonOperator]' --output table
+---------------------------------------------------------------
+|                       DescribeAlarms                        |
++------------+-----+-------+----------------------------------+
+|  app-errors|  OK |  5.0  |  GreaterThanOrEqualToThreshold   |
+|  high-cpu  |  OK |  80.0 |  GreaterThanThreshold            |
++------------+-----+-------+----------------------------------+
+```
+
+(The emulator starts alarms at `OK`; real CloudWatch starts them at
+`INSUFFICIENT_DATA` until the first data arrives.)
+
+## Check yourself
+
+1. Why is there no memory metric for an EC2 instance by default?
+   *Memory is inside the operating system; the CloudWatch agent publishes
+   it.*
+2. What happens to logs in a group with no retention set?
+   *They are kept forever, and billed.*
+3. Why `notBreaching` for the error alarm?
+   *No log lines means no data, which here means no errors.*
+4. How long, at least, before `high-cpu` goes to ALARM?
+   *15 minutes: three 5-minute periods in a row.*

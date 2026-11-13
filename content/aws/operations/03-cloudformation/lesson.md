@@ -11,16 +11,25 @@ hints:
   - "`aws cloudformation create-stack --stack-name app-dev --template-body file://template.yaml --parameters ParameterKey=Env,ParameterValue=dev --tags Key=env,Value=dev --enable-termination-protection`, then `aws cloudformation wait stack-create-complete --stack-name app-dev`."
 ---
 
-Everything in this course so far has been a script of CLI calls. It works,
-but a script only knows how to *create* things: run it twice and it fails,
-change it and it does not know what to update or delete. **Infrastructure as
-code** describes the **end state** instead, and lets a tool work out the
-calls.
+Everything in this course so far has been a script of CLI calls. That
+works, but a script only knows how to **create** things. Run it a second
+time and it fails, because everything already exists. Change one setting
+in it, and it has no idea what to update, or what to delete when you remove
+a line. And the account itself is the only record of what is really there.
 
-**CloudFormation** is AWS's own. A **template** (YAML or JSON) declares
-**resources**; deploying it creates a **stack** - the resources, managed as
-one unit. Update the template and CloudFormation changes only what differs;
-delete the stack and everything in it goes (unless protected).
+**Infrastructure as code** turns this around: you describe the **end
+state**, "a bucket with these settings, two queues wired like this", and a
+tool works out which calls get there from whatever exists now.
+**CloudFormation** is AWS's own such tool. You write a **template** (YAML or
+JSON) that declares **resources**; deploying it creates a **stack**: those
+resources, managed together as one unit.
+
+```text
+ template.yaml ──create-stack──> stack app-dev ──> bucket Uploads, queue DeadLetters, queue Jobs
+       │ edit                        ▲
+       └──change set (preview)───────┘   update: only what differs is changed
+                                         delete: everything in the stack goes, unless protected
+```
 
 ## A template
 
@@ -40,38 +49,159 @@ Outputs:
     Value: !Ref Uploads
 ```
 
-- **Parameters** make one template serve many environments.
-- **Intrinsic functions**: `!Ref`, `!GetAtt`, `!Sub`, `!Join`, `!If`... wire
-  resources together, so CloudFormation knows the order to create them in.
-- **Outputs** publish values (and can be exported for other stacks).
-- Leaving out a bucket name lets CloudFormation generate a unique one - which
-  is what makes one template deployable many times.
+A YAML reminder: indentation shows nesting (spaces, never tabs), `key:
+value` pairs make a map, `- item` or `[a, b]` a list, and `{a: 1}` is a map
+written on one line. Reading the template's sections:
+
+- **Resources** (the only required section): each has a **logical ID** you
+  choose (`Uploads`), a **Type** (`AWS::S3::Bucket`, `AWS::SQS::Queue`; the
+  CloudFormation reference documents every type and its properties) and
+  **Properties**. The property names match the API's settings: S3's
+  versioning becomes `VersioningConfiguration`, SQS's `VisibilityTimeout`
+  stays `VisibilityTimeout`.
+- **Parameters** are inputs given at deploy time, so one template serves
+  many environments. `AllowedValues` restricts them; real CloudFormation
+  refuses any other value with a `ValidationError` before creating anything
+  (the emulator does not check, so the lesson's check reads your template).
+- **Outputs** publish values from the stack, such as a generated bucket
+  name, for people and other stacks to read.
+
+### Intrinsic functions
+
+Resources refer to each other and to parameters through **intrinsic
+functions**, written with a `!` in YAML's short form:
+
+| Function | Gives | Example |
+|---|---|---|
+| `!Ref X` | a parameter's value, or a resource's main identifier (a bucket's name, a queue's URL) | `!Ref Env` is `dev` |
+| `!GetAtt X.Attr` | another attribute of a resource | `!GetAtt DeadLetters.Arn` is the queue's ARN |
+| `!Sub 'text ${X}'` | a string with values substituted | `!Sub 'app-${Env}-logs'` |
+
+These references also tell CloudFormation the **order**: since `Jobs`
+mentions `!GetAtt DeadLetters.Arn`, it creates `DeadLetters` first. You never
+write the order yourself.
+
+Leave out a bucket's name, as here, and CloudFormation generates a unique
+one from the stack and logical ID (`app-dev-uploads-gnxtun0h40ga`). That is
+what makes one template deployable many times; a fixed name could exist only
+once in the world.
+
+## Deploying
+
+```
+aws cloudformation create-stack --stack-name app-dev \
+  --template-body file://template.yaml \
+  --parameters ParameterKey=Env,ParameterValue=dev \
+  --tags Key=env,Value=dev \
+  --enable-termination-protection
+aws cloudformation wait stack-create-complete --stack-name app-dev
+```
+
+`create-stack` returns at once with the stack's ID, while CloudFormation
+creates the resources in the background; the stack's status moves from
+`CREATE_IN_PROGRESS` to `CREATE_COMPLETE`. `wait stack-create-complete`
+pauses until it is done. If any resource fails, CloudFormation **rolls
+back**, deleting what it created, and the stack ends in `ROLLBACK_COMPLETE`:
+all or nothing. Stack **tags** are copied onto every resource in the stack.
+
+The outputs, afterwards:
+
+```
+$ aws cloudformation describe-stacks --stack-name app-dev --query 'Stacks[0].Outputs' --output table
+-------------------------------------------------------------------------------------------------
+|                                        DescribeStacks                                         |
++---------------+-------------------------------------------------------------------------------+
+|   OutputKey   |                                  OutputValue                                  |
++---------------+-------------------------------------------------------------------------------+
+|  UploadsBucket|  app-dev-uploads-gnxtun0h40ga                                                 |
+|  JobsQueueUrl |  https://sqs.us-east-1.amazonaws.com/123456789012/app-dev-Jobs-99DHTELI3RF1   |
++---------------+-------------------------------------------------------------------------------+
+```
 
 ## Changing a stack safely
 
-- A **change set** previews an update: which resources change, and whether
-  any will be **replaced** (a new resource, new ID, data gone with the old
-  one).
-- **Termination protection** stops the stack from being deleted.
-- A **DeletionPolicy: Retain** or **Snapshot** keeps a resource's data when
-  the stack goes.
-- **Drift detection** finds what someone changed by hand behind the
-  template's back.
+Updating a stack means giving it a changed template; CloudFormation changes
+only what differs. Some property changes can be made in place; others force
+a **replacement**: a new resource is created, with a new ID, and the old one
+deleted, **along with its data**. Renaming a database, for example, creates
+a new, empty one. The tools for not being surprised:
 
-Other tools do the same job - the **AWS CDK** (CloudFormation written in
-TypeScript, Python...), **Terraform**, **Pulumi** - with the same ideas.
+- A **change set** previews an update before anything happens: which
+  resources would be added, modified or removed, and for each modification
+  whether it means **replacement**. You review it, then execute it (or
+  throw it away). It shows intent; the update can still fail when run.
+- **Termination protection** refuses to delete the whole stack until it is
+  turned off. (Real CloudFormation refuses `delete-stack` with a
+  `ValidationError`; the emulator does not enforce it.)
+- A **DeletionPolicy** of `Retain` or `Snapshot` on a resource keeps it, or
+  a snapshot of it, when the stack is deleted. ❗ It does not protect
+  against **replacement** during an update: the old resource is still
+  deleted.
+- **Drift detection** compares the real resources with the template and
+  reports what someone changed by hand behind its back. It only checks
+  properties set in the template, and a manual change is undone at the
+  stack's next update anyway, so change resources through the template.
+
+Other tools work the same way with the same ideas: the **AWS CDK** writes
+CloudFormation templates for you from TypeScript or Python code;
+**Terraform** and **Pulumi** are independent tools that talk to the AWS API
+directly.
+
+## The other template sections
+
+Besides Parameters, Resources and Outputs, a template can have:
+
+- **Mappings**: lookup tables, such as an instance size per environment,
+  read with `!FindInMap`;
+- **Conditions**: create a resource only when a condition holds
+  (`IsProd: !Equals [!Ref Env, prod]`, then `Condition: IsProd` on the
+  resource);
+- **Metadata** and a **Description**, for people and the console.
+
+Each entry under Resources is a **logical** resource; the bucket or queue it
+creates in the account is the **physical** resource, with its own name or
+ID. A stack is the link between the two.
 
 ## Your task
 
-Write **`template.yaml`** with:
+Write **`template.yaml`** (the starter has empty sections) with:
 
-- a parameter **`Env`**, allowed values **dev** and **prod**;
-- a bucket **`Uploads`**: versioning on, **SSE-KMS** default encryption, all
-  four **Block Public Access** settings, tagged **`env`** = the parameter;
-- a queue **`DeadLetters`** keeping messages **14 days**;
-- a queue **`Jobs`** with a **120** s visibility timeout, redriving to
-  `DeadLetters` after **5** receives (`!GetAtt DeadLetters.Arn`);
-- outputs **`UploadsBucket`** and **`JobsQueueUrl`**.
+- a parameter **`Env`** of type `String`, **`AllowedValues`** `dev` and
+  `prod`;
+- a bucket **`Uploads`**: versioning on (`VersioningConfiguration`),
+  default encryption **SSE-KMS** (`SSEAlgorithm: aws:kms`), all four
+  **Block Public Access** settings true (`PublicAccessBlockConfiguration`),
+  and a tag **`env`** with the value **`!Ref Env`**;
+- a queue **`DeadLetters`** keeping messages **14 days**
+  (`MessageRetentionPeriod: 1209600`);
+- a queue **`Jobs`** with a **120**-second `VisibilityTimeout`, and a
+  `RedrivePolicy` to `DeadLetters` (`!GetAtt DeadLetters.Arn`) after **5**
+  receives (in a template the redrive policy is a plain map, with no
+  quoting puzzle);
+- outputs **`UploadsBucket`** (`!Ref Uploads`) and **`JobsQueueUrl`**
+  (`!Ref Jobs`).
 
-Then deploy it as the stack **`app-dev`** with **Env=dev**, the stack tag
-**env=dev**, and **termination protection** on.
+Those three resources and nothing else. Then deploy it as the stack
+**`app-dev`** with **Env=dev**, the stack tag **env=dev**, and **termination
+protection** on, and wait for it to finish. After **Run**, `aws
+cloudformation describe-stack-resources --stack-name app-dev --query
+'StackResources[].[LogicalResourceId,ResourceType,PhysicalResourceId]'
+--output table` maps each logical ID to the real resource CloudFormation
+made.
+
+## Check yourself
+
+1. Run a CLI script twice and it fails; deploy a template twice and it does
+   not. Why?
+   *A template describes the end state; CloudFormation only changes what
+   differs.*
+2. What does `!GetAtt DeadLetters.Arn` give, and why does order not need
+   writing down?
+   *The queue's ARN; the reference tells CloudFormation to create
+   DeadLetters first.*
+3. A change set says "Replacement: True" for the database. What does that
+   mean?
+   *A new database is created and the old one deleted, with its data.*
+4. Why leave the bucket name out of the template?
+   *CloudFormation generates a unique one, so the template can be deployed
+   many times.*

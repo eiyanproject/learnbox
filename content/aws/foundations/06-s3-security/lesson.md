@@ -12,46 +12,102 @@ hints:
 ---
 
 Most S3 data leaks are not clever attacks. They are buckets someone made
-public by accident. This lesson closes the usual doors.
+public by accident, with a permissive setting copied from a tutorial, or
+data read over an unencrypted connection. This lesson closes the usual
+doors on one bucket, in three layers:
+
+```text
+ who can reach it        Block Public Access: never public, whatever a policy says
+ how it is stored        encrypted at rest with your own KMS key, which rotates
+ how it travels          a bucket policy refusing anything not sent over TLS
+```
 
 ## Block Public Access
 
-**Block Public Access** is four switches that override any ACL or bucket
-policy that would make data public:
+S3 has two older ways to grant access to a bucket: **ACLs** (access control
+lists, per-object grants from S3's early days) and **bucket policies**
+(below). Either can make data public, to anyone on the internet. **Block
+Public Access** is four switches that override both:
 
 | Setting | Effect |
 |---|---|
-| `BlockPublicAcls` | refuse new public ACLs |
+| `BlockPublicAcls` | refuse new ACLs that grant public access |
 | `IgnorePublicAcls` | ignore any public ACLs already there |
 | `BlockPublicPolicy` | refuse a bucket policy that grants public access |
 | `RestrictPublicBuckets` | limit an existing public policy to AWS services and this account |
 
-New buckets have all four on, and they can also be set for the whole
-account. Turn them off only for a bucket that really serves the public - and
-even then, a website is better served through CloudFront with the bucket kept
-private.
+The first two deal with ACLs, the last two with policies. Block Public
+Access overrides; it does not edit: an existing public policy or ACL stays
+in place, ignored, and takes effect again the moment the setting is turned
+off. New buckets have
+all four on, and they can also be set once for the whole account, which
+then wins over any bucket's own setting. Turn them off only for a bucket
+that really serves the public, and even then, a website is better served
+through CloudFront with the bucket kept private (section 8).
 
 ## Encryption at rest
 
-Every new object in S3 is encrypted at rest, by default with keys S3 manages
-(**SSE-S3**). Choosing **SSE-KMS** instead means a **KMS key** you control:
+**At rest** means while stored on disk. Since 5 January 2023, every new
+object in S3 is encrypted at rest, by default with keys S3 manages for you
+(**SSE-S3**, server-side encryption with S3-managed keys). You never see those keys and cannot
+control them. Choosing **SSE-KMS** instead uses a key in **KMS** (Key
+Management Service) that you control:
 
-- a key policy decides who may use it - so reading the object needs
-  permission on the key as well as on the bucket;
-- every use is logged in CloudTrail;
-- you can turn on **automatic rotation** (yearly by default) without
-  re-encrypting anything;
-- an **S3 Bucket Key** cuts the number of calls to KMS, and the cost, for
-  busy buckets.
+| | SSE-S3 | SSE-KMS with your key |
+|---|---|---|
+| Who controls the key | S3 | you, through the key's **key policy** |
+| Reading an object needs | permission on the bucket | permission on the bucket **and** on the key |
+| Audit | none per use | every use of the key logged in CloudTrail |
+| Rotation | handled by S3 | **automatic rotation** you switch on (yearly by default) |
+| Cost | free | 💸 a monthly fee per key and a small charge per request to KMS |
 
-An **alias** (`alias/lb-data`) is a friendly name for a key, and can be
-moved to a new key later without changing anything that uses it.
+The middle row is the main reason to choose it: a person or program that
+somehow gets permission to read the bucket still cannot read the data
+without the key. Rotation creates new key material on a schedule, while
+data encrypted under the old material stays readable, so nothing needs
+re-encrypting.
+
+Two rules for SSE-KMS: the KMS key must be in the **same Region** as the
+bucket, and a bucket's default encryption applies only to objects written
+**after** it is set; existing objects keep whatever encryption they had
+until they are copied.
+
+An **S3 Bucket Key** makes S3 fetch a short-lived key from KMS for the bucket
+instead of calling KMS for every object, which cuts the number of KMS
+requests, and their cost, for busy buckets by up to 99%.
+
+An **alias** (`alias/lb-data`) is a friendly name for a key. Code and
+settings that refer to the alias keep working if the alias is later moved
+to a new key.
+
+### Capturing the key ID
+
+`create-key` answers with the new key's details; its ID is needed by the
+next two calls, so capture it, as with the policy ARN in lesson 3:
+
+```
+KEY_ID=$(aws kms create-key --description "lb-data bucket key" \
+  --query KeyMetadata.KeyId --output text)
+aws kms create-alias --alias-name alias/lb-data --target-key-id "$KEY_ID"
+aws kms enable-key-rotation --key-id "$KEY_ID"
+```
+
+Run shows the assignment with the value filled in, which is handy for
+seeing what the variable held:
+
+```
+$ KEY_ID=4ee75f66-68bd-4591-8f29-d58e79a3e40a
+$ aws kms create-alias --alias-name alias/lb-data --target-key-id 4ee75f66-68bd-4591-8f29-d58e79a3e40a
+```
 
 ## Encryption in transit
 
-S3 accepts plain HTTP as well as HTTPS. A bucket policy can refuse every
-request that did not come over TLS, using the condition key
-`aws:SecureTransport`:
+**In transit** means while travelling over the network. S3 accepts plain
+HTTP as well as HTTPS, and over plain HTTP, anyone on the path between you
+and AWS can read the data. A bucket policy can refuse every request that
+did not come over **TLS** (the encryption behind HTTPS), using the condition
+key `aws:SecureTransport`, which is `true` for TLS requests and `false`
+otherwise:
 
 ```json
 {
@@ -64,21 +120,89 @@ request that did not come over TLS, using the condition key
 }
 ```
 
-A bucket policy is a **resource policy**: it is attached to the bucket, not
-to an identity, so it has a `Principal` - who the statement is about.
+Read it as "**deny** **everyone** **every S3 action** on the bucket and its
+objects, **when** the request was not over TLS". The parts that are new:
+
+- A **bucket policy** is a **resource policy**: it is attached to the
+  bucket, not to an identity, so it has a **`Principal`**, saying who the
+  statement is about. `"*"` means everyone, including your own account's
+  users and roles.
+- It is a **Deny**, so it overrides any Allow anywhere (lesson 3).
+- It lists **both** resources, the bucket and its objects, because S3
+  actions act on one or the other (lesson 3 again). With only `lb-data/*`,
+  bucket-level actions such as listing would still work over HTTP.
+- `Bool` compares a true/false condition key. The policy document goes
+  around this statement as usual (`Version`, `Statement` list), and is
+  applied with `aws s3api put-bucket-policy --bucket lb-data --policy
+  file://bucket-policy.json`.
+
+## Who controls access, all together
+
+S3 is **private by default**: a new bucket and its objects are accessible
+only to the account that owns them. Access is then opened, or closed, by:
+
+- **identity policies** on your users and roles (lesson 3);
+- the **bucket policy**, a resource policy, which can also allow other
+  accounts or the public;
+- **ACLs**, an older per-object mechanism. They are **legacy**: new buckets
+  have **Object Ownership** set to "bucket owner enforced", which turns
+  ACLs off entirely, and they should stay off;
+- **Block Public Access**, which overrides anything that would make the
+  bucket public, but does not restrict your own account's principals.
+
+Server-side encryption has a third variant, **SSE-C**, where you send your
+own key with every request and S3 keeps none; and data can also be
+encrypted **client-side** before it is uploaded, so S3 only ever sees
+ciphertext. SSE-KMS's special strength is **role separation**: an S3
+administrator with full S3 permissions still cannot read the data without
+permission on the key.
 
 ## Your task
 
 For the bucket `lb-data` (the script creates it):
 
 1. turn on all four **Block Public Access** settings;
-2. create a **KMS key** with the alias **`alias/lb-data`** and **rotation on**;
+2. create a **KMS key** with the alias **`alias/lb-data`**, and turn on its
+   **rotation**;
 3. make **SSE-KMS with that key** the bucket's default encryption, with the
    **Bucket Key** enabled;
-4. upload `report.csv` to the bucket (the script makes it);
-5. write **`bucket-policy.json`** denying any request not over TLS, and apply
-   it - **last**.
+4. upload `report.csv` (the script makes it) to the bucket, as
+   `report.csv`;
+5. write **`bucket-policy.json`** with a statement denying **`s3:*`** to
+   **everyone** (`"Principal": "*"`) on **both** `arn:aws:s3:::lb-data` and
+   `arn:aws:s3:::lb-data/*` when `aws:SecureTransport` is `false`, and apply
+   it, **last**.
 
-**Why last?** The sandbox speaks plain HTTP. Once the TLS-only policy is on,
-it refuses your own uploads too - which is exactly what it is for. Try it
-after **Run**: `aws s3 cp report.csv s3://lb-data/again.csv` fails with 403.
+**Why last?** The sandbox emulator speaks plain HTTP. Once the TLS-only
+policy is on, it refuses your own uploads too, which is exactly what it is
+for, and why the check tries an upload and expects it to fail. Try it after
+**Run**:
+
+```
+$ aws s3 cp report.csv s3://lb-data/again.csv
+upload failed: ./report.csv to s3://lb-data/again.csv An error occurred (403) when calling the PutObject operation: Forbidden
+```
+
+`403 Forbidden` is how S3 says "access denied". `aws s3api
+get-public-access-block --bucket lb-data` shows the switches, and `aws kms
+get-key-rotation-status --key-id "$KEY_ID"` the rotation (that call needs
+the key ID, not the alias; `aws kms describe-key --key-id alias/lb-data`
+looks the ID up).
+(Bucket-level reads like those still work here, because the emulator only
+enforces the policy on object requests; real S3 would refuse them too over
+plain HTTP.)
+
+## Check yourself
+
+1. Block Public Access is on, and an old bucket policy allows `"Principal":
+   "*"`. Is the bucket public?
+   *No, as long as the setting stays on; the policy is ignored, not
+   deleted.*
+2. Why choose SSE-KMS with your own key over SSE-S3?
+   *Reading then also needs permission on the key, every use is logged, and
+   you control the key policy and rotation.*
+3. A TLS-only bucket policy names only `arn:aws:s3:::lb-data/*`. What is
+   still allowed over plain HTTP?
+   *Bucket-level actions, such as listing the bucket.*
+4. Who can read a brand-new bucket with no policies?
+   *Only the owning account's principals that have IAM permission.*
