@@ -5,6 +5,47 @@ order: 3
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **golden image** | an AMI with the OS patched and software installed |
+| **EC2 Image Builder** | pipelines that build, test and distribute images on a schedule |
+| **bootstrapping** | an instance setting itself up at first boot |
+| **change set** | previews an update, including replacements |
+| **drift detection** | finds hand changes; does not undo them |
+| **`DeletionPolicy`** | `Retain` or `Snapshot` when the stack is deleted |
+| **`CreationPolicy`** + **`cfn-signal`** | the stack waits for the instance to report success |
+| **`UPDATE_ROLLBACK_FAILED`** | an update and its rollback both failed; fix, then continue update rollback |
+| **continue update rollback** | retries the rollback, optionally skipping broken resources |
+| **CDK** / **synthesize** | infrastructure in a programming language / produce the CloudFormation template |
+| **StackSets** | one template to many accounts and Regions, automatically for new accounts in an OU |
+| **service-managed permissions** | StackSets using Organizations to deploy |
+| **AWS RAM** | Resource Access Manager: shares subnets, Transit Gateways and more between accounts |
+| **`iam:PassRole`** | permission to hand a role to a service; separate from creating the resource |
+| **service quota** | a limit; request an increase when "limit exceeded" |
+| **State Manager** | keeps a configuration applied on a schedule |
+| **Session Manager** | logged shell access through IAM, no bastion or open port |
+| **managed instance** | appears in Systems Manager: needs the SSM Agent, a profile with `AmazonSSMManagedInstanceCore`, and a network path |
+| **SSM Agent** | the Systems Manager software on the instance |
+| **event-driven automation** | rules and notifications start the work, not a person |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| "insufficient IP addresses" | the subnet is too small |
+| `AccessDenied` creating or passing a role | often missing `iam:PassRole` |
+| "limit exceeded" | a service quota was reached |
+
+---
+
 Every server, stack and setting should come from something repeatable: a
 **golden image**, a **template**, a **runbook**, never hand-made steps that
 nobody can redo. This domain covers building those, deploying them across

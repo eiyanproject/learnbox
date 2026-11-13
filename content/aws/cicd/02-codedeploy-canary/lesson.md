@@ -12,6 +12,58 @@ hints:
   - "appspec.yml: `version: 0.0`, then `Resources:` with one item `- orders-api:` holding `Type: AWS::Lambda::Function` and `Properties: {Name, Alias, CurrentVersion, TargetVersion}`, then `Hooks:` with `- BeforeAllowTraffic: orders-api-smoke`. Quote the versions: `\"1\"`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **canary deployment** | a small share of traffic to the new version first, then the rest, or back on errors |
+| **linear deployment** | traffic moved in equal steps |
+| **all at once** | everything at once, still with hooks and rollback |
+| **CodeDeploy** | runs canaries and other gradual deployments for Lambda, ECS and EC2 |
+| **`$LATEST`** | the editable copy of a function |
+| **version** | an immutable, numbered snapshot of code and configuration |
+| **publish** | create a version |
+| **alias** | a named pointer to a version, such as `live`, with its own ARN |
+| **`RoutingConfig`** | the alias's traffic split between two versions |
+| **deployment configuration** | how traffic moves, such as `LambdaCanary10Percent5Minutes` |
+| **application** | CodeDeploy's container for a deployable thing, with a compute platform |
+| **deployment group** | where and how to deploy: role, configuration, rollback, alarms |
+| **`BLUE_GREEN`** / **`WITH_TRAFFIC_CONTROL`** | old version blue, new green; CodeDeploy moves the traffic |
+| **AppSpec** | describes one release: function, alias, from and to versions, hooks |
+| **hook** | a Lambda function CodeDeploy runs at a point in the deployment |
+| **`BeforeAllowTraffic`** / **`AfterAllowTraffic`** | before any traffic moves / after all of it has |
+| **smoke test** | a quick check that the basics work |
+| **`PutLifecycleEventHookExecutionStatus`** | how a hook reports `Succeeded` or `Failed` |
+| **`CodeDeployHook_`** | the name prefix the managed role may invoke |
+| **automatic rollback** | back to 100% of the old version on failure or alarm |
+| **`DEPLOYMENT_FAILURE`**, **`DEPLOYMENT_STOP_ON_ALARM`** | the two rollback triggers |
+| **`Errors`** metric | invocations that ended in an error |
+| **`Resource=orders-api:live`** | the dimension for the alias's own metric |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws lambda create-function ... --publish` | creates a function and version 1 |
+| `aws lambda update-function-code --function-name N --zip-file fileb://v2.zip --publish` | new code, published as the next version |
+| `aws lambda publish-version --function-name N` | freezes the current code as a version |
+| `aws lambda create-alias --function-name N --name live --function-version 1` | creates the alias |
+| `aws lambda list-versions-by-function`, `get-alias` | show versions and the alias |
+| `aws cloudwatch put-metric-alarm --namespace AWS/Lambda --metric-name Errors --dimensions Name=FunctionName,Value=N Name=Resource,Value=N:live ...` | the error alarm |
+| `aws deploy create-application --application-name N --compute-platform Lambda` | a CodeDeploy application |
+| `aws deploy create-deployment-group --application-name N --deployment-group-name live --service-role-arn R --deployment-config-name ... --deployment-style deploymentType=BLUE_GREEN,deploymentOption=WITH_TRAFFIC_CONTROL --auto-rollback-configuration ... --alarm-configuration ...` | the deployment group |
+| `aws deploy create-deployment` | starts a deployment with an AppSpec |
+| `aws deploy get-deployment-group` | shows the group |
+| `service-role/AWSCodeDeployRoleForLambda` | the managed policy for CodeDeploy's role |
+
+---
+
 The previous lesson's pipeline replaced the old version with the new one in
 one step. If the new version has a bug, **every** user meets it at once.
 A **canary** deployment avoids that: first send a small share of traffic,

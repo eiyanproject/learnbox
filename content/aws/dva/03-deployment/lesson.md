@@ -5,6 +5,47 @@ order: 3
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **AWS SAM** | Serverless Application Model: a CloudFormation extension with short serverless resource types |
+| **`Transform: AWS::Serverless-2016-10-31`** | the line that turns a template into a SAM template |
+| **`AWS::Serverless::Function`**, **`Api`**, **`SimpleTable`** | SAM's short resource types |
+| **AWS AppConfig** | feature flags and settings changed without a deploy, with gradual rollout |
+| **feature flag** | a setting that switches a feature on or off |
+| **stage variables** | per-stage values in API Gateway |
+| **version** / **`$LATEST`** / **alias** | immutable snapshot / editable copy / named pointer that can split traffic |
+| **API Gateway stage** | a named deployment of an API (`dev`, `prod`) with its own URL |
+| **deployment** (API Gateway) | what makes API changes live on a stage |
+| **canary** (stage) | a percentage of requests to a new deployment |
+| **CodePipeline**, **CodeBuild**, **CodeDeploy** | pipeline stages / builds from `buildspec.yml` / gradual deployments |
+| **in-place** / **blue/green** | update existing instances / switch to a new set |
+| **lifecycle hooks** (EC2) | `BeforeInstall`, `AfterInstall`, `ApplicationStart`, `ValidateService` scripts |
+| **traffic shifting** | Canary, Linear, AllAtOnce on a Lambda alias |
+| **test listener** | a load balancer listener for testing the new ECS version |
+| **Elastic Beanstalk** | runs web applications with little setup |
+| **all at once**, **rolling**, **rolling with additional batch**, **immutable**, **traffic splitting** | Beanstalk's deployment policies |
+| **downtime** | time the application is unavailable |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `sam build` | installs dependencies, prepares artifacts |
+| `sam deploy [--guided]` | uploads and deploys the stack |
+| `sam local invoke`, `sam local start-api` | runs the function or API locally, in Docker |
+| `sam sync` | pushes code changes to a development stack in seconds |
+| `aws cloudformation package` | uploads local code to S3 and rewrites the template |
+
+---
+
 Deployment is getting code from a laptop into production safely, again and
 again: packaging it, testing it, shipping it through a pipeline, and being
 able to go back when a release is bad. The exam focuses on Lambda versions

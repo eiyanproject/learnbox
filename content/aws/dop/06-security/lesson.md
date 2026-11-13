@@ -5,6 +5,36 @@ order: 6
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **EKS Pod Identity**, **IRSA** | IAM roles for Kubernetes pods |
+| **OIDC federation** | a CI job's signed token exchanged for a role's temporary credentials |
+| **permissions boundary** | caps what delegated administrators can grant |
+| **SCP** / **RCP** | cap what principals can do / cap what can be done to resources, whoever asks |
+| **IAM Access Analyzer** | external sharing, unused access, policy generation from CloudTrail, policy checks |
+| **account-level Block Public Access** | no bucket in the account can be made public |
+| **EBS default encryption** | every new volume in the Region is encrypted |
+| **AWS Network Firewall** | managed VPC firewall |
+| **Firewall Manager** | WAF, security group and Network Firewall policies across all accounts |
+| **Inspector** | scans ECR images, Lambda functions and code repositories |
+| **cfn-guard** | policy-as-code rules checked against templates |
+| **CloudFormation Hooks** | block non-compliant resources before creation |
+| **signed artifacts** | builds verified before deployment |
+| **log file validation** | a digest proving CloudTrail logs were not changed |
+| **Detective** | investigates a finding; does not detect |
+| **Audit Manager** | collects evidence for audits against frameworks |
+| **PCI DSS**, **HIPAA**, **SOC 2** | payment card, US health and service-organization compliance frameworks |
+
+---
+
 Security in DevOps is built into the pipeline and the platform, not
 checked by hand afterwards: no long-lived keys anywhere, guardrails that
 apply to every account, scanning in every build, and compliance monitored

@@ -11,6 +11,72 @@ hints:
   - "`\"Expiration\": {\"Days\": 365}` ends current versions; `\"NoncurrentVersionExpiration\": {\"NoncurrentDays\": 30}` ends the old ones. `aws s3api put-bucket-lifecycle-configuration --bucket lb-logs --lifecycle-configuration file://lifecycle.json`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **object** | any bytes stored in S3, up to 5 TB |
+| **key** | an object's full name, such as `logs/2026/app.log`; there are no real folders |
+| **prefix** | the start of a key, such as `logs/`; many features select objects by it |
+| **metadata** | facts about an object (size, type, date) rather than its content |
+| **durability** | how unlikely data loss is; S3 is designed for eleven nines (99.999999999%) |
+| **versioning** | keep every old copy when an object is overwritten or deleted |
+| **version** / **version ID** | one stored copy of a key / its identifier |
+| **current** / **noncurrent version** | the newest version / any older one |
+| **`null` version ID** | an object stored before versioning was turned on |
+| **delete marker** | a newest "version" that hides the object; removing it brings the object back |
+| **enabled** / **suspended** | versioning's two states once turned on; it can never be switched off |
+| **replication** | copying objects to another bucket automatically; needs versioning |
+| **Object Lock** | stops objects being deleted or changed for a set time; needs versioning |
+| **ransomware** | malware that overwrites files with encrypted copies |
+| **storage class** | a trade-off between storage price and read price and speed |
+| **S3 Standard** | the default class, for data used often |
+| **Intelligent-Tiering** | moves objects between tiers itself |
+| **Standard-IA** | Infrequent Access: cheaper storage, a fee per GB read |
+| **One Zone-IA** | stored in one AZ only; for data you can re-create |
+| **Glacier Instant / Flexible Retrieval / Deep Archive** | archive classes: milliseconds / minutes to hours / up to 12 hours to read back |
+| **restore** | make a Glacier Flexible or Deep Archive object readable again: Expedited, Standard or Bulk |
+| **minimum storage duration** | days billed even if deleted sooner: 30 (IA), 90 (Glacier Instant, Flexible), 180 (Deep Archive) |
+| **minimum billable size** | IA classes and Glacier Instant bill each object as at least 128 KB |
+| **lifecycle configuration** | rules S3 applies to objects by age, once a day |
+| **transition** | move objects to a colder class after some days; never back up |
+| **expiration** | delete objects after some days (in a versioned bucket: add a delete marker) |
+| **noncurrent version expiration** | delete old versions some days after they were replaced |
+| **`Filter`** | which objects a rule applies to, by prefix or tag |
+| **XML** | the text format S3's API uses underneath; the CLI converts your JSON |
+| **MFA Delete** | requires an MFA code to delete a version or suspend versioning; root only |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws s3 cp FILE s3://bucket/key` | uploads a file |
+| `aws s3 cp s3://bucket/key -` | downloads it to the terminal |
+| `aws s3 ls s3://bucket/prefix/` | lists objects |
+| `aws s3 rm s3://bucket/key` | deletes (in a versioned bucket: adds a delete marker) |
+| `aws s3api head-object --bucket B --key K` | shows an object's metadata |
+| `aws s3api put-bucket-versioning --bucket B --versioning-configuration Status=Enabled` | turns versioning on |
+| `aws s3api list-object-versions --bucket B --prefix P` | lists every version |
+| `aws s3api delete-object --bucket B --key K --version-id V` | really deletes one version |
+| `aws s3api put-bucket-lifecycle-configuration --bucket B --lifecycle-configuration file://lifecycle.json` | sets (replaces) the lifecycle rules |
+| `aws s3api get-bucket-lifecycle-configuration --bucket B` | shows the rules |
+| `STANDARD_IA`, `GLACIER` | API names of the Standard-IA and Glacier Flexible Retrieval classes |
+| `Transitions`, `Expiration`, `NoncurrentVersionExpiration` | the rule's actions in `lifecycle.json` |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `MalformedXML ... did not validate against our published schema` | a lifecycle rule without a `Filter`, or another shape mistake |
+
+---
+
 Two things go wrong with stored data over time: someone overwrites or
 deletes a file they needed, and old data piles up, costing money for files
 nobody reads. This lesson handles both for a bucket of application logs:

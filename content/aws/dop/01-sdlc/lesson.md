@@ -5,6 +5,40 @@ order: 1
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **DOP-C02** | the AWS Certified DevOps Engineer - Professional exam |
+| **SDLC** | software development life cycle |
+| **"most automated"** | the usual qualifier: an option needing a person usually loses |
+| **cross-account deployment** | the pipeline assumes a role in the target account; the artifact key must be customer managed |
+| **cross-Region action** | needs an artifact bucket in each Region |
+| **trigger filters** | V2 pipelines start on chosen Git branches, tags or file paths |
+| **pipeline variables** | values shared by a pipeline's actions |
+| **CodeConnections** | GitHub, GitLab and Bitbucket sources |
+| **build caching** | keeping downloaded dependencies between builds |
+| **VPC access** (CodeBuild) | builds that reach private resources |
+| **CodeArtifact** | a package repository: **domains** across accounts, **upstream repositories** proxying public ones |
+| **AWS Signer** | signs Lambda code so deploys can prove where it came from |
+| **in-place** / **blue/green** | update existing instances / switch to new ones |
+| **AppSpec lifecycle hooks** | `ApplicationStop`, `BeforeInstall`, `AfterInstall`, `ApplicationStart`, `ValidateService` |
+| **CodeDeploy agent** | runs the hooks on EC2 |
+| **test listener** | checks a new ECS version before traffic moves |
+| **automatic rollback** | on failure or a CloudWatch alarm |
+| **deployment circuit breaker** | ECS rollback after repeated task failures |
+| **Elastic Beanstalk policies** | all at once, rolling, rolling with additional batch, immutable, traffic splitting, CNAME swap |
+| **CNAME swap** | blue/green by swapping two environments' URLs |
+| **mixed fleet** | old and new versions running at once |
+
+---
+
 This page reviews the first domain of the **AWS Certified DevOps Engineer
 - Professional** exam (DOP-C02), followed by practice questions. DevOps on
 AWS means that building, testing, deploying, configuring and recovering

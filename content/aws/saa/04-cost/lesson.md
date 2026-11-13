@@ -5,6 +5,47 @@ order: 4
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **cost-optimized** | meeting every requirement for the least money |
+| **On-Demand** | pay per second, no commitment |
+| **Savings Plans** | a committed spend per hour for 1 or 3 years; Compute Savings Plans span families, Regions, Fargate and Lambda |
+| **Reserved Instances** | a commitment to a known instance type; also for RDS and others |
+| **Spot** | spare capacity up to 90% off, with a two-minute warning |
+| **checkpoint** | saving progress so interrupted work can resume |
+| **Dedicated Hosts** | whole physical servers, for per-socket licences or compliance |
+| **right-size** | match instance size to actual use |
+| **Compute Optimizer** | recommends instance sizes from actual use |
+| **Instance Scheduler** | stops instances outside working hours |
+| **serverless** | costs little or nothing when idle |
+| **storage classes**, **Intelligent-Tiering**, **lifecycle rules** | S3's cost tools |
+| **minimum storage duration**, **retrieval fee** | why cold classes cost more for data read often |
+| **Requester Pays** | the downloader pays for requests and transfer |
+| **Elastic Volumes** | change an EBS volume's type or size with no downtime |
+| **unattached volume** | an EBS disk on no instance, still billed |
+| **snapshot archive** | a cheaper tier for long-kept EBS snapshots |
+| **incomplete multipart upload** | parts of a failed upload, billed until removed |
+| **data transfer** | charged out to the internet, between AZs (each way) and between Regions |
+| **gateway endpoint** | free, and keeps S3 and DynamoDB traffic off the NAT gateway |
+| **Transit Gateway** | charged per attachment and per GB |
+| **cost allocation tags** | break the bill down by project or team |
+| **Cost Explorer** | charts and forecasts spend |
+| **AWS Budgets** | alerts on actual or forecast spend, and can take actions |
+| **Cost and Usage Report / Data Exports** | line-item billing detail |
+| **QuickSight** | AWS's dashboard service |
+| **Cost Anomaly Detection**, **Cost Optimization Hub**, **Trusted Advisor** | flag unusual spend / list savings |
+| **consolidated billing** | usage added up across an organization's accounts |
+
+---
+
 **Cost-optimized** means meeting **every** requirement for the least money,
 not simply the cheapest option. An answer that saves money but loses data,
 or breaks availability the question asked for, is wrong. Most savings come

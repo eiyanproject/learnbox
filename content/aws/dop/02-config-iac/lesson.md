@@ -5,6 +5,43 @@ order: 2
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **Parameters**, **Mappings**, **Conditions** | inputs, lookup tables, resources only in some environments |
+| **intrinsic functions** | `Ref`, `Fn::GetAtt`, `Fn::Sub`, `Fn::If`: values computed at deploy time |
+| **nested stack** | a template used inside another |
+| **cross-stack reference** | `Export` / `Fn::ImportValue`; an export cannot change while imported |
+| **stack policy** | protects resources from updates |
+| **`DeletionPolicy`** / **`UpdateReplacePolicy`** | keep or snapshot a resource on delete / on replacement |
+| **`CreationPolicy`** + **`cfn-signal`** | wait for instances to report success |
+| **custom resource** | a Lambda function doing what CloudFormation cannot |
+| **module**, **macro** | reusable resource groups / template transforms |
+| **hook** | a check before resources are created or changed, which can block them |
+| **dynamic reference** | `{{resolve:secretsmanager:...}}`: read at deploy time, never stored in the template |
+| **StackSets** with **service-managed permissions** | deploy automatically to accounts joining an OU |
+| **CDK construct** | a building block, from low-level `Cfn*` to high-level patterns |
+| **`cdk synth`**, **`cdk diff`**, **`cdk deploy`** | produce the template / show changes / deploy |
+| **CDK bootstrapping** | creates the staging bucket and roles once per account and Region |
+| **CDK Pipelines** | self-mutating pipelines that update themselves |
+| **Customizations for Control Tower** | apply your baseline to each new account |
+| **AWS Service Catalog** | **portfolios** of approved **products** users launch without broad permissions |
+| **launch constraint** | the role Service Catalog uses to create the resources |
+| **State Manager association** | keeps a configuration applied on a schedule |
+| **Distributor** | packages software for installation across fleets |
+| **Inventory** | installed software and configuration of instances |
+| **AppConfig** | feature flags with **validators** and gradual **deployment strategies** |
+| **EC2 Image Builder** | golden AMIs and container images |
+
+---
+
 Everything should be described as code and kept in the state that code
 describes: the infrastructure (CloudFormation, CDK), the accounts (Control
 Tower, StackSets, Service Catalog) and what runs on the instances (Systems

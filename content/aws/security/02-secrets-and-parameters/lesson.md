@@ -12,6 +12,55 @@ hints:
   - "`aws ssm put-parameter --name /orders/prod/api_key --type SecureString --key-id alias/app --value ...`. GetParametersByPath is authorized on the path itself, so the role needs both `parameter/orders/prod` and `parameter/orders/prod/*`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **secret** | a value that must not be in code: a password, an API key |
+| **API key** | a secret token that identifies a program to a service |
+| **Secrets Manager** | stores secrets, encrypted with KMS, with built-in rotation |
+| **Parameter Store** | part of Systems Manager: configuration values and simple secrets |
+| **ECS task** | a running container group in ECS; its role is trusted by `ecs-tasks.amazonaws.com` |
+| **task definition** | ECS's description of a task; can reference secrets and parameters |
+| **rotation** | replacing a password regularly |
+| **rotation function** | a Lambda function: createSecret, setSecret, testSecret, finishSecret |
+| **secret version** | one stored value of a secret |
+| **staging labels** | `AWSPENDING` (new), `AWSCURRENT` (in use), `AWSPREVIOUS` (old) |
+| **alternating users** | two database users taking turns, so a password never stops working mid-use |
+| **managed rotation** | rotation AWS runs for RDS, Redshift and DocumentDB |
+| **resource policy** (on a secret) | a second lock; here a deny for everyone except one role |
+| **`aws:PrincipalArn`** | condition key: the ARN of whoever is asking |
+| **`String`**, **`StringList`**, **`SecureString`** | the parameter types: text, comma-separated list, KMS-encrypted |
+| **standard** / **advanced tier** | free, 4 KB / paid, 8 KB, shareable |
+| **hierarchy** | parameters named like paths: `/orders/prod/db_host` |
+| **branch** | all parameters under one path |
+| **public parameters** | values AWS publishes, such as the latest AMI IDs |
+| **parameter ARN** | `arn:aws:ssm:REGION:ACCOUNT:parameter/orders/prod/db_host` |
+| **database driver** | the library a program uses to talk to a database |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws secretsmanager get-random-password --password-length 32 --exclude-punctuation` | generates a strong password |
+| `aws secretsmanager create-secret --name N --kms-key-id K --secret-string file://... --tags Key=env,Value=prod` | creates a secret |
+| `aws secretsmanager rotate-secret --secret-id N --rotation-lambda-arn F --rotation-rules AutomaticallyAfterDays=30 --no-rotate-immediately` | sets the rotation schedule |
+| `aws secretsmanager put-resource-policy --secret-id N --resource-policy file://...` | attaches the resource policy |
+| `aws secretsmanager get-secret-value --secret-id N` | reads the value |
+| `aws secretsmanager describe-secret --secret-id N` | shows rotation and version labels |
+| `aws ssm put-parameter --name /orders/prod/db_host --type String --value V` | creates a parameter (`--key-id` for SecureString) |
+| `aws ssm get-parameters-by-path --path /orders/prod --with-decryption` | reads a branch, decrypting SecureStrings |
+| `aws iam put-role-policy --role-name R --policy-name N --policy-document file://...` | adds an inline policy |
+| `ssm:GetParametersByPath`, `ssm:GetParameters`, `secretsmanager:GetSecretValue`, `kms:Decrypt` | the read actions the app needs |
+
+---
+
 Every application has values it needs that must not be in its code: the
 database password, an API key for the payment provider, the database's host
 name, which domains may call it. Put them in the code, a container image or

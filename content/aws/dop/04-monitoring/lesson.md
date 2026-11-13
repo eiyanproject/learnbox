@@ -5,6 +5,34 @@ order: 4
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **CloudWatch agent configuration** | kept in Parameter Store so every instance loads the same one |
+| **`PutMetricData`**, **embedded metric format** | custom metrics by API / as structured log lines |
+| **high-resolution metric** | data down to 1 second |
+| **cross-account observability** | a monitoring account linked to source accounts |
+| **subscription filter** | ships log events to Firehose or a central destination |
+| **organization trail** | CloudTrail for every account |
+| **composite alarm**, **anomaly detection alarm** | combined alarms / learns a metric's normal band |
+| **Logs Insights**, **Contributor Insights** | log queries / top-N contributors |
+| **CloudWatch Application Signals** | service-level dashboards and SLOs |
+| **SLO** | service level objective: a target for reliability or speed |
+| **Container Insights**, **Lambda Insights** | per-container and per-function detail |
+| **Athena** | SQL over logs in S3 |
+| **dashboards as code** | dashboards defined in CloudFormation or CDK |
+| **Config aggregator** | compliance from all accounts and Regions |
+| **Synthetics canary** | a scheduled test of a user journey |
+
+---
+
 You cannot automate a response to what you cannot see. This domain covers
 collecting logs and metrics from everything, keeping them centrally and
 safely, analysing them, and setting up monitoring itself as code across

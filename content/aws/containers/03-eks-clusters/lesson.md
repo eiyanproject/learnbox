@@ -11,6 +11,68 @@ hints:
   - "`aws eks create-fargate-profile --cluster-name platform --fargate-profile-name batch --pod-execution-role-arn \"$POD_ROLE\" --subnets $PRIVATE_A $PRIVATE_B --selectors namespace=batch`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **Kubernetes** | the open-source standard for running containers |
+| **`kubectl`** | Kubernetes's command-line tool |
+| **Helm chart** | a packaged Kubernetes application |
+| **control plane** | the API servers and etcd every request goes through |
+| **etcd** | the database holding the cluster's state |
+| **EKS** | Elastic Kubernetes Service: runs the control plane for you |
+| **data plane** | where your containers run: nodes or Fargate |
+| **pod** | the smallest unit: containers started together with one IP |
+| **Deployment** | keeps N pods running and rolls out changes |
+| **node** | a machine that runs pods |
+| **namespace** | a named partition of the cluster |
+| **cluster role** | lets the control plane manage AWS resources such as network interfaces |
+| **endpoint access** | the Kubernetes API reachable publicly, privately, or both |
+| **bastion** | a server inside the network used as a way in |
+| **control-plane logs** | `api`, `audit`, `authenticator`, `controllerManager`, `scheduler`; off by default |
+| **Kubernetes Secret** | a password or token stored in etcd |
+| **envelope encryption** (of Secrets) | each Secret gets a data key encrypted under your KMS key; cannot be turned off |
+| **standard** / **extended support** | about 14 months per minor version / up to 12 more at a higher price |
+| **minor version** | the middle number, such as 1.31; upgrade one at a time |
+| **kubeconfig** | the file telling `kubectl` how to reach and sign in to a cluster |
+| **access entry** | maps an IAM principal to Kubernetes permissions |
+| **`aws-auth` ConfigMap** | the older way to do that |
+| **managed node group** | an Auto Scaling group EKS creates and updates |
+| **draining** | moving a node's pods elsewhere before replacing it |
+| **self-managed nodes** | your own Auto Scaling group of EKS AMIs |
+| **Fargate (EKS)** | one micro-VM per pod; no DaemonSets, GPUs or privileged pods |
+| **DaemonSet** | a pod that runs on every node |
+| **Karpenter** | an autoscaler launching right-sized instances for pending pods |
+| **On-Demand** / **Spot** | normal price / spare capacity up to 90% off, reclaimed with two minutes' warning |
+| **capacity pool** | Spot capacity of one instance type in one AZ; name several types |
+| **node role** | the nodes' EC2 role; every pod can reach it |
+| **VPC CNI** | the plugin giving each pod its own VPC IP address |
+| **EKS Pod Identity**, **IRSA** | give pods their own IAM role |
+| **Fargate profile** | selectors (namespace, labels) choosing which pods run on Fargate |
+| **pod execution role** | pulls images and writes logs for Fargate pods |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws eks create-cluster --name N --kubernetes-version 1.31 --role-arn R --resources-vpc-config subnetIds=A,B,endpointPublicAccess=false,endpointPrivateAccess=true` | creates a cluster |
+| `--logging '{"clusterLogging":[{"types":["api","audit","authenticator"],"enabled":true}]}'` | turns on control-plane logs |
+| `--encryption-config '[{"resources":["secrets"],"provider":{"keyArn":"..."}}]'` | encrypts Secrets with your key |
+| `aws eks wait cluster-active --name N` | waits until it is ready |
+| `aws eks create-nodegroup --cluster-name N --nodegroup-name G --node-role R --subnets A B --instance-types ... --capacity-type SPOT --scaling-config minSize=0,maxSize=10,desiredSize=2` | creates a node group |
+| `aws eks create-fargate-profile --cluster-name N --fargate-profile-name P --pod-execution-role-arn R --subnets A B --selectors namespace=batch` | creates a Fargate profile |
+| `aws eks update-kubeconfig --name N` | sets up `kubectl` with your IAM identity |
+| `aws eks describe-cluster`, `describe-nodegroup` | show what was made |
+| `AmazonEKSClusterPolicy`, `AmazonEKSWorkerNodePolicy`, `AmazonEKS_CNI_Policy`, `AmazonEC2ContainerRegistryReadOnly`, `AmazonEKSFargatePodExecutionRolePolicy` | the managed policies used |
+
+---
+
 **Kubernetes** is the open-source standard for running containers, used
 on every cloud and in data centres. It does what ECS does (keeps copies
 running, rolls out versions, scales) with its own API, its own tool

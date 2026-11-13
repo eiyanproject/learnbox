@@ -11,6 +11,67 @@ hints:
   - "Replication is set for the whole registry: `aws ecr put-replication-configuration --replication-configuration '{\"rules\":[{\"destinations\":[{\"region\":\"eu-west-1\",\"registryId\":\"'$ACCOUNT'\"}]}]}'`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **container image** | an application packed with its runtime, libraries and a minimal OS layer |
+| **registry** | where images are stored; ECR has one per account per Region |
+| **Docker Hub** | a public registry |
+| **ECR** | Elastic Container Registry: AWS's private registry |
+| **ECS**, **EKS** | AWS's container services (lessons 2 and 3) |
+| **repository** | holds the versions of one image, such as `orders-api` |
+| **image name** | `registry/repository:tag` |
+| **tag** | a human label pointing at an image: `release-42`, `latest` |
+| **digest** | `sha256:...`: a hash of the content, naming exactly one image forever |
+| **layer** | a piece of an image, stored once and shared; ECR keeps layers in S3 |
+| **push** / **pull** | upload / download an image |
+| **tag immutability** | `IMMUTABLE`: a tag can never be moved to different content |
+| **mutable tag** | can be silently moved by a new push |
+| **CVE** | a published known vulnerability |
+| **basic scanning** | checks OS packages, on push or on demand; free |
+| **enhanced scanning** | Amazon Inspector: OS and language packages, continuously |
+| **lifecycle policy** | rules that expire images automatically |
+| **`rulePriority`** | rules are evaluated from the lowest number up |
+| **`tagStatus`** | `untagged`, `tagged` (with `tagPrefixList`) or `any` |
+| **`sinceImagePushed`** / **`imageCountMoreThan`** | older than N days / all but the newest N |
+| **expire** | delete, applied within about a day |
+| **untagged image** | one nothing refers to; safest to expire |
+| **repository policy** | a resource policy on the repository |
+| **image manifest** | the list of an image's layers |
+| **replication** | copies newly pushed images to other Regions or accounts; set for the whole registry |
+| **tooling account** | an account where images are built, then pulled by others |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws ecr get-login-password \| docker login --username AWS --password-stdin REGISTRY` | signs Docker in with a 12-hour token |
+| `docker tag SRC REGISTRY/REPO:TAG`, `docker push REGISTRY/REPO:TAG` | names and pushes an image |
+| `aws ecr create-repository --repository-name N --image-tag-mutability IMMUTABLE --image-scanning-configuration scanOnPush=true --encryption-configuration encryptionType=KMS` | creates a repository |
+| `aws ecr put-lifecycle-policy --repository-name N --lifecycle-policy-text file://...` | sets the lifecycle policy |
+| `aws ecr start-lifecycle-policy-preview --repository-name N` | shows what it would delete |
+| `aws ecr set-repository-policy --repository-name N --policy-text file://...` | sets the repository policy |
+| `aws ecr put-replication-configuration --replication-configuration file://...` | sets registry replication |
+| `aws ecr describe-repositories`, `get-lifecycle-policy`, `describe-registry` | show the settings |
+| `aws ecr describe-image-scan-findings` | scan results |
+| `ecr:BatchCheckLayerAvailability`, `ecr:GetDownloadUrlForLayer`, `ecr:BatchGetImage` | the three pull actions |
+| `ecr:GetAuthorizationToken` | account-wide sign-in permission; never in a repository policy |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `ImageTagAlreadyExistsException` | pushing an existing tag with different content to an immutable repository |
+
+---
+
 A **container image** is an application packed with everything it needs to
 run: its code, the language runtime, the libraries and a minimal operating
 system layer. Build it once, and it runs the same on a laptop, in CI and in

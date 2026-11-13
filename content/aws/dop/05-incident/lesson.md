@@ -5,6 +5,44 @@ order: 5
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **event** / **incident** | something that happened / when it hurts users |
+| **AWS Health** | scheduled maintenance and issues affecting your resources; organizational view for all accounts |
+| **instance retirement** | AWS scheduling an instance's hardware to be taken out |
+| **event bus** | where EventBridge receives events; can forward across accounts |
+| **input transformer** | reshapes an event for the target |
+| **archive and replay** | keep events and send them again |
+| **S3 event notifications** | messages when objects change |
+| **Systems Manager Incident Manager** | **response plans**, **escalation**, runbooks and a timeline |
+| **escalation** | paging the next person when nobody answers |
+| **post-incident review** | looking back at what happened and why |
+| **OpsCenter** / **OpsItem** | collects operational issues / one issue |
+| **lifecycle event** (CodeDeploy) | the deployment step that failed |
+| **stack events** | the first `CREATE_FAILED` is the cause |
+| **activity history** | an Auto Scaling group's record of launches and failures |
+| **stopped reason** | why an ECS task stopped |
+| **Service Quotas** | where "limit exceeded" is checked and raised |
+| **Service Health Dashboard** | the public view of AWS service health |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `CREATE_FAILED` | a stack resource failed to create; look at the first one |
+| `CannotPullContainerError` | an ECS task could not pull its image |
+| "limit exceeded" | a service quota |
+
+---
+
 An **event** is something that happened: an instance stopped, a deployment
 failed, a finding appeared, AWS scheduled maintenance. An **incident** is
 when that hurts users. This domain covers routing events to automated

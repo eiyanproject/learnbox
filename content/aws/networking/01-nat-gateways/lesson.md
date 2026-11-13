@@ -11,6 +11,48 @@ hints:
   - "Tag the route tables `private-a` and `private-b` with `--tag-specifications 'ResourceType=route-table,Tags=[{Key=Name,Value=private-a}]'`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **outbound connection** | one an instance opens itself, such as to download updates |
+| **NAT** | network address translation: forwarding traffic under another address |
+| **NAT gateway** | sits in a public subnet; lets private instances reach out, and only replies back in |
+| **default route** | the `0.0.0.0/0` route: where traffic goes when nothing more specific matches |
+| **Elastic IP** | a public IPv4 address reserved for your account until released, so it does not change |
+| **allocation ID** | `eipalloc-...`: how other calls refer to an Elastic IP |
+| **cross-AZ traffic** | data between Availability Zones; billed |
+| **one NAT gateway per AZ** | the resilient pattern: each AZ's private route table uses its own AZ's gateway |
+| **resilient** | survives a failure, here of one AZ |
+| **managed** | AWS scales, patches and makes it redundant for you |
+| **NAT instance** | an EC2 instance doing NAT; yours to patch, size and fail over |
+| **source/destination check** | an instance setting that must be off for a NAT instance |
+| **Regional NAT gateway** | one gateway for the whole VPC, spanning its AZs (November 2025) |
+| **private NAT gateway** | no Elastic IP; translates towards other private networks |
+| **`ErrorPortAllocation`** | the metric showing connections failing because one address ran out of ports |
+| **idle timeout** | idle connections are closed after 350 seconds |
+| **gateway endpoint** | a free private path to S3 or DynamoDB that avoids the NAT gateway (lesson 3) |
+| **VPN**, **Direct Connect** | links from an office or data centre to AWS; their traffic cannot use a NAT gateway |
+| **`pending`** / **`available`** | a NAT gateway's state while being created / ready |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws ec2 allocate-address --domain vpc` | reserves an Elastic IP |
+| `aws ec2 release-address --allocation-id A` | gives it back (each public IPv4 is billed hourly) |
+| `aws ec2 create-nat-gateway --subnet-id S --allocation-id A` | creates a NAT gateway in a public subnet |
+| `aws ec2 create-route --route-table-id R --destination-cidr-block 0.0.0.0/0 --nat-gateway-id N` | sends a private table's default route to it |
+| `aws ec2 describe-nat-gateways` | lists the gateways and their state |
+
+---
+
 Lesson 7 of Foundations left the private subnets with no route out at all.
 That keeps them unreachable from the internet, which is the point, but
 instances there often need to reach **out**: to download software updates,

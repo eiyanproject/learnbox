@@ -5,6 +5,28 @@ order: 5
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **practice bank** | a collection of practice questions |
+| **open bank** | one published under a licence that allows reuse |
+| **MIT licence** | a permissive licence: reuse is allowed if the copyright notice is kept |
+| **unofficial** | not from AWS or the real exam |
+| **mock exam** | a timed set drawn at random, like the real exam: here 65 of the 325 |
+| **domain-weighted** | drawn in the proportions of the exam's four domains |
+| **key rule** | the one-line lesson appended to each explanation |
+| **commit** | the exact version of the source repository the questions came from |
+| **SAA-C03** | the Solutions Architect - Associate exam |
+
+---
+
 These questions come from **aws-saa-tips** by **Berkay Cakibey**
 (github.com/BerkayCakibey/aws-saa-tips, commit 0c2d2e8), published under the
 MIT licence. Its author describes them as original, unofficial practice

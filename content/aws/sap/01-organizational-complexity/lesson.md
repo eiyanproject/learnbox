@@ -5,6 +5,46 @@ order: 1
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **SAP-C02** | the AWS Certified Solutions Architect - Professional exam |
+| **constraint** | a requirement in the story: cost, overhead, time, compliance, minimal change |
+| **Transit Gateway** | a Regional hub for VPCs, VPNs and Direct Connect |
+| **mesh** | every network connected to every other directly |
+| **route tables per attachment** | how a Transit Gateway segments traffic |
+| **inter-Region peering** | connects Transit Gateways in different Regions |
+| **Direct Connect gateway** | one Direct Connect connection reaching VPCs in many Regions |
+| **VIF** | virtual interface: **transit VIF** to Transit Gateways, **private VIF** to virtual private gateways |
+| **virtual private gateway** | a VPC's VPN and Direct Connect endpoint |
+| **hybrid DNS** | Resolver inbound and outbound endpoints with forwarding rules |
+| **AWS RAM** | shares resources, such as Resolver rules and subnets, with other accounts |
+| **PrivateLink endpoint service** | one service exposed to many VPCs behind an NLB, even with overlapping CIDRs |
+| **VPC sharing** | many accounts launching into subnets owned by a central network account |
+| **SCP** | maximum permissions for accounts below; never grants |
+| **tag policy**, **backup policy** | consistent tags / AWS Backup plans across accounts |
+| **delegated administrator** | an account running a service, such as GuardDuty, for the whole organization |
+| **Control Tower controls** | preventive (SCPs), detective (Config rules), proactive (CloudFormation hooks, before creation) |
+| **Account Factory** | creates standard new accounts |
+| **IAM Identity Center** | staff access to every account by group |
+| **identity provider (IdP)** | the corporate system people sign in with |
+| **SAML** / **SCIM** | standards for sign-in / for syncing users and groups |
+| **log archive account** | receives the organization trail and Config history |
+| **security tooling account** | delegated administrator for security services |
+| **Config aggregator** | collects compliance from many accounts |
+| **Elastic Disaster Recovery** | continuous block-level server replication, with failback |
+| **failback** | returning to the original site after recovery |
+| **Budgets actions** | apply an SCP or IAM policy when spending passes a limit |
+
+---
+
 This page reviews the first domain of the **AWS Certified Solutions
 Architect - Professional** exam (SAP-C02), followed by practice questions.
 The Professional exam assumes everything from the Associate one (the SAA

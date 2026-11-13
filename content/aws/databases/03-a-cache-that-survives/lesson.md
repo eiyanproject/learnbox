@@ -10,6 +10,55 @@ hints:
   - "Redis listens on 6379. The cache's security group allows 6379 from the app's group only."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **cache** | keeps answers in memory so the database answers each question once |
+| **in-memory** | held in RAM: sub-millisecond reads |
+| **ElastiCache** | runs Valkey, Redis OSS or Memcached for you |
+| **Valkey** / **Redis OSS** | the same kind of in-memory store; Valkey is the open-source continuation AWS recommends |
+| **Memcached** | the simplest cache: strings only, no replication |
+| **lazy loading (cache-aside)** | ask the cache; on a miss, ask the database and store the answer with a TTL |
+| **hit** / **miss** | the answer is in the cache / is not |
+| **TTL** | how long a cached answer lives before it expires |
+| **stale** | out of date |
+| **write-through** | every database write also writes the cache |
+| **session state** | who is logged in and what is in their basket |
+| **replication group** | one primary node plus up to five replicas |
+| **node** | one cache server |
+| **primary** / **replica** | takes writes / copies it and can serve reads |
+| **Multi-AZ** with **automatic failover** | a replica in another AZ is promoted when the primary fails |
+| **promote** | make a replica the new primary |
+| **primary endpoint** | the DNS name the app connects to; it follows the primary |
+| **asynchronous replication** | a failover can lose the last moments of writes |
+| **persistence** | keeping data on disk, so it survives a restart; Redis has it, Memcached not |
+| **sorted set**, **hash**, **stream** | Redis data types |
+| **multithreaded** | uses several CPU cores at once |
+| **encryption at rest** / **in transit** | on disks and backups / TLS to the client; both chosen at creation |
+| **cache subnet group** | the subnets the nodes may be placed in |
+| **node type** | the node's size, such as `cache.t3.micro` |
+| **port 6379** | Redis's port |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws elasticache create-cache-subnet-group --cache-subnet-group-name N --cache-subnet-group-description D --subnet-ids A B` | creates a cache subnet group |
+| `aws elasticache create-replication-group --replication-group-id N --replication-group-description D --engine redis --cache-node-type cache.t3.micro --num-cache-clusters 2` | creates a primary and one replica |
+| `--automatic-failover-enabled --multi-az-enabled` | failover across AZs |
+| `--at-rest-encryption-enabled --transit-encryption-enabled` | encryption on disk and on the wire |
+| `--cache-subnet-group-name N --security-group-ids G` | placement and firewall |
+| `aws elasticache describe-replication-groups --replication-group-id N` | shows status and the primary endpoint |
+
+---
+
 The product page of a shop asks the database the same questions thousands
 of times a minute: this product's price, its reviews, the categories menu.
 Each answer is identical for everyone, and each one costs the database work.

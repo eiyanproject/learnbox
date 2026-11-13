@@ -11,6 +11,87 @@ hints:
   - "Tags go on with `aws s3api put-bucket-tagging --bucket NAME --tagging 'TagSet=[{Key=project,Value=learnbox}]'`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **AWS** | Amazon Web Services: servers, storage, databases and networks rented by the hour or by the request |
+| **API call** | a request to one of AWS's web services, such as "create a bucket" |
+| **console** | the AWS website; it makes API calls for you when you click |
+| **AWS CLI** | the `aws` command: makes the same API calls from a terminal |
+| **SDK** | a library that lets a program (Python, Java, JavaScript...) make the calls |
+| **moto** | an emulator of the AWS APIs running inside this box; nothing reaches real AWS |
+| **sandbox account** | the emulated, in-memory account each Run starts from empty |
+| **STS** | Security Token Service; answers "who am I?" |
+| **account** | a 12-digit number that owns resources and gets the bill |
+| **ARN** | Amazon Resource Name: `arn:partition:service:region:account-id:resource` |
+| **partition** | the first part of an ARN: `aws` for normal Regions, `aws-cn` for China |
+| **global** | not tied to one Region, such as identities (the ARN's Region part is empty) |
+| **service** | the part of AWS to call: `s3api`, `ec2`, `iam` |
+| **operation** | the API call itself: `create-bucket`, `describe-regions` |
+| **option** | a parameter of the call, written `--name value` |
+| **JMESPath** | the query language `--query` uses to pick fields out of a JSON answer |
+| **JSON** | the text format AWS answers in: `{ "key": "value" }` and `[ lists ]` |
+| **Region** | a separate geographic area, such as `us-east-1` or `ap-northeast-1` (Tokyo), with its own copy of most services |
+| **Regional** | existing in one Region only; invisible from the others |
+| **Availability Zone (AZ)** | a separate data centre (or group) inside a Region, with its own power and network |
+| **AZ ID** | a zone's fixed name, such as `apne1-az4`, the same in every account; the letters in AZ names are shuffled per account |
+| **S3** | Simple Storage Service: stores files in buckets |
+| **object** | a file stored in S3 |
+| **bucket** | a container of objects; its name is unique worldwide, and it lives in one Region |
+| **endpoint** | the web address a call is sent to; `--region` picks it |
+| **location constraint** | the Region a new bucket goes in, given in the request body; us-east-1 reports `null` |
+| **tag** | a key-value label on a resource, such as `project=learnbox` |
+| **TagSet** | the whole list of a bucket's tags, set all at once |
+| **shorthand** | the CLI's compact way of writing JSON: `'TagSet=[{Key=k,Value=v}]'` |
+| **error code** | the name in brackets in an error, such as `IllegalLocationConstraintException`; what to search for |
+| **exit status** | the number a command ends with: 0 for success; the CLI uses 255 for an error |
+| **shell script** | a file of commands run one after another; here `setup.sh` |
+| **credentials** | the keys that prove who is calling; the sandbox supplies fake ones |
+| **single sign-on (SSO)** | one sign-in that gives access to several accounts |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws <service> <operation> --option value` | the shape of every AWS CLI command |
+| `aws sts get-caller-identity` | shows the account, user ID and ARN you are calling as |
+| `aws s3api list-buckets` | lists your buckets |
+| `aws ec2 describe-regions` | lists the Regions |
+| `aws ec2 describe-availability-zones --region R` | lists a Region's AZs |
+| `aws s3api create-bucket --bucket NAME` | creates a bucket in the default Region |
+| `--create-bucket-configuration LocationConstraint=R` | says which Region the bucket goes in, needed outside us-east-1 |
+| `aws s3api put-bucket-tagging --bucket NAME --tagging 'TagSet=[...]'` | sets the bucket's tags; prints nothing on success |
+| `aws s3api get-bucket-tagging --bucket NAME` | shows the bucket's tags |
+| `aws s3api get-bucket-location --bucket NAME` | shows the bucket's Region |
+| `aws s3 mb`, `cp`, `sync`, `ls` | the high-level S3 commands for moving files |
+| `--region R` | which Region to call |
+| `--output json\|table\|text` | how to print the answer |
+| `--query 'Buckets[].Name'` | picks fields out of the answer |
+| `ID=$(aws ... --query X --output text)` | saves one value in a shell variable |
+| `aws help`, `aws s3api help`, `aws s3api create-bucket help` | the manual at each level |
+| `aws configure`, `aws configure sso` | sets up credentials on a real CLI |
+| `awslab reset` | empties the sandbox account |
+| `\` at the end of a line | continues the command on the next line |
+| `#!/usr/bin/env bash` | first line of a script: run it with bash |
+| `set -euo pipefail` | stop at the first failure (`-e`), on unset variables (`-u`), and on a failure inside a pipeline |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `An error occurred (CODE) when calling the OPERATION operation: message` | the shape of every CLI error |
+| `IllegalLocationConstraintException` | a bucket outside us-east-1 created without `--create-bucket-configuration` |
+| `setup.sh exited 255` | a command in the script failed and `set -e` stopped it |
+
+---
+
 **AWS** (Amazon Web Services) rents out computing as a service: servers,
 storage, databases, networks, by the hour or by the request. Everything in
 it is an **API call**: a request to one of its web services, such as "create

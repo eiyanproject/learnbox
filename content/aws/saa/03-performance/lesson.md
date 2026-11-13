@@ -5,6 +5,56 @@ order: 3
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **high-performing** | fast enough, and still fast as load grows |
+| **block storage** | a disk for one instance: EBS |
+| **gp3**, **io2 / io2 Block Express** | general-purpose SSD / high, consistent IOPS |
+| **IOPS**, **throughput** | operations per second / data per second |
+| **instance store** | fast local disk, lost when the instance stops |
+| **EFS**, **FSx for Lustre**, **FSx for Windows**, **FSx for NetApp ONTAP**, **OpenZFS** | shared file systems for different needs |
+| **HPC** | high-performance computing |
+| **multipart upload** | uploading a big object in parts, in parallel |
+| **Transfer Acceleration** | faster S3 uploads from far away, through edge locations |
+| **prefix** (S3 scaling) | about 3,500 writes and 5,500 reads per second each |
+| **instance families** | M general, C compute, R/X memory, I/D storage, P/G/Inf/Trn accelerators |
+| **burstable** | T types, which use CPU credits |
+| **Graviton** | AWS's Arm processor (`g` in the name) |
+| **target tracking**, **step**, **scheduled**, **predictive** | Auto Scaling policy types |
+| **warm pool** | instances kept ready for fast scale-out |
+| **placement group** | cluster (close, one AZ), spread (separate hardware), partition (separate racks) |
+| **Lambda memory** | also sets CPU; 15-minute limit; provisioned concurrency removes cold starts |
+| **AWS Batch**, **EMR** | batch jobs / Spark and Hadoop |
+| **DAX** | microsecond DynamoDB reads |
+| **Aurora Serverless v2** | Aurora capacity that scales with load |
+| **Provisioned IOPS** | RDS storage with consistent I/O |
+| **purpose-built databases** | Neptune (graph), Timestream (time series), OpenSearch (search), Redshift (warehouse), DocumentDB (MongoDB), Keyspaces (Cassandra) |
+| **data warehouse** | a database for analytics over large data |
+| **CloudFront** / **Global Accelerator** | caches at the edge / two static anycast IPs, any TCP or UDP, no caching |
+| **ALB**, **NLB**, **GWLB** | layer 7 / layer 4 / layer 3 load balancers |
+| **PrivateLink** | private access to a service in another VPC |
+| **Kinesis Data Streams** | real-time streams with many consumers and replay |
+| **Amazon Data Firehose** | delivers a stream to S3, Redshift or OpenSearch with no code |
+| **Managed Service for Apache Flink** | processes streams |
+| **Glue** / **Data Catalog** | serverless ETL / table definitions |
+| **ETL** | extract, transform, load |
+| **Athena** | SQL on S3; faster on columnar formats with partitions |
+| **columnar format** | Parquet, ORC: data stored by column, so queries read less |
+| **partition** (data) | a folder of data by key, such as date, so queries skip the rest |
+| **Lake Formation** | manages data lake permissions |
+| **DataSync**, **Storage Gateway**, **Snowball Edge**, **Transfer Family** | online copies / on-premises apps using cloud storage / shipped device / SFTP and FTP endpoints |
+| **sharding** | splitting data across several databases |
+
+---
+
 **High-performing** means fast enough, and still fast as load grows. Most
 questions in this domain describe a workload (lots of small reads, huge
 sequential files, users on several continents, a stream of events) and ask

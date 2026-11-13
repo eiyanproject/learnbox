@@ -11,6 +11,62 @@ hints:
   - "The evening action sets `--min-size 2 --desired-capacity 2` at `0 19 * * 1-5`, so target tracking can scale back in."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **Auto Scaling group** | keeps instances running from a launch template, replacing and adding them as needed |
+| **self-healing** | a failed instance is replaced automatically |
+| **elastic** | the number of instances follows the load |
+| **min** / **desired** / **max** | never fewer / how many now / the ceiling |
+| **desired capacity** | the number the group aims at; policies move it |
+| **AZ rebalancing** | spreading instances evenly over AZs; may briefly exceed max |
+| **EC2 health check** | only asks whether the instance is running |
+| **ELB health check** | also uses the target group's check, so a crashed web server is replaced |
+| **grace period** | seconds a new instance gets before health checks count |
+| **scaling policy** | the rule that changes desired capacity |
+| **target tracking** | keeps a metric at a value, such as average CPU at 50% |
+| **step scaling** | adds or removes set amounts as an alarm crosses thresholds |
+| **scheduled action** | sets min, max or desired at chosen times |
+| **predictive scaling** | forecasts daily and weekly patterns and scales ahead |
+| **scale out** / **scale in** | add / remove instances |
+| **scale up** | use a bigger instance type instead |
+| **metric** | a measured number over time, such as CPU |
+| **`ASGAverageCPUUtilization`** | the average CPU of the group's instances |
+| **`RequestCountPerTarget`** | requests per target, from the load balancer |
+| **cron expression** | five fields (minute hour day month weekday), always UTC: `45 7 * * 1-5` |
+| **UTC** | Coordinated Universal Time |
+| **cooldown** / **warm-up** | time for new instances to start and metrics to settle before the next decision |
+| **unbound variable** | `set -u` stopping on `$Default`, which the shell read as a variable |
+| **single quotes** | pass text to a command untouched: `'Version=$Default'` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws autoscaling create-auto-scaling-group --auto-scaling-group-name N --launch-template 'LaunchTemplateName=web,Version=$Default' --vpc-zone-identifier "A,B" --min-size 2 --max-size 6 --desired-capacity 2` | creates the group |
+| `--target-group-arns T` | registers its instances with the target group |
+| `--health-check-type ELB --health-check-grace-period 300` | ELB health checks with a grace period |
+| `aws autoscaling put-scaling-policy --policy-type TargetTrackingScaling --target-tracking-configuration file://...` | adds a target tracking policy |
+| `aws autoscaling put-scheduled-update-group-action --scheduled-action-name N --recurrence '45 7 * * 1-5' --min-size 4 --desired-capacity 4` | adds a scheduled action |
+| `aws autoscaling describe-scheduled-actions --auto-scaling-group-name N` | lists them |
+| `aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names N` | shows the group and its instances |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `Default: unbound variable` | `$Default` in double quotes or unquoted, with `set -u` |
+| `Invalid length for parameter LaunchTemplate.Version, value: 0` | the same mistake without `set -u`: the CLI got `Version=` |
+
+---
+
 The last two lessons gave the web tier a recipe (the launch template) and a
 front door (the load balancer). What is missing is the servers themselves,
 and someone to look after them: replace a server that dies at 3 a.m., add

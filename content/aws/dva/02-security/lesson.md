@@ -5,6 +5,52 @@ order: 2
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **authentication** / **authorization** | who is calling / what they may do |
+| **Cognito user pool** | a user directory for your app: sign-up, sign-in, MFA, social and SAML logins |
+| **SAML** | a standard for signing in through a company's identity provider |
+| **JWT** | JSON Web Token: a signed token |
+| **ID token** / **access token** | describes the user / authorizes API calls |
+| **Cognito authorizer**, **JWT authorizer** | API Gateway checks of those tokens, with no code |
+| **Cognito identity pool** | exchanges a sign-in for temporary AWS credentials |
+| **guest** | an unauthenticated identity-pool user |
+| **Lambda authorizer** | your own code validating a token and returning an IAM policy |
+| **OAuth** | a standard for delegated access tokens |
+| **IAM authorization** | callers sign requests with SigV4 |
+| **SigV4** | AWS's request signing |
+| **default credential provider chain** | where the SDK looks: code, environment variables, config files, container or instance role; first found wins |
+| **`AssumeRole`** | STS call returning another role's temporary credentials |
+| **policy variable** | `${aws:username}`: filled in with the caller at evaluation time |
+| **`dynamodb:LeadingKeys`** | limits a caller to items whose partition key is their ID |
+| **tenant** | one customer sharing a system with others |
+| **Lambda resource-based policy** | allows S3, SNS or API Gateway to invoke the function (`add-permission`) |
+| **envelope encryption** | encrypt locally with a data key from `GenerateDataKey`; store the encrypted key |
+| **AWS Encryption SDK** | a library doing envelope encryption for you |
+| **encryption context** | pairs bound to the ciphertext; decrypt needs the same |
+| **client-side** / **server-side encryption** | before it reaches AWS / AWS encrypts at rest |
+| **AWS Private CA** | issues internal certificates |
+| **KMS throttling** | too many KMS calls; S3 Bucket Keys or data key caching help |
+| **secret caching** | keeping a secret in the function instead of fetching it every call |
+| **encryption helpers** | encrypt Lambda environment variables client-side |
+| **data protection policy** | CloudWatch Logs detecting and masking sensitive data |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `ThrottlingException` (KMS) | too many KMS requests, such as SSE-KMS on a busy bucket |
+
+---
+
 Security for a developer is three questions about every call: **who** is
 calling (authentication), **what** may they do (authorization), and how are
 the data and the secrets protected along the way. The exam asks them in

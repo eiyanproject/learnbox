@@ -5,6 +5,63 @@ order: 1
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **DVA-C02** | the AWS Certified Developer - Associate exam |
+| **qualifier** | the phrase that picks one answer: "MOST efficient", "LEAST code changes" |
+| **Lambda layer** | shared libraries or runtimes, up to 5 per function |
+| **Lambda extension** | a companion process, such as for monitoring or secrets caching |
+| **ephemeral storage** | `/tmp`: 512 MB to 10 GB; never rely on it surviving |
+| **synchronous invocation** | the caller waits and gets the error |
+| **asynchronous invocation** | Lambda queues the event and retries twice |
+| **on-failure destination** | receives a failed async event with the error |
+| **destination** | where Lambda sends the event and its result or error |
+| **DLQ** | receives only the failed event |
+| **event source mapping** | Lambda polls SQS, Kinesis or DynamoDB Streams and invokes with batches |
+| **bisect a batch** | split a failing stream batch to find the bad record |
+| **execution environment** | the container a function runs in; code outside the handler runs once per environment |
+| **long polling** | `WaitTimeSeconds` up to 20: wait for messages instead of returning empty |
+| **idempotent** | processing twice gives the same result |
+| **deduplication ID** | FIFO drops repeats with the same ID within 5 minutes |
+| **Kinesis Data Streams** | ordered per partition key within a shard; replay for 24 h to a year |
+| **shard** | one ordered piece of a Kinesis stream |
+| **Standard** / **Express** workflow | Step Functions: up to a year, exactly once / up to 5 minutes, at least once |
+| **REST API** / **HTTP API** | API Gateway types: more features / simpler and cheaper |
+| **request validation** | rejects bad input against a model before your code runs |
+| **Lambda proxy integration** | the function returns `statusCode`, `headers` and a string `body`, or the client gets 502 |
+| **502** | bad gateway: the backend's answer was malformed |
+| **exponential backoff and jitter** | retry waits that grow, with randomness; SDKs do it for you |
+| **transient error** | a failure that may succeed on retry |
+| **paginator** | an SDK helper that follows `NextToken` through pages |
+| **presigned URL** | temporary access to one S3 object for someone without credentials |
+| **cardinality** | how many distinct values a key has |
+| **hot partition** | a partition most requests hit; it throttles |
+| **`Query`** / **`Scan`** | read by key, cheap / read everything, pay for everything |
+| **eventually** / **strongly consistent** | may miss a recent write / always latest, twice the cost, not on GSIs |
+| **`ConsistentRead=true`** | asks for a strongly consistent read |
+| **RCU** / **WCU** | one strong 4 KB read (or two eventual) / one 1 KB write per second; sizes round up |
+| **conditional write** | write only if a condition holds, such as `version` unchanged |
+| **optimistic locking** | detecting conflicting updates with a version attribute |
+| **`TransactWriteItems`** | several writes all or nothing |
+| **DynamoDB Streams**, **TTL**, **DAX** | change stream / free expiry / read cache |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `ConditionalCheckFailedException` | a conditional write's condition was false |
+| `502` from API Gateway | the Lambda proxy response is in the wrong shape |
+
+---
+
 This page reviews the first domain of the **AWS Certified Developer -
 Associate** exam (DVA-C02), followed by practice questions. Where the
 Solutions Architect exam asks "which service?", this one asks "how does it

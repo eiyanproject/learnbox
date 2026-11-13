@@ -5,6 +5,41 @@ order: 2
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **reliability** | still serving when parts fail or load grows |
+| **business continuity** | getting the system and data back after something bigger |
+| **warm pool** | pre-initialized instances kept ready for fast scale-out |
+| **lifecycle hook** | pauses an instance while launching or terminating, to run setup or copy logs |
+| **instance refresh** | replaces instances gradually with a new launch template version |
+| **replica auto scaling** | Aurora adding and removing replicas with load |
+| **cluster mode** | ElastiCache spreading writes across shards |
+| **origin failover** | CloudFront switching from a primary to a secondary origin |
+| **ELB target health check** | decides where the load balancer sends traffic |
+| **ELB health check type** | makes Auto Scaling replace instances whose application fails |
+| **EC2 status checks** | the default Auto Scaling health check: only whether the instance runs |
+| **Route 53 health checkers** | on the internet; the security group must allow them |
+| **DNS endpoint** | RDS's name, moved to the standby on failover; never cache its IP |
+| **AWS Backup** | backup plans, vaults, recovery points, cross-Region and cross-account copies |
+| **backup plan** | schedule, retention and cold-storage lifecycle, assigned by tag |
+| **vault** / **recovery point** | holds backups / one backup |
+| **Vault Lock** | makes backups immutable, even for root |
+| **Data Lifecycle Manager** | automates EBS snapshots and AMIs by tag |
+| **point-in-time restore** | always to a new instance or table, with a new endpoint |
+| **delete marker** | hides a "deleted" versioned object; delete it to restore |
+| **RTO**, **RPO** | how long you can be down / how much data you can lose |
+| **backup and restore**, **pilot light**, **warm standby**, **multi-site active/active** | the DR strategies |
+
+---
+
 **Reliability** is the system still serving when parts fail or load
 grows; **business continuity** is getting it and its data back after
 something bigger goes wrong. Operational questions here are practical: why

@@ -11,6 +11,65 @@ hints:
   - "The redirect: `--protocol HTTP --port 80 --default-actions 'Type=redirect,RedirectConfig={Protocol=HTTPS,Port=443,StatusCode=HTTP_301}'`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **single point of failure** | one part whose failure takes everything down |
+| **load balancer** | spreads requests over several servers and skips broken ones |
+| **Application Load Balancer (ALB)** | understands HTTP and HTTPS; can route by host or path |
+| **target** | where traffic is sent: an instance, an IP address or a Lambda function |
+| **target group** | a set of targets, with a protocol, port and health check |
+| **health check** | a request (here `GET /health`) to each target every few seconds |
+| **healthy** / **unhealthy** | answering with the expected code / taken out of rotation |
+| **status code** | the number an HTTP answer starts with: `200` OK, `301` moved permanently |
+| **listener** | a port and protocol the load balancer accepts, with a default action and rules |
+| **default action** | forward, redirect or fixed response |
+| **internet-facing** / **internal** | public DNS name / reachable only inside the VPC |
+| **DNS name** | how users reach the ALB; its IP addresses change |
+| **chained security groups** | `web` allows traffic only from the `alb` group, so nothing goes around the ALB |
+| **certificate** | proves a server really is `www.example.com`, signed by a trusted authority |
+| **ACM** | AWS Certificate Manager: free certificates for AWS load balancers, renewed automatically |
+| **DNS validation** | proving you control a domain by adding a DNS record |
+| **`PENDING_VALIDATION`** | a certificate not yet validated |
+| **wildcard certificate** | `*.example.com`: exactly one label, not `example.com` itself |
+| **terminate TLS** | decrypt at the load balancer and forward to the targets |
+| **redirect** | tell the browser to go elsewhere, such as `http://` to `https://` |
+| **Network Load Balancer (NLB)** | layer 4: TCP and UDP, very fast, static IPs |
+| **Gateway Load Balancer (GWLB)** | layer 3: sends traffic through firewalls and inspection appliances |
+| **layer 7 / 4 / 3** | the application's protocol / connections and ports / IP addresses |
+| **gRPC** | a protocol for calls between services, over HTTP/2 |
+| **AWS WAF** | a web application firewall in front of an ALB |
+| **`X-Forwarded-For`** | the header carrying the client's real address |
+| **sticky sessions** | each client sent to the same target, by cookie |
+| **cross-zone load balancing** | spreading over targets in all AZs; on by default for ALBs |
+| **deregistration delay** | time for requests in progress to finish when a target is removed (300 s) |
+| **SNI** | Server Name Indication: one listener, several certificates |
+| **static IP** | an address that never changes; partners can allow-list it |
+| **alias record** | a Route 53 record pointing a name at an AWS resource such as an ALB |
+| **Classic Load Balancer** | the legacy kind |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws elbv2 create-target-group --name N --protocol HTTP --port 80 --vpc-id V --target-type instance --health-check-path /health --matcher HttpCode=200` | creates a target group |
+| `aws elbv2 create-load-balancer --name N --subnets A B --security-groups G --scheme internet-facing` | creates the ALB |
+| `aws acm request-certificate --domain-name D --validation-method DNS` | asks ACM for a certificate |
+| `aws elbv2 create-listener --load-balancer-arn L --protocol HTTPS --port 443 --certificates CertificateArn=C --default-actions Type=forward,TargetGroupArn=T` | the HTTPS listener |
+| `--default-actions 'Type=redirect,RedirectConfig={Protocol=HTTPS,Port=443,StatusCode=HTTP_301}'` | the HTTP-to-HTTPS redirect |
+| `aws elbv2 describe-load-balancers --names N` | shows the ALB, its DNS name and state |
+| `aws elbv2 describe-listeners --load-balancer-arn L` | lists its listeners |
+| `--query 'LoadBalancers[0].LoadBalancerArn'` | the first item's ARN; create calls return a list |
+
+---
+
 One web server is a single point of failure: when it crashes, or its AZ
 fails, the site is down, and it can only take so much traffic. The fix is
 several servers, in more than one AZ, with something in front that spreads

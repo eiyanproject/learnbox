@@ -11,6 +11,61 @@ hints:
   - "A record: `aws route53 change-resource-record-sets --hosted-zone-id \"$ZONE\" --change-batch '{\"Changes\":[{\"Action\":\"UPSERT\",\"ResourceRecordSet\":{\"Name\":\"db.internal.example\",\"Type\":\"A\",\"TTL\":60,\"ResourceRecords\":[{\"Value\":\"10.1.11.10\"}]}}]}'`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **isolated by default** | nothing in one VPC can reach another until they are connected |
+| **peering connection** | joins two VPCs so they talk over private addresses, without the internet |
+| **request** / **accept** | one side asks, the other VPC's owner accepts; until then `pending-acceptance` |
+| **`active`** | the peering status once accepted |
+| **overlapping ranges** | VPCs sharing addresses; they cannot peer |
+| **transitive** | passing through: peering is not, so A-B and B-C does not connect A to C |
+| **Transit Gateway** | a hub routing between many VPCs and networks |
+| **return route** | the route for replies; needed on both sides |
+| **edge-to-edge routing** | using a peer's internet gateway, NAT, VPN or endpoints; not allowed |
+| **DNS** | the Domain Name System: programs ask for a name, it answers with the address |
+| **Route 53** | AWS's DNS service |
+| **hosted zone** | the DNS records for one domain |
+| **private hosted zone** | records only the associated VPCs can look up |
+| **associate** (a VPC) | let a VPC use a private hosted zone |
+| **record** | a name, a type and a value |
+| **A record** | maps a name to an IPv4 address |
+| **TTL** | time to live: how many seconds a client may remember an answer |
+| **change batch** | JSON listing record changes, each with an `Action` |
+| **`UPSERT`** | create the record, or replace it if it exists |
+| **caller reference** | a unique string per request, so a retry does not create two zones |
+| **`enableDnsSupport`** / **`enableDnsHostnames`** | the VPC's resolver answers / instances get DNS names; the second is off for CLI-made VPCs |
+| **Route 53 Resolver** | the VPC's DNS server, at its base address plus two |
+| **Resolver inbound endpoint** | lets on-premises servers query it |
+| **Site-to-Site VPN** | an encrypted link to an office over the internet, two tunnels |
+| **Direct Connect** | a private line to AWS; not encrypted by default |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws ec2 create-vpc-peering-connection --vpc-id A --peer-vpc-id B` | requests peering |
+| `aws ec2 accept-vpc-peering-connection --vpc-peering-connection-id P` | accepts it |
+| `aws ec2 create-route --route-table-id R --destination-cidr-block C --vpc-peering-connection-id P` | routes the other VPC's range through it |
+| `aws ec2 describe-vpc-peering-connections` | shows peering status |
+| `aws ec2 modify-vpc-attribute --vpc-id V --enable-dns-hostnames '{"Value":true}'` | turns on DNS hostnames |
+| `aws ec2 describe-vpc-attribute --vpc-id V --attribute enableDnsHostnames` | shows it |
+| `aws route53 create-hosted-zone --name N --caller-reference R --vpc VPCRegion=...,VPCId=... --hosted-zone-config PrivateZone=true` | creates a private zone |
+| `aws route53 associate-vpc-with-hosted-zone --hosted-zone-id Z --vpc ...` | adds another VPC |
+| `aws route53 change-resource-record-sets --hosted-zone-id Z --change-batch file://...` | creates or changes records |
+| `aws route53 list-resource-record-sets --hosted-zone-id Z` | lists the records |
+| `$(date +%s)` | the current time in seconds |
+| `dig NAME` | looks a name up (on a real instance) |
+
+---
+
 Companies rarely have just one VPC. The data team's databases sit in their
 own VPC, a partner runs another, each environment (development, production)
 has its own. A VPC is isolated by default: nothing in one can reach the

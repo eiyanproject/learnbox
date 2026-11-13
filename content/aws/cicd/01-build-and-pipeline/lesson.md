@@ -12,6 +12,65 @@ hints:
   - "Turn on S3 events to EventBridge with `aws s3api put-bucket-notification-configuration --bucket lb-pipeline-artifacts --notification-configuration '{\"EventBridgeConfiguration\": {}}'`, then `aws events put-rule` with the pattern and `aws events put-targets --rule orders-api-source --targets Id=pipeline,Arn=$PIPELINE_ARN,RoleArn=$EVENTS_ROLE`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **CI/CD** | continuous integration and delivery: every change goes through the same automated build, test, approve, deploy |
+| **pipeline** | the automated steps a change goes through |
+| **CodePipeline** | runs the stages in order and passes artifacts between them |
+| **CodeBuild** | runs build and test commands in a fresh container |
+| **CodeDeploy** | rolls new versions out gradually (next lesson) |
+| **stage** | one step of a pipeline, holding one or more actions |
+| **action** | one job in a stage: category, provider and configuration |
+| **provider** | what runs the action: `S3`, `CodeBuild`, `Manual`, `CloudFormation` |
+| **artifact** | a zip file a stage produces, referred to by name |
+| **artifact bucket** / **artifact store** | where artifacts live, encrypted with a customer managed key |
+| **`inputArtifacts`** / **`outputArtifacts`** | what an action reads / writes |
+| **buildspec** | `buildspec.yml`: the build's instructions, versioned with the code |
+| **phases** | `install`, `pre_build`, `build`, `post_build`, run in order |
+| **runtime versions** | the language versions to install, such as Python 3.12 |
+| **masked** | hidden in the build log |
+| **report group** | keeps each run's test passes and failures, by name |
+| **JUnit XML** | a standard file format for test results |
+| **pytest** | a Python test runner |
+| **`CODEBUILD_RESOLVED_SOURCE_VERSION`** | the commit or object version being built |
+| **CodeBuild project** | how to run builds: image, compute type, timeout, role |
+| **build image** | the container a build runs in, such as `aws/codebuild/standard:7.0` |
+| **privileged mode** | needed to build Docker images |
+| **compute type** | build machine size, such as `BUILD_GENERAL1_SMALL` |
+| **service role** | the role builds or the pipeline run as |
+| **manual approval** | pauses until a person approves or rejects; fails after 7 days |
+| **`ActionMode: CREATE_UPDATE`** | create the stack, or update it |
+| **`TemplatePath`** | `ARTIFACT::FILE`, such as `BuildOutput::template.yaml` |
+| **`iam:PassRole`** | permission to hand a role to a service |
+| **CodeConnections** | connects Git sources such as GitHub |
+| **polling** vs **events** | checking for changes repeatedly / being told about them (recommended) |
+| **`PollForSourceChanges`** | `"false"` so an event-started pipeline does not run twice |
+| **V1** / **V2 pipeline** | the older type / the current one, billed per action minute |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws codebuild create-project --name N --source type=S3,location=B/KEY --artifacts type=NO_ARTIFACTS --environment type=LINUX_CONTAINER,image=...,computeType=BUILD_GENERAL1_SMALL --service-role R --timeout-in-minutes 20` | creates a build project |
+| `aws codepipeline create-pipeline --pipeline file://...` | creates the pipeline |
+| `aws codepipeline get-pipeline --name N` | shows its stages |
+| `aws s3api put-bucket-notification-configuration --bucket B --notification-configuration '{"EventBridgeConfiguration": {}}'` | sends bucket events to EventBridge |
+| `aws events put-rule --name N --event-pattern file://...` | a rule matching `Object Created` |
+| `aws events put-targets --rule N --targets Id=...,Arn=PIPELINE_ARN,RoleArn=R` | starts the pipeline |
+| `zip -j bundle.zip FILES` / Python's `zipfile` | makes a zip with files at the top level |
+| `python -m pytest --junitxml=reports/junit.xml` | runs the tests and writes JUnit XML |
+| `codepipeline:StartPipelineExecution`, `codepipeline:PutApprovalResult` | start a run; approve or reject |
+
+---
+
 Up to now, every change was made by running a script by hand. That works
 for one person, once. With a team, someone forgets to run the tests, builds
 from a laptop with different library versions, or deploys the wrong branch.

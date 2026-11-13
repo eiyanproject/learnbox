@@ -11,6 +11,59 @@ hints:
   - "A new version: `aws ec2 create-launch-template-version --launch-template-name web --source-version 1 --launch-template-data '{\"InstanceType\":\"t3.small\"}'`, then `aws ec2 modify-launch-template --launch-template-name web --default-version 2`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **launch template** | an instance's settings written down once, under a name |
+| **launch template data** | the template's JSON: `ImageId`, `InstanceType`, `UserData` and the rest |
+| **Auto Scaling group** | keeps a number of instances running from a template (lesson 3) |
+| **Spot Fleet** | launches spare-capacity instances cheaply |
+| **version** | each change to a template makes a new numbered version; old ones stay |
+| **default version** | the one `$Default` means; version 1 until you move it |
+| **`$Latest`** / **`$Default`** | the newest version / the chosen default |
+| **source version** | the version a new one starts from; only what you name changes |
+| **user data** | a script an instance runs as root on its first boot |
+| **cloud-init** | the program on the AMI that sets an instance up and runs user data |
+| **package manager** | installs software: `dnf` on Amazon Linux 2023 |
+| **nginx** | a web server |
+| **systemd** / **service** | the system that starts programs at boot / a program it manages |
+| **base64** | a way of writing any bytes as plain letters and digits, so they fit in JSON |
+| **secrets** | passwords and keys; never in user data, which anyone who can describe the instance can read |
+| **EBS volume** | a network disk that lives separately from the instance |
+| **root volume** | the disk it boots from |
+| **block device mapping** | which disks the instance gets, under which device names (`/dev/xvda`) |
+| **gp3** / **gp2** | the current / older general-purpose SSD types |
+| **IOPS**, **throughput** | operations per second, and data per second, a disk can handle |
+| **EBS encryption by default** | a Region setting so no unencrypted volume is ever created |
+| **`DeleteOnTermination`** | removes the volume with the instance; otherwise it is an orphan you pay for |
+| **hop limit** | `HttpPutResponseHopLimit`: how far the IMDS token may travel; 1 keeps containers out |
+| **container** | an isolated program running on a host, one network hop further away |
+| **launch configuration** | the deprecated, unversioned predecessor of launch templates |
+| **instance store** | fast disks physically attached to the host; data lost when the instance stops |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws ec2 create-launch-template --launch-template-name N --launch-template-data file://...` | creates a template |
+| `aws ec2 create-launch-template-version --launch-template-name N --source-version 1 --launch-template-data '{...}'` | adds a version |
+| `aws ec2 modify-launch-template --launch-template-name N --default-version 2` | moves the default |
+| `aws ec2 describe-launch-template-versions --launch-template-name N [--versions 1]` | shows versions |
+| `base64 -w0 FILE` / `base64 -d` | encode on one line / decode |
+| `sed -e "s/A/$A/" -e "s\|B\|$B\|" in > out` | fills placeholders; `\|` as separator when the value contains `/` |
+| `dnf install -y nginx` | installs nginx, answering "yes" |
+| `systemctl enable --now nginx` | starts it now and at every boot |
+| `/var/log/cloud-init-output.log` | where user data's output goes on the instance |
+
+---
+
 Foundations lesson 8 launched one instance with a long `run-instances`
 command: AMI, type, subnet, security group, role, metadata options, tags.
 Doing that by hand for every server does not scale, and two people typing it

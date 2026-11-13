@@ -5,6 +5,62 @@ order: 1
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **SAA-C03** | the AWS Certified Solutions Architect - Associate exam |
+| **domain** | one of the exam's four topic areas; this one is 30% of the scored questions |
+| **qualifier** | the phrase that picks one answer: "MOST secure", "LEAST operational overhead" |
+| **operational overhead** | the work of running something yourself |
+| **scored** / **unscored questions** | 50 count, 15 do not, and you cannot tell which |
+| **least privilege** | policies name only the actions and resources needed |
+| **explicit Deny** | beats any Allow |
+| **temporary credentials** | keys from STS that expire by themselves |
+| **instance profile**, **execution role**, **task role** | how EC2, Lambda and ECS code get a role |
+| **trust policy** | who may assume a role |
+| **external ID** / **confused deputy** | a value a third party must present / tricking it into using your role |
+| **IAM Identity Center** | single sign-on for staff to many accounts, with **permission sets** |
+| **permission set** | the permissions a person gets in an account through Identity Center |
+| **Active Directory** | Microsoft's company directory of users |
+| **Cognito** | sign-in for your app's users: **user pools** sign in, **identity pools** give AWS credentials |
+| **AWS Organizations**, **OU**, **SCP** | groups accounts; folders of accounts; maximum permissions that grant nothing |
+| **Control Tower** | sets up a governed multi-account landing zone |
+| **permissions boundary** | caps what an identity can ever be given |
+| **resource policy** | a policy on a resource, naming a Principal |
+| **security group** / **network ACL** | stateful, allow-only, per interface / stateless, can deny, per subnet |
+| **ephemeral ports** | 1024-65535, where replies arrive |
+| **gateway** / **interface endpoint** | free route-table path to S3 and DynamoDB / PrivateLink interface for other services |
+| **Session Manager** | a shell with no open port, key pair or bastion |
+| **AWS WAF** | filters HTTP requests: SQL injection, cross-site scripting, rate limits |
+| **SQL injection**, **cross-site scripting** | attacks smuggling database commands / scripts into a web app |
+| **Shield Standard** / **Advanced** | free DDoS protection / paid, with a response team and cost protection |
+| **Firewall Manager** | applies WAF, Shield and security group rules across an organization |
+| **GuardDuty** | finds threats from CloudTrail, VPC Flow Logs and DNS logs |
+| **VPC Flow Logs** | records of network traffic in a VPC |
+| **Inspector** | finds software vulnerabilities in EC2, ECR images and Lambda |
+| **Macie** | finds sensitive data in S3 |
+| **Security Hub** | gathers findings and checks standards such as CIS |
+| **Detective** | helps investigate a finding |
+| **Site-to-Site VPN** / **Direct Connect** | encrypted over the internet / private line, not encrypted by itself |
+| **MACsec** | encryption on a Direct Connect link |
+| **SSE-S3**, **SSE-KMS**, **DSSE-KMS**, **SSE-C**, **client-side** | the S3 encryption options |
+| **ACM** | free public TLS certificates for ALB, CloudFront, API Gateway; CloudFront's must be in us-east-1 |
+| **Object Lock** | WORM retention: **governance** mode can be overridden, **compliance** mode cannot |
+| **WORM** | write once, read many |
+| **AWS Backup** / **Vault Lock** | central backup plans / makes backups undeletable |
+| **shared responsibility** | AWS secures the cloud; you secure what you put in it |
+| **hypervisor** | the software that runs virtual machines on AWS's hardware |
+| **management account** | the organization's paying account; SCPs never apply to it |
+
+---
+
 This page is a review of the first domain of the **AWS Certified Solutions
 Architect - Associate** exam (SAA-C03), followed by practice questions. It
 assumes the hands-on lessons; each section names the ones where you built

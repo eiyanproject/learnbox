@@ -5,6 +5,39 @@ order: 2
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **design pillars** | deployment, continuity, security, reliability, performance, cost |
+| **infrastructure as code** | CloudFormation, CDK, StackSets: reproducible environments |
+| **immutable infrastructure** | replace, never patch in place |
+| **blue/green**, **canary** | switch between two versions / a small share first |
+| **RTO** / **RPO** | allowed downtime / allowed data loss |
+| **backup and restore**, **pilot light**, **warm standby**, **multi-site active/active** | DR strategies, cheapest first |
+| **Aurora Global Database** | up to five secondary Regions, under a second behind; one writer Region |
+| **DynamoDB global tables** | writes accepted in every Region |
+| **permissions boundary** | caps what delegated administrators can grant |
+| **ABAC** | attribute-based access control: policies comparing tags |
+| **multi-Region KMS keys** | the same key in several Regions for replicated data |
+| **Shield Advanced** | paid DDoS response and cost protection |
+| **loose coupling** | SQS, SNS, EventBridge, Step Functions between parts |
+| **idempotent** | safe to process twice |
+| **exponential backoff and jitter** | growing, randomized retry waits, so clients do not retry in lockstep |
+| **purpose-built databases** | Neptune, Timestream, OpenSearch, Redshift |
+| **data lake** | raw data in S3, catalogued by Glue and queried by Athena |
+| **Lake Formation** | table- and column-level permissions on the lake |
+| **pricing model** | On-Demand, Savings Plans or Spot per part of the workload |
+| **chatty components** | parts that exchange a lot of data; keep them in the same AZ |
+
+---
+
 Here the workload does not exist yet: you design it. Questions give the
 business requirements (users, data volume, availability, recovery targets,
 budget, compliance) and ask for the architecture that meets them all.

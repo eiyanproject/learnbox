@@ -11,6 +11,71 @@ hints:
   - "FIFO messages need a group: `aws sqs send-message --queue-url \"$PAY\" --message-body '...' --message-group-id account-1`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **queue** | holds messages until a worker takes them |
+| **SQS** | Simple Queue Service: a queue as a service |
+| **message** | one piece of work, with a body of text |
+| **producer** / **consumer** | sends messages / receives, processes and deletes them |
+| **decouple** | let two sides work at their own pace; a slow consumer does not slow the producer |
+| **visibility timeout** | how long a received message is hidden from other consumers (30 s default, 12 h max) |
+| **receipt handle** | the token needed to delete a message you received |
+| **visible** | available to be received |
+| **idempotent** | doing it twice has the same effect as doing it once |
+| **at-least-once delivery** | a standard queue may occasionally deliver a message twice |
+| **attribute** | a queue setting, always given as a string |
+| **long polling** | a receive waits up to 20 s for a message instead of returning empty |
+| **retention period** | how long a message may wait before it is deleted unread (4 days default, 14 max) |
+| **delay** | holding new messages back, up to 15 minutes |
+| **poison message** | one that fails every time |
+| **dead-letter queue (DLQ)** | an ordinary queue that catches messages that keep failing |
+| **redrive policy** | names the DLQ and `maxReceiveCount` |
+| **`maxReceiveCount`** | receives without a delete before a message moves to the DLQ |
+| **queue URL** | how SQS commands name a queue; `create-queue` returns it |
+| **queue ARN** | how policies and other services name a queue; from `get-queue-attributes` |
+| **here document** | `<<'PY' ... PY`: passes the lines in between to a command; quotes stop the shell changing them |
+| **`json.dumps`** | Python: turns data into a JSON string, doing the quoting for you |
+| **FIFO queue** | first in, first out: strict order per group, exactly-once processing; name ends in `.fifo` |
+| **standard queue** | very fast, best-effort order, at least once |
+| **message group ID** | messages in one group are delivered in order; groups run in parallel |
+| **content-based deduplication** | drops a message whose body matches one sent in the last five minutes |
+| **SSE-SQS** | encryption at rest with SQS-managed keys, on by default |
+| **access policy** | a resource policy on the queue |
+| **`ApproximateReceiveCount`** | how many times a message has been received |
+| **`ApproximateNumberOfMessagesVisible`** | the queue's length; used to scale consumers |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws sqs create-queue --queue-name N --attributes file://...` | creates a queue |
+| `aws sqs get-queue-url --queue-name N` | looks up its URL |
+| `aws sqs get-queue-attributes --queue-url U --attribute-names QueueArn` | gets its ARN |
+| `aws sqs send-message --queue-url U --message-body B [--message-group-id G]` | sends a message |
+| `aws sqs receive-message --queue-url U [--max-number-of-messages 10]` | receives up to 10 |
+| `aws sqs delete-message --queue-url U --receipt-handle H` | deletes one |
+| `ChangeMessageVisibility` | extends the timeout for one message |
+| `VisibilityTimeout`, `ReceiveMessageWaitTimeSeconds`, `MessageRetentionPeriod`, `DelaySeconds`, `MaximumMessageSize`, `RedrivePolicy` | queue attributes |
+| `FifoQueue`, `ContentBasedDeduplication` | FIFO attributes |
+| `python3 - ARG > file <<'PY' ... PY` | runs Python from the script with an argument |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `InvalidParameterValue ... Queue name must end in .fifo for FIFO queues` | a FIFO queue without the suffix |
+| `MissingParameter ... The request must contain the parameter MessageGroupId` | sending to FIFO without a group |
+
+---
+
 When a customer places an order, the web server has work to hand off:
 charge the card, send the confirmation email, tell the warehouse. If it did
 all of that itself before answering, every slow email server would slow the

@@ -11,6 +11,72 @@ hints:
   - "The bucket policy denies `s3:*` to `\"Principal\": \"*\"` on both the bucket and its objects - `arn:aws:s3:::lb-data` and `arn:aws:s3:::lb-data/*` - with `\"Condition\": {\"Bool\": {\"aws:SecureTransport\": \"false\"}}`. Apply it last: see the note at the end."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **public** (bucket) | readable by anyone on the internet |
+| **ACL** | access control list: S3's oldest per-object grants; legacy, keep them off |
+| **bucket policy** | a resource policy attached to the bucket |
+| **resource policy** | a policy on a resource, with a `Principal` saying who it is about |
+| **Block Public Access** | four switches that override ACLs and policies that would make data public |
+| **override** vs **edit** | Block Public Access ignores a public policy; the policy stays, and returns if the switch goes off |
+| **at rest** | while stored on disk |
+| **in transit** | while travelling over the network |
+| **SSE-S3** | server-side encryption with keys S3 manages; the default since January 2023 |
+| **SSE-KMS** | server-side encryption with a KMS key you control |
+| **SSE-C** | you send your own key with every request; S3 keeps none |
+| **client-side encryption** | encrypting before upload, so S3 only sees ciphertext |
+| **ciphertext** | encrypted data |
+| **KMS** | Key Management Service: stores and uses encryption keys |
+| **KMS key** | a key in KMS; must be in the bucket's Region |
+| **key policy** | the policy on a KMS key: who may use it |
+| **default encryption** | how a bucket encrypts new objects; existing ones are unchanged |
+| **key rotation** | new key material on a schedule (yearly by default); old data stays readable |
+| **key material** | the secret bits a key encrypts with |
+| **S3 Bucket Key** | a short-lived bucket-level key that cuts KMS requests by up to 99% |
+| **alias** | a friendly name for a key, such as `alias/lb-data` |
+| **TLS** | the encryption behind HTTPS |
+| **HTTP** vs **HTTPS** | plain web traffic vs encrypted web traffic |
+| **condition key** | a fact about the request a `Condition` tests, such as `aws:SecureTransport` |
+| **`aws:SecureTransport`** | `true` for TLS requests, `false` otherwise |
+| **`Bool`** | condition operator comparing a true/false key |
+| **`"Principal": "*"`** | everyone, including your own account |
+| **private by default** | a new bucket is accessible only to its own account |
+| **Object Ownership** | "bucket owner enforced" turns ACLs off entirely |
+| **role separation** | an S3 administrator still cannot read SSE-KMS data without the key |
+| **CloudFront** | AWS's content delivery network, used to serve a private bucket publicly |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws s3api put-public-access-block --bucket B --public-access-block-configuration ...` | sets the four switches |
+| `aws s3api get-public-access-block --bucket B` | shows them |
+| `aws kms create-key --description D` | creates a KMS key |
+| `aws kms create-alias --alias-name alias/N --target-key-id ID` | names the key |
+| `aws kms enable-key-rotation --key-id ID` | turns on automatic rotation |
+| `aws kms get-key-rotation-status --key-id ID` | shows it (needs the ID, not the alias) |
+| `aws kms describe-key --key-id alias/N` | looks up a key, and its ID, by alias |
+| `aws s3api put-bucket-encryption --bucket B --server-side-encryption-configuration ...` | sets default encryption |
+| `aws s3api put-bucket-policy --bucket B --policy file://bucket-policy.json` | applies a bucket policy |
+| `BlockPublicAcls`, `IgnorePublicAcls`, `BlockPublicPolicy`, `RestrictPublicBuckets` | the four Block Public Access settings |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `An error occurred (403) when calling the PutObject operation: Forbidden` | S3's access denied; here, the TLS-only policy refusing plain HTTP |
+| `upload failed` | `aws s3 cp` reporting that error |
+
+---
+
 Most S3 data leaks are not clever attacks. They are buckets someone made
 public by accident, with a permissive setting copied from a tutorial, or
 data read over an unencrypted connection. This lesson closes the usual

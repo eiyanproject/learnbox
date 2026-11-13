@@ -5,6 +5,36 @@ order: 3
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **smallest change** | the fix that solves the stated problem without breaking other constraints |
+| **observability** | metrics, logs, alarms and traces |
+| **Contributor Insights** | the top contributors in logs: which IPs, which keys |
+| **X-Ray** | request traces |
+| **CloudWatch Synthetics canary** | a script testing an endpoint or user journey every few minutes |
+| **Patch Manager**, **Automation**, **State Manager** | Systems Manager automation features |
+| **automatic remediation** | Config rules that fix what they find |
+| **change sets**, **drift detection** | safe CloudFormation changes |
+| **IAM Roles Anywhere** | temporary credentials for servers outside AWS, using X.509 certificates |
+| **X.509 certificate** | a standard certificate proving a machine's identity |
+| **S3 Batch Operations** | runs one action, such as an encrypting copy, over millions of objects |
+| **encrypted snapshot copy** | how an unencrypted RDS database becomes encrypted: copy, restore, switch over |
+| **bottleneck** | the part that limits the whole system |
+| **gp3**, **io2**, **RDS Proxy**, **read replicas**, **caching** | fixes for what the metrics show |
+| **right-size**, **Compute Optimizer**, **Savings Plans**, **Graviton** | cost improvements; commit after right-sizing |
+| **Cost Optimization Hub**, **Trusted Advisor** | list idle resources and savings |
+| **microservices** | an application split into small independent services |
+
+---
+
 In this domain the system is already in production, and something about
 it is not good enough: too slow, too fragile, too expensive, not secure
 enough, too much manual work. Look for the **smallest change** that fixes

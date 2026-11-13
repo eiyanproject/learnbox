@@ -11,6 +11,74 @@ hints:
   - "`aws ssm get-parameters --names /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64 --query 'Parameters[0].Value' --output text` prints the AMI ID. Launch with `--iam-instance-profile Name=web-server --metadata-options HttpTokens=required`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **EC2** | Elastic Compute Cloud: virtual machines rented by the second |
+| **instance** | one virtual machine |
+| **port** | the number a network service listens on: 443 HTTPS, 22 SSH, 5432 PostgreSQL |
+| **SSH** | the remote shell administrators log in with |
+| **protocol** | the kind of traffic, such as TCP; `-1` means all |
+| **source** | where allowed traffic may come from: a CIDR range or a security group |
+| **firewall** | something that allows or blocks network traffic |
+| **security group** | a firewall on a network interface; allow-only and stateful |
+| **allow-only** | rules can only allow; whatever is not allowed is blocked |
+| **stateful** | replies to allowed traffic go back automatically |
+| **stateless** | replies need their own rule |
+| **inbound** / **outbound** (ingress / egress) | traffic arriving / leaving |
+| **group reference** | a rule whose source is another security group: "anything in `web`" |
+| **default security group** | the VPC's own group, used if you name none |
+| **network ACL** | a subnet-level filter: allow and deny rules, numbered, first match wins, stateless |
+| **ephemeral ports** | 1024-65535: the ports replies come back to |
+| **AMI** | Amazon Machine Image: the disk image an instance boots from |
+| **instance type** | its size, such as `t3.micro` (family, generation, size) |
+| **vCPU** | a virtual CPU |
+| **GiB** | gibibyte: 1,024 MiB of memory |
+| **Systems Manager Parameter Store** | a key-value store; AWS publishes the latest AMI IDs there |
+| **instance profile** | how an instance holds a role (lesson 4) |
+| **instance metadata** | facts and credentials an instance reads from `http://169.254.169.254/` |
+| **IMDSv1** / **IMDSv2** | metadata by a plain request / only with a session token fetched by `PUT` |
+| **server-side request forgery (SSRF)** | tricking an application into fetching a URL for an attacker |
+| **Elastic IP** | a fixed public address you keep until released; billed |
+| **EBS** | Elastic Block Store: an instance's disks |
+| **root volume** | the boot disk; deleted with the instance by default |
+| **reboot** / **stop** / **terminate** | restart / power off (keeps disks, new public IP on start) / delete |
+| **key pair** | the keys for SSH login |
+| **EC2 Instance Connect Endpoint** | SSH to private instances without a public IP |
+| **Session Manager** | a shell through Systems Manager: no inbound port, controlled by IAM |
+| **DHCP**, **Time Sync** | network address and clock services that security groups never filter |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws ec2 create-security-group --group-name N --description D --vpc-id V` | creates a group; prints its `sg-...` ID |
+| `aws ec2 authorize-security-group-ingress --group-id G --protocol tcp --port 443 --cidr 0.0.0.0/0` | adds an inbound rule |
+| `--source-group SG` | rule source: another security group, instead of `--cidr` |
+| `aws ssm get-parameters --names /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64` | looks up the latest Amazon Linux 2023 AMI |
+| `aws ec2 run-instances --image-id AMI --instance-type t3.micro --subnet-id S --security-group-ids G` | launches an instance |
+| `--iam-instance-profile Name=web-server` | gives it the role |
+| `--metadata-options HttpTokens=required` | requires IMDSv2 |
+| `aws ec2 describe-security-groups --filters Name=group-name,Values=web,db` | shows the groups and their rules |
+| `aws ec2 describe-instances --filters Name=tag:Name,Values=web` | shows the instance |
+| `eval "$(awslab given web-server-role)"` | builds lesson 4's role and instance profile |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `InvalidPermission.Duplicate ... The specified rule already exists` | the same rule added twice |
+| `401 Unauthorized` | an IMDS request without a token when IMDSv2 is required |
+
+---
+
 Last lesson's VPC decides where traffic *can* go. This lesson decides what
 traffic is *allowed* to arrive at each server, and then puts a server in
 the VPC: an **EC2** (Elastic Compute Cloud) **instance**, a virtual machine

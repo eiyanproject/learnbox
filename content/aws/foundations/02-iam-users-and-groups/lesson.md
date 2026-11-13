@@ -11,6 +11,60 @@ hints:
   - "`aws iam update-account-password-policy --minimum-password-length 14 --require-symbols --require-numbers --require-uppercase-characters --require-lowercase-characters`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **IAM** | Identity and Access Management: decides who can do what in an account; global and free |
+| **identity** | something that can sign in or make calls: a user, a role, the root user |
+| **root user** | the account's first identity, signed in with its email address; can do everything |
+| **MFA** | multi-factor authentication: a code from a phone app or a security key on top of the password |
+| **access key** | a long-lived credential for programs: an ID and a secret |
+| **least privilege** | give each identity only the permissions it needs |
+| **IAM user** | a long-lived identity for one person or program |
+| **group** | a set of users that permissions are given to at once; cannot sign in |
+| **policy** | a JSON document of allowed or denied actions; does nothing until attached |
+| **attach** | link a policy to a user, group or role |
+| **inline policy** | a policy written straight into one user, group or role |
+| **AWS managed policy** | written and updated by AWS; its ARN has `aws` instead of an account number |
+| **customer managed policy** | one you write yourself, in your account |
+| **implicit deny** | everything is refused until a policy allows it |
+| **principal** | who a policy is about; a group can never be one |
+| **IAM Identity Center** | one sign-in for people, handing out short-lived credentials per account |
+| **short-lived credentials** | keys that expire on their own |
+| **password policy** | the account's rules for IAM users' console passwords |
+| **switch option** | an option with no value: present means "on" |
+| **rotate** | replace a key with a new one; each user may have two keys so this needs no downtime |
+| **lock-out** | refusing sign-in after failed attempts; IAM has none |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws iam create-group --group-name G` | creates a group |
+| `aws iam create-user --user-name U` | creates a user |
+| `aws iam add-user-to-group --group-name G --user-name U` | puts a user in a group |
+| `aws iam attach-group-policy --group-name G --policy-arn ARN` | attaches a managed policy to a group |
+| `arn:aws:iam::aws:policy/ReadOnlyAccess` | the ARN of AWS's read-only managed policy |
+| `aws iam update-account-password-policy --minimum-password-length 14 --require-symbols ...` | sets (replaces) the password policy |
+| `aws iam get-account-password-policy` | shows the password policy |
+| `aws iam get-account-authorization-details` | shows every user, group, role and policy at once |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `NoSuchEntity` | the named user, group or policy does not exist (or no password policy has been set yet) |
+| `EntityAlreadyExists` | creating something that is already there |
+
+---
+
 An AWS account starts with one all-powerful identity, and a team needs many
 people with different, limited access. **IAM** (Identity and Access
 Management) is the service that decides **who** can do **what** in an

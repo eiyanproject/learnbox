@@ -11,6 +11,66 @@ hints:
   - "No `*` for actions or resources: the check reads the document and refuses `\"Action\": \"s3:*\"` or `\"Resource\": \"*\"` in an Allow."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **policy document** | the JSON text of a policy: a version and a list of statements |
+| **statement** | one rule in a policy: an effect, actions and resources |
+| **`Version`** | the policy language version, always `2012-10-17` |
+| **`Effect`** | `Allow` or `Deny` |
+| **`Action`** | `service:Operation`, such as `s3:GetObject`, or a list of them |
+| **`Resource`** | the ARN (or ARNs) a statement applies to |
+| **`Sid`** | statement ID: an optional label |
+| **`Condition`** | narrows a statement further, such as "only with MFA" |
+| **wildcard** | `*` matches any run of characters, `?` any one: `s3:Get*` |
+| **bucket ARN** vs **object ARN** | `arn:aws:s3:::bucket` vs `arn:aws:s3:::bucket/key`; S3 ARNs have no Region or account |
+| **key** | an object's full name inside a bucket |
+| **explicit deny** | a matching `Deny` statement; always wins |
+| **implicit deny** | the refusal when nothing allows the request |
+| **least privilege** | grant exactly what the job needs and no more |
+| **customer managed policy** | one you create; its ARN carries your account number |
+| **shell variable** | a named value in the shell, used as `"$POLICY_ARN"` |
+| **identity-based policy** | attached to a user, group or role: what it may do |
+| **resource-based policy** | attached to a resource, with a `Principal`: who may use it (bucket, queue, key policies) |
+| **trust policy** | on a role: who may assume it |
+| **permissions boundary** | the most a user or role can ever be given |
+| **service control policy (SCP)** | the most anyone in an Organization's accounts can do |
+| **session policy** | narrows one assumed-role session |
+| **cap** | limit what other policies grant, without granting anything |
+| **cross-account** | a request from one account to a resource in another; both sides must allow it |
+| **IAM policy simulator** | answers "would this be allowed?" without making the request |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws iam create-policy --policy-name N --policy-document file://policy.json` | creates a customer managed policy from a file |
+| `file://policy.json` | read the option's value from that file |
+| `VAR=$(command)` | stores what the command printed in a shell variable |
+| `--query Policy.Arn --output text` | picks just the new policy's ARN |
+| `aws iam list-policies --scope Local` | lists your own policies |
+| `aws iam get-policy-version --policy-arn ARN --version-id v1` | prints the stored policy document |
+| `aws iam simulate-principal-policy --policy-source-arn ARN --action-names A` | the policy simulator (not in the emulator) |
+| `s3:ListBucket` | lists a bucket; acts on the bucket ARN |
+| `s3:GetObject`, `s3:PutObject`, `s3:DeleteObject` | read, write, delete an object; act on object ARNs |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `MalformedPolicyDocument ... Syntax errors in policy` | broken JSON, or `file://` left out so the file name itself was sent |
+| `MalformedPolicyDocument ... Policy statement must contain resources` | a statement with no `Resource` |
+| `AccessDenied` | the request was refused; it does not say which ARN was wrong |
+
+---
+
 Last lesson used a ready-made policy, `ReadOnlyAccess`, which can read
 everything in the account. Real teams need something narrower: "these people
 may read these reports, but not the salary files, and may change nothing".

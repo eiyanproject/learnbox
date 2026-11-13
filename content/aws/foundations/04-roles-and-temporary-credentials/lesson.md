@@ -11,6 +11,73 @@ hints:
   - "An instance cannot use a role directly - it uses an instance profile with the role in it. `aws iam create-instance-profile --instance-profile-name web-server`, then `aws iam add-role-to-instance-profile --instance-profile-name web-server --role-name web-server`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **long-lived credentials** | a password or access keys that stay valid until deleted |
+| **role** | an identity with permissions but no credentials of its own |
+| **assume** (a role) | get temporary credentials to act as the role |
+| **temporary credentials** | an access key, secret key and session token that expire (one hour by default) |
+| **session token** | the third value of temporary credentials |
+| **EC2 instance** | a virtual server |
+| **Lambda function** | code AWS runs for you on demand |
+| **switch role** | assume a more powerful role only when you need it |
+| **trust policy** | who may assume the role; has a `Principal` and no `Resource` |
+| **permissions policy** | what the role may do once assumed |
+| **`Principal`** | the "who" of a statement: a service, an account, a role |
+| **service principal** | an AWS service acting for you, such as `ec2.amazonaws.com` |
+| **account principal** | `arn:aws:iam::111122223333:root`: the whole account, which then decides who may use the role |
+| **instance metadata service (IMDS)** | a small web service only the instance can reach; hands it its role's credentials |
+| **instance profile** | a container for exactly one role, attached to an instance |
+| **cross-account role** | a role that another account may assume |
+| **external ID** | a value agreed with a third party, required when it assumes your role |
+| **confused deputy** | tricking a trusted party into using its access on your behalf |
+| **`aws:SourceArn`**, **`aws:SourceAccount`** | conditions naming the resource or account a service may act for |
+| **maximum session duration** | the longest session a role allows (up to 12 hours) |
+| **role chaining** | assuming a role from inside a role session; capped at one hour |
+| **`ASIA...`** / **`AKIA...`** | the start of a temporary / long-lived access key ID |
+| **assumed-role ARN** | `arn:aws:sts::ACCOUNT:assumed-role/ROLE/SESSION`: the session's identity |
+| **session name** | the name you give a session; it appears in audit logs |
+| **environment variable** | a named setting the shell passes to programs |
+| **named profile** | a section in `~/.aws/config`, which can say `role_arn = ...` |
+| **CI/CD** | systems that build, test and deploy code automatically, such as GitHub Actions |
+| **OIDC federation** | a system proving who it is with a signed token, to assume a role without stored keys |
+| **break-glass access** | a powerful role assumed only in an emergency |
+| **service-linked role** | a role created and managed by an AWS service; leave it alone |
+| **CloudTrail** | the service that records API calls |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws iam create-role --role-name R --assume-role-policy-document file://trust.json` | creates a role with its trust policy |
+| `aws iam attach-role-policy --role-name R --policy-arn ARN` | attaches a permissions policy |
+| `aws iam create-instance-profile --instance-profile-name N` | creates an instance profile |
+| `aws iam add-role-to-instance-profile --instance-profile-name N --role-name R` | puts the role in the profile |
+| `aws sts assume-role --role-arn ARN --role-session-name S [--external-id X]` | assumes a role; prints temporary credentials |
+| `--duration-seconds N` | asks for a longer session |
+| `export AWS_ACCESS_KEY_ID=...`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` | makes later commands run as the role |
+| `sts:AssumeRole` | the action a trust policy allows |
+| `sts:AssumeRoleWithWebIdentity` | the action for OIDC federation |
+| `"Condition": {"StringEquals": {"sts:ExternalId": "..."}}` | requires the external ID |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `AccessDenied` | the caller may not assume the role, or the role may not do that |
+| `UnauthorizedOperation` | EC2's name for a refused request |
+| `MalformedPolicyDocument` | in real IAM: a trust policy with a `Resource`, or a wildcard in a Principal |
+
+---
+
 A user has **long-lived credentials**: a password, and maybe access keys,
 which stay valid until someone deletes them. Access keys copied into code, a
 config file or a public repository are one of the commonest ways AWS

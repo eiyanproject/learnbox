@@ -11,6 +11,80 @@ hints:
   - "`aws lambda create-event-source-mapping --function-name process-order --event-source-arn \"$QUEUE_ARN\" --batch-size 10 --function-response-types ReportBatchItemFailures`, and `aws lambda put-function-concurrency --function-name process-order --reserved-concurrent-executions 10`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **Lambda** | runs your function when there is work, as many copies as needed, billed per millisecond |
+| **function** | your code plus its configuration |
+| **runtime** | language and version, such as `python3.12` |
+| **handler** | the function to call: `handler.handler` is `handler` in `handler.py` |
+| **memory** | 128 MB to 10 GB; also sets the CPU power |
+| **timeout** | the longest one call may run, up to 15 minutes |
+| **environment variable** | configuration the code reads, such as `TABLE=orders` |
+| **execution role** | the IAM role the code runs as |
+| **event source mapping** | Lambda polls a queue and calls the function with batches |
+| **batch** | several messages passed in one call |
+| **`event`** | the data the handler receives; for SQS, a list of `Records` |
+| **record** | one message in the batch, with `messageId` and `body` |
+| **partial batch failure** | returning only the failed messages' IDs, so the rest are deleted |
+| **`ReportBatchItemFailures`** | the mapping setting that allows it |
+| **batching window** | time Lambda waits to collect a fuller batch |
+| **six times rule** | queue visibility timeout at least 6 x function timeout (plus the window) |
+| **concurrency** | copies of the function running at once |
+| **reserved concurrency** | caps one function and guarantees it that much; 0 stops it |
+| **account pool** | 1,000 concurrent executions per Region, shared by every function |
+| **throttled** | refused because a limit was reached |
+| **provisioned concurrency** | copies kept ready to avoid cold starts; costs even when idle |
+| **cold start** | the delay while Lambda loads a new copy |
+| **zip file** | how code is uploaded |
+| **version** / **alias** / **`$LATEST`** | a published snapshot / a name for one / the editable code |
+| **SnapStart** | starts copies from a saved snapshot to cut cold starts |
+| **container image** | an alternative package, up to 10 GB |
+| **ECS** | the container service, for jobs beyond Lambda's limits |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python3 -c "import zipfile; zipfile.ZipFile('function.zip', 'w').write('handler.py')"` | makes the zip |
+| `aws lambda create-function --function-name N --runtime python3.12 --handler handler.handler --role R --zip-file fileb://function.zip` | creates the function |
+| `fileb://` | read a binary file (`file://` is for text) |
+| `--timeout 20 --memory-size 256 --environment 'Variables={TABLE=orders}'` | settings |
+| `aws lambda put-function-concurrency --function-name N --reserved-concurrent-executions 10` | reserved concurrency |
+| `aws lambda create-event-source-mapping --function-name N --event-source-arn Q --batch-size 10 --function-response-types ReportBatchItemFailures` | feeds it from the queue |
+| `aws lambda get-function-configuration --function-name N` | shows the configuration |
+| `aws lambda list-event-source-mappings --function-name N` | shows the mapping |
+| `AWSLambdaSQSQueueExecutionRole` | managed policy: read and delete SQS messages, write logs |
+
+### Python names
+
+| Name | What it does |
+|---|---|
+| `def handler(event, context):` | the function Lambda calls |
+| `event["Records"]` | the batch of messages |
+| `json.loads(record["body"])` | parses a message body |
+| `json.JSONDecodeError` | raised for text that is not JSON |
+| `TypeError`, `ValueError` | raised for a body that is not an object / your own "bad message" |
+| `try: ... except (...):` | catches errors per record |
+| `{"batchItemFailures": [{"itemIdentifier": id}]}` | the failures to return |
+| `os.environ["TABLE"]` | reads an environment variable |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `Error parsing parameter '--zip-file': Unable to load paramfile ... text contents could not be decoded` | `file://` used for a zip instead of `fileb://` |
+| `429 TooManyRequestsException` | Lambda throttling a direct call |
+
+---
+
 Lesson 1's queue needs a consumer: something that receives the orders,
 processes them and deletes them. That could be a fleet of servers polling
 the queue, which you would have to size, patch and keep running even at 3

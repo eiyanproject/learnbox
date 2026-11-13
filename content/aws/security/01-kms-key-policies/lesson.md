@@ -13,6 +13,66 @@ hints:
   - "Multi-Region is chosen at creation: `aws kms create-key --multi-region --description \"orders global\" --policy file://key-policy.json`, then `aws kms replicate-key --key-id \"$GLOBAL_ID\" --replica-region eu-west-1`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **KMS** | Key Management Service: creates and stores keys and uses them for you; key material never leaves it |
+| **KMS key** | a key in KMS; Regional |
+| **AWS owned key** | used by services by default; you never see it |
+| **AWS managed key** | `aws/s3`, `aws/rds`: created for a service; you cannot change its policy |
+| **customer managed key** | yours: you write its policy, rotation and deletion |
+| **symmetric** / **asymmetric** | one secret key for both directions / a key pair, for signing or outside encryption |
+| **key policy** | the key's one resource policy; IAM alone is not enough without it |
+| **account delegation** | the statement letting IAM policies in the account grant access to the key |
+| **`"Resource": "*"`** (in a key policy) | this key |
+| **locked key** | a key whose policy names nobody who can manage it |
+| **separation of duties** | administrators cannot use the key; users cannot change it |
+| **key administrator** | may manage the key (`Create*`, `Put*`, `Disable*`, `ScheduleKeyDeletion`...), not use it |
+| **key user** | may `Encrypt`, `Decrypt`, `GenerateDataKey*`, `DescribeKey` |
+| **cryptographic operation** | encrypt, decrypt or make data keys |
+| **encryption context** | key-value pairs bound to the ciphertext; decrypting needs the same pairs; logged, not secret |
+| **`kms:EncryptionContext:app`** | condition key on a context value |
+| **grant** | gives one principal specific operations on one key without editing the policy |
+| **revoke** / **retire** a grant | removed by an administrator / by the retiring principal |
+| **envelope encryption** | encrypt data locally with a data key, and store the data key encrypted by KMS |
+| **data key** | a key KMS generates for you, returned in plaintext and encrypted |
+| **plaintext** | the unencrypted form |
+| **`CiphertextBlob`** | the encrypted copy of the data key |
+| **AES-256** | a fast symmetric cipher with a 256-bit key |
+| **multi-Region key** | `mrk-...`: replicas in other Regions with the same key material; chosen at creation |
+| **replica key** | its copy in another Region, with its own key policy |
+| **blast radius** | how much is affected if something goes wrong |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws kms create-key --description D --policy file://key-policy.json [--multi-region]` | creates a key with its policy |
+| `aws kms create-alias --alias-name alias/N --target-key-id ID` | names it |
+| `aws kms enable-key-rotation --key-id ID` | yearly rotation |
+| `aws kms create-grant --key-id K --grantee-principal ROLE_ARN --operations Decrypt --name N --constraints EncryptionContextSubset={app=orders}` | creates a grant |
+| `aws kms list-grants --key-id K` | lists grants |
+| `aws kms generate-data-key --key-id alias/orders --key-spec AES_256 --encryption-context app=orders` | makes a data key |
+| `--query CiphertextBlob --output text \| base64 -d > orders.key.enc` | saves the encrypted copy as raw bytes |
+| `aws kms decrypt --ciphertext-blob fileb://orders.key.enc --encryption-context app=orders` | decrypts it |
+| `aws kms replicate-key --key-id K --replica-region eu-west-1` | replicates a multi-Region key |
+| `aws kms get-key-policy --key-id K --policy-name default` | shows the key policy |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `InvalidCiphertextException` | the encryption context does not match (or the data is not this key's) |
+
+---
+
 Foundations lesson 6 created a KMS key and let S3 use it. Encrypting data
 is only half of the story: the other half is **who** may use the key, and
 who may change or delete it. An encrypted database is only as safe as its

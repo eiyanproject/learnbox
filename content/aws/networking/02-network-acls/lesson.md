@@ -11,6 +11,50 @@ hints:
   - "A subnet is always associated with exactly one ACL, so you replace the association: find it with `aws ec2 describe-network-acls --filters Name=association.subnet-id,Values=\"$PUBLIC_A\" --query \"NetworkAcls[0].Associations[?SubnetId=='$PUBLIC_A'].NetworkAclAssociationId\" --output text`, then `aws ec2 replace-network-acl-association --association-id \"$ASSOC\" --network-acl-id \"$ACL\"`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **network ACL** | access control list filtering traffic at a subnet's boundary |
+| **rule number** | 1 to 32766; rules are checked lowest first |
+| **first match wins** | the first rule that matches decides; later ones are never looked at |
+| **final deny** | rule `*` (reported as 32767): denies anything nothing else matched; cannot be removed |
+| **default ACL** | the VPC's own ACL: allows everything both ways |
+| **custom ACL** | one you create: starts with only the final deny |
+| **inbound (ingress)** / **outbound (egress)** | the two separate rule lists |
+| **stateless** | does not know a packet is a reply; replies need their own rule |
+| **packet** | one piece of network traffic |
+| **ephemeral port** | a temporary high-numbered client port (1024-65535) that replies are sent to |
+| **gaps in numbers** | numbering 90, 100, 110 so rules can be slotted in later |
+| **association** | the link between a subnet and its one ACL; replaced, never added |
+| **JMESPath filter** | `[?SubnetId=='...']`: keep only list items that match |
+| **protocol `-1`** | all protocols |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws ec2 create-network-acl --vpc-id V` | creates a custom ACL |
+| `aws ec2 create-network-acl-entry --network-acl-id A --ingress --rule-number 100 --protocol tcp --port-range From=443,To=443 --cidr-block C --rule-action allow` | adds one rule |
+| `--ingress` / `--egress` | picks the inbound or outbound list |
+| `aws ec2 describe-network-acls --filters Name=association.subnet-id,Values=S` | finds the ACL a subnet uses |
+| `aws ec2 replace-network-acl-association --association-id X --network-acl-id A` | moves the subnet to another ACL |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `NetworkAclEntryAlreadyExists` | two rules in the same direction with the same number |
+| *(no error at all)* | ephemeral-port rules forgotten: everything looks allowed and nothing works |
+
+---
+
 Security groups only allow. Sometimes you need the opposite: an address
 range is attacking your site, and you want it blocked for a whole subnet,
 whatever any security group says. A **network ACL** (access control list)

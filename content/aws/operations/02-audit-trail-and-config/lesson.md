@@ -11,6 +11,64 @@ hints:
   - "A managed rule: `aws configservice put-config-rule --config-rule '{\"ConfigRuleName\":\"s3-versioning\",\"Source\":{\"Owner\":\"AWS\",\"SourceIdentifier\":\"S3_BUCKET_VERSIONING_ENABLED\"}}'`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **CloudTrail** | records API calls: who did what, when, from where |
+| **event** | one recorded call: identity, action, time, IP address, result |
+| **event history** | the free, built-in last 90 days of management events |
+| **trail** | delivers events to an S3 bucket (and optionally CloudWatch Logs) for as long as you keep them |
+| **management events** | creating, changing or deleting resources; recorded by default |
+| **data events** | operations on data, such as each S3 `GetObject`; opt-in |
+| **Insights events** | unusual rates of API calls |
+| **multi-Region trail** | one trail recording every Region |
+| **log file validation** | hourly signed digest files proving no log file was altered |
+| **digest file** | holds a SHA-256 hash of each log file |
+| **hash** | a fixed-size fingerprint of data; any change gives a different one |
+| **organization trail** | records every account in an Organization |
+| **start logging** | a new trail records nothing until started |
+| **`bucket-owner-full-control`** | the ACL CloudTrail must write with, so the bucket owner owns the logs |
+| **AWS Config** | records the state of resources over time and checks it against rules |
+| **configuration item** | a resource's whole configuration at one moment |
+| **configuration history** | all of a resource's configuration items |
+| **Config rule** | marks resources `COMPLIANT` or `NON_COMPLIANT` |
+| **AWS managed rule** | a ready-made rule, such as `S3_BUCKET_VERSIONING_ENABLED` or `ENCRYPTED_VOLUMES` |
+| **custom rule** | written as a Lambda function or in a policy language |
+| **remediation** | fixing a non-compliant resource, through a Systems Manager Automation document |
+| **conformance pack** | many rules and remediations bundled for a standard |
+| **configuration recorder** | says what Config records; needs a role and must be started |
+| **global resource types** | IAM users, roles and policies; not recorded unless included |
+| **delivery channel** | where Config sends its history |
+| **GuardDuty** | threat detection from the logs |
+| **Athena** | queries files in S3 with SQL |
+| **detect vs prevent** | Config reports after the fact; IAM policies and SCPs prevent |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws cloudtrail lookup-events` | searches event history |
+| `aws cloudtrail create-trail --name N --s3-bucket-name B --is-multi-region-trail --enable-log-file-validation` | creates a trail |
+| `aws cloudtrail start-logging --name N` | starts it |
+| `aws cloudtrail describe-trails`, `get-trail-status --name N` | shows trails and whether they log |
+| `aws cloudtrail validate-logs` | checks log files against the digests |
+| `aws configservice put-configuration-recorder --configuration-recorder name=default,roleARN=R --recording-group allSupported=true,includeGlobalResourceTypes=true` | sets up the recorder |
+| `aws configservice put-delivery-channel --delivery-channel name=default,s3BucketName=B` | sets the delivery channel |
+| `aws configservice start-configuration-recorder --configuration-recorder-name default` | starts recording |
+| `aws configservice put-config-rule --config-rule file://...` | adds a rule |
+| `aws configservice describe-configuration-recorder-status`, `describe-config-rules` | shows recorder and rules |
+| `s3:GetBucketAcl`, `s3:PutObject` | the two permissions CloudTrail needs on its bucket |
+| `AWS_ConfigRole` | the managed policy letting Config read your resources |
+
+---
+
 Sooner or later someone asks a question about the past. The production
 database was deleted on Saturday night: who did it, from where? An auditor
 asks whether any bucket was ever public in the last year. A security review

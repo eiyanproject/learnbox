@@ -12,6 +12,72 @@ hints:
   - "Scaling goes through Application Auto Scaling: `aws application-autoscaling register-scalable-target --service-namespace ecs --resource-id service/apps/orders-api --scalable-dimension ecs:service:DesiredCount --min-capacity 2 --max-capacity 10`, then `put-scaling-policy` with `--policy-type TargetTrackingScaling` and `PredefinedMetricType: ECSServiceAverageCPUUtilization`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **ECS** | Elastic Container Service: AWS's scheduler for containers |
+| **Fargate** | runs tasks without servers; you pay per task's CPU and memory, per second |
+| **scheduler** | decides where and when containers run, and restarts them |
+| **cluster** | a named group of services and tasks |
+| **task definition** | a versioned recipe: image, CPU, memory, ports, environment, secrets, logs, roles |
+| **revision** | each registered version of a task definition |
+| **task** | one running copy of a task definition |
+| **service** | keeps N tasks running and rolls out new revisions |
+| **`run-task`** | starts a one-off task, such as a nightly job |
+| **ECS on EC2** | tasks on your own instances, which you patch and scale |
+| **CPU units** | 1/1024 vCPU: `512` is half a vCPU |
+| **Fargate combinations** | only some CPU and memory pairs are allowed |
+| **container definition** | one container: `image`, `portMappings`, `environment`, `secrets`, `logConfiguration` |
+| **`awslogs`** | the log driver sending standard output to CloudWatch Logs |
+| **standard output** | what a program prints |
+| **`secrets`** | values fetched by ARN when the task starts, given as environment variables |
+| **execution role** | used by ECS before your code starts: pull images, write logs, fetch secrets |
+| **task role** | used by your code while it runs |
+| **`awsvpc`** | network mode: each task gets its own ENI, private IP and security groups |
+| **target type `ip`** | what a target group for Fargate tasks must use |
+| **`assignPublicIp=DISABLED`** | no public IP; tasks reach AWS via NAT or VPC endpoints |
+| **rolling deployment** | replacing tasks a few at a time |
+| **`minimumHealthyPercent`** / **`maximumPercent`** | the lowest and highest task counts during a rollout |
+| **deployment circuit breaker** | marks a failing deployment `FAILED`; with rollback, returns to the last good revision |
+| **blue/green**, **linear**, **canary** | deployments that shift traffic to the new revision in steps |
+| **Application Auto Scaling** | scales ECS services and other things |
+| **scalable target** | what is scaled: `service/CLUSTER/SERVICE`, dimension `ecs:service:DesiredCount` |
+| **`ECSServiceAverageCPUUtilization`** | the service's average CPU |
+| **Container Insights** | per-task and per-service CloudWatch metrics |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws ecs create-cluster --cluster-name apps --settings name=containerInsights,value=enabled` | creates a cluster |
+| `aws ecs register-task-definition --cli-input-json file://...` | registers a revision |
+| `aws ecs create-service --cluster C --service-name N --task-definition T --desired-count 2 --launch-type FARGATE --network-configuration ...` | creates a service |
+| `awsvpcConfiguration={subnets=[A,B],securityGroups=[G],assignPublicIp=DISABLED}` | its network settings |
+| `aws ecs update-service --cluster C --service N --deployment-configuration ...` | changes it in place |
+| `deploymentCircuitBreaker={enable=true,rollback=true},minimumHealthyPercent=100,maximumPercent=200` | the deployment settings |
+| `--force-new-deployment` | replaces tasks, for example to pick up a rotated secret |
+| `aws application-autoscaling register-scalable-target --service-namespace ecs --resource-id service/C/N --scalable-dimension ecs:service:DesiredCount --min-capacity 2 --max-capacity 10` | makes it scalable |
+| `aws application-autoscaling put-scaling-policy --policy-type TargetTrackingScaling ...` | adds target tracking |
+| `aws ecs describe-services`, `describe-task-definition` | show what was made |
+| `AmazonECSTaskExecutionRolePolicy` | managed policy: ECR pull and CloudWatch Logs |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `ClientException: No Fargate configuration exists for given values` | a CPU and memory pair Fargate does not offer |
+| `CannotPullContainerError` | the image could not be pulled: wrong execution role, or no route to ECR |
+| `ResourceInitializationError: unable to pull secrets or registry auth` | the execution role cannot read the secret, or there is no network path |
+
+---
+
 The previous lesson stored the `orders-api` image. Something now has to
 **run** it: start copies of it, restart any that crash, spread them across
 Availability Zones, roll out new versions without downtime, and add copies

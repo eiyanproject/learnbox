@@ -11,6 +11,68 @@ hints:
   - "`aws events put-rule --name nightly-orders --schedule-expression 'cron(0 2 * * ? *)'`, then `aws events put-targets --rule nightly-orders --targets \"Id=order-flow,Arn=$SM_ARN,RoleArn=$EVENTS_ROLE\"`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **Step Functions** | runs a sequence of steps as a state machine, with retries and history |
+| **state machine** | named states and the transitions between them |
+| **state** | one step |
+| **Amazon States Language (ASL)** | the JSON language state machines are written in |
+| **execution** | one run of a state machine |
+| **`Task`** | does work: calls a Lambda function or an AWS API |
+| **`Choice`** | branches on the data |
+| **`Parallel`**, **`Map`** | branches at once; one branch per list item |
+| **`Wait`**, **`Pass`** | wait; pass input on |
+| **`Succeed`**, **`Fail`** | end the execution, well or badly |
+| **`StartAt`**, **`States`**, **`Next`**, **`End`** | first state, the list of states, where to go, "this is the last" |
+| **`Resource`** | what a Task calls, such as a function's ARN |
+| **input** / **output** | the JSON each state receives / passes to the next |
+| **path** | `$.paid`: a field of the current data; `$` is the whole document |
+| **`Default`** | where a Choice goes when no rule matches |
+| **`BooleanEquals`**, **`StringEquals`**, **`NumericGreaterThan`**, **`IsPresent`** | Choice comparisons |
+| **`Retry`** | which errors to retry: `IntervalSeconds`, `BackoffRate`, `MaxAttempts` (defaults 1, 2.0, 3) |
+| **exponential backoff** | each wait longer than the last: 2, 4, 8 seconds |
+| **`Catch`** | where to go when retries run out |
+| **`States.TaskFailed`** | any task failure except a timeout |
+| **`States.Timeout`** | the task ran too long |
+| **`States.ALL`** | every error; alone and last |
+| **Standard** / **Express** workflow | up to a year, exactly once, full history / up to 5 minutes, cheaper |
+| **EventBridge** | routes events to targets |
+| **rule** | matches events, or runs on a schedule |
+| **target** | what a rule starts: a function, a queue, a state machine |
+| **`states:StartExecution`** | the permission EventBridge needs to start a state machine |
+| **EventBridge cron** | six fields, UTC: `cron(0 2 * * ? *)`; one of day-of-month and day-of-week must be `?` |
+| **`rate(5 minutes)`** | a simple interval schedule |
+| **EventBridge Scheduler** | the newer scheduling service, with time zones; recommended for new work |
+| **orchestration** | one place holds the order of the steps |
+| **choreography** | each service reacts to events on its own |
+| **task token** | `.waitForTaskToken`: a task paused until a token is sent back, such as a human approval |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws stepfunctions create-state-machine --name N --definition file://workflow.json --role-arn R` | creates the state machine |
+| `aws stepfunctions describe-state-machine --state-machine-arn A` | shows its definition |
+| `aws events put-rule --name N --schedule-expression 'cron(0 2 * * ? *)'` | a scheduled rule |
+| `aws events put-targets --rule N --targets Id=...,Arn=...,RoleArn=...` | gives the rule a target |
+| `aws events list-targets-by-rule --rule N` | lists its targets |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `cron(0 2 * * * *)` refused as not valid | both day fields given; one must be `?` (real EventBridge) |
+
+---
+
 Some work is a **sequence** with rules: charge the card; if that worked,
 ship the order; if anything failed, stop and record it; and if the card
 company's service hiccups, try again a few times before giving up. Written

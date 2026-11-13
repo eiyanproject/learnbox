@@ -5,6 +5,47 @@ order: 1
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **SOA-C03** | the AWS Certified CloudOps Engineer - Associate exam (formerly SysOps Administrator) |
+| **qualifier** | the phrase that picks one answer: "LEAST operational overhead", "automatically" |
+| **hypervisor** | the layer running instances; EC2's built-in metrics come from it |
+| **guest** | the instance's own operating system; EC2 cannot see inside it |
+| **CloudWatch agent** | sends memory, disk space, process metrics and log files |
+| **Container Insights** | the same for ECS and EKS |
+| **evaluation periods** | how many periods an alarm looks at, such as 3 of the last 5 |
+| **alarm actions** | SNS, Auto Scaling, EC2 stop/terminate/reboot/recover, Systems Manager |
+| **recover** | moves an impaired instance to new hardware, keeping ID, IPs and volumes |
+| **`StatusCheckFailed_System`** | the hardware status check that recover acts on |
+| **OpsItem** | a Systems Manager work item for an operational issue |
+| **composite alarm** | combines alarms with AND and OR to cut noise |
+| **dashboard** | a screen of metrics, across accounts and Regions |
+| **retention** | log groups keep data for ever unless set |
+| **metric filter** / **subscription filter** | pattern to metric (new events only) / stream events to Lambda, Firehose or OpenSearch |
+| **Logs Insights** | queries logs |
+| **EventBridge** | routes AWS events, CloudTrail API calls and schedules to targets |
+| **resource-based permission** | lets `events.amazonaws.com` invoke a Lambda target; the CLI does not add it |
+| **Systems Manager Automation** | runbooks for multi-step tasks, such as `AWS-RestartEC2Instance` |
+| **runbook** | a documented, runnable procedure |
+| **Run Command** | runs a script across many instances, no SSH |
+| **Patch Manager** | patches by **patch baseline** in **maintenance windows** |
+| **gp2 burst credits** | a small gp2 volume is fast only until its credits run out |
+| **Elastic Volumes** | change EBS type or size live |
+| **Performance Insights** | shows an RDS database's top SQL and waits |
+| **connection storm** | many short connections at once; RDS Proxy pools them |
+| **EFS throughput modes** | elastic, provisioned or bursting |
+| **placement group**, **Compute Optimizer**, **multipart upload**, **Transfer Acceleration** | performance tools for EC2 and S3 |
+
+---
+
 This page reviews the first domain of the **AWS Certified CloudOps
 Engineer - Associate** exam (SOA-C03, formerly SysOps Administrator),
 followed by practice questions. This exam is about **running** systems:

@@ -5,6 +5,47 @@ order: 4
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **portfolio** | all of a company's applications |
+| **the 7 Rs** | retire, retain, rehost, relocate, repurchase, replatform, refactor |
+| **rehost** | lift and shift, unchanged, to EC2 |
+| **relocate** | move the platform as it is, such as VMware to VMware Cloud on AWS |
+| **repurchase** | replace with SaaS |
+| **replatform** | lift, tinker and shift, such as a database to RDS |
+| **refactor** | re-architect for the cloud |
+| **SaaS** | software as a service: rented, run by its vendor |
+| **CRM** | customer relationship management software |
+| **monolith** | one large application with everything in it |
+| **AWS Application Discovery Service** | finds servers and dependencies, agentless or with agents |
+| **VMware vCenter** | the manager of a VMware virtual machine estate |
+| **Migration Evaluator** | a business case from current usage |
+| **AWS Migration Hub** | tracks a migration |
+| **landing zone** | the multi-account setup built first, with Control Tower |
+| **MGN** | AWS Application Migration Service: block-level server replication, test launches, cutover |
+| **cutover** | the moment you switch to the new system |
+| **DMS** | Database Migration Service: full load, then CDC until cutover |
+| **CDC** | change data capture: copying ongoing changes |
+| **Schema Conversion Tool (SCT)** / **DMS Schema Conversion** | convert schema and code between engines |
+| **schema** | a database's table definitions |
+| **DataSync** | online, scheduled, verified copies of files and objects |
+| **Transfer Family** | managed SFTP, FTPS and AS2 endpoints |
+| **Snowball Edge** | shipped devices for too much data for the network |
+| **Storage Gateway** | S3 File, FSx File, Volume and Tape gateways for on-premises apps |
+| **Amazon MQ** | managed ActiveMQ or RabbitMQ for apps that speak JMS, AMQP or MQTT |
+| **JMS**, **AMQP**, **MQTT** | messaging protocols used by existing applications |
+| **strangler fig** | a router in front of the old system while features move to new services one at a time |
+
+---
+
 A company is moving to AWS: hundreds of applications, servers and
 databases, each needing its own decision. This domain is about assessing
 that portfolio, picking a **strategy** per workload, moving servers and

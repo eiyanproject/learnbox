@@ -11,6 +11,68 @@ hints:
   - "The bucket policy allows `\"Principal\": {\"Service\": \"cloudfront.amazonaws.com\"}` to `s3:GetObject` on `arn:aws:s3:::lb-site/*`, with `\"Condition\": {\"StringEquals\": {\"AWS:SourceArn\": \"<distribution ARN>\"}}`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **CloudFront** | AWS's CDN |
+| **CDN** | content delivery network: copies near users |
+| **edge location** | a CloudFront site that answers viewers |
+| **distribution** | one CloudFront configuration, at a name like `d1234abcd.cloudfront.net` |
+| **origin** | where the real content lives: a bucket, an ALB, any HTTP server |
+| **viewer** | the browser or client asking |
+| **cache hit** / **miss** | the edge has the file / fetches it from the origin once |
+| **Shield Standard** | built-in protection against DDoS attacks |
+| **DDoS** | distributed denial of service: flooding a site with traffic |
+| **geo restriction** | blocking countries |
+| **static website hosting** | S3's old way to serve a site; needs a public bucket, HTTP only |
+| **origin access control (OAC)** | CloudFront signs its requests to S3, so the bucket can stay private |
+| **SigV4** | AWS's request signing |
+| **origin access identity (OAI)** | the older way; no SSE-KMS, uploads or every Region |
+| **`AWS:SourceArn`** | condition naming this distribution, so no other can read the bucket |
+| **403 vs 404** | without `s3:ListBucket`, a missing file gives 403 |
+| **cache behavior** | matches paths to an origin; the default is `*` |
+| **viewer protocol policy** | `allow-all`, `https-only` or `redirect-to-https` |
+| **cache policy** | decides the cache key and how long copies are kept |
+| **cache key** | which parts of a request make a different cached copy |
+| **CachingOptimized** / **CachingDisabled** | managed cache policies for static files / per-user content |
+| **origin request policy** | what reaches the origin, without changing the cache key |
+| **compression** | gzip or Brotli for text files |
+| **price class** | which edges are used: `PriceClass_100` is the cheapest set |
+| **default root object** | what `/` returns, usually `index.html` |
+| **viewer certificate** | the default `*.cloudfront.net` one, or ACM (which must be in us-east-1) |
+| **`InProgress`** / **`Deployed`** | a distribution reaching / at every edge |
+| **invalidation** | tells every edge to drop paths |
+| **versioned file names** | `app.3f9c.js`: new names never cached, so no invalidation needed |
+| **content type** | tells the browser what a file is, such as `text/html` |
+| **Global Accelerator** | two static anycast IPs carrying any TCP or UDP to your app; no caching |
+| **anycast** | one address answered from many places |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws s3 cp index.html s3://lb-site/index.html --content-type text/html` | uploads with a content type |
+| `aws cloudfront create-origin-access-control --origin-access-control-config Name=site-oac,SigningProtocol=sigv4,SigningBehavior=always,OriginAccessControlOriginType=s3` | creates an OAC |
+| `aws cloudfront create-distribution --distribution-config file://dist.json` | creates a distribution |
+| `aws cloudfront list-distributions` | lists them |
+| `aws cloudfront create-invalidation --distribution-id D --paths /index.html` | invalidates paths |
+| `aws s3api put-bucket-policy --bucket lb-site --policy file://...` | admits CloudFront |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `403 Access Denied` | reading the bucket directly, or a missing file through CloudFront |
+
+---
+
 A website's files (HTML, CSS, JavaScript, images) sit in one bucket in one
 Region. A visitor in Tokyo fetching them from us-east-1 waits for every
 request to cross the Pacific, and the bucket would have to be **public**

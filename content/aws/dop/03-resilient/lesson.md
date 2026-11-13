@@ -5,6 +5,34 @@ order: 3
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **ELB health checks** | Auto Scaling replaces an instance whose application crashed |
+| **single point of failure** | one NAT gateway, instance or AZ everything depends on |
+| **predictive scaling** | learns daily and weekly patterns and scales ahead |
+| **warm pool** | ready instances for slow-booting applications |
+| **lifecycle hooks** | pause instances while launching or terminating |
+| **Application Auto Scaling** | scales ECS services and more |
+| **reserved** / **provisioned concurrency** | guarantee and cap (0 stops the function) / pre-initialized |
+| **restore testing** | AWS Backup restoring on a schedule to prove backups work |
+| **failover runbook** | a tested Regional failover in Automation or Step Functions |
+| **Application Recovery Controller (ARC)** | readiness checks, routing controls between Regions, zonal shift |
+| **zonal shift** | moving traffic away from an impaired AZ |
+| **Elastic Disaster Recovery** | continuous server replication |
+| **AWS Fault Injection Service (FIS)** | chaos experiments with stop conditions |
+| **chaos experiment** | breaking things on purpose to prove recovery works |
+| **stop condition** | an alarm that ends an experiment early |
+
+---
+
 Resilience for a DevOps engineer is automated: instances replaced without a
 person, capacity added before users notice, failover run by a runbook, and
 experiments that prove all of it works. The method for reading questions is

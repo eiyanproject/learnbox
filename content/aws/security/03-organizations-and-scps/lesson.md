@@ -12,6 +12,67 @@ hints:
   - "The instance-type guard: `\"Action\": \"ec2:RunInstances\"`, `\"Resource\": \"arn:aws:ec2:*:*:instance/*\"`, `\"Condition\": {\"StringNotLike\": {\"ec2:InstanceType\": [\"t3.*\", \"t4g.*\"]}}`. Scope the Resource to instances: RunInstances is also authorized on subnets, volumes and network interfaces, which have no instance type."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **isolation boundary** | an AWS account: nothing in one touches another unless allowed |
+| **AWS Organizations** | groups accounts under one root with one bill and central policies |
+| **root** (of an organization) | the top; policies there reach every account (not the root user) |
+| **organizational unit (OU)** | a folder of accounts, which may contain other OUs |
+| **management account** | created the organization and pays; SCPs never apply to it |
+| **member account** | any other account in it |
+| **consolidated billing** | one payment method, with usage added up for discounts |
+| **Reserved Instances**, **Savings Plans** | discounts for committed usage, shared in the organization |
+| **Control Tower** | builds a standard multi-account layout |
+| **landing zone** | that layout: log archive and audit accounts, Identity Center, guardrails |
+| **account factory** | creates standardized accounts |
+| **guardrail** | preventive (an SCP that stops an action) or detective (a Config rule that reports one) |
+| **service control policy (SCP)** | the maximum permissions in accounts below it, root user included; never grants |
+| **`FullAWSAccess`** | the default SCP allowing everything; detaching it without a replacement blocks all |
+| **inherited** | a deny at a level applies to everything below |
+| **deny list** / **allow list** | keep FullAWSAccess and add denies / allow only listed services |
+| **service-linked role** | a role AWS services use; SCPs do not restrict it |
+| **`aws:RequestedRegion`** | condition key: the Region a request goes to |
+| **global services** | IAM, Organizations, STS, Route 53, CloudFront, Support: no Regions, handled in us-east-1 |
+| **`NotAction`** | every action except these |
+| **`StringNotEquals`** with a list | neither of these values |
+| **`ec2:InstanceType`** | condition key on the instance's type; only instance resources have it |
+| **resource scoping** | naming only `arn:aws:ec2:*:*:instance/*`, so subnets and volumes are not denied |
+| **`StringNotLike`** | condition operator with wildcards: `t3.*` |
+| **burstable instance** | a small type such as `t3`, which uses CPU credits |
+| **tag policy** | standardizes tag keys and values across accounts |
+| **`@@assign`** | the tag policy language's "set this value" |
+| **cost allocation tags** | tags used to split the bill |
+| **all features** | the organization mode needed for policies, beyond consolidated billing |
+| **asynchronous** | `create-account` returns at once; the account appears later |
+| **poll** | ask again and again until the state changes |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws organizations create-organization --feature-set ALL` | creates the organization |
+| `aws organizations list-roots` | gets the root's ID (`r-...`) |
+| `aws organizations enable-policy-type --root-id R --policy-type SERVICE_CONTROL_POLICY` | enables SCPs (also `TAG_POLICY`) |
+| `aws organizations create-organizational-unit --parent-id P --name N` | creates an OU |
+| `aws organizations create-account --email E --account-name N` | starts creating an account |
+| `aws organizations describe-create-account-status --create-account-request-id R` | polls it until `SUCCEEDED` |
+| `aws organizations move-account --account-id A --source-parent-id R --destination-parent-id OU` | moves it into an OU |
+| `aws organizations create-policy --name N --type SERVICE_CONTROL_POLICY --description D --content file://...` | creates an SCP or tag policy |
+| `aws organizations attach-policy --policy-id P --target-id T` | attaches it |
+| `aws organizations list-accounts`, `list-policies --filter SERVICE_CONTROL_POLICY` | lists accounts and SCPs |
+| `for _ in $(seq 30); do ...; sleep 2; done` | a shell polling loop |
+| `[ "$state" = SUCCEEDED ] && break` | leave the loop once done |
+
+---
+
 Everything so far happened in one account. Real companies use many: one
 per team, per environment, per product. An **AWS account** is the strongest
 isolation boundary AWS has: nothing in one account can touch another unless

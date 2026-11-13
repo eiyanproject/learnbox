@@ -11,6 +11,65 @@ hints:
   - "The CPU alarm needs a dimension: `--dimensions Name=AutoScalingGroupName,Value=web-asg`, with `--statistic Average --period 300 --evaluation-periods 3 --threshold 80 --comparison-operator GreaterThanThreshold`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **CloudWatch** | where AWS keeps metrics, logs and alarms |
+| **metric** | a series of numbers over time, such as CPU use every 5 minutes |
+| **namespace** | a group of related metrics: `AWS/EC2`, or your own such as `Learnbox` |
+| **dimension** | a name-value pair saying which thing a metric measures: `AutoScalingGroupName=web-asg` |
+| **detailed monitoring** | EC2 metrics every minute instead of every 5 |
+| **CloudWatch agent** | software on the instance that publishes memory and disk use, which EC2 cannot see |
+| **log event** | one log line, with a timestamp |
+| **log group** | logs of one application or function |
+| **log stream** | one source within a group, such as one instance |
+| **retention period** | how long a log group keeps events (1 day to 10 years); forever if unset |
+| **metric filter** | counts log events matching a pattern into a metric; not retroactive |
+| **filter pattern** | the text to match, such as `ERROR` |
+| **default value** | published for periods with events but no matches, so the metric has no gaps |
+| **Logs Insights** | queries stored logs with a query language |
+| **alarm** | watches a metric and acts when it crosses a threshold |
+| **`OK`**, **`ALARM`**, **`INSUFFICIENT_DATA`** | an alarm's three states |
+| **threshold** | the value an alarm compares against |
+| **period** | the length of each data window, in seconds |
+| **statistic** | how points in a period are combined: `Average`, `Sum`, `Maximum` |
+| **breaching** | a period on the wrong side of the threshold |
+| **evaluation periods** | how many periods are looked at; "datapoints to alarm" sets M of N |
+| **sparse metric** | one that only has data when something happens |
+| **treat missing data** | how an alarm counts periods with no data: `missing` (default), `notBreaching`, `breaching`, `ignore` |
+| **pending confirmation** | an email subscription waiting for the recipient's click |
+| **export to S3** / **subscription filter** | batch / real-time ways to send logs elsewhere |
+| **Kinesis**, **Firehose** | streaming services logs can be sent to |
+| **composite alarm** | combines alarms with AND and OR |
+| **status check** | EC2's health check of an instance and its host; an alarm on it can recover the instance |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws logs create-log-group --log-group-name /app/web` | creates a log group |
+| `aws logs put-retention-policy --log-group-name G --retention-in-days 30` | sets retention |
+| `aws logs put-metric-filter --log-group-name G --filter-name N --filter-pattern ERROR --metric-transformations ...` | creates a metric filter |
+| `aws logs create-log-stream --log-group-name G --log-stream-name S` | creates a stream |
+| `aws logs put-log-events --log-group-name G --log-stream-name S --log-events timestamp=...,message=...` | writes log lines |
+| `aws logs filter-log-events --log-group-name G --filter-pattern ERROR` | searches stored events |
+| `aws sns subscribe --topic-arn T --protocol email --notification-endpoint ADDRESS` | an email subscription |
+| `aws cloudwatch put-metric-alarm --alarm-name N --namespace NS --metric-name M --statistic Sum --period 300 --evaluation-periods 1 --threshold 5 --comparison-operator GreaterThanOrEqualToThreshold --alarm-actions T` | creates an alarm |
+| `--dimensions Name=AutoScalingGroupName,Value=web-asg` | which thing the metric is about |
+| `--treat-missing-data notBreaching` | no data counts as fine |
+| `aws cloudwatch describe-alarms` | lists alarms and states |
+| `aws cloudwatch set-alarm-state --alarm-name N --state-value ALARM --state-reason testing` | forces a state, to test the action |
+| `$(date +%s000)` | the time in milliseconds |
+
+---
+
 The earlier sections built a web tier, a database and a queue. Once real
 users arrive, the questions change: is it working right now? Is it getting
 slower? Did errors start after this morning's deploy? And, most of all:

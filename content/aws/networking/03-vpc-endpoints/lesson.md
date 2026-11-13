@@ -11,6 +11,55 @@ hints:
   - "The bucket policy denies `s3:*` on the bucket and its objects to `\"Principal\": \"*\"` when `\"StringNotEquals\": {\"aws:SourceVpce\": \"vpce-...\"}`. Put the endpoint's real ID in: write the file from the script with the ID substituted, or use `sed`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **VPC endpoint** | a private path from the VPC to an AWS service, never touching the internet |
+| **gateway endpoint** | for S3 and DynamoDB only: a target in your route tables; free |
+| **interface endpoint** | network interfaces with private IPs in your subnets; billed per hour per AZ and per GB |
+| **PrivateLink** | the technology behind interface endpoints; also offers your own service to other VPCs |
+| **prefix list** | `pl-...`: a named list of a service's address ranges, kept up to date by AWS |
+| **endpoint policy** | a resource policy saying what may pass through the endpoint; default allows all |
+| **data exfiltration** | copying data out to somewhere it should not go |
+| **ENI** | elastic network interface: a virtual network card with a private IP |
+| **private DNS** | makes the service's normal name resolve to the endpoint's private IPs inside the VPC |
+| **DNS** | the system that turns names into addresses |
+| **resolve** | look up a name's address |
+| **SSM** | Systems Manager; Session Manager needs `ssm`, `ssmmessages` and `ec2messages` endpoints |
+| **`aws:SourceVpce`** | condition key: the endpoint ID a request came through |
+| **`StringNotEquals`** | condition operator: true when the value differs, or is missing |
+| **placeholder** | text in a file to be replaced later, such as `VPCE_ID` |
+| **`sed`** | a stream editor that substitutes text |
+| **here document** | `cat > file <<EOF ... EOF`: writes a file from the script |
+| **on-premises** | your own data centre or office network |
+| **Network Load Balancer** | the load balancer a PrivateLink service sits behind |
+| **service name** | `com.amazonaws.us-east-1.s3`: how an endpoint names its service |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws ec2 create-vpc-endpoint --vpc-id V --service-name com.amazonaws.us-east-1.s3 --route-table-ids R --policy-document file://...` | creates a gateway endpoint |
+| `aws ec2 create-vpc-endpoint --vpc-endpoint-type Interface --subnet-ids A B --security-group-ids G --private-dns-enabled` | creates an interface endpoint |
+| `aws ec2 describe-vpc-endpoints` | lists endpoints |
+| `sed "s/VPCE_ID/$S3_ENDPOINT/" in.json > out.json` | fills in the real ID |
+| `aws s3api put-bucket-policy --bucket B --policy file://...` | applies the bucket policy |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `An error occurred (403) when calling the PutObject operation: Forbidden` | the bucket refusing a request that did not come through the endpoint |
+
+---
+
 AWS services such as S3 and Systems Manager are reached at **public**
 addresses (`s3.us-east-1.amazonaws.com`). So an instance in a private subnet
 that reads from S3 normally goes out through a NAT gateway (lesson 1), onto

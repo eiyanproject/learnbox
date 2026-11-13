@@ -5,6 +5,39 @@ order: 4
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **federation** | signing in with an outside identity provider |
+| **condition key** | a fact about a request a policy can test |
+| **`aws:SourceIp`** | the caller's public IP; not through VPC endpoints |
+| **`aws:RequestedRegion`** | the Region a request goes to |
+| **`aws:PrincipalOrgID`** | any account in your organization |
+| **`aws:MultiFactorAuthPresent`** | whether the caller used MFA |
+| **`aws:SourceVpce`**, **`aws:SourceVpc`** | the endpoint or VPC a request came through |
+| **`errorCode: AccessDenied`** | how a denied call appears in CloudTrail |
+| **IAM policy simulator** | tests whether policies allow an action |
+| **IAM Access Analyzer** | finds resources shared outside, unused permissions, and checks policies |
+| **policy layers** | identity, resource, permissions boundary, SCP, session, key policy; an explicit Deny anywhere wins |
+| **Trusted Advisor** | best-practice checks; the full set needs Business support or higher |
+| **AWS Config** / **conformance pack** | configuration history and rules / bundled rules |
+| **remediation** | an automatic fix for a non-compliant resource |
+| **Security Hub**, **GuardDuty**, **Inspector**, **Macie** | findings across accounts / threats / vulnerabilities / sensitive data |
+| **finding** | one reported issue |
+| **isolate an instance** | cut it off from the network for investigation |
+| **account delegation statement** | without it, a key policy ignores IAM policies |
+| **DNS validation** | ACM renews automatically while the validation CNAME stays |
+| **support plan** | the level of AWS support bought |
+
+---
+
 For an operations engineer, security is day-to-day work: answering "why
 can't this role read that bucket?", keeping guardrails in place across
 accounts, and acting on the findings that detection services report,

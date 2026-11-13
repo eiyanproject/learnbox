@@ -11,6 +11,54 @@ hints:
   - "Publishing with an attribute: `aws sns publish --topic-arn \"$TOPIC\" --message '{\"order\":7}' --message-attributes '{\"event\":{\"DataType\":\"String\",\"StringValue\":\"order_paid\"}}'`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **SNS** | Simple Notification Service: publish once, deliver to every subscriber |
+| **publish** | send a message to a topic |
+| **topic** | where messages are published |
+| **subscription** | one destination of a topic: a queue, a function, an HTTP endpoint, an email |
+| **fan-out** | one queue per service behind a topic, so each gets every message |
+| **access policy** | the queue's resource policy; must allow `sqs:SendMessage` from SNS |
+| **`aws:SourceArn`** | condition limiting the permission to your topic |
+| **`Policy` attribute** | how a queue's access policy is set |
+| **envelope** | SNS's JSON wrapping around your message |
+| **raw message delivery** | passes just your message through |
+| **filter policy** | a subscription only gets messages whose attributes match |
+| **message attributes** | typed key-value pairs sent alongside the body |
+| **push** | the service delivers to you, instead of you polling |
+| **EventBridge** | routes events by rules on their content |
+| **SaaS partner** | an outside software service that sends events to EventBridge |
+| **archive and replay** | EventBridge keeping events to send again later |
+| **SNS FIFO topic** | ordered, deduplicated; only SQS FIFO queues subscribe |
+| **stores nothing** | SNS keeps no copy, which is why queues sit behind it |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws sns create-topic --name N` | creates a topic; prints its ARN |
+| `aws sns subscribe --topic-arn T --protocol sqs --notification-endpoint QUEUE_ARN --attributes '{...}'` | subscribes a queue (by ARN) |
+| `"RawMessageDelivery":"true"`, `"FilterPolicy":"{\"event\":[\"order_paid\"]}"` | subscription attributes |
+| `aws sqs set-queue-attributes --queue-url U --attributes file://...` | sets the queue's `Policy` |
+| `aws sns publish --topic-arn T --message M --message-attributes '{"event":{"DataType":"String","StringValue":"order_paid"}}'` | publishes with an attribute |
+| `sqs:SendMessage` | the action SNS needs on the queue |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| *(no error at all)* | in real AWS, a queue without the access policy silently receives nothing |
+
+---
+
 A queue's messages are shared by its consumers: each message is handled by
 **one** of them. That suits a pool of identical workers. But when several
 **different** services each need **every** order (billing to invoice it,

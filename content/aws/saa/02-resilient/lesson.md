@@ -5,6 +5,53 @@ order: 2
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **resilient** | keeps working when part of it fails |
+| **tightly** / **loosely coupled** | one part waits on another / parts hand work over and carry on |
+| **scaling** | handling more load by adding capacity |
+| **high availability** | surviving the loss of one AZ |
+| **fault tolerance** | continuing with no interruption when a part fails |
+| **disaster recovery (DR)** | getting back after a large failure, such as a Region |
+| **SQS standard** / **FIFO** | at least once, best-effort order / exactly once, strict order per message group |
+| **visibility timeout** | how long a message being processed is hidden |
+| **dead-letter queue** | catches messages that failed `maxReceiveCount` times |
+| **SNS fan-out** | one message to several SQS queues |
+| **EventBridge** | routes events by rules on their content |
+| **Step Functions** | multi-step workflows with retries, branches and approvals |
+| **API Gateway** | fronts APIs, with throttling, authorization and caching |
+| **throttling** | limiting how many requests are accepted |
+| **stateless** | any instance can serve any request |
+| **session state** | per-user data; keep it in ElastiCache or DynamoDB |
+| **sticky sessions** | a workaround sending a user to the same instance |
+| **ELB health checks** | let Auto Scaling replace instances whose application fails |
+| **Multi-AZ** / **read replica** | synchronous standby for availability / asynchronous copy for read scaling |
+| **Aurora** | six copies across three AZs, up to 15 replicas |
+| **Aurora Global Database** | replicas in other Regions, usually under a second behind |
+| **DynamoDB global tables** | multi-Region, multi-active |
+| **multi-active** | writes accepted in every Region |
+| **RDS Proxy** | pools database connections |
+| **EFS** | a Regional, multi-AZ file system for Linux (NFS) |
+| **FSx for Windows File Server** | SMB file shares with Active Directory |
+| **NFS**, **SMB** | file-sharing protocols for Linux and Windows |
+| **Cross-Region Replication (CRR)** | copies S3 objects to another Region; needs versioning |
+| **service quotas** | per-Region limits; raise them in the standby Region beforehand |
+| **RPO** | recovery point objective: how much data you can lose |
+| **RTO** | recovery time objective: how long you can be down |
+| **backup and restore**, **pilot light**, **warm standby**, **multi-site active-active** | the four DR strategies, cheapest first |
+| **Elastic Disaster Recovery (DRS)** | replicates servers into AWS continuously |
+| **single point of failure** | one part whose failure stops everything |
+
+---
+
 A **resilient** architecture keeps working when part of it fails: an
 instance dies, an Availability Zone loses power, traffic jumps tenfold, or
 a whole Region has a bad day. This domain asks two things. Can the parts

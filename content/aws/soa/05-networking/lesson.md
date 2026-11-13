@@ -5,6 +5,41 @@ order: 5
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **egress-only internet gateway** | outbound-only IPv6; the IPv6 counterpart of a NAT gateway |
+| **IPv6** | 128-bit addresses, all public |
+| **gateway** / **interface endpoints** | private paths to AWS services |
+| **VPC peering** | joins two VPCs; not transitive, no overlapping CIDRs |
+| **Transit Gateway** | a hub for many VPCs and on-premises, with route tables per attachment |
+| **attachment** | a VPC or VPN connected to a Transit Gateway |
+| **segment** | keep groups of networks apart |
+| **Site-to-Site VPN tunnels** | two per connection, in different AZs; configure both |
+| **Direct Connect** | a private line to AWS |
+| **AWS Network Firewall** | managed stateful firewall in the VPC, with intrusion prevention and domain filtering |
+| **intrusion prevention** | blocking traffic that matches attack patterns |
+| **domain filtering** | allow outbound only to listed domains |
+| **Route 53 Resolver DNS Firewall** | blocks DNS lookups of bad domains from the VPC |
+| **query logging** | records DNS queries |
+| **Resolver inbound** / **outbound endpoint** | on-premises resolves AWS names / AWS resolves on-premises names, with **forwarding rules** |
+| **invalidation**, **versioned file names** | fixes for stale CloudFront content |
+| **Global Accelerator** | static anycast IPs, fast failover, TCP and UDP |
+| **VPC Flow Logs** | each flow's addresses, ports and ACCEPT or REJECT |
+| **Reachability Analyzer** | whether a path exists from A to B, and what blocks it, without sending traffic |
+| **access logs** | per-request logs from ELB, WAF and CloudFront |
+| **CloudWatch Network Monitor** | latency and packet loss to on-premises |
+| **inbound ACCEPT, outbound REJECT** | the Flow Logs sign of a NACL missing its return rule |
+
+---
+
 Networking questions for operators are mostly "it doesn't connect, why?"
 and "how do I connect these two?". Knowing which layer can block traffic
 (route table, NACL, security group, firewall, DNS) and which tool shows it

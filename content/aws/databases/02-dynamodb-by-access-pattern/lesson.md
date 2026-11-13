@@ -11,6 +11,76 @@ hints:
   - "`aws dynamodb batch-write-item --request-items file://items.json` writes up to 25 items; items.json maps the table name to a list of `{\"PutRequest\": {\"Item\": {...}}}`, each attribute typed: `{\"pk\": {\"S\": \"CUSTOMER#1\"}}`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **SQL** | the query language of relational databases |
+| **DynamoDB** | a serverless key-value and document database |
+| **serverless** | no servers for you to choose or patch |
+| **on-demand** / **provisioned** | pay per request / pay for capacity you reserve |
+| **join** | combining tables in a query; DynamoDB has none |
+| **ad-hoc query** | a question nobody planned for |
+| **access pattern** | an exact question the app will ask; design the table around them |
+| **table** | a collection of items |
+| **item** | like a row; at most 400 KB |
+| **attribute** | like a column; only key attributes are fixed |
+| **typed value** | `{"S": "..."}` string, `{"N": "42.50"}` number (sent as a string), `B` binary |
+| **partition key** | decides where an item lives; choose one with many distinct values |
+| **hash** | turn a value into a number that picks a storage partition |
+| **partition** | one piece of the table's storage |
+| **sort key** | orders items within one partition key |
+| **primary key** | partition key plus sort key; unique per item |
+| **`HASH`** / **`RANGE`** | the API's names for partition key / sort key |
+| **global secondary index (GSI)** | a second set of keys over the same items; eventually consistent |
+| **eventually consistent** | a new write may take a moment to appear |
+| **strongly consistent** | a read always shows the latest write |
+| **projection** | which attributes are copied into an index; `ALL` copies every one |
+| **local secondary index (LSI)** | same partition key, different sort key; only at table creation |
+| **`Query`** | reads items by key, quickly |
+| **`Scan`** | reads the whole table; never on a request path |
+| **`ACTIVE`** | the table is ready to use |
+| **TTL** | an attribute holding an expiry time; DynamoDB deletes expired items, eventually |
+| **epoch seconds** | seconds since 1 January 1970, UTC |
+| **point-in-time recovery (PITR)** | continuous backups: restore to any second in the last 35 days |
+| **Streams** | a record of every change for 24 hours, for Lambda to react to |
+| **global tables** | a table replicated to several Regions, writable in all |
+| **key condition expression** | the `Query`'s key test, such as `pk = :c` |
+| **value placeholder** | `:c`, filled in from `--expression-attribute-values` |
+| **name placeholder** | `#s`, filled in from `--expression-attribute-names` |
+| **reserved word** | a name like `status` that must go through a name placeholder |
+| **RCU** / **WCU** | read and write capacity units: one 4 KB strong read / one 1 KB write per second |
+| **DAX** | an in-memory cache in front of DynamoDB with the same API |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws dynamodb create-table --table-name T --attribute-definitions ... --key-schema ... --billing-mode PAY_PER_REQUEST` | creates a table |
+| `--global-secondary-indexes file://...` | adds GSIs at creation |
+| `aws dynamodb wait table-exists --table-name T` | waits until it is `ACTIVE` |
+| `aws dynamodb update-time-to-live --table-name T --time-to-live-specification Enabled=true,AttributeName=expires_at` | turns on TTL |
+| `aws dynamodb update-continuous-backups --table-name T --point-in-time-recovery-specification PointInTimeRecoveryEnabled=true` | turns on PITR |
+| `aws dynamodb batch-write-item --request-items file://items.json` | writes up to 25 items |
+| `aws dynamodb query --table-name T --key-condition-expression 'pk = :c' --expression-attribute-values '{...}'` | a query |
+| `--index-name by-status` | queries an index instead |
+| `--no-scan-index-forward` | reads the sort key backwards: newest first |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `ValidationException ... Number of attributes in KeySchema does not exactly match number of attributes defined in AttributeDefinitions` | declared an attribute no key uses |
+| `ValidationException ... Attribute name is a reserved keyword; reserved keyword: status` | `status` used without a `#` name placeholder (real DynamoDB) |
+
+---
+
 A relational database like last lesson's lets you ask almost any question
 with SQL, at the cost of servers to size and a ceiling on how far one
 database can grow. **DynamoDB** makes the opposite trade. It is a

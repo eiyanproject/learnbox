@@ -11,6 +11,67 @@ hints:
   - "`aws cloudformation create-stack --stack-name app-dev --template-body file://template.yaml --parameters ParameterKey=Env,ParameterValue=dev --tags Key=env,Value=dev --enable-termination-protection`, then `aws cloudformation wait stack-create-complete --stack-name app-dev`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **infrastructure as code** | describing the end state, and letting a tool work out the calls |
+| **end state** | what should exist, rather than the steps to make it |
+| **CloudFormation** | AWS's infrastructure-as-code service |
+| **template** | a YAML or JSON file declaring resources |
+| **YAML** | a text format: indentation for nesting, `key: value` maps, `- item` lists |
+| **stack** | the resources from one template, managed together |
+| **resource** | one thing in the template, with a logical ID, `Type` and `Properties` |
+| **logical ID** | the name you give a resource in the template, such as `Uploads` |
+| **physical resource** | the real bucket or queue it creates, with its own name or ID |
+| **`Type`** | the resource kind: `AWS::S3::Bucket`, `AWS::SQS::Queue` |
+| **`Properties`** | its settings, named like the API's |
+| **Parameters** | inputs given at deploy time; `AllowedValues` restricts them |
+| **Outputs** | values the stack publishes |
+| **Mappings**, **Conditions** | lookup tables (`!FindInMap`); create a resource only if true |
+| **intrinsic function** | a function written with `!` in YAML |
+| **`!Ref`** | a parameter's value, or a resource's main identifier |
+| **`!GetAtt X.Attr`** | another attribute of a resource, such as its ARN |
+| **`!Sub`** | a string with `${X}` values substituted |
+| **dependency order** | references tell CloudFormation what to create first |
+| **generated name** | a unique name made from the stack and logical ID when you give none |
+| **`CREATE_IN_PROGRESS`** / **`CREATE_COMPLETE`** | being created / done |
+| **roll back** | undo everything after a failure; ends in `ROLLBACK_COMPLETE` |
+| **stack tags** | copied onto every resource in the stack |
+| **update** | deploying a changed template; only differences change |
+| **replacement** | a change that creates a new resource and deletes the old one, with its data |
+| **change set** | a preview of an update, showing replacements |
+| **termination protection** | refuses to delete the stack |
+| **`DeletionPolicy`** | `Retain` or `Snapshot`: keep the resource when the stack is deleted; does not stop replacement |
+| **drift detection** | finds changes made by hand behind the template's back |
+| **AWS CDK** | writes CloudFormation templates from TypeScript or Python code |
+| **Terraform**, **Pulumi** | independent infrastructure-as-code tools |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws cloudformation create-stack --stack-name N --template-body file://template.yaml --parameters ParameterKey=Env,ParameterValue=dev --tags Key=env,Value=dev --enable-termination-protection` | deploys a stack |
+| `aws cloudformation wait stack-create-complete --stack-name N` | waits for it |
+| `aws cloudformation describe-stacks --stack-name N` | shows status and outputs |
+| `aws cloudformation describe-stack-resources --stack-name N` | maps logical IDs to real resources |
+| `VersioningConfiguration`, `BucketEncryption`, `PublicAccessBlockConfiguration` | bucket properties used here |
+| `MessageRetentionPeriod`, `VisibilityTimeout`, `RedrivePolicy` | queue properties |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `ValidationError` | a parameter outside `AllowedValues`, or deleting a protected stack (real CloudFormation) |
+
+---
+
 Everything in this course so far has been a script of CLI calls. That
 works, but a script only knows how to **create** things. Run it a second
 time and it fails, because everything already exists. Change one setting

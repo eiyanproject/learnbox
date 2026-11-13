@@ -11,6 +11,76 @@ hints:
   - "`aws ec2 modify-subnet-attribute --subnet-id \"$SUBNET\" --map-public-ip-on-launch` gives instances launched there a public IP."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **VPC** | Virtual Private Cloud: your private network inside one Region |
+| **network interface** | a resource's connection to the network |
+| **IP address** | a device's network address; IPv4 is 32 bits, written `10.0.1.25` |
+| **bit** | a single 0 or 1; each number between the dots is 8 bits |
+| **CIDR** | Classless Inter-Domain Routing: an address, a slash, and how many leading bits are fixed |
+| **`/16`, `/24`, `/28`** | 65,536, 256 and 16 addresses: a bigger number is a smaller range |
+| **`0.0.0.0/0`** | every address: "anywhere" |
+| **private range** | `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`: never routed on the internet |
+| **overlap** | two ranges sharing addresses; such networks cannot be connected later |
+| **secondary CIDR block** | an extra range added to a VPC; the first never changes |
+| **subnet** | a slice of the VPC's range in one AZ |
+| **reserved addresses** | five per subnet AWS keeps (network, router, DNS, future, broadcast) |
+| **tier** | one layer of an application, such as web servers or databases |
+| **internet gateway (IGW)** | the VPC's door to the internet; free, attached to one VPC |
+| **route table** | where traffic leaving a subnet goes next |
+| **route** | "traffic for this destination goes to this target" |
+| **target** | where a route sends traffic: `local`, `igw-...`, `nat-...` |
+| **`local` route** | delivery inside the VPC; always there |
+| **longest prefix match** | when several routes match, the most specific wins |
+| **blackhole** | a route whose target was deleted; traffic is dropped |
+| **association** | linking a subnet to a route table (each subnet has exactly one) |
+| **main route table** | the VPC's default table, used by any subnet not associated explicitly |
+| **public subnet** | its route table sends `0.0.0.0/0` to an internet gateway |
+| **private subnet** | reaches out only through a NAT gateway |
+| **isolated subnet** | only the `local` route |
+| **NAT gateway** | lets private instances reach out without being reachable |
+| **public IP** | an address reachable from the internet; the instance's OS only sees its private one |
+| **map public IP on launch** | a subnet setting giving every new instance a public IP |
+| **resource ID** | `vpc-...`, `subnet-...`, `igw-...`, `rtb-...` |
+| **`Name` tag** | the tag the console shows as a resource's name |
+| **shell function** | a named group of commands: `name() { ...; }` |
+| **default VPC** | the ready-made `172.31.0.0/16` VPC in every Region, all subnets public |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws ec2 create-vpc --cidr-block 10.0.0.0/16` | creates a VPC |
+| `aws ec2 create-subnet --vpc-id V --cidr-block C --availability-zone Z` | creates a subnet |
+| `--tag-specifications 'ResourceType=vpc,Tags=[{Key=Name,Value=lb-vpc}]'` | names a resource as it is created |
+| `aws ec2 create-internet-gateway` | creates an internet gateway |
+| `aws ec2 attach-internet-gateway --internet-gateway-id I --vpc-id V` | attaches it to the VPC |
+| `aws ec2 create-route-table --vpc-id V` | creates a route table |
+| `aws ec2 create-route --route-table-id R --destination-cidr-block 0.0.0.0/0 --gateway-id I` | adds a route to the gateway |
+| `aws ec2 associate-route-table --route-table-id R --subnet-id S` | links a subnet to the table |
+| `aws ec2 modify-subnet-attribute --subnet-id S --map-public-ip-on-launch` | public IPs for new instances |
+| `aws ec2 describe-route-tables --filters Name=vpc-id,Values=V` | shows a VPC's route tables |
+| `aws ec2 describe-vpcs --filters Name=tag:Name,Values=lb-vpc` | finds the VPC by name |
+| `eval "$(awslab given vpc)"` | builds this lesson's VPC and sets `VPC_ID`, `PUBLIC_A` and the rest |
+| `awslab given vpc --show` | prints the commands it stands for |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `InvalidSubnet.Conflict` | the subnet's range overlaps another subnet |
+| `InvalidSubnet.Range` | the subnet's range is outside the VPC's |
+
+---
+
 Servers, databases and load balancers need a network to live on, and you
 want that network to be yours: your addresses, your rules about what can
 reach what, and nothing else's traffic. A **VPC** (Virtual Private Cloud) is

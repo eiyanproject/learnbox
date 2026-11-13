@@ -5,6 +5,53 @@ order: 4
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **root cause analysis** | finding what really caused a failure |
+| **observability** | being able to see what a system is doing from outside |
+| **instrumenting** | adding logs, metrics and traces to code |
+| **logs**, **metrics**, **traces** | detail / numbers over time / one request's path across services |
+| **Logs Insights** | queries CloudWatch Logs |
+| **structured logging** | one JSON event per line, with fields such as a request ID |
+| **metric filter** | turns log patterns into a metric, for new events only |
+| **`Invocations`**, **`Errors`**, **`Throttles`**, **`Duration`**, **`ConcurrentExecutions`** | Lambda's metrics |
+| **`IteratorAge`** | how far behind a stream consumer is |
+| **`PutMetricData`** | publishes a custom metric |
+| **embedded metric format (EMF)** | a JSON log line CloudWatch turns into a metric |
+| **AWS X-Ray** | traces requests and draws a service map |
+| **ADOT** | AWS Distro for OpenTelemetry |
+| **service map** | a picture of services and the calls between them |
+| **annotation** / **metadata** | indexed, searchable trace data / extra, not indexed |
+| **active tracing** | Lambda's X-Ray switch |
+| **504** | gateway timeout: the integration took too long |
+| **202** | accepted: work queued, answer later |
+| **parallelization factor** | how many batches per Kinesis shard Lambda processes at once |
+| **reserved** / **provisioned concurrency** | guarantees and caps / keeps environments ready (costs while idle) |
+| **cold start** | the delay while a new environment loads |
+| **SnapStart** | restores a snapshot for faster starts (Java, Python, .NET) |
+| **Lambda Power Tuning** | a tool measuring cost and speed at each memory setting |
+| **cache key** | what makes a different cached copy; keep it small |
+| **hit rate** | the share of requests served from cache |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `TooManyRequestsException` (429) | a Lambda concurrency limit was reached |
+| `ProvisionedThroughputExceededException` | a hot key or too little DynamoDB capacity |
+| `502` / `504` from API Gateway | malformed proxy response / integration timed out |
+| `AccessDenied` | the execution role lacks a permission |
+
+---
+
 When something breaks in a distributed application, the question is
 **where**: the API, the function, the queue, or the table? This domain is
 about finding out quickly with **logs**, **metrics** and **traces**,

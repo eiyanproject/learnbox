@@ -11,6 +11,69 @@ hints:
   - "`aws rds create-db-instance-read-replica --db-instance-identifier app-db-reports --source-db-instance-identifier app-db --db-instance-class db.t3.micro`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **relational database** | data in tables of rows and columns, queried with SQL |
+| **engine** | the database software: PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, Db2 |
+| **Amazon RDS** | Relational Database Service: runs the engine and does patching, backups and failover |
+| **provision** | create and set up the server |
+| **DB subnet group** | the subnets a database may be placed in; at least two AZs |
+| **publicly accessible** | reachable from the internet; keep it off |
+| **Multi-AZ** | a synchronous standby copy in another AZ, with automatic failover |
+| **standby** | the copy that only waits to take over |
+| **failover** | switching to the standby when the primary fails |
+| **primary** | the database that takes writes |
+| **synchronous** / **asynchronous replication** | a write is on both copies before it is confirmed / copied later and may lag |
+| **storage encryption** | KMS encryption at rest; chosen only at creation |
+| **backup retention** | days of automated backups kept (1 to 35) |
+| **point-in-time restore** | restore to any second within the retention window, as a new database |
+| **manual snapshot** | a backup kept until you delete it |
+| **deletion protection** | delete calls fail until it is turned off |
+| **master user** | the database's administrator account |
+| **managed master password** | RDS generates it and keeps it in Secrets Manager |
+| **Secrets Manager** | the AWS service that stores and rotates secrets |
+| **shell history** | the list of commands your shell remembers; a pasted password ends up in it |
+| **endpoint** | the database's DNS name; on failover it points at the standby |
+| **read replica** | a readable, asynchronous copy used to move reads off the primary |
+| **stale read** | a read that does not yet show the latest write |
+| **promote** | turn a replica into a standalone database |
+| **Multi-AZ DB cluster** | a newer option with two readable standbys |
+| **instance class** | the database server's size, such as `db.t3.micro` |
+| **storage auto scaling** | grows the disk when it runs low; never shrinks |
+| **IAM database authentication** | signing in with IAM instead of a password |
+| **RDS Proxy** | pools connections, such as from many Lambda functions |
+| **Aurora** | AWS's MySQL- and PostgreSQL-compatible engine, six copies across three AZs |
+| **RDS Custom** | RDS for Oracle and SQL Server with shell access |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws rds create-db-subnet-group --db-subnet-group-name N --db-subnet-group-description D --subnet-ids A B` | creates a subnet group |
+| `aws rds create-db-instance --db-instance-identifier N --engine postgres --db-instance-class db.t3.micro ...` | creates a database |
+| `--allocated-storage 20 --storage-type gp3` | 20 GiB of gp3 storage |
+| `--multi-az --storage-encrypted --backup-retention-period 7 --deletion-protection` | the settings that matter |
+| `--no-publicly-accessible` | keeps it off the internet |
+| `--master-username app --manage-master-user-password` | an admin user with a password kept in Secrets Manager |
+| `aws rds create-db-instance-read-replica --db-instance-identifier R --source-db-instance-identifier N` | creates a read replica |
+| `aws rds describe-db-instances --db-instance-identifier N` | shows a database's settings and endpoint |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `InvalidParameterCombination ... Cannot delete protected DB Instance` | deletion protection refusing a delete |
+
+---
+
 Running a database yourself on a server means installing it, patching it,
 taking backups, testing that the backups restore, and being woken up when
 the disk fills or the server dies. **Amazon RDS** (Relational Database

@@ -11,6 +11,62 @@ hints:
   - "A private zone is tied to a VPC at creation: `aws route53 create-hosted-zone --name internal.example.com --caller-reference ... --vpc VPCRegion=us-east-1,VPCId=$VPC_ID --hosted-zone-config PrivateZone=true`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **DNS** | turns names into IP addresses |
+| **Route 53** | AWS's DNS service, named after DNS's port 53 |
+| **SLA** | service level agreement: a promised availability |
+| **resolver** | the server a browser asks; it caches answers |
+| **root servers** | the top of DNS; point to the servers for `.com` and so on |
+| **name server** | holds or points to a domain's records |
+| **authoritative** | holds the domain's records itself |
+| **registrar** | where a domain is bought |
+| **hosted zone** | the records for one domain; public or private |
+| **`NS`** / **`SOA`** | the zone's name servers / its start-of-authority record |
+| **A**, **AAAA**, **CNAME** | name to IPv4 / IPv6 / another name |
+| **MX**, **TXT** | mail servers / text, such as ownership proofs |
+| **TTL** | seconds resolvers may cache an answer; lower it before a change |
+| **alias record** | an A or AAAA record whose target is an AWS resource; allowed at the apex, free |
+| **zone apex** | the domain itself, `example.com` |
+| **`EvaluateTargetHealth`** | an alias uses its target's health |
+| **routing policy** | decides which answer a query gets |
+| **simple**, **failover**, **weighted**, **latency** | one answer / primary unless unhealthy / by weight / lowest latency Region |
+| **geolocation**, **geoproximity**, **multivalue**, **IP-based** | by location / by distance with a bias / up to eight healthy / by resolver's CIDR |
+| **`SetIdentifier`** | tells records with the same name and type apart |
+| **`PRIMARY`** / **`SECONDARY`** | failover's two records |
+| **active/passive**, **active/active** | one site waits / both serve |
+| **canary**, **blue/green** | sending a small share to the new version / switching between two versions |
+| **health check** | probes an endpoint from about 15 checkers worldwide |
+| **`FailureThreshold`** | consecutive failures before unhealthy |
+| **calculated health check** | healthy if at least N of several are |
+| **private hosted zone** | answers only associated VPCs |
+| **split-horizon DNS** | a private zone hiding the public one of the same name |
+| **Resolver endpoints** | inbound and outbound, for on-premises networks |
+| **change batch** | a JSON list of `CREATE`, `UPSERT` or `DELETE`, applied all or nothing |
+| **fully qualified name** | with a trailing dot: `app.example.com.` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `aws route53 create-hosted-zone --name example.com --caller-reference R` | a public zone |
+| `--vpc VPCRegion=...,VPCId=... --hosted-zone-config PrivateZone=true` | makes it private |
+| `aws route53 create-health-check --caller-reference R --health-check-config Type=HTTPS,IPAddress=...,Port=443,ResourcePath=/health,RequestInterval=30,FailureThreshold=3` | creates a health check |
+| `aws route53 change-resource-record-sets --hosted-zone-id Z --change-batch file://...` | writes records |
+| `aws route53 list-hosted-zones-by-name --dns-name example.com` | finds a zone |
+| `aws route53 list-resource-record-sets --hosted-zone-id Z` | lists its records |
+| `aws ec2 modify-vpc-attribute --vpc-id V --enable-dns-hostnames '{"Value":true}'` | DNS hostnames in the VPC |
+
+---
+
 Computers connect to IP addresses; people type names. **DNS** (the Domain
 Name System) turns `app.example.com` into `192.0.2.10`. It is also one of
 the simplest places to **steer traffic**: send users to a standby site when
