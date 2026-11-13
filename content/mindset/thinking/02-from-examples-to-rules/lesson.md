@@ -11,6 +11,45 @@ hints:
   - "`normalise` lowercases and strips surrounding whitespace, but must not strip internal underscores or change a valid name."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **requirement** | what the code should do; usually vague at first |
+| **example table** | inputs with accept or reject, from which the rule falls out |
+| **silent specification** | a case nobody decided; notice it rather than choosing by accident |
+| **edge** (boundary) | the values at the limits: 2, 3, 16 and 17 for "3 to 16" |
+| **off-by-one** | a limit one too high or low |
+| **inclusive** | both ends allowed |
+| **normalise** | strip surrounding whitespace and lowercase |
+| **one rule per check** | separate checks, so you can say which rule broke |
+| **specific error message** | tells the user what to do next |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python -i rules.py` | runs the file, then leaves you at a Python prompt to try the functions |
+
+### Python names
+
+| Name | What it does |
+|---|---|
+| `raw.strip().lower()` | normalises |
+| `len(name)` | the length |
+| `c.islower()`, `c.isdigit()`, `c == "_"` | character tests |
+| `all(... for c in name)` | every character passes |
+| `name[0].isalpha()`, `name.endswith("_")` | first and last character tests |
+| `name.isascii()` | only ASCII characters |
+
+---
+
 Requirements arrive vague. "Usernames should be reasonable" is not something
 you can implement, and asking "what exactly do you mean?" usually produces
 another vague sentence.

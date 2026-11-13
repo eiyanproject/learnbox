@@ -11,6 +11,43 @@ challenge:
     xp: 200
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **culprit** | the version or input that causes the failure |
+| **bisection** | halving the range each check, instead of trying every value |
+| **monotonic** | once bad, every later version is bad too |
+| **first bad version** | the lowest-numbered bad one |
+| **call budget** | the tests allow at most `n.bit_length() + 1` calls |
+| **minimal failing input** | a list from which no single item can be removed without the failure going away |
+| **delta debugging** | shrinking a failing input one piece at a time |
+| **callback** | `is_bad` and `fails`: functions you are given to call |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python -i culprit.py` | runs the file, then leaves you at a Python prompt to try the functions |
+
+### Python names
+
+| Name | What it does |
+|---|---|
+| `n.bit_length()` | how many bits `n` needs: about log₂ n |
+| `//` | whole-number division |
+| `items[:i]`, `items[i+1:]` | slices: before and after position `i` |
+| `list(items)` | a copy, so the original is not changed |
+| `None` | "nothing is bad" |
+
+---
+
 Version 1 worked and version 800 does not. Somewhere in a 60-line input is
 the line that crashes the importer. Guessing is not a method; searching is.
 

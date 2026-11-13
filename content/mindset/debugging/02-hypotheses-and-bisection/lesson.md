@@ -11,6 +11,46 @@ hints:
   - "`summarise` should ignore rows that fail to parse rather than crashing the whole import - return the ones that worked."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **bisect** | check the middle, and throw away the half that is fine |
+| **pipeline** | steps where each passes its result to the next |
+| **`git bisect`** | the same search over commits |
+| **hypothesis** | a sentence that can be wrong, with a check to test it |
+| **reproduce** | make the bug happen on purpose, as small as possible |
+| **stale build** | running old compiled code, not what you are reading |
+| **cached value** | a stored old answer used instead of a fresh one |
+| **swallowed exception** | an error caught and hidden |
+| **header** | the first row of a CSV, naming the columns |
+| **malformed row** | one that does not parse |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python -i bisect_bug.py` | runs the file, then leaves you at a Python prompt to try the functions |
+
+### Python names
+
+| Name | What it does |
+|---|---|
+| `print(type(x), repr(x))` | shows exactly what a value is |
+| `repr(x)` | shows `"2"` against `2`, and trailing spaces |
+| `rows[1:]` | everything after the header |
+| `name, qty, price = row` | unpacks a row; fails if it has the wrong length |
+| `int(qty)`, `float(price)` | parse numbers |
+| `try: ... except ValueError: continue` | skips a row that fails |
+
+---
+
 Debugging is a search. The only question that matters is how fast you shrink
 the space.
 

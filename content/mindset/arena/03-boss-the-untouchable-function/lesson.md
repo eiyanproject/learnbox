@@ -12,6 +12,45 @@ challenge:
     xp: 250
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **order line** | `"2 x coffee @ 3.50"`: quantity, name and price |
+| **specification** | the description of what code must do; here, the old function itself |
+| **refactor** | restructure code without changing what it does |
+| **skipped** | lines that cannot be read, counted and ignored |
+| **subtotal** | the sum of the line totals |
+| **discount code** | `"TEN"` takes 10%; `"FIVER"` takes 5.0, never more than the amount |
+| **optional argument** | `code=None`: may be left out |
+| **round to 2 decimals** | money precision |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python -i billing.py` | runs the file, then leaves you at a Python prompt to try the functions |
+
+### Python names
+
+| Name | What it does |
+|---|---|
+| `text.split(sep)` | splits text at a separator |
+| `int(text)`, `float(text)` | parse numbers; raise `ValueError` on bad text |
+| `try: ... except ValueError: ...` | counts unreadable lines |
+| `round(x, 2)` | rounds to 2 decimals |
+| `min(a, b)` | the smaller |
+| `def bill(lines, code=None):` | a parameter with a default |
+| `raise ValueError(...)` | for a bad line or an unknown code |
+
+---
+
 `bill()` has worked for years and nobody dares change it. Today it needs
 discount codes, and you have half an hour.
 

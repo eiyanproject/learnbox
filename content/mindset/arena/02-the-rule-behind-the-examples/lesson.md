@@ -11,6 +11,39 @@ challenge:
     xp: 150
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **humanize** | turn a number into text a person reads easily, such as `"1h 2m 5s"` |
+| **unit** | days, hours, minutes, seconds |
+| **rule from examples** | the general behaviour the example table implies |
+| **left out** | a unit with a value of 0 is not shown, except for `0` itself |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python -i humanize.py` | runs the file, then leaves you at a Python prompt to try the functions |
+
+### Python names
+
+| Name | What it does |
+|---|---|
+| `divmod(a, b)` | the whole quotient and the remainder at once |
+| `//`, `%` | whole-number division, remainder |
+| `f"{n}d"` | an f-string: text with a value inside |
+| `" ".join(parts)` | joins with spaces |
+| `raise ValueError("...")` | the error for a negative number |
+
+---
+
 The person who knew how this was meant to work has left. What they left
 behind is a table.
 

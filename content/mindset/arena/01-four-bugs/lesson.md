@@ -11,6 +11,47 @@ challenge:
     xp: 50
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **bug report** | a user's description of what went wrong |
+| **docstring** | the text under a `def` line saying what the function should do |
+| **one bug** | each function has exactly one wrong thing; fix it, do not rewrite |
+| **running total** | each value plus everything before it |
+| **integer division** | dividing whole numbers and dropping the fraction, as `//` does |
+| **first when tied** | among equally long words, the earliest one |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python -i report.py` | runs the file, then leaves you at a Python prompt to try the functions |
+
+### Python names
+
+| Name | What it does |
+|---|---|
+| `len(values)` | how many items |
+| `sum(values)` | their total |
+| `text.split()` | splits text on whitespace |
+| `/`, `//` | division / whole-number division |
+| `>`, `>=` | greater than / greater than or equal |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `ZeroDivisionError` | dividing by zero, such as averaging an empty list |
+
+---
+
 `report.py` went out on Friday. Four bug reports came in over the weekend,
 one for each function.
 

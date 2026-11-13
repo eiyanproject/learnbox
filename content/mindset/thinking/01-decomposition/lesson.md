@@ -11,6 +11,42 @@ hints:
   - "`format_receipt` joins one line per item plus SUBTOTAL, TAX and TOTAL rows - use the functions above rather than recomputing."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **decomposition** | splitting a problem into named pieces |
+| **seam** | a good place to split: one name without "and", testable alone, one reason to change |
+| **work backwards** | start from the output and name each part |
+| **boring pieces first** | write the small functions before the one that assembles them |
+| **round once** | round where a number becomes money, then reuse that value |
+| **subtotal**, **tax**, **total** | before tax / the tax / both |
+| **default rate** | `rate=0.10`: 10% unless told otherwise |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python -i receipt.py` | runs the file, then leaves you at a Python prompt to try the functions |
+
+### Python names
+
+| Name | What it does |
+|---|---|
+| `round(x, 2)` | rounds to 2 decimals |
+| `for name, qty, price in items:` | unpacks each item |
+| `f"{amount:.2f}"` | a number with two decimals |
+| `"\n".join(lines)` | joins lines with newlines |
+| `def tax(amount, rate=0.10):` | a default parameter |
+
+---
+
 A problem you cannot hold in your head is not a hard problem; it is several
 problems wearing one name. The skill is finding the seams.
 

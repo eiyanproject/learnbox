@@ -11,6 +11,45 @@ hints:
   - "Return the strings exactly: \"expired\", \"expiring soon\", \"fresh\"."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **readable code** | code a reader understands without reconstructing it |
+| **scope** | how far a name travels; length should match it |
+| **predicate** | a function returning `True` or `False`; name it as a question |
+| **boolean** | `True` or `False` |
+| **type in the name** | `user_list`: wrong the day it becomes a set |
+| **what, not how** | names promise a result, not an implementation |
+| **extract a function** | move a piece into its own named function |
+| **nesting level** | how many blocks deep code is |
+| **comment** | worth writing for *why*, not *what* |
+| **drift** | a comment going out of date while the code changes |
+| **429** | the HTTP status for "too many requests" |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python -i clean.py` | runs the file, then leaves you at a Python prompt to try the functions |
+
+### Python names
+
+| Name | What it does |
+|---|---|
+| `def is_expired(days_until_expiry):` | a predicate named as a question |
+| `return days_until_expiry < 0` | returns a boolean directly |
+| `if ...: return ...` | an early return, instead of nested `elif` |
+| `# comment` | a comment line |
+
+---
+
 Code is read far more often than it is written, usually by someone with less
 context than the author had — frequently the author, months later.
 

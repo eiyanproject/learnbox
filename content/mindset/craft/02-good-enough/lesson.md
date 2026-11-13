@@ -11,6 +11,51 @@ hints:
   - "`delete_old_entries` should delete, not comment out - the test checks that removed entries are actually gone."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **unfinished** | a real case missing: must be fixed |
+| **imperfect** | working but not elegant: the normal state |
+| **generalise** | build an abstraction to cover many cases |
+| **axis of variation** | the way cases really differ; two examples do not show it |
+| **wrong abstraction** | a general design that later cases fight against |
+| **duplication** | the same code twice; cheaper than the wrong abstraction |
+| **plugin system** | machinery for adding cases nobody has asked for |
+| **liberal in what you accept** | ignore unknown input, validate what you know, produce predictable output |
+| **breaking change** | a change that makes old input or callers fail |
+| **dead code** | commented-out or unreachable code; delete it |
+| **version control** | Git: keeps old code, so you need not |
+| **paged at 3am** | woken to fix production; the real test of good enough |
+| **retry** | try again; re-raise the last error if all attempts fail |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python -i enough.py` | runs the file, then leaves you at a Python prompt to try the functions |
+
+### Python names
+
+| Name | What it does |
+|---|---|
+| `text.splitlines()` | the lines of the text |
+| `line.strip()`, `line.startswith("#")` | trims / tests for a comment |
+| `key, value = line.split("=", 1)` | splits at the first `=` |
+| `int(value)`, `value.lower() == "true"` | the port number / the debug flag |
+| `for _ in range(attempts):` | repeat a number of times |
+| `try: return func() except Exception as e: last = e` | keep the last error |
+| `raise last` | re-raises it |
+| `raise ValueError(...)` | for an unknown discount kind |
+
+---
+
 Two opposite failures. **Unfinished** is missing a case that exists — a
 boundary unhandled, an error unreported. **Imperfect** is a working solution
 that is not elegant. The first must be fixed. The second is the normal state of
