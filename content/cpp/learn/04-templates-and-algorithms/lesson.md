@@ -11,6 +11,54 @@ hints:
   - "`transform_all` builds a new vector by applying the function to each element - reserve the size first to avoid repeated reallocation."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **template** | code written once that the compiler generates per type used |
+| **instantiate** | generate a template's version for one type |
+| **type parameter** | `T` in `template <typename T>` |
+| **type erasure** | hiding types behind one shared runtime form; templates do not do this |
+| **call site** | where a function is called; needs the template's body |
+| **lambda** | an anonymous function object: `[](int n) { ... }` |
+| **capture** | variables a lambda takes from its scope |
+| **capture list** | `[x]` copies, `[&x]` refers, `[=]` and `[&]` capture everything used |
+| **function object** | an object you can call like a function |
+| **dangling reference** | a reference to something already destroyed |
+| **`std::function`** | holds any callable; costs an indirect call and maybe an allocation |
+| **predicate** | a function returning true or false |
+| **off-by-one** | a loop that runs one time too many or too few |
+| **ranges** | C++20 algorithms that take the container directly |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `g++ -std=c++20 -Wall -c algo.h -o /dev/null` | checks that the header compiles; templates live in `algo.h` |
+| `-o /dev/null` | throw the output away |
+
+### C++ names
+
+| Name | What it does |
+|---|---|
+| `template <typename T> T largest(const std::vector<T>&)` | a function template |
+| `[threshold](int n) { return n > threshold; }` | a lambda capturing by value |
+| `std::count_if(b, e, pred)` | counts matches |
+| `std::transform(b, e, std::back_inserter(out), f)` | applies `f` to each, appending to `out` |
+| `std::all_of`, `std::any_of`, `std::none_of` | test a predicate over a range |
+| `std::accumulate(b, e, 0)` | sums, from `<numeric>` |
+| `std::for_each(b, e, f)` | calls `f` on each element |
+| `std::ranges::sort(v)` | the C++20 ranges version |
+| `throw std::invalid_argument("...")` | the error for an empty input |
+
+---
+
 A template writes a function once and lets the compiler generate a version per
 type actually used.
 

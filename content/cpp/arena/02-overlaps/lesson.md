@@ -11,6 +11,39 @@ challenge:
     xp: 300
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **interval** | a stretch from a start to an end |
+| **overlap** | two intervals sharing some part |
+| **touch** | one ends where the next starts, such as `{1, 3}` and `{3, 5}`; these merge |
+| **merge** | combine overlapping intervals into one |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `g++ -std=c++20 -Wall -c intervals.cpp` | compiles to an object file, to check it builds |
+
+### C++ names
+
+| Name | What it does |
+|---|---|
+| `using Interval = std::pair<int, int>;` | a name for a pair of ints |
+| `p.first`, `p.second` | the start and end |
+| `std::sort(v.begin(), v.end())` | sorts pairs by first, then second |
+| `std::max(a, b)` | the larger |
+| `out.back()` | the last element added |
+
+---
+
 The meeting room's bookings overlap, repeat and arrive in no order. The
 display by the door needs the stretches when the room is busy.
 

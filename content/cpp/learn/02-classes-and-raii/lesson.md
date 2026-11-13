@@ -11,6 +11,60 @@ hints:
   - "Store the reference as a member: `int& count_;` initialised in the constructor's initialiser list, because a reference cannot be assigned later."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **class** | bundles data with the operations on it |
+| **member** | a variable (data member) or function (member function) of a class |
+| **`public`** / **`private`** | usable from outside / only inside the class |
+| **constructor** | runs when an object is created |
+| **default argument** | `int start = 0`: used when the caller gives none |
+| **initialiser list** | `: value_(start)`: initialises members directly |
+| **default-construct** | build with no arguments |
+| **`const` member function** | promises not to modify the object; callable on a `const&` |
+| **`explicit`** | stops a one-argument constructor being an implicit conversion |
+| **implicit conversion** | the compiler converting a value silently, as in `Counter c = 5;` |
+| **destructor** | `~Name()`: runs when the object leaves scope |
+| **stack unwinding** | destructors running as an exception travels up |
+| **rule of zero** | if a class owns no raw resource, write no destructor, copy constructor or assignment |
+| **trailing underscore** | `value_`: a common naming habit for data members |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `g++ -std=c++20 -Wall counter.cpp -o counter && ./counter` | compiles and runs |
+
+### C++ names
+
+| Name | What it does |
+|---|---|
+| `class Counter { public: ... private: ... };` | a class |
+| `explicit Counter(int start = 0) : value_(start) {}` | a constructor with an initialiser list |
+| `int value() const` | a const member function |
+| `~Tracker() { active--; }` | a destructor |
+| `struct` | a class whose members are public by default |
+| `int&` | a reference parameter the class can keep and change |
+| `throw std::runtime_error("boom")` | throws an exception |
+| `catch (const std::exception& e)`, `e.what()` | catches it; its message |
+| `std::lock_guard`, `std::unique_ptr` | standard RAII classes |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `passing 'const Counter' as 'this' argument discards qualifiers` | calling a non-const member on a const object |
+| `uninitialized const member` / `uninitialized reference member` | a const or reference member not set in the initialiser list |
+
+---
+
 A class bundles data with the operations on it, and adds one thing C does not
 have: a **destructor** that runs automatically when the object goes out of
 scope.

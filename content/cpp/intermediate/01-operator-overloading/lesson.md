@@ -11,6 +11,51 @@ hints:
   - "`operator<<` takes `std::ostream&` and returns it so the calls chain; it must be a free function because the stream is the left operand."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **operator overloading** | giving your type its own meaning for `+`, `==`, `<<` |
+| **value semantics** | a type that behaves like a number: copied, compared, combined |
+| **member operator** | defined inside the class; the left operand must be the class |
+| **free function** | defined outside the class; both operands are parameters, so it is symmetric |
+| **operand** | a value an operator works on: `lhs` (left) and `rhs` (right) |
+| **canonical pair** | `+=` as a member, `+` as a free function built on it |
+| **`*this`** | the object a member function was called on |
+| **elide** | the compiler skipping a copy |
+| **`friend`** | a free function allowed to see the class's private members |
+| **memberwise** | comparing every member in order |
+| **spaceship operator** | `<=>`: one definition that generates `<`, `>`, `<=`, `>=` |
+| **`std::strong_ordering`** | the result type of `<=>` for values that are fully ordered |
+| **cents** | money held as a whole number of cents, so there is no rounding |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `g++ -std=c++20 -Wall -fsyntax-only money.h && echo "header compiles"` | checks the header compiles, without building anything |
+| `-fsyntax-only` | check the code, produce no output file |
+
+### C++ names
+
+| Name | What it does |
+|---|---|
+| `Money& operator+=(const Money& rhs) { ...; return *this; }` | a modifying member operator |
+| `friend Money operator+(Money lhs, const Money& rhs)` | binary `+`, taking the left by value |
+| `bool operator==(const Money&) const = default;` | generated equality, and `!=` |
+| `std::strong_ordering operator<=>(const Money&) const = default;` | generated ordering |
+| `#include <compare>` | declares the ordering types |
+| `std::ostream& operator<<(std::ostream& os, const Money& m)` | lets `std::cout << money` work |
+| `explicit Money(long cents = 0)` | no implicit conversion from a number |
+
+---
+
 C++ lets your types use the same syntax as built-in ones. Used well that
 removes noise; used badly it hides surprises behind familiar symbols.
 

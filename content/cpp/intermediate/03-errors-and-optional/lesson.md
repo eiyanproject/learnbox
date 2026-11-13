@@ -11,6 +11,50 @@ hints:
   - "`parse_all` collects the successes and returns how many failed through an out-parameter, so one bad entry does not lose the rest."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **exception** | an error thrown and caught further up; cannot be ignored |
+| **invariant** | something that must always be true about an object |
+| **unwinding** | destructors running as an exception travels up |
+| **terminate** | the program stopping, as when a destructor throws during unwinding |
+| **`std::optional<T>`** | a value or nothing; absence shown in the type |
+| **`std::expected<T, E>`** | C++23: a value or an error saying why |
+| **`std::string_view`** | a read-only view of text, without copying it |
+| **structured binding** | `auto [end, ec] = ...`: names for the parts of a result |
+| **control flow** | the order code runs in; do not use exceptions for ordinary cases |
+| **embedded** | software inside devices, where exceptions are often banned |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `g++ -std=c++20 -Wall -fsyntax-only parse.h && echo "header compiles"` | checks the header compiles, without building anything |
+| `-fsyntax-only` | check the code, produce no output file |
+
+### C++ names
+
+| Name | What it does |
+|---|---|
+| `throw std::domain_error("division by zero")` | throws for a value outside the allowed domain |
+| `if (auto n = parse_int(text)) { use(*n); }` | uses an optional only if it holds a value |
+| `opt.value_or(0)` | the value, or 0 |
+| `return std::nullopt;` | returns "no value" |
+| `std::from_chars(first, last, value)` | parses a number, from `<charconv>` |
+| `std::errc{}` | "no error" from `from_chars` |
+| `text.data()`, `text.size()` | where the text starts, and its length |
+| `assert(cond)` | for programming errors |
+| `int* failed` | an output counter, may be null |
+
+---
+
 Three mechanisms, three different situations.
 
 ## Exceptions

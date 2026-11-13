@@ -11,6 +11,54 @@ hints:
   - "Build the vector from a view with a loop or std::ranges::copy - ranges::to is C++23 and this is C++20."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **iterator** | an object marking a position in a range |
+| **range** | two iterators: the first element and one past the last |
+| **half-open** | `[first, last)`: the end is not included |
+| **past the end** | the position after the last element; holds nothing |
+| **input**, **forward**, **bidirectional**, **random access** | iterator categories, from weakest to strongest |
+| **multi-pass** | the range can be walked more than once |
+| **invalidation** | an iterator becoming dangling after the container changes |
+| **dangling** | pointing at memory that is no longer valid |
+| **erase-remove idiom** | `remove` shuffles survivors forward; `erase` shortens the container |
+| **logical end** | where the survivors stop after `remove` |
+| **view** | a lazy, cheap-to-copy range adaptor; nothing happens until iterated |
+| **lazy** | work done only when a value is needed |
+| **inclusive** | both ends included |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `g++ -std=c++20 -Wall -fsyntax-only ranges.h && echo "header compiles"` | checks the header compiles, without building anything |
+| `-fsyntax-only` | check the code, produce no output file |
+
+### C++ names
+
+| Name | What it does |
+|---|---|
+| `v.begin()`, `v.end()` | first element, one past the last |
+| `last - first` | the size of a random-access range |
+| `--it`, `it + n` | step back; jump ahead (random access only) |
+| `std::remove(b, e, value)` | moves survivors forward, returns the new end |
+| `v.erase(first, last)` | removes elements, shortening the vector |
+| `std::erase(v, value)` | C++20: both steps at once |
+| `std::ranges::sort(v)` | sorts the whole container |
+| `v \| std::views::filter(pred)` | a lazy view of matching elements |
+| `#include <ranges>` | ranges and views |
+| `template <typename It> auto sum_range(It first, It last)` | a function over any iterator type |
+
+---
+
 Every standard algorithm takes a **range** as two iterators: the first element,
 and one **past** the last.
 

@@ -11,6 +11,56 @@ hints:
   - "`longest` returns the first longest when there is a tie, and an empty string for an empty vector."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **standard library** | the classes and functions every C++ compiler provides, in namespace `std` |
+| **namespace** | a named group of names; `std::` means "from the standard library" |
+| **object** | a value of a class type |
+| **destructor** | a function that runs automatically when an object goes out of scope |
+| **scope** | the `{ }` block a name lives in |
+| **RAII** | resource acquisition is initialisation: an object owns a resource and releases it in its destructor |
+| **resource** | anything that must be released: memory, a file, a lock |
+| **exception** | an error thrown and caught elsewhere; destructors still run |
+| **`new`** / **`delete`** | manual allocation and release; rare in modern C++ |
+| **reference** | an alias for an existing object; never null, never repointed |
+| **`const&`** | a reference that cannot modify: no copy, no change |
+| **container** | a class holding many values, such as `std::vector` |
+| **algorithm** | a standard function working on a range, such as `std::sort` |
+| **iterator** | an object marking a position in a container |
+| **range** | a pair of iterators: begin and end |
+| **contiguous** | elements side by side in memory |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `g++ -std=c++20 -Wall text.cpp -o text && ./text` | compiles and runs C++ |
+
+### C++ names
+
+| Name | What it does |
+|---|---|
+| `#include <string>`, `<vector>`, `<algorithm>`, `<iostream>` | standard headers |
+| `std::string a = "hello"; a += " world";` | a string that grows itself |
+| `a.size()` | its length |
+| `a == "hello world"` | compares contents (with `char*`, `==` compares addresses) |
+| `std::vector<int> v = {3, 1, 2};` | a growable array |
+| `std::sort(v.begin(), v.end())` | sorts a range |
+| `std::find(v.begin(), v.end(), 2)` | returns an iterator to the match, or `end()` |
+| `auto` | lets the compiler work out the type |
+| `std::cout << x << "\n"` | prints; a `bool` prints as `1` or `0` |
+| `it - v.begin()` | the index an iterator points at |
+
+---
+
 C++ compiles the same way C does and adds two things that change how you write
 it: the standard library, and destructors that run automatically.
 

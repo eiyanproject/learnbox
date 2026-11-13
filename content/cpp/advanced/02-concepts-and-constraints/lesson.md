@@ -11,6 +11,55 @@ hints:
   - "`describe` uses `if constexpr (Numeric<T>)`: the branch not taken is not compiled, so each branch may only be valid for its own type."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **concept** | a named compile-time predicate on types |
+| **constraint** | a requirement a template places on its types |
+| **predicate** | something true or false |
+| **requires-expression** | lists expressions that must compile for a type |
+| **well-formed** | valid code that compiles |
+| **duck typing** | "if it has `name()`, it is Named": checked here at compile time |
+| **`if constexpr`** | a compile-time branch; the branch not taken is discarded |
+| **overload resolution** | how the compiler picks among functions of the same name |
+| **more constrained** | the overload the compiler prefers when both match |
+| **tag dispatch**, **SFINAE** | older tricks that concepts replace |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `g++ -std=c++20 -Wall -fsyntax-only shapes2.h && echo "header compiles"` | checks the header compiles, without building anything |
+| `-fsyntax-only` | check the code, produce no output file |
+
+### C++ names
+
+| Name | What it does |
+|---|---|
+| `template <typename T> concept Numeric = std::integral<T> \|\| std::floating_point<T>;` | defines a concept |
+| `requires(const T& t) { { t.name() } -> std::convertible_to<std::string>; }` | `t.name()` must compile and convert to a string |
+| `template <Numeric T> T sum(...)` | short for `requires Numeric<T>` |
+| `const Named auto& n` | an abbreviated constrained parameter |
+| `std::integral`, `std::floating_point`, `std::convertible_to` | standard concepts from `<concepts>` |
+| `if constexpr (Numeric<T>) { ... } else { ... }` | a compile-time branch |
+| `std::to_string(value)` | a number as text |
+| `static_assert(cond)` | a compile-time check |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `constraints not satisfied` | a type that does not meet the template's concept |
+
+---
+
 Before C++20, a template said nothing about what it needed. Pass the wrong
 type and the error appeared wherever the code first failed — often deep inside
 the standard library, hundreds of lines of it, naming types you never wrote.

@@ -11,6 +11,48 @@ hints:
   - "Give the iterator a logical position 0..size_ rather than a raw pointer - a pointer cannot express the wrap, and end() would be ambiguous with begin() on a full buffer."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **ring buffer** | fixed capacity; when full, the oldest element is overwritten |
+| **logical** vs **physical index** | position in age order / slot in the array: `(head_ + i) % N` |
+| **desugar** | rewrite a convenient form into the basic one it stands for |
+| **iterator traits** | five facts the algorithms ask about an iterator |
+| **iterator category** | a promise about what the iterator can do, such as forward |
+| **forward iterator** | can be copied and walked again, forward only |
+| **nested class** | a class declared inside another, such as `Ring::const_iterator` |
+| **non-type template parameter** | `std::size_t N`: a value, not a type, given to a template |
+| **const and non-const overloads** | two versions of a member, for const and changeable objects |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `g++ -std=c++20 -Wall -fsyntax-only ring.h && echo "header compiles"` | checks the header compiles, without building anything |
+| `-fsyntax-only` | check the code, produce no output file |
+
+### C++ names
+
+| Name | What it does |
+|---|---|
+| `template <typename T, std::size_t N> class Ring` | a ring of `N` elements of type `T` |
+| `begin()`, `end()`, `operator*`, `operator++`, `operator!=` | what range-for needs |
+| `using iterator_category = std::forward_iterator_tag;` | the category |
+| `value_type`, `difference_type`, `pointer`, `reference` | the other four traits |
+| `std::ptrdiff_t` | the signed type for distances between positions |
+| `std::iterator_traits<It>` | how algorithms read the traits |
+| `std::ranges::count`, `std::find` | algorithms that then work on the ring |
+| `std::deque` | a standard container whose iterator is also not a pointer |
+
+---
+
 A container is not a container to the standard library until it hands out
 iterators. Once it does, `for (x : c)`, `std::find`, `std::ranges::count` and
 everything else work on it for free.

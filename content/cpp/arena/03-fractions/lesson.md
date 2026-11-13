@@ -11,6 +11,41 @@ challenge:
     xp: 420
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **fraction** | a numerator over a denominator, such as 3/4 |
+| **numerator** / **denominator** | the top / the bottom |
+| **normalised** | lowest terms, sign on the numerator, zero as `0/1` |
+| **lowest terms** | numerator and denominator share no factor |
+| **greatest common divisor (gcd)** | the largest number dividing both |
+| **free operator** | an operator defined outside the class |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `g++ -std=c++20 -Wall -c fraction.cpp` | compiles to an object file, to check it builds |
+
+### C++ names
+
+| Name | What it does |
+|---|---|
+| `long long` | a 64-bit integer |
+| `std::gcd(a, b)` | the greatest common divisor, from `<numeric>` |
+| `throw std::invalid_argument("...")` | the error for a zero denominator |
+| `operator+`, `-`, `*`, `/`, `==`, `<` | the free operators to define |
+| `std::to_string(n)` | a number as text |
+
+---
+
 The recipe scaler keeps printing `0.33333334 cups`. It needs exact
 fractions.
 

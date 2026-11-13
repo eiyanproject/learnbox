@@ -11,6 +11,53 @@ hints:
   - "`evaluate` catches ParseError and returns std::nullopt - the caller asked whether the text is a valid expression, which is not exceptional."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **expression evaluator** | turns text like `2 + 3 * (4 - 1)` into a value |
+| **token** | one number, operator or parenthesis |
+| **tokenizing** | splitting text into tokens |
+| **grammar** | the rules for how tokens combine |
+| **rule** | one line of the grammar, such as `term := factor (('*' \| '/') factor)*` |
+| **precedence** | which operators bind tighter; here, the nesting of rules |
+| **left associativity** | `8 - 3 - 2` is `(8 - 3) - 2` |
+| **recursive descent** | one function per grammar rule, each calling the next |
+| **tree** | nodes with children; the parsed expression |
+| **root** | the top node |
+| **`std::variant`** | holds exactly one of its alternatives and knows which |
+| **alternative** | one of the types a variant can hold |
+| **`std::visit`** | calls the branch for what the variant holds; fails to compile if one is missing |
+| **`overloaded`** | an idiom that combines several lambdas into one callable |
+| **variadic template** | `typename... Ts`: any number of types |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `g++ -std=c++20 -Wall -fsyntax-only eval.h && echo "header compiles"` | checks the header compiles, without building anything |
+| `-fsyntax-only` | check the code, produce no output file |
+
+### C++ names
+
+| Name | What it does |
+|---|---|
+| `struct Node { std::variant<Num, Binary> value; };` | a tree node |
+| `std::unique_ptr<Node> lhs, rhs;` | owned children; the pointer breaks the size cycle |
+| `std::visit(overloaded{ ... }, node.value)` | handles each alternative |
+| `template <typename... Ts> struct overloaded : Ts... { using Ts::operator()...; };` | the `overloaded` idiom |
+| `struct ParseError : std::runtime_error` | an exception type for bad input |
+| `std::string_view` | read-only text |
+| `std::optional<double>` | a result or nothing |
+
+---
+
 Everything so far, in one program: `"2 + 3 * (4 - 1)"` to `11`.
 
 ## The three stages

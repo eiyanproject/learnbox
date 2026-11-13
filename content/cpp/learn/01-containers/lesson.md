@@ -11,6 +11,58 @@ hints:
   - "`count_longer_than` compares `s.size() > n` - size() returns size_t, so take n as size_t or cast, or the compiler warns about a signed/unsigned comparison."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **container** | a class holding many values |
+| **bounds check** | checking that an index is inside the container |
+| **range-for** | `for (x : items)`: a loop over every element |
+| **copy** | a separate duplicate; changing it leaves the original alone |
+| **undefined behaviour** | the standard says nothing about what happens, such as `v[10]` past the end |
+| **`auto`** | the compiler works out the type from the initialiser; fixed at compile time |
+| **initialiser** | the value a variable starts with |
+| **dynamic typing** | types decided while running; C++ does not do this |
+| **O(log n)**, **O(1)** | time growing slowly with size / constant |
+| **hashed** | located by a hash function, as in `unordered_map` |
+| **iterator range** | `begin()` to `end()`: what algorithms take |
+| **`end()`** | one past the last element; a search returns it for "not found" |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `g++ -std=c++20 -Wall bag.cpp -o bag && ./bag` | compiles and runs |
+
+### C++ names
+
+| Name | What it does |
+|---|---|
+| `v.push_back(3)` | adds to the end |
+| `v.size()` | how many elements |
+| `v[0]` / `v.at(0)` | unchecked / checked access |
+| `for (const auto& item : items)` | read each element, no copy |
+| `for (auto& item : items)` | modify each element |
+| `for (auto item : items)` | a copy of each element |
+| `std::vector<T>`, `std::string`, `std::map<K,V>`, `std::unordered_map<K,V>`, `std::array<T,N>` | the containers to know first |
+| `std::sort`, `std::find` | from `<algorithm>` |
+| `try { ... } catch (const std::out_of_range&) { ... }` | catches the error `at()` throws |
+| `std::size_t` | the unsigned size type |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `std::out_of_range` | `at()` with an index outside the container |
+
+---
+
 `std::vector` is the default container in C++. Contiguous like a C array,
 growable like a list, and it knows its own length.
 

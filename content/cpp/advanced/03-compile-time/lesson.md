@@ -11,6 +11,55 @@ hints:
   - "static_assert is the proof: if `factorial(5)` were not computable at compile time, `static_assert(factorial(5) == 120)` would not compile."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **compile time** / **run time** | while building / while the program runs |
+| **`constexpr`** | may be evaluated at compile time; otherwise an ordinary function |
+| **fold to a literal** | the compiler replacing a call with its answer |
+| **constant expression** | an expression the compiler can evaluate |
+| **`consteval`** | must be evaluated at compile time |
+| **`constinit`** | initialised at compile time, without being `const` |
+| **static initialisation order fiasco** | globals in different files initialised in an unknown order |
+| **lookup table** | precomputed answers stored as data |
+| **`static_assert`** | a check the compiler runs; fails the build if false |
+| **miscompile** | the compiler silently producing wrong code |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `g++ -std=c++20 -Wall -fsyntax-only ct.h && echo "header compiles"` | checks the header compiles, without building anything |
+| `-fsyntax-only` | check the code, produce no output file |
+
+### C++ names
+
+| Name | What it does |
+|---|---|
+| `constexpr int factorial(int n)` | a function usable at compile time |
+| `consteval int checked_percent(int n)` | compile time only |
+| `constinit int counter = compute();` | compile-time initialisation |
+| `std::array<int, N> out{};` | a fixed-size array, zero-initialised |
+| `static_cast<int>(x)` | an explicit conversion |
+| `static_assert(factorial(5) == 120);` | a compile-time test |
+| `#include <array>`, `<cstddef>` | `std::array`, `std::size_t` |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `is not a constant expression` | something the compiler cannot evaluate, such as undefined behaviour or a run-time value |
+| `call to consteval function is not a constant expression` | a `consteval` function given a run-time value |
+
+---
+
 Anything the compiler can work out, the running program does not have to.
 
 ## constexpr

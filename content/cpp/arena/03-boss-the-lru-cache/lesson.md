@@ -12,6 +12,43 @@ challenge:
     xp: 550
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **cache** | keeps recent answers so slow lookups are not repeated |
+| **LRU** | least recently used: the entry evicted when full |
+| **most recently used** | the entry touched last |
+| **evict** | remove to make room |
+| **capacity** | the most entries the cache holds |
+| **constant time** | the same cost however many entries there are |
+| **public interface** | the members callers use; do not change it |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `g++ -std=c++20 -Wall -c lru.cpp` | compiles to an object file, to check it builds |
+
+### C++ names
+
+| Name | What it does |
+|---|---|
+| `std::optional<int>`, `std::nullopt` | a value or nothing |
+| `std::list<T>` | a doubly linked list; iterators stay valid when other elements move |
+| `list.splice(pos, list, it)` | moves one element to `pos` without copying |
+| `std::unordered_map<K, V>` | hashed lookup |
+| `std::list<...>::iterator` | a position in the list, kept in the map |
+| `explicit LruCache(std::size_t capacity)` | the constructor |
+
+---
+
 The lookup service is slow and memory is short. It needs a cache that holds
 a fixed number of entries and, when it is full, forgets the one nobody has
 touched for longest.

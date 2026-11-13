@@ -11,6 +11,57 @@ hints:
   - "`total` walks the vector with `const auto&` and reads `node->value` - the arrow works on a smart pointer exactly as on a raw one."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **raw pointer** | a plain `T*`; should not own |
+| **smart pointer** | an object that owns a heap object and deletes it |
+| **`unique_ptr`** | exactly one owner; moved, never copied; no overhead |
+| **`shared_ptr`** | reference counted: destroyed when the last owner goes |
+| **reference count** | how many owners share an object |
+| **control block** | where a `shared_ptr` keeps the count |
+| **atomic increment** | adding one safely across threads; what each `shared_ptr` copy costs |
+| **cycle** | two `shared_ptr`s pointing at each other, never reaching zero |
+| **`weak_ptr`** | observes a shared object without owning it; breaks cycles |
+| **non-owning** | a pointer or reference that only observes |
+| **exception-safe** | no leak even if something throws |
+| **double free** | deleting twice; `unique_ptr`'s no-copy rule prevents it |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `g++ -std=c++20 -Wall own.cpp -o own && ./own` | compiles and runs |
+
+### C++ names
+
+| Name | What it does |
+|---|---|
+| `#include <memory>` | the smart pointers |
+| `std::make_unique<Node>(42)` | creates an owned `Node` |
+| `node->value` | a member through the pointer |
+| `auto b = std::move(a);` | transfers ownership; `a` becomes empty |
+| `std::make_shared<Node>(1)` | creates a shared `Node`, one allocation |
+| `s.use_count()` | how many owners |
+| `t.reset()` | gives up ownership |
+| `nullptr` | the null pointer |
+| `std::vector<std::unique_ptr<Node>>` | a vector that owns its nodes |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `use of deleted function 'std::unique_ptr<...>::unique_ptr(const std::unique_ptr<...>&)'` | trying to copy a `unique_ptr`; move it instead |
+
+---
+
 Raw `new` and `delete` are almost never correct in modern C++, because you
 cannot see every path out of a function — early returns and exceptions both
 skip the `delete`.

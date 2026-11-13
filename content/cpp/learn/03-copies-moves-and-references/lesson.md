@@ -11,6 +11,51 @@ hints:
   - "`std::move` does not move anything; it casts to an rvalue reference so the move constructor is chosen. Include <utility>."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **by value** | the parameter is a copy |
+| **by reference** | `T&`: the parameter is the caller's object |
+| **move** | transfer ownership of storage instead of duplicating it |
+| **valid but unspecified** | a moved-from object: destroy or assign it, do not rely on its value |
+| **copy constructor** | `T(const T&)`: builds a copy |
+| **move constructor** | `T(T&&)`: builds by stealing |
+| **rvalue reference** | `T&&`: binds to temporaries and to `std::move`d things |
+| **temporary** | an unnamed value, such as a function's result |
+| **lvalue** | a named thing that has an address; even `other.data_` inside a move constructor |
+| **`noexcept`** | promises not to throw; `vector` only moves elements whose move is `noexcept` |
+| **reallocate** | `vector` moving its elements to bigger storage |
+| **static member** | one variable shared by the whole class |
+| **rule of zero** | members that manage themselves give correct copies and moves for free |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `g++ -std=c++20 -Wall move.cpp -o move && ./move` | compiles and runs |
+
+### C++ names
+
+| Name | What it does |
+|---|---|
+| `void a(Buffer b)`, `void b(const Buffer& b)`, `void c(Buffer& b)` | copy / read without copy / change without copy |
+| `std::move(a)` | a cast meaning "I am done with this"; moves nothing itself |
+| `<utility>` | declares `std::move` |
+| `Buffer(Buffer&& other) noexcept : data_(std::move(other.data_)) {}` | a move constructor |
+| `= default` | asks the compiler for the standard version |
+| `v.data()` | a pointer to a vector's storage |
+| `v.reserve(10)` | makes room for 10, reallocating if needed |
+| `static int copies;` | a counter shared by all objects |
+
+---
+
 C++ copies by default. Understanding when it does, and how to say "do not", is
 most of what separates fast C++ from slow C++.
 
