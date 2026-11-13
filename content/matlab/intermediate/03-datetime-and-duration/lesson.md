@@ -11,6 +11,48 @@ hints:
   - "`isbetween(dates, lo, hi)` gives a logical mask, and it is inclusive at both ends."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **`datetime`** | a point in time |
+| **`duration`** | a length of time; what subtracting two datetimes gives |
+| **explicit conversion** | `days(gap)`: saying which unit you want |
+| **24-hour days** | what a bare number added to a datetime counts as; avoid writing it |
+| **component** | one part of a date: year, month, day, hour... |
+| **chronological** | in time order |
+| **inclusive** | both ends included |
+| **parse** | read text as a date |
+| **ISO order** | `2026-01-02`: unambiguous |
+| **ambiguous** | `01/02/2026` could be either day-month order |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `datetime(2026, 1, 2)`, `datetime('2026-01-02')` | make a datetime |
+| `d2 - d1` | a duration |
+| `days(gap)`, `hours`, `minutes`, `seconds` | a duration as a number of units, or a number as a duration |
+| `d + days(7)` | a week later, and it says so |
+| `year(d)`, `month(d)`, `day(d)`, `hour(d)`, `minute(d)`, `second(d)` | components |
+| `d1 < d2`, `isbetween(d, lo, hi)` | compare / within a window |
+| `sort(dates)`, `max(dates)`, `min(dates)` | order and extremes |
+| `try ... catch ... end` | for entries that will not parse |
+
+---
+
 ```matlab
 d = datetime(2026, 1, 2);
 d = datetime('2026-01-02');

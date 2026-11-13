@@ -10,6 +10,49 @@ hints:
   - "`reshape([a(:)'; b(:)'], 1, [])` reads down the columns of a 2-row matrix, which is the interleaving."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **cumulative paper** | a test covering everything so far, with fewer hints |
+| **one-based indexing** | the first element is `v(1)` |
+| **`end`** (in an index) | the last position |
+| **colon** | `1:n` builds a range; `v(:)` takes everything as a column |
+| **element-wise** vs **matrix** operators | `.*` multiplies matching elements; `*` is matrix multiplication |
+| **logical mask** | a true/false array that selects elements |
+| **struct** | named fields in one value |
+| **standard deviation** | how spread out values are |
+| **outlier** | a value far from the rest |
+| **interleave** | alternate elements of two arrays |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `class(x)`, `size(x, 1)`, `size(x, 2)` | type / rows / columns |
+| `isequal(a, b)` | whether two arrays are equal |
+| `v(v > 0)`, `sum(v > 0)` | select / count matches |
+| `numel`, `min`, `max`, `mean`, `std` | count, extremes, average, standard deviation |
+| `abs(x)` | absolute value |
+| `reshape(M, 1, [])` | reshapes into a row |
+| `[a; b]` | stacks rows |
+| `struct('n', n, ...)` | builds a struct |
+| `error('id:name', ...)` | throws with an identifier |
+
+---
+
 The first of four cumulative papers. Fewer hints than a lesson, on purpose: the
 point is to find out what you can do without being led.
 

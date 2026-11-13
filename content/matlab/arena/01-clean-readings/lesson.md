@@ -11,6 +11,42 @@ challenge:
     xp: 150
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **row vector** | a 1-by-n array |
+| **inclusive** | both ends count |
+| **empty row vector** | `zeros(1, 0)`: a row with no elements |
+| **`NaN`** | "not a number": a missing reading |
+| **logical mask** | an array of true/false choosing elements |
+| **mean** | the sum divided by the count |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `v >= lo & v <= hi` | true where both conditions hold |
+| `v(mask)` | the elements where the mask is true |
+| `isnan(v)`, `~isnan(v)` | where the values are / are not `NaN` |
+| `sum(mask)` | how many are true |
+| `mean(v)` | the average |
+| `function [avg, n] = valid_mean(v)` | a function with two outputs |
+
+---
+
 The temperature logger glitches. Some readings are impossible and some are
 missing, and the daily summary is due.
 

@@ -11,6 +11,49 @@ hints:
   - "`arrayfun(f, v)` applies f to each element and collects the results."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **function handle** | a function stored as a value |
+| **named handle** | `@sin`: a handle to an existing function |
+| **anonymous function** | `@(x) x.^2 + 1`: written in place; one expression only |
+| **capture at creation** | an anonymous function freezes the values it uses when built |
+| **capture by reference** | what some other languages do; MATLAB does not |
+| **uniform output** | one number back per element, collected into an array |
+| **higher-order function** | one that takes or returns a function |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `h = @sin; h(0)` | a handle, and calling it |
+| `g = @(x) x.^2 + 1;` | an anonymous function |
+| `arrayfun(f, v)` | applies `f` to each element of an array |
+| `cellfun(f, c, 'UniformOutput', false)` | applies `f` to each cell, giving a cell array |
+| `function out = apply_twice(f, x)` | a function taking a function |
+| `fzero`, `integral`, `ode45` | built-ins that take your function as an argument |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `Non-scalar in Uniform output` | `arrayfun`/`cellfun` got something other than one number; add `'UniformOutput', false` |
+
+---
+
 ## Two kinds of handle
 
 ```matlab

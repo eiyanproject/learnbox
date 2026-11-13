@@ -11,6 +11,46 @@ hints:
   - "`groupsummary(t, group, 'mean', data)` gives one row per group, with a GroupCount and a mean_<data> variable."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **import** | read a file into a table |
+| **numeric column** | one where every entry parses as a number |
+| **`NaN`** | how a blank in a numeric column arrives |
+| **missing value** | `NaN` for numbers, `''` for text, `<undefined>` for categorical |
+| **drop** / **fill** | remove rows with gaps / replace gaps with values |
+| **omit** | let a statistic skip the gaps |
+| **grouped aggregate** | one summary per group, like SQL's `GROUP BY` |
+| **`GroupCount`** | how many rows were in each group |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `readtable('readings.csv')` | reads a CSV into a table |
+| `t.Day = datetime(t.Day)` | converts a text column to dates |
+| `ismissing(t)` | a logical matrix, one entry per cell |
+| `rmmissing(t)` | drops every row with any missing value |
+| `fillmissing(t, ...)` | fills gaps |
+| `mean(v, 'omitnan')` | the mean, ignoring `NaN` |
+| `sum(ismissing(t), 'all')` | counts every missing value |
+| `groupsummary(t, groupVar, 'mean', dataVar)` | grouped means |
+
+---
+
 Real data arrives in a file and arrives imperfect. This is the shape of nearly
 every MATLAB job.
 

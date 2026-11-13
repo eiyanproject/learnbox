@@ -11,6 +11,39 @@ challenge:
     xp: 450
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **moving mean** | the average of each window of `k` neighbours, sliding one step at a time |
+| **window** | `k` consecutive elements |
+| **whole number** | an integer: no fraction |
+| **error identifier** | `moving_mean:window`, the name the tests match |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `numel(v)` | the number of elements |
+| `mean(v(i:i+k-1))` | the mean of one window |
+| `cumsum(v)` | running sums, for a loop-free version |
+| `mod(k, 1) == 0` | whether `k` is a whole number |
+| `error('moving_mean:window', ...)` | the error to raise |
+
+---
+
 The signal is too jumpy to plot. Smooth it.
 
 ## The task

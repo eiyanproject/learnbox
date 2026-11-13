@@ -11,6 +11,50 @@ hints:
   - "`report_line` needs the station with the highest mean: `[~, at] = max(g.mean_Reading)` and then index the group column."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **CSV** | comma-separated values: a text table |
+| **table** | rows of observations, named columns of any type |
+| **typed data** | columns converted to their real types: dates, categories |
+| **ISO order** | dates written `2026-01-02`, which sort correctly as text |
+| **`datetime`** | a date and time type |
+| **`categorical`** | a column of labels from a fixed set |
+| **`NaN`** | "not a number": a missing numeric value |
+| **missing** | a gap: `NaN`, `''` or `NaT` |
+| **clean** | decide what to do with gaps, and do it |
+| **group** | one row of results per value of a column |
+| **`GroupCount`** | how many rows were in each group |
+| **precision** | how many decimals you claim, set by the format |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `readtable(filename)` | reads a CSV into a table |
+| `t.Day = datetime(t.Day)` | converts a column to dates |
+| `t.Station = categorical(t.Station)` | converts a column to categories |
+| `ismissing(t)`, `rmmissing(t)` | find gaps / drop rows with gaps |
+| `groupsummary(t, 'Station', 'mean', 'Reading')` | one row per station with `GroupCount` and `mean_Reading` |
+| `height(t)` | the number of rows |
+| `sprintf('%d ... %s at %.1f', ...)` | builds the report sentence |
+| `char(x)` | converts a category or string to a char row |
+
+---
+
 Everything in the track, on one file.
 
 ```

@@ -12,6 +12,46 @@ challenge:
     xp: 800
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **cell array** | `{'ana', 'bo'}`: holds text of different lengths |
+| **character vector** | a char row such as `'ana'` |
+| **matrix** | rows and columns; here one row per student, one column per test |
+| **column vector** / **row vector** | n-by-1 / 1-by-n |
+| **struct** | named fields in one value: `report.best` |
+| **field** | one named part of a struct |
+| **level** | tied |
+| **dimension argument** | `sum(x, 2)` sums along rows, `sum(x, 1)` down columns |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `isnan(x)`, `~isnan(x)` | where scores are / are not missing |
+| `x(isnan(x)) = 0` | replaces missing values |
+| `sum(x, 2)`, `sum(x, 1)` | row sums / column sums |
+| `[m, i] = max(v)` | the largest and its first position |
+| `names(mask)` | the names where the mask is true |
+| `numel(names)`, `size(scores, 1)` | how many names / rows |
+| `struct('averages', a, ...)` or `report.best = ...` | builds the struct |
+| `error('class_report:size', ...)` | the error to raise |
+
+---
+
 Reports go home tomorrow. The marks are in a matrix, some tests were missed,
 and the summary script does not exist yet.
 

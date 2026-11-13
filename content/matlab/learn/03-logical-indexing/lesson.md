@@ -11,6 +11,47 @@ hints:
   - "`find(mask, 1)` gives the first index where the mask is true, and `[]` when it never is."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **logical array** (mask) | true/false per element, the same size as the input |
+| **logical indexing** | using a mask as a subscript to select elements |
+| **assign through a mask** | `v(mask) = x` changes only the selected elements |
+| **element-wise logic** | `&`, `\|`: on arrays, both sides always evaluated |
+| **short-circuit** | `&&`, `\|\|`: single values only; the second side is skipped if not needed |
+| **guard** | a first test that protects the second, such as `~isempty(v) && v(1) > 0` |
+| **implicit `all()`** | `if` on an array is true only if every element is non-zero |
+| **position** | the index where something is |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `v > 0` | a mask |
+| `v(v > 0)` | the elements where it is true |
+| `sum(mask)` | counts the trues |
+| `any(mask)`, `all(mask)` | at least one / every one |
+| `v(v < 0) = 0` | replaces negatives |
+| `v(v > 2 & v < 5)` | both conditions, element-wise |
+| `find(mask)`, `find(mask, 1)` | positions / the first, or `[]` |
+| `isempty(x)` | whether `x` has no elements |
+| `~` | not |
+
+---
+
 ```matlab
 v = [3 -1 4 -1 5];
 v > 0

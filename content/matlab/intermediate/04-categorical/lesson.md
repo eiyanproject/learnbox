@@ -11,6 +11,45 @@ hints:
   - "`max` gives the position of the largest as its second output: `[~, at] = max(counts)`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **`categorical`** | labels stored as small codes into one shared list of names |
+| **category** | one of the possible values; can exist with no rows |
+| **inferred** | categories taken from the data, sorted |
+| **fixed** | categories declared up front, in your order |
+| **`<undefined>`** | a value outside the declared set |
+| **ordinal** | categories with a real order, so `<` and `>` work |
+| **value set** | the declared list, which gives the order |
+| **implementation detail** | how something is stored, not what it means |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `categorical(c)` | categories inferred |
+| `categorical(c, {'small','medium','large'})` | fixed set, in this order |
+| `categorical(c, set, 'Ordinal', true)` | ordered categories |
+| `categories(c)`, `countcats(c)`, `summary(c)` | names / counts / both |
+| `isundefined(c)` | where values were outside the set |
+| `sizes > 'small'`, `sizes >= ref` | compare ordinal values |
+| `[~, i] = max(counts)` | the position of the most common |
+
+---
+
 ```matlab
 colours = categorical({'red', 'blue', 'red'});
 ```

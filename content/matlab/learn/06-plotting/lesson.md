@@ -11,6 +11,47 @@ hints:
   - "`print(filename, '-dpng')` writes the current figure to a file. Close it afterwards with `close(f)` so figures do not pile up."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **period** | one full cycle of a sine wave: 0 to 2π |
+| **endpoints** | the first and last points; `linspace` includes both |
+| **figure** | the window or image a chart is drawn in |
+| **axis labels** | text naming each axis; required, not decoration |
+| **legend** | names each line when there is more than one |
+| **`hold on`** | draw the next plot on top instead of replacing |
+| **distribution** | how often each range of values occurs |
+| **PNG** | an image file format |
+| **unattended** | running with no screen or person, as in this container |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `linspace(0, 2*pi, n)` | `n` points over one period |
+| `sin(x)`, `pi` | sine, π |
+| `f = figure('visible', 'off')` | a figure with no window |
+| `plot(x, y)` | a line through the points |
+| `scatter`, `bar`, `histogram` | points, bars, a distribution |
+| `xlabel`, `ylabel`, `title`, `legend`, `grid on` | labels and grid |
+| `print('wave.png', '-dpng')` | saves the current figure as a PNG |
+| `close(f)` | closes it, freeing memory |
+
+---
+
 ## The data comes first
 
 ```matlab

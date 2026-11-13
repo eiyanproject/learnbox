@@ -11,6 +11,54 @@ hints:
   - "`strsplit` on whitespace, take `p(1)` of each part, `upper` it, and `strjoin` with '.'."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **char array** | text as a row of characters: `'abc'` |
+| **string** | MATLAB's text type; made here with `string('...')` |
+| **whitespace** | spaces, tabs and newlines |
+| **literal replacement** | replacing exact text, no patterns |
+| **element by element** | `==` on char arrays compares each position |
+| **regular expression** | a pattern that matches text |
+| **capture group** | `( )`: a part of the match kept separately |
+| **token** | the text a capture group matched |
+| **cell array** | `{ }`: a container that can hold text of different lengths |
+| **collapse** | turn runs of spaces into one |
+| **initials** | first letters, such as `'A.L'` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `strtrim(s)` | drops leading and trailing whitespace |
+| `lower(s)`, `upper(s)` | changes case |
+| `strrep(s, a, b)` | replaces literal text |
+| `strsplit(s)`, `strjoin(c, sep)` | splits text / joins pieces |
+| `strcmp`, `strcmpi` | compare exactly / ignoring case |
+| `contains`, `startsWith`, `endsWith` | membership tests |
+| `sprintf(fmt, ...)` | builds formatted text |
+| `regexp(s, p, 'match')`, `'once'`, `'tokens'` | all matches / the first / capture groups |
+| `regexprep(s, p, repl)` | replaces matches |
+| `\d`, `\s`, `\w`, `+`, `*`, `?`, `[abc]`, `^`, `$` | digit, whitespace, word character, repeats, a set, start, end |
+| `m{:}`, `t{1}{2}` | the contents of a cell array |
+| `str2double` | text to a number |
+| `strlength`, `split`, `join`, `replace` | the string versions |
+
+---
+
 ## The everyday functions
 
 | | |

@@ -11,6 +11,52 @@ hints:
   - "`is_text` is true for a char array or a string. `ischar` covers the first; `isa(v, 'string')` covers the second."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **MATLAB** | a language and environment for numerical work |
+| **array** | everything is one: a scalar is a 1-by-1 array |
+| **scalar**, **vector**, **matrix** | one value / one row or column / rows and columns |
+| **double** | the default numeric type |
+| **char** | text as characters |
+| **logical** | true or false |
+| **cell** | a container that can hold mixed types |
+| **saturate** | `int8(200)` stops at 127 instead of wrapping |
+| **workspace** | the variables that persist between commands |
+| **GNU Octave** | the open implementation of the language these lessons run on |
+| **shim library** | this course's versions of `string`, `table`, `datetime` and `categorical` for Octave |
+| **string literal** | `"Ada"`: a string in MATLAB, a char array in Octave; write `string('Ada')` |
+| **headless** | running with no window |
+| **Live Editor**, **Simulink**, **toolboxes** | MATLAB extras Octave does not have |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `size(x)`, `class(x)` | the dimensions / the type |
+| `int8(200)` | an 8-bit integer, saturating |
+| `disp(x)`, `fprintf(...)` | print |
+| `who`, `whos`, `clear` | list, list with details, empty the workspace |
+| `ischar(v)`, `isstring(v)` | whether `v` is a char array / a string |
+| `sprintf('%s %dx%d', ...)` | builds text such as `'double 2x3'` |
+| `magic(3)` | a 3-by-3 test matrix |
+| `length`, `height`, `strlength` | use these instead of `numel` on the shim types |
+
+---
+
 ## Everything is an array
 
 ```matlab

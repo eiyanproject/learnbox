@@ -11,6 +11,49 @@ hints:
   - "`isempty(v)` is the check, not `length(v) == 0` - it reads better and works for every shape."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **function file** | a `.m` file whose first line is `function`; the file name is the function name |
+| **path** | the folders MATLAB looks in for functions |
+| **local function** | a later function in the same file; visible only inside it |
+| **script** | a file with no `function` line; runs in the caller's workspace |
+| **workspace** | the set of variables a script or function can see |
+| **multiple outputs** | `[lo, hi] = f(...)`: the caller decides how many to take |
+| **`nargout`** / **`nargin`** | how many outputs were asked for / arguments passed |
+| **default argument** | a value used when the caller gives none; set with `nargin` |
+| **`arguments` block** | MATLAB R2019b's way to validate and default; not available here |
+| **error identifier** | `component:mnemonic`: what code may depend on |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `function [mn, mx, avg] = summarise(v)` ... `end` | a function with three outputs |
+| `min(v)`, `max(v)`, `mean(v)` | smallest, largest, average |
+| `bounds(v)` | smallest and largest at once |
+| `if nargin < 2, factor = 2; end` | a default argument |
+| `isempty(v)` | whether `v` has no elements |
+| `error('summarise:empty', 'no values to summarise')` | throws with an identifier |
+| `try ... catch err ... end`, `err.identifier`, `err.message` | catch and inspect |
+| `printf('%g %g %g\n', a, b, c)` | Octave's formatted print, like `fprintf` |
+| `clear` | empties the workspace |
+
+---
+
 ## A file is a function
 
 ```matlab

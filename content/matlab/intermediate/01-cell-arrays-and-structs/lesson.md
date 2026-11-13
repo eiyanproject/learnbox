@@ -11,6 +11,48 @@ hints:
   - "`isfield(s, name)` asks whether a field exists; `s.(name)` reads a field whose name is in a variable."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **cell array** | each element is a container holding anything |
+| **parentheses select, braces extract** | `c(2)` is a 1x1 cell; `c{2}` is its contents |
+| **comma-separated list** | what `c{1:2}` or `people.name` produce: several values, not one |
+| **char matrix** | text padded so every row has the same width |
+| **struct** | named fields, each any type |
+| **field** | one named part of a struct |
+| **dynamic field name** | `r.(key)`: the field name taken from a variable |
+| **struct array** | many structs with the same fields |
+| **concatenate** | join arrays end to end |
+| **`containers.Map`** | a key-value map, an alternative to dynamic fields |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `c = {1, 'two', [3 4 5]};` | a cell array |
+| `c(2)`, `c{2}` | select a cell / extract its contents |
+| `cellfun(f, c)`, `cellfun(f, c, 'UniformOutput', false)` | applies `f` to each element: numbers / a cell array |
+| `r.name = 'ada';` | sets a field |
+| `fieldnames(r)`, `isfield(r, 'age')`, `rmfield(r, 'age')` | list / test / remove fields |
+| `[people.name]`, `{people.name}` | join into one array / collect into a cell |
+| `ischar(x)`, `class(x)`, `numel(x)` | type tests and counts |
+| `struct('name', n, 'age', a)` | builds a struct |
+
+---
+
 A numeric array holds one type in a rectangle. When the things are not all the
 same, you need something else.
 

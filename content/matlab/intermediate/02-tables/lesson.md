@@ -11,6 +11,49 @@ hints:
   - "`t{i, 'Name'}` reaches the value inside. For a text column that is a char array, not a 1x1 table."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **table** | columns of different types, each named, all the same height |
+| **variable** (of a table) | one named column |
+| **height** / **width** | rows / variables |
+| **parentheses keep the container** | `t(1, 'Age')` is a 1x1 table |
+| **braces reach through** | `t{1, 'Age'}` is the value |
+| **logical subscript** | a true/false column that selects rows |
+| **BMI** | body mass index: weight over height squared |
+| **element-wise power** | `.^`: squares each element |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `table(a, b, 'VariableNames', {'Age', 'Name'})` | builds a table |
+| `height(t)`, `width(t)` | rows, variables |
+| `t.Age` | one variable as a plain array |
+| `t(1:3, :)`, `t(:, {'Age'})` | smaller tables |
+| `t{1, 'Age'}` | one value |
+| `t(t.Age >= 18, :)` | filters rows |
+| `t.BMI = t.Weight ./ t.Height .^ 2;` | adds a variable |
+| `addvars`, `removevars`, `renamevars` | the same jobs by name |
+| `sortrows(t, 'Age', 'descend')` | sorts whole rows |
+| `t.Properties.VariableNames` | the variable names |
+| `[~, i] = max(t.Height)` | the position of the largest, ignoring the value |
+
+---
+
 A table holds columns of different types side by side, each with a name, all
 the same height. That is what separates it from a matrix, which is one type
 with no names, and from a struct of arrays, where nothing keeps the lengths in

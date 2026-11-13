@@ -11,6 +11,56 @@ hints:
   - "`error_id_of` returns '' when nothing was thrown - which is a fact about the call, not a failure."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **error identifier** | `component:mnemonic`: a stable name code can match |
+| **error message** | text for a person; may change |
+| **mnemonic** | a short memorable word, such as `outOfRange` |
+| **`try` / `catch`** | run code, and handle an error if one is thrown |
+| **`err`** | the error object: `err.identifier`, `err.message` |
+| **rethrow** | pass the original error on, with its stack |
+| **stack** | the chain of calls that led to the error |
+| **swallow** | catch an error and do nothing, hiding it |
+| **expected failure** | a normal outcome, such as bad user input: return a flag |
+| **bug** | a caller's mistake: throw |
+| **validation** | checking arguments before using them |
+| **breakpoint** | a place where the debugger stops |
+| **function handle** | `@() ...`: a function stored in a variable |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `error('id:name', 'message %g', x)` | throws an error with an identifier |
+| `try ... catch err ... end` | catches it |
+| `switch err.identifier ... case '...' ... end` | handles by identifier |
+| `strcmp(a, b)` | whether two char arrays are equal |
+| `rethrow(err)` | passes it on unchanged |
+| `validateattributes(v, {'numeric'}, {'vector', 'nonempty'})` | checks type and shape |
+| `assert(cond, 'id:name', 'message')` | throws if `cond` is false |
+| `isnumeric(v)`, `isempty(v)` | type and emptiness tests |
+| `dbstop if error` | stops in the debugger where an error happens |
+| `keyboard` | a prompt at this line |
+| `dbstack` | how you got here |
+| `warning('off', id)` | silences one warning |
+| `str2double(text)` | text to number; `NaN` if it is not one |
+
+---
+
 ## Identifiers
 
 ```matlab

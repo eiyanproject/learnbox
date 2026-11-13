@@ -10,6 +10,48 @@ hints:
   - "`isbetween(dates, lo, hi)` is inclusive at both ends, and gives a mask you can use as a row subscript."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **table** | named columns of any type, all the same height |
+| **import** | read a file into a table |
+| **convert** | turn text columns into `datetime` or `categorical` |
+| **`NaN`** | how a blank in a numeric column arrives |
+| **drop rows** | remove rows with any missing value |
+| **busiest** | the value with the most rows |
+| **tie** | two values equally common; here the first wins |
+| **inclusive window** | dates from `lo` to `hi`, both ends included |
+| **unused category** | a category no row uses, still kept by grouping |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `readtable(filename)` | reads a CSV |
+| `datetime(t.Day)`, `categorical(t.Station)` | converts columns |
+| `ismissing(t)`, `rmmissing(t)` | find / drop gaps |
+| `t(mask, :)` | the rows where `mask` is true |
+| `t{i, 'Var'}` | one value |
+| `height(t)` | the number of rows |
+| `countcats(c)`, `categories(c)` | counts and names of categories |
+| `isbetween(d, lo, hi)` | dates within the window, inclusive |
+| `char(x)` | a category as a char array |
+
+---
+
 The second paper covers the **Intermediate** ground: cell arrays and structs,
 tables, `datetime`, `categorical`, and the import-and-clean sequence. This is
 the largest scored domain on the Associate exam.

@@ -11,6 +11,53 @@ hints:
   - "A run ends wherever `diff(v) ~= 0`, so the number of runs is that count plus one - with an empty vector as its own case."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **vectorisation** | working on a whole array at once instead of looping element by element |
+| **interpreter** | runs your code line by line; slow per element |
+| **compiled code** | the fast built-in routines array operations use |
+| **running total** | each element plus everything before it |
+| **preallocate** | create the full-size array before a loop fills it |
+| **reallocate** | make a bigger array and copy the old one into it |
+| **quadratic** | time growing with the square of the size |
+| **side effect** | something a step does besides computing a value, such as printing |
+| **intermediate** | a temporary array built along the way |
+| **run** | a stretch of equal consecutive values |
+| **normalise** | scale values to `[0, 1]` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `v * 2` | multiplies every element |
+| `numel(v)` | the number of elements |
+| `cumsum(v)`, `cumprod(v)` | running sum, running product |
+| `diff(v)` | differences of neighbours; one shorter than `v` |
+| `sum(mask)` | counts the true elements |
+| `find(mask)` | the positions of the true elements |
+| `v(mask)` | the elements where the mask is true |
+| `[m, i] = max(v)` | the largest value and its position |
+| `min(v)` | the smallest value |
+| `zeros(1, n)` | a row of `n` zeros |
+| `tic; ...; toc` | times the code in between |
+| `disp(x)`, `fprintf('%d\n', n)` | print a value / formatted text |
+
+---
+
 ```matlab
 for i = 1:numel(v)
   out(i) = v(i) * 2;

@@ -11,6 +11,49 @@ hints:
   - "`numel(v)` is the element count. Check it before indexing, or MATLAB throws its own index error."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **subscript** | the index in `v(2)`; starts at 1 |
+| **one-based** | the first element is number one; `v(0)` is an error |
+| **colon** | `first:step:last` builds a range |
+| **step** | the gap between range values; negative counts down |
+| **`end`** (in a subscript) | the last index of that dimension |
+| **column** | `v(:)` gives every element as a column |
+| **grow** | assigning past the end makes the array longer |
+| **reallocation** | making a bigger array and copying; slow in a loop |
+| **preallocate** | create the full array first with `zeros` |
+| **delete** | `v(2) = []` removes an element; the array gets shorter |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `v(2:4)`, `v(1:2:end)`, `v(end)`, `v(end-1)` | slices and the last elements |
+| `v(end-n+1:end)` | the last `n` |
+| `10:-1:1` | counts down |
+| `zeros(2, 3)`, `ones(3, 1)` | arrays of zeros, ones |
+| `linspace(0, 1, 5)` | 5 points, endpoints included |
+| `v(end+1) = 9` | appends |
+| `v(2) = []` | deletes |
+| `numel(v)` | the number of elements |
+| `error('take_first:tooMany', ...)` | throws with an identifier |
+
+---
+
 Subscripts start at **1**. `v(1)` is the first element and `v(0)` is an error,
 not a wrap-around. This trips up everyone arriving from C or Python, and it is
 worth saying out loud once: the first element is number one.

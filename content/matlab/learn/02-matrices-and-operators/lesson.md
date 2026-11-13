@@ -11,6 +11,48 @@ hints:
   - "`product_pair` returns both results: `ew = A .* B;` and `mp = A * B;`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **matrix multiplication** | `A * B`: rows into columns; columns of A must equal rows of B |
+| **element-wise** | `A .* B`: each entry times the matching entry; shapes must match |
+| **the dot** | `.*`, `./`, `.^` mean element-wise |
+| **broadcasting** (implicit expansion) | a dimension of length 1 is stretched to fit |
+| **orientation** | whether a vector is a row or a column; a column scales rows |
+| **reduction** | an operation that collapses a dimension: `sum`, `mean`, `max`, `any`, `all` |
+| **dimension 1** / **2** | down the columns / across the rows; 1 is the default |
+| **transpose** | flip rows and columns |
+| **complex conjugate** | flip the sign of the imaginary part, which `'` also does |
+| **symmetric** | equal to its own transpose |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `A * A`, `A .* A` | matrix product / element-wise product |
+| `A^2`, `A.^2` | `A*A` / each entry squared |
+| `M .* [10; 100]`, `M .* [10 100]` | scale rows / scale columns |
+| `factors(:)` | forces a column |
+| `sum(M)`, `sum(M, 1)`, `sum(M, 2)` | column totals / the same / row totals |
+| `A.'`, `A'` | transpose / complex-conjugate transpose |
+| `isequal(a, b)` | whether two arrays are equal |
+| `magic(3)` | a 3-by-3 test matrix |
+
+---
+
 ```matlab
 A * B      % matrix multiplication - rows into columns
 A .* B     % element-wise - each entry times the matching entry

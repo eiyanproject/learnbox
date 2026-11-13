@@ -11,6 +11,48 @@ hints:
   - "Check in order - empty, then type, then content - and throw a different identifier for each."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **control flow** | `if`, `for`, `while`, `switch` |
+| **implicit `all()`** | `if` on an array is true only if every element is |
+| **`if []`** | false |
+| **anonymous function** | `@() n`: captures variables by value when created |
+| **function handle** | a function stored in a variable |
+| **normal outcome** vs **bug** | report it (flag, `NaN`) / throw |
+| **swallow** | a bare `catch` that hides every error |
+| **preallocate** | make the full array before a loop fills it |
+| **cell array** | `{ }`: holds text of different lengths |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `if ... elseif ... else ... end` | branches |
+| `for i = 1:numel(v) ... end` | a loop |
+| `cell(size(v))` | an empty cell array the same size as `v` |
+| `f = @(x) x^2;` | an anonymous function |
+| `try ... catch ... end` | catches errors |
+| `isscalar(x)`, `isnumeric(x)` | whether `x` is one value / a number |
+| `NaN(size(v))` | an array of `NaN` |
+| `any(isnan(v))` | whether any value is missing |
+| `error('checked_mean:empty', ...)` | throws with an identifier |
+
+---
+
 The last paper covers **programming and debugging**: control flow, functions
 and handles, and errors.
 

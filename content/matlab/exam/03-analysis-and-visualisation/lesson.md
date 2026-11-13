@@ -10,6 +10,52 @@ hints:
   - "`set(gca, 'xtick', 1:numel(values), 'xticklabel', labels)` puts the labels under the bars."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **descriptive statistics** | summaries such as mean, median and spread |
+| **mean** / **median** | average / middle value, which outliers do not pull |
+| **skew** | values bunched to one side |
+| **sample standard deviation** | divides by `n-1`; `std` does this by default |
+| **population standard deviation** | divides by `n`: `std(v, 1)` |
+| **range** | `max - min` |
+| **reduction** | an operation that collapses a dimension, such as `mean` |
+| **reduction dimension** | `mean(M)` goes down the columns, giving a row |
+| **figure** | a window or image holding a chart |
+| **axis labels** | the text naming each axis; a figure needs them |
+| **PNG** | an image file format |
+| **headless figure** | made with `'visible', 'off'` and saved with `print` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `mean`, `median`, `std`, `max`, `min` | the statistics |
+| `mean(M(:))` | the mean of every element |
+| `sortrows(t, varName, 'descend')` | sorts whole table rows, largest first |
+| `t(1:min(n, height(t)), :)` | the first `n` rows, or fewer |
+| `figure('visible', 'off')` | a figure with no window |
+| `bar(values)` | a bar chart |
+| `xticklabels(labels)`, `xlabel`, `ylabel`, `title` | labels |
+| `print(f, filename, '-dpng')` | saves the figure as a PNG |
+| `close(f)` | closes the figure |
+| `nargin` | how many arguments were passed, for the optional `labels` |
+
+---
+
 The third paper covers the **analysis and visualisation** domain: descriptive
 statistics, ordering, and figures.
 

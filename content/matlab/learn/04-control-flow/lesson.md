@@ -11,6 +11,48 @@ hints:
   - "`sum_until` returns two things: the running total and how many elements went into it. Stop with `break` before exceeding the limit."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **control flow** | the order code runs in: `if`, `switch`, `for`, `while` |
+| **`elseif`** | one word; another test |
+| **ternary operator** | `a ? b : c`; MATLAB has none |
+| **`switch`** | compares with `isequal`, so works on char arrays |
+| **`otherwise`** | the default case |
+| **fall-through** | a case running into the next; MATLAB has none |
+| **`for` walks columns** | each loop value is one column of what it is given |
+| **`break`** / **`continue`** | leave the loop / go to the next iteration |
+| **preallocate** | make the full array before the loop |
+| **vectorised** | the loop written as one array expression |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `octave --no-gui --quiet --eval "..."` | runs one line of MATLAB code in Octave, with no window and no banner, as Run does |
+
+### MATLAB names
+
+| Name | What it does |
+|---|---|
+| `if ... elseif ... else ... end` | branches |
+| `switch name, case 'north', ..., case {'east','west'}, ..., otherwise, ..., end` | choose by value |
+| `for i = 1:5 ... end` | a loop over 1 to 5 |
+| `while total < limit ... end` | loops while a condition holds |
+| `out = zeros(1, n)` | preallocates |
+| `c{i}` | the contents of cell `i` |
+| `error('grade:range', ...)` | throws with an identifier |
+| `[total, used] = f(...)` | two outputs |
+
+---
+
 ## if
 
 ```matlab
