@@ -12,6 +12,44 @@ challenge:
     xp: 500
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **slot** | a numbered parking space |
+| **capacity** | how many slots |
+| **plate** | the car's number plate, tidied: trimmed and upper-cased |
+| **lowest-numbered free slot** | where the next car goes |
+| **fee** | free up to 30 minutes, then 2.00 per started hour, at most 20.00 |
+| **every hour started** | 61 minutes counts as two hours |
+| **takings** | the total of all fees so far |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `dotnet build -c Release` | compiles the project, to check it builds |
+
+### C# names
+
+| Name | What it does |
+|---|---|
+| `DateTime`, `TimeSpan` | a moment / a length of time: `leave - arrive` |
+| `span.TotalMinutes`, `Math.Ceiling(x)` | minutes as a number / round up |
+| `plate.Trim().ToUpperInvariant()` | tidies a plate |
+| `string.IsNullOrWhiteSpace(s)` | empty or only spaces |
+| `Dictionary<string, (int Slot, DateTime At)>` | the cars inside |
+| `IReadOnlyList<string>` | a list callers cannot change |
+| `ArgumentException`, `ArgumentOutOfRangeException`, `InvalidOperationException`, `KeyNotFoundException` | bad plate or time / bad capacity / already in or full / not inside |
+
+---
+
 The garage's old controller died in the night. Cars are queueing at the
 barrier and the new one has to be running in half an hour.
 

@@ -11,6 +11,41 @@ challenge:
     xp: 375
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **buffer** | the text being edited |
+| **edit** | one change: an append or a delete |
+| **undo** / **redo** | take back the last edit / put back the last undone one |
+| **history** | the edits that can be undone or redone |
+| **a new edit clears redo** | after a fresh edit there is nothing to redo |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `dotnet build -c Release` | compiles the project, to check it builds |
+
+### C# names
+
+| Name | What it does |
+|---|---|
+| `Stack<T>` | last in, first out: `Push`, `Pop`, `Count` |
+| `stack.Clear()` | empties it |
+| `text.Substring(start, length)` | part of a string |
+| `Math.Min(a, b)` | the smaller |
+| `bool CanUndo => ...;` | a computed property |
+| `ArgumentOutOfRangeException` | the error for a negative count |
+
+---
+
 The note-taking app ships on Friday and Ctrl+Z does nothing.
 
 ## The task

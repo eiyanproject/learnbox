@@ -11,6 +11,57 @@ hints:
   - "Slice rather than Substring: `text.Slice(start, length)` is a window onto the same memory and allocates nothing."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **value type** | a `struct`: copied on assignment and on every call |
+| **stack** / **heap** | short-lived memory for locals / longer-lived memory for objects |
+| **inline** | stored directly in place, with no pointer to follow |
+| **`readonly struct`** | an immutable struct, avoiding defensive copies |
+| **defensive copy** | a hidden copy the compiler makes to protect a readonly value |
+| **mutable struct** | a documented mistake: changes often hit a copy |
+| **`Span<T>`** | a pointer and a length: a window onto memory that already exists |
+| **slice** | a part of a span, made without allocating or copying |
+| **`stackalloc`** | allocates a small block on the stack |
+| **unmanaged memory** | memory outside the garbage collector's control |
+| **`ref struct`** | may only live on the stack, so it cannot be a field, boxed, a type argument, or cross `await`/`yield` |
+| **garbage collector** | frees objects nobody refers to |
+| **`Memory<T>`** | the span-like type that can be a field and cross `await` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `dotnet build -c Release` | compiles the project in Release mode |
+| `dotnet bin/Release/net8.0/lesson.dll` | runs the compiled program |
+
+### C# names
+
+| Name | What it does |
+|---|---|
+| `readonly struct Point` | an immutable value type |
+| `ReadOnlySpan<char> text = "hello world";` | a view onto a string |
+| `text.Slice(0, 5)` | the first five characters, no copy |
+| `Span<int> scratch = stackalloc int[16];` | a stack buffer |
+| `Math.Sqrt(x)` | square root |
+| `char.IsDigit(c)`, `char.IsWhiteSpace(c)` | character tests |
+| `out int value` | the Try pattern's result |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `CS1612: Cannot modify the return value of ... because it is not a variable` | assigning to a field of a struct copy, such as `list[0].X = 5` |
+
+---
+
 ## Value types
 
 A `struct` is copied on assignment and on every method call. A `class` is a

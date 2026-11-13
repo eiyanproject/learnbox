@@ -11,6 +11,62 @@ hints:
   - "`CountUpAsync` calls `token.ThrowIfCancellationRequested()` each iteration; an already-cancelled token throws on the first one."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **`Task`** | work that will finish; `Task<T>` finishes with a value |
+| **async method** | marked `async`, returns a Task, may `await` |
+| **I/O** | input and output: network, disk, database |
+| **thread pool** | reusable threads; a thread waiting on I/O goes back to it |
+| **`Task.Run`** | moves CPU work to a pool thread |
+| **`await`** | waits for a Task without blocking; the rest becomes a continuation |
+| **continuation** | the code after an `await`, run when the task completes; maybe on another thread |
+| **deadlock** | two things waiting for each other forever |
+| **context switch** | moving work back to the original thread or context |
+| **sequential** / **concurrent** | one after another / all started, then waited for |
+| **`AggregateException`** | wraps one or more exceptions, from `.Wait()`, `.Result` or `WhenAll` |
+| **async all the way up** | never block on a Task with `.Result` |
+| **cancellation** | cooperative: your code checks a token and throws |
+| **`CancellationToken`** | the object that signals cancellation |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `dotnet build -c Release` | compiles the project in Release mode |
+| `dotnet bin/Release/net8.0/lesson.dll` | runs the compiled program |
+
+### C# names
+
+| Name | What it does |
+|---|---|
+| `public static async Task<int> DoubleAsync(int n)` | an async method |
+| `await Task.Delay(1)` | waits without blocking |
+| `await Task.WhenAll(tasks)` | waits for all; rethrows the first failure |
+| `task.Exception` | every failure of a task |
+| `.Result`, `.Wait()` | block on a Task; avoid |
+| `ConfigureAwait(false)` | do not return to the original context |
+| `token.ThrowIfCancellationRequested()` | throws if cancelled |
+| `int?` | an int or null |
+| `Func<Task<int>> work` | a function returning a Task |
+| `e.InnerException` | the exception an `AggregateException` wraps |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `OperationCanceledException` | thrown when cancellation is requested |
+| `AggregateException` | the wrapper from blocking on a failed Task |
+
+---
+
 ```csharp
 public static async Task<int> DoubleAsync(int n)
 {

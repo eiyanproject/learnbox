@@ -11,6 +11,55 @@ hints:
   - "An interface member is public by definition - do not write `public` on it, and do write it on the implementing class."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **interface** | names a capability; a class declares that it has it |
+| **access modifier** | `public`, `private`...; interface members are public by definition |
+| **default implementation** | an interface method with a body (C# 8), for versioning |
+| **base class** | the one class a class inherits from |
+| **`IDisposable`** | can be disposed; `using` works on it |
+| **`IComparable<T>`** | has `CompareTo` for ordering |
+| **generics** | one implementation for every element type |
+| **type parameter** | `T` in `Repository<T>` |
+| **boxing** | wrapping a value type in an object; generics avoid it |
+| **reified** | `List<int>` really is a list of `int` at run time |
+| **type erasure** | Java's approach, where generic types vanish at run time |
+| **constraint** | `where T : ...`: what `T` must be, which buys you its members |
+| **parameterless constructor** | a constructor with no arguments, required by `new()` |
+| **Try pattern** | return whether it worked, and the value through `out` |
+| **`out` parameter** | a parameter the method must assign on every path |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `dotnet build -c Release` | compiles the project in Release mode |
+| `dotnet bin/Release/net8.0/lesson.dll` | runs the compiled program |
+
+### C# names
+
+| Name | What it does |
+|---|---|
+| `public interface IIdentified { int Id { get; } }` | an interface |
+| `record Item(...) : IIdentified` | a record implementing it |
+| `class Repository<T> where T : class, IIdentified` | a constrained generic class |
+| `where T : class`, `struct`, `IComparable<T>`, `new()` | the common constraints |
+| `typeof(T).Name` | the type's name at run time |
+| `new T[n]` | an array of `T` |
+| `int.TryParse("42", out var a)` | the framework's Try pattern |
+| `public bool TryGet(int id, out Item? item)` | your own Try method |
+| `T?` | may be null |
+
+---
+
 An interface names a capability. A class that has it declares so, and code can
 then require the capability rather than the class.
 

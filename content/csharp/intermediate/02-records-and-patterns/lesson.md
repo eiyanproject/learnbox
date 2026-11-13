@@ -11,6 +11,50 @@ hints:
   - "`with` copies and changes: `original with { Height = 5 }` leaves the original untouched."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **record** | a constructor, read-only properties, value equality, `ToString`, `Deconstruct` and `with` in one line |
+| **value equality** | equal contents mean equal records |
+| **`record struct`** | a value-type record |
+| **shallow copy** | a copy whose reference members (such as a list) are shared |
+| **switch expression** | produces a value from patterns; no `break`, no fallthrough |
+| **fallthrough** | one `case` running on into the next; switch expressions have none |
+| **exhaustive** | every possible value handled; the compiler warns if not |
+| **pattern** | a test on a value's shape |
+| **type**, **constant**, **relational**, **logical**, **property**, **positional** patterns | `Circle c`, `0`, `< 0`, `> 0 and < 10`, `Rect { Width: 0 }`, `Rect(var w, var h)` |
+| **`when` guard** | an extra condition on a case |
+| **first match wins** | order cases from specific to general |
+| **unreachable case** | one an earlier case already covers; the compiler says so |
+| **abstract record** | a base record that cannot be created itself |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `dotnet build -c Release` | compiles the project in Release mode |
+| `dotnet bin/Release/net8.0/lesson.dll` | runs the compiled program |
+
+### C# names
+
+| Name | What it does |
+|---|---|
+| `public record Item(int Id, string Name);` | a record |
+| `rect with { Height = 10 }` | a changed copy |
+| `s switch { Circle c => ..., _ => throw ... }` | a switch expression |
+| `abstract record Shape; record Circle(double Radius) : Shape;` | a record hierarchy |
+| `Math.PI` | pi |
+| `$"{w}x{h}"` | an interpolated string |
+
+---
+
 ## Records
 
 ```csharp

@@ -11,6 +11,48 @@ hints:
   - "`Summarise` of an empty sequence is \"no entries\" - decide that before calling Max, which throws on empty."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **log** | lines a program writes about what it did |
+| **timestamp** | the date and time of an event |
+| **level** | how serious a log line is: `ERROR`, `INFO` |
+| **service** | the part of the system that wrote the line |
+| **duration** | how long something took, here in milliseconds |
+| **malformed line** | one that does not fit the format; skipped, not fatal |
+| **truncated** | cut off part way |
+| **record** | immutable data with value equality, easy to compare in tests |
+| **Try pattern** | return `bool` and the value through `out`, instead of throwing |
+| **iterator** | `yield return`, so only the lines needed are read |
+| **empty case** | what to report when there are no entries; `Max` and `Average` throw on empty |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `dotnet build -c Release` | compiles the project in Release mode |
+| `dotnet bin/Release/net8.0/lesson.dll` | runs the compiled program |
+
+### C# names
+
+| Name | What it does |
+|---|---|
+| `record LogEntry(DateTime When, string Level, string Service, int DurationMs)` | one parsed line |
+| `DateTime.TryParse(text, out var when)` | parses a timestamp |
+| `int.TryParse(text, out var ms)` | parses a number |
+| `line.Split(' ', StringSplitOptions.RemoveEmptyEntries)` | splits on spaces, skipping blanks |
+| `GroupBy`, `OrderByDescending`, `ToDictionary` | the LINQ used for the questions |
+| `Max()`, `Average()` | throw on an empty sequence |
+
+---
+
 Everything from this track in one place. The input is a log:
 
 ```

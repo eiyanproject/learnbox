@@ -11,6 +11,57 @@ hints:
   - "`Withdraw` throws: an overdraft is a broken invariant the caller cannot shrug off. Use ArgumentOutOfRangeException and InvalidOperationException."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **nullable reference types** | `string` never null, `string?` may be; checked by the compiler only |
+| **dereference** | use a member of a reference, which fails if it is null |
+| **compile-time only** | nothing is checked while running |
+| **deserialisation** | turning stored text, such as JSON, back into objects |
+| **static check** | a check the compiler does without running the code |
+| **null-conditional** | `?.`: null in, null out |
+| **null-coalescing** | `??`: the left unless it is null; `??=` assigns only if null |
+| **null-forgiving** | `!`: silences the warning; changes nothing |
+| **normal outcome** | a failure correct code expects: return `bool`, `T?` or Try |
+| **bug** | a mistake by the caller; throw |
+| **`nameof`** | the name of a variable as a string, kept up to date by renames |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `dotnet build -c Release` | compiles the project in Release mode |
+| `dotnet bin/Release/net8.0/lesson.dll` | runs the compiled program |
+
+### C# names
+
+| Name | What it does |
+|---|---|
+| `text?.Trim()` | trims, or null if `text` is null |
+| `name ?? "anonymous"` | a default for null |
+| `cache ??= Build()` | builds only if null |
+| `value!` | tells the compiler "not null" |
+| `throw new ArgumentOutOfRangeException(nameof(amount))` | a bad argument value |
+| `ArgumentException`, `ArgumentNullException`, `InvalidOperationException`, `NotImplementedException` | which exception for which case |
+| `e.ParamName` | the parameter an argument exception names |
+| `catch (SpecificException e)` | catch only what you can handle |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `NullReferenceException` | a member used on null |
+| `warning CS8602: Dereference of a possibly null reference` | the compiler's nullable warning |
+
+---
+
 ## Nullable reference types
 
 ```xml

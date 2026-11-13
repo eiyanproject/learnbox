@@ -11,6 +11,49 @@ hints:
   - "Raise an event through `Threshold?.Invoke(this, value)`: null when nobody has subscribed."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **delegate** | a typed reference to a method |
+| **`Func<..., TResult>`** | a delegate returning a value; the last type argument is the return type |
+| **`Action<...>`** | a delegate returning nothing |
+| **`Predicate<T>`** | a delegate returning `bool` |
+| **closure** | a lambda that captures variables from its surroundings |
+| **capture** | the lambda keeps the variable itself, not a copy |
+| **loop variable trap** | a `for` loop shares one variable, so every lambda sees the last value; `foreach` makes a new one each time |
+| **multicast** | several methods in one delegate, run in order; only the last return value survives |
+| **event** | a delegate field outsiders can only `+=` and `-=` |
+| **subscriber** | code that has added itself to an event |
+| **raise** an event | call its subscribers |
+| **compose** | build a function that runs one function then another |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `dotnet build -c Release` | compiles the project in Release mode |
+| `dotnet bin/Release/net8.0/lesson.dll` | runs the compiled program |
+
+### C# names
+
+| Name | What it does |
+|---|---|
+| `Func<int, int> twice = x => x * 2;` | a function in a variable |
+| `public delegate int Transform(int value);` | a custom delegate type |
+| `both = first + second; both -= first;` | combine and remove delegates |
+| `public event EventHandler<decimal>? Threshold;` | an event |
+| `Threshold?.Invoke(this, value);` | raises it, if anyone subscribed |
+| `gauge.Threshold += (sender, v) => ...;` | subscribes |
+
+---
+
 A delegate is a typed reference to a method — behaviour you can store in a
 variable, pass as an argument, and return.
 

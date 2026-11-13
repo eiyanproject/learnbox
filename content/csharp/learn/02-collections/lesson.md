@@ -11,6 +11,60 @@ hints:
   - "Take `IEnumerable<T>` as a parameter and return `List<T>` or an array - accept the general, return the specific."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **collection** | a type holding many values |
+| **`System.Collections.Generic`** | the namespace of the standard collections |
+| **O(1) average** | constant time for a typical lookup |
+| **dedup** | remove duplicates |
+| **FIFO** / **LIFO** | first in, first out (queue) / last in, first out (stack) |
+| **interface** | names what a type can do, such as `IEnumerable<T>` |
+| **`IEnumerable<T>`** | anything that can be iterated: the minimum to accept |
+| **`IReadOnlyList<T>`** | indexable but not changeable |
+| **lazy query** | one whose work is done each time it is iterated |
+| **idiomatic** | the usual way experienced programmers write it |
+| **iteration order** | the order values come out; `Dictionary` and `HashSet` promise none |
+| **first-seen order** | the order items first appeared |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `dotnet build -c Release` | compiles the project in Release mode |
+| `dotnet bin/Release/net8.0/lesson.dll` | runs the compiled program |
+
+### C# names
+
+| Name | What it does |
+|---|---|
+| `List<T>`, `Dictionary<K,V>`, `HashSet<T>`, `Queue<T>`, `Stack<T>`, `T[]` | the main collections |
+| `counts.TryGetValue(k, out var n)` | one lookup: found, and the value |
+| `counts.GetValueOrDefault(k, 0)` | the value, or a default |
+| `counts.ContainsKey(k)` | whether a key exists |
+| `counts[word] = counts.GetValueOrDefault(word) + 1;` | the counting idiom |
+| `counts["dog"] = 1;` | writing a missing key adds it |
+| `text.Split(' ')`, `ToLowerInvariant()` | split text; lowercase it |
+| `set.Add(x)` | adds; returns `false` if already there |
+| `KeyValuePair<string,int>` | one key and value |
+| `SortedDictionary<K,V>` | a dictionary kept in key order |
+| `_ = expr;` | evaluate and discard |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `KeyNotFoundException` | reading a key that is not in the dictionary |
+
+---
+
 The collections are in `System.Collections.Generic` and the important ones are
 few.
 

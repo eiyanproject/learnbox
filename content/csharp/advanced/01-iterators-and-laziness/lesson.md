@@ -11,6 +11,47 @@ hints:
   - "`Counted` needs a field the tests can read, incremented each time an element is produced - that is how they observe the laziness."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **iterator method** | a method using `yield return` |
+| **`yield return`** | hands back one element and pauses |
+| **state machine** | the class the compiler generates, keeping locals and position |
+| **`IEnumerator<T>`** | walks a sequence: `MoveNext()` and `Current` |
+| **lazy** | nothing runs until an element is asked for |
+| **eager validation** | checking arguments at the call, not at first use |
+| **infinite sequence** | one that never ends, safe because elements are made on demand |
+| **pipeline** | operators chained so elements flow through one at a time |
+| **hot loop** | code run very many times, where small costs add up |
+| **`yield break`** | ends the sequence |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `dotnet build -c Release` | compiles the project in Release mode |
+| `dotnet bin/Release/net8.0/lesson.dll` | runs the compiled program |
+
+### C# names
+
+| Name | What it does |
+|---|---|
+| `IEnumerable<int> Evens(...) { ... yield return n; }` | a lazy sequence |
+| `while (true) yield return n++;` | an infinite one |
+| `Take(5)`, `First()`, `Count()`, `ToList()` | what makes the body run |
+| `Func<T, bool> stop` | a predicate parameter |
+| `class Counted : IEnumerable<int>` | your own enumerable type |
+| `GetEnumerator()` | the method `foreach` calls |
+
+---
+
 ```csharp
 public static IEnumerable<int> Evens(IEnumerable<int> values)
 {

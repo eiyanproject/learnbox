@@ -11,6 +11,59 @@ hints:
   - "Use `FirstOrDefault` rather than `First` when the sequence might be empty - First throws, FirstOrDefault returns null or the default."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **LINQ** | Language Integrated Query: extension methods on `IEnumerable<T>` that read as a query |
+| **extension method** | a static method you call as if it were a member |
+| **lambda** | `p => p.Age >= 18`: a small inline function |
+| **deferred execution** | the query does nothing until something enumerates it |
+| **enumerate** | walk through every element |
+| **materialise** | run a query into a real collection: `ToList`, `ToArray`, `ToDictionary` |
+| **round trip** | a request to a database and its answer |
+| **predicate** | a function returning true or false |
+| **aggregation** | combining values: `Sum`, `Average`, `Min`, `Max` |
+| **flatten** | turn a sequence of sequences into one |
+| **`IGrouping<K,T>`** | a group from `GroupBy`, with its `Key` |
+| **query syntax** | `from p in people where ... select ...`: the same calls in another form |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `dotnet build -c Release` | compiles the project in Release mode |
+| `dotnet bin/Release/net8.0/lesson.dll` | runs the compiled program |
+
+### C# names
+
+| Name | What it does |
+|---|---|
+| `Where`, `Select` | filter / transform |
+| `SelectMany` | flatten |
+| `OrderBy`, `ThenBy`, `OrderByDescending` | sort |
+| `GroupBy` | group by a key |
+| `Any`, `All`, `Count` | test and count |
+| `First`, `FirstOrDefault`, `Single` | one element; throws if none / default if none / throws unless exactly one |
+| `Sum`, `Average`, `Min`, `Max` | aggregate |
+| `Take`, `Skip`, `Distinct` | slice and dedup |
+| `ToList`, `ToArray`, `ToDictionary` | materialise |
+| `string.Join(",", items)` | joins with a separator |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `InvalidOperationException` | `First` with no match, `Single` with more than one, or `Average`/`Max` on an empty sequence |
+
+---
+
 LINQ is a set of extension methods on `IEnumerable<T>` that read as a query:
 
 ```csharp

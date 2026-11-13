@@ -11,6 +11,58 @@ hints:
   - "`Repeat` should throw ArgumentOutOfRangeException for a negative count, and return \"\" for zero."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **IL** | intermediate language: what C# compiles to |
+| **CLR** | Common Language Runtime: runs IL, compiling it to machine code as it goes |
+| **.NET SDK** | the tools to build and run C#: the `dotnet` command |
+| **`.dll`** | here, a compiled IL assembly, not a native library |
+| **Release** | an optimised build, as opposed to Debug |
+| **project file** | `.csproj`: describes the build: framework, files, packages |
+| **SDK-style project** | the modern short `.csproj` where everything has a default |
+| **target framework** | the .NET version, such as `net8.0` |
+| **implicit usings** | the usual `using System;` lines added for you |
+| **nullable reference types** | `string?` may be null; `string` should not be; the compiler warns |
+| **value type** | `int`, `double`, `bool`, `struct`, `enum`: stored inline, copied on assignment |
+| **reference type** | `class`, `string`, arrays, `record`: on the heap, the reference is copied |
+| **immutable** | cannot change after creation |
+| **namespace** | a named group of types; file-scoped with `namespace Lesson;` |
+| **record** | a type for immutable data with value equality |
+| **switch expression** | `n switch { ... }`: picks a value by pattern |
+| **expression-bodied member** | `=> a + b`: a method whose body is one expression |
+| **top-level statements** | a program that is just statements; the compiler adds `Main` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `dotnet build -c Release` | compiles the project in Release mode |
+| `dotnet bin/Release/net8.0/lesson.dll` | runs the compiled program |
+
+### C# names
+
+| Name | What it does |
+|---|---|
+| `public static class Calc` | a class of static methods only |
+| `Console.WriteLine(x)` | prints a line |
+| `string.Concat(a, b)` | joins strings |
+| `a == b` on strings | compares the text |
+| `ReferenceEquals(a, b)` | whether two references are the same object |
+| `_ =>` | the "anything else" case of a switch expression |
+| `new[] { -3, 0, 5 }` | an array with its type worked out |
+| `throw new ArgumentOutOfRangeException(nameof(count))` | the error for a negative count |
+| `<Nullable>enable</Nullable>`, `<ImplicitUsings>enable</ImplicitUsings>` | the two `.csproj` settings |
+
+---
+
 C# compiles to **IL** — an intermediate language — which the CLR then compiles
 to machine code as it runs. That is the same shape as Java, and it is why a
 `.dll` here is not a native library.

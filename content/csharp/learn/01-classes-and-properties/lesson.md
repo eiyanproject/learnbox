@@ -11,6 +11,58 @@ hints:
   - "`Money` is a record struct or record: `public record Money(decimal Amount, string Currency);` gives equality and ToString for free."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **property** | looks like a field, runs like a method |
+| **field** | a variable stored in an object; private ones are often written `_balance` |
+| **getter** / **setter** | `get` reads, `set` writes |
+| **`private set`** | writable only inside the class |
+| **auto-property** | `{ get; set; }`: the backing field is generated |
+| **backing field** | the hidden variable a property stores its value in |
+| **`value`** | the implicit parameter of a setter |
+| **`init`** | settable only while the object is being created |
+| **computed property** | `=> expression`: read-only, worked out each time |
+| **`required`** | an object initialiser must set this property |
+| **object initialiser** | `new Account { Owner = "a" }` |
+| **constructor** | runs when an object is created |
+| **default parameter value** | `decimal opening = 0`: used if the caller gives none |
+| **overload** | several methods with the same name, different parameters |
+| **`double`** | binary floating point: `0.1 + 0.2` is not exactly `0.3` |
+| **`decimal`** | base-10, 28 significant digits: right for money |
+| **value equality** | two records with the same fields are `==` |
+| **identity** | a class object is itself, whatever its fields |
+| **`with`** | a copy with some properties changed |
+| **deconstruction** | splitting a record into its parts |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `dotnet build -c Release` | compiles the project in Release mode |
+| `dotnet bin/Release/net8.0/lesson.dll` | runs the compiled program |
+
+### C# names
+
+| Name | What it does |
+|---|---|
+| `public decimal Balance { get; private set; }` | readable anywhere, writable inside |
+| `get => _balance;` | a getter with a body |
+| `cond ? a : throw new ArgumentException()` | a value, or an error |
+| `public record Money(decimal Amount, string Currency);` | an immutable data type |
+| `money with { Amount = money.Amount * 2 }` | a changed copy |
+| `2.50m` | a `decimal` literal |
+| `ArgumentOutOfRangeException`, `InvalidOperationException` | a bad argument / wrong state, such as overdrawing |
+
+---
+
 A C# property looks like a field and runs like a method:
 
 ```csharp
