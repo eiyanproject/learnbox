@@ -11,6 +11,50 @@ hints:
   - "Copy the key with strdup-style allocation: the caller's string may not outlive the table, and the table owns what it stores."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **hash table** | turns a key into an array index for fast lookup |
+| **hash function** | turns a key into a number |
+| **injective** | different inputs always give different outputs; hashes are not |
+| **FNV-1a** | a short, fast, non-cryptographic hash: XOR each byte, then multiply |
+| **test values** | published inputs and outputs to check an implementation |
+| **cryptographic hash** | one designed to resist attackers; FNV-1a is not |
+| **bucket** | one slot of the table's array |
+| **collision** | two keys landing in the same bucket |
+| **separate chaining** | a linked list per bucket |
+| **chain** | the list of entries in one bucket |
+| **load factor** | `count / capacity`: average chain length; keep it near 0.75 |
+| **rehash** | grow the table and move every entry |
+| **owns its keys** | the table copies keys on insert and frees them on removal |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `gcc -std=c17 -Wall map.c -o map && ./map` | builds and runs |
+
+### C names
+
+| Name | What it does |
+|---|---|
+| `hash ^= *p; hash *= 16777619u;` | one FNV-1a step |
+| `2166136261u` | FNV-1a's starting value |
+| `hash % capacity` | picks the bucket |
+| `struct Entry **buckets` | an array of chain heads |
+| `strcmp(a, b)` | 0 when two strings are equal; confirms a match |
+| `malloc(strlen(key) + 1); strcpy(...)` | copies a key, terminator included |
+| `%08x` | `printf` hexadecimal, 8 digits with leading zeros |
+
+---
+
 A hash table turns a key into an array index. Everything hard about it comes
 from that not being injective.
 

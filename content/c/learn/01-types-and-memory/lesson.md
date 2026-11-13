@@ -11,6 +11,54 @@ hints:
   - "`truncate_to_char` casts an int to signed char and back - values above 127 wrap, which is the point."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **type** | how many bytes, and how to interpret them |
+| **byte** | 8 bits; `char` is exactly one |
+| **runtime type** | type information kept while running; C has none |
+| **signed** / **unsigned** | can be negative / only zero and up |
+| **`size_t`** | the unsigned type `sizeof` and `strlen` return |
+| **fixed-width integers** | `int32_t`, `uint64_t`, `int8_t`: exactly that many bits |
+| **overflow** | a result too big for its type |
+| **undefined behaviour** | the standard says nothing about what happens; the compiler may assume it never does |
+| **wrap** | unsigned overflow going round to 0; defined |
+| **optimise** | the compiler rewriting code to run faster |
+| **truncation** | only the low bits survive a conversion to a narrower type |
+| **integer division** | `7 / 2` is 3; the fraction is dropped before any assignment |
+| **promotion** | anything narrower than `int` becomes `int` before arithmetic |
+| **x86-64** | the 64-bit PC processor family these lessons run on |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `gcc -std=c17 -Wall nums.c -o nums && ./nums` | builds and runs |
+
+### C names
+
+| Name | What it does |
+|---|---|
+| `sizeof(int)`, `sizeof x` | the size in bytes |
+| `char`, `int`, `long`, `double` | basic types |
+| `<stdint.h>` | the fixed-width integer types |
+| `<limits.h>` | `INT_MAX`, `INT_MIN`, `CHAR_BIT` and other limits |
+| `<string.h>`, `strlen(s)` | string functions; a string's length |
+| `printf("%d %zu %.1f\n", ...)` | prints an `int`, a `size_t`, a `double` with one decimal |
+| `if (b > 0 && a > INT_MAX - b)` | an overflow check written before the addition |
+| `int *out` | an output parameter: the function writes the answer through it |
+| `signed char` | a one-byte signed type |
+| `return 0;` | `main` reports success |
+
+---
+
 A C type is two pieces of information: how many bytes, and how to interpret
 them. That is all. There is no runtime type, no checking, and nothing stopping
 you reading the same bytes as something else.

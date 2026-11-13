@@ -11,6 +11,50 @@ hints:
   - "If realloc fails it returns NULL and the ORIGINAL block is still valid, so never write `p = realloc(p, ...)` without a temporary - you would leak the original."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **local variable** | lives until the end of its scope |
+| **heap** | memory that lives until you free it |
+| **allocate** / **free** | reserve memory / give it back |
+| **owner** | whoever is responsible for freeing a block |
+| **initialise** | give memory a starting value; `malloc` does not |
+| **leak** | memory never freed |
+| **double free** | freeing twice: heap corruption |
+| **use after free** | using memory after freeing it |
+| **buffer overflow** | writing past the end of a block |
+| **block header** | the allocator's bookkeeping next to each block |
+| **dangling pointer** | a pointer to memory that is no longer valid |
+| **heap corruption** | the allocator's records damaged, often crashing much later |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `gcc -std=c17 -Wall dyn.c -o dyn && ./dyn` | builds and runs |
+
+### C names
+
+| Name | What it does |
+|---|---|
+| `<stdlib.h>` | declares the memory functions |
+| `malloc(n * sizeof *p)` | allocates uninitialised memory; `NULL` on failure |
+| `calloc(n, size)` | allocates zeroed memory, checking the multiplication for overflow |
+| `realloc(p, size)` | resizes, maybe moving; on failure returns `NULL` and keeps the original |
+| `free(p)` | gives memory back; `free(NULL)` does nothing |
+| `p = NULL;` after `free` | turns a later use into an immediate crash |
+| `sizeof *values` | the element size, correct even if the type changes |
+| `/* the caller frees it */` | the only way C can state ownership |
+
+---
+
 Local variables die at the end of their scope. Anything that must outlive it
 goes on the heap, and the heap has no owner unless you decide who it is.
 

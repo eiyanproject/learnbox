@@ -11,6 +11,58 @@ hints:
   - "`increment_all` walks the array through a pointer: `for (int *p = values; p < values + n; p++) (*p)++;` is the idiomatic form."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **address** | where a value lives in memory |
+| **pointer** | a variable holding an address |
+| **dereference** | follow a pointer to the value: `*p` |
+| **pass by value** | a function gets a copy of each argument |
+| **output parameter** | a pointer argument the function writes its answer through |
+| **array** | several values of one type side by side |
+| **decay** | an array name in an expression becomes a pointer to its first element |
+| **element** | one item of an array |
+| **scope** | where a name can be used |
+| **pointer arithmetic** | `values + 2`: the address two elements further on |
+| **`NULL`** | a pointer to nothing; dereferencing it is undefined behaviour |
+| **use-after-free** | using memory after freeing it; often appears to work |
+| **crash** | the program being stopped by the operating system |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `gcc -std=c17 -Wall ptr.c -o ptr && ./ptr` | builds and runs |
+
+### C names
+
+| Name | What it does |
+|---|---|
+| `int *p` | declares `p` as a pointer to `int` |
+| `&x` | the address of `x` |
+| `*p` | the thing `p` points at |
+| `values[2]`, `*(values + 2)` | the same element |
+| `void f(int values[])` | receives a pointer; the length is lost |
+| `const int *values` | a pointer the function only reads through |
+| `if (p != NULL)` | check before using a pointer you did not create |
+| `printf("%zu", ...)` | prints a `size_t` |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `warning: 'sizeof' on array function parameter 'values' will return size of 'int *'` | `sizeof` inside a function measures the pointer |
+| `Segmentation fault` | the program touched memory it may not, often a NULL dereference |
+
+---
+
 A pointer holds an address. That is the whole idea; everything else follows
 from it.
 

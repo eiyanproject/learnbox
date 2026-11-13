@@ -11,6 +11,46 @@ hints:
   - "`arena_reset` sets the offset back to 0 and frees nothing - reusing the same block is the entire point."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **bookkeeping** | the allocator tracking every block so any one can be freed |
+| **arena** | one block allocated up front, handed out in pieces |
+| **bump allocation** | handing out memory by moving an offset forward |
+| **offset** | how far into the block the next piece starts |
+| **reset** | set the offset to zero; everything is gone at once |
+| **lifetime** | how long data must stay valid |
+| **AST** | abstract syntax tree: a compiler's model of a program |
+| **frame** | one screen update in a game |
+| **churn** | objects created and discarded continually |
+| **alignment** | the address multiple a type needs, such as 8 for `double` |
+| **misaligned access** | reading a value at the wrong address multiple; undefined behaviour |
+| **power of two** | 1, 2, 4, 8...: why the rounding bit trick works |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `gcc -std=c17 -Wall arena.c -o arena && ./arena` | builds and runs |
+
+### C names
+
+| Name | What it does |
+|---|---|
+| `(offset + align - 1) & ~(align - 1)` | rounds up to the next multiple of `align` |
+| `_Alignof(max_align_t)` | the strictest alignment any standard type needs |
+| `<stddef.h>` | declares `max_align_t` and `size_t` |
+| `unsigned char *base` | the arena's raw bytes |
+
+---
+
 `malloc` and `free` track every block individually so any one can be returned
 at any time. When a set of allocations all die together, that bookkeeping is
 paid for nothing.

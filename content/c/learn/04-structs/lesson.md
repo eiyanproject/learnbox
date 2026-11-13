@@ -11,6 +11,49 @@ hints:
   - "`move_point` changes the caller's point, so it takes `struct Point *` and writes through it."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **struct** | a type grouping several named values |
+| **field** (member) | one value inside a struct |
+| **copied on assignment** | `q = p` makes a full copy; so does passing a struct to a function |
+| **pass by pointer** | passing the address, so nothing is copied |
+| **precedence** | which operator binds tighter: `.` binds tighter than `*` |
+| **`typedef`** | gives a type a new name, so `struct` can be left out |
+| **padding** | unused bytes the compiler inserts so each field sits at an address its type likes |
+| **alignment** | the address boundary a type prefers, such as 4 bytes for `int` |
+| **layout** | where each field sits inside the struct |
+| **unspecified** | the standard does not say what the padding bytes hold |
+| **socket** | a network connection a program writes bytes to |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `gcc -std=c17 -Wall shape.c -o shape && ./shape` | builds and runs |
+
+### C names
+
+| Name | What it does |
+|---|---|
+| `struct Point { int x; int y; };` | defines a struct |
+| `struct Point p = {3, 4};` | creates one with values |
+| `p.x` | a field of a struct |
+| `ptr->x` | a field through a pointer: the same as `(*ptr).x` |
+| `const struct Rect *r` | read a struct without copying or changing it |
+| `typedef struct { int x, y; } Point;` | a struct type named `Point` |
+| `sizeof(struct Bad)` | the size including padding |
+| `memcmp(a, b, n)` | compares bytes; never use it on structs |
+
+---
+
 A struct groups values into one type:
 
 ```c

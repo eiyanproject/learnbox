@@ -11,6 +11,41 @@ challenge:
     xp: 420
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **bit set** | one bit per item, on or off |
+| **packed** | 256 flags in 32 bytes instead of 256 ints |
+| **least significant bit** | the lowest bit, value 1 |
+| **union** | every bit on in either set |
+| **intersection** | only the bits on in both |
+| **out of range** | an `n` that is not between 0 and `BITSET_BITS - 1` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `gcc -std=c17 -Wall -c bitset.c` | compiles to check it builds |
+
+### C names
+
+| Name | What it does |
+|---|---|
+| `bytes[n / 8]` | the byte holding bit `n` |
+| `1u << (n % 8)` | the mask for bit `n` inside that byte |
+| `\|=`, `&= ~`, `&` | set, clear, test a bit |
+| `memset(p, 0, size)` | sets every byte to 0 |
+| `unsigned char` | one byte, 0 to 255 |
+
+---
+
 The scheduler tracks which of 256 job slots are taken. An array of 256
 `int`s is a kilobyte per table; packed into bits it is 32 bytes.
 

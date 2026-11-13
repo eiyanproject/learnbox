@@ -11,6 +11,52 @@ hints:
   - "`read_first_line` must not overflow: fgets takes the buffer size and never writes more, unlike gets, which was removed from the language."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **stream** | a source or destination of bytes, such as a file |
+| **`FILE *`** | an opaque handle to a buffered stream |
+| **opaque** | you use it only through functions, never look inside |
+| **buffered** | data collected in memory and written in larger pieces |
+| **flush** | write buffered data out; happens at `fclose` |
+| **mode** | how a file is opened: `"r"`, `"w"`, `"a"`, `"r+"`, `"w+"`, plus `"b"` |
+| **truncate** | empty a file when opening it |
+| **append** | add to the end |
+| **`stdin`**, **`stdout`**, **`stderr`** | the three streams every program has; `stderr` is unbuffered |
+| **redirect** | send a program's output to a file instead of the screen |
+| **EOF** | end of file |
+| **`errno`** | a global number saying why the last call failed |
+| **return value check** | the way almost every C library function reports failure |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `gcc -std=c17 -Wall io.c -o io && ./io` | builds and runs |
+
+### C names
+
+| Name | What it does |
+|---|---|
+| `fopen(path, "r")` | opens a file; `NULL` on failure |
+| `fclose(f)` | closes it; non-zero on failure, such as a full disk |
+| `fgets(line, sizeof line, f)` | reads one line, keeping the newline; `NULL` at EOF or error |
+| `fputs(s, f)`, `fprintf(f, ...)` | write text |
+| `fgetc(f)` | reads one character as an `int`, so `EOF` fits |
+| `feof(f)` | true only after a read has failed: never loop on it |
+| `tmpfile()` | a scratch file deleted on close |
+| `rewind(f)` | goes back to the start |
+| `gets` | removed in C11: it could not be used safely |
+
+---
+
 C's file API is built on `FILE *`, an opaque handle wrapping a buffered stream.
 
 ```c
@@ -60,9 +106,10 @@ int main(void) {
 [first
 ][second
 ]
-``` Its ancient
-counterpart `gets` had no size parameter, could not be used safely, and was
-removed from the language in C11.
+```
+
+The ancient counterpart of `fgets`, `gets`, had no size parameter, could not
+be used safely, and was removed from the language in C11.
 
 `fgetc` returns an `int`, not a `char`, because it must be able to return `EOF`
 as a value no character can be. Storing it in a `char` breaks the comparison on

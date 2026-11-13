@@ -11,6 +11,45 @@ hints:
   - "`lex_next` returns a token with kind TOK_END at the end of the input, and TOK_ERROR for a character it does not recognise."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **parser** | reads structured text into a model |
+| **tokenizer** / **lexer** | turns a flat string into tokens |
+| **token** | one meaningful piece: a number, a name, a `+` |
+| **identifier** | a name: letters, digits and `_`, not starting with a digit |
+| **borrow** | point into the input instead of copying; the input must outlive the tokens |
+| **whitespace** | spaces, tabs and newlines |
+| **peek** | look at the next character without consuming it |
+| **first refusal** | checking longer tokens first, such as `==` before `=` |
+| **contract** | the documented rules a function's caller must follow |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `gcc -std=c17 -Wall lex.c -o lex && ./lex` | builds and runs |
+
+### C names
+
+| Name | What it does |
+|---|---|
+| `enum TokenKind { TOK_END, ... };` | named integer constants for the kinds |
+| `const char *start; int length;` | where a token is in the input |
+| `long value` | a number token's value |
+| `<ctype.h>` | `isdigit`, `isalpha`, `isspace` |
+| `isdigit((unsigned char)c)` | the cast avoids undefined behaviour for bytes above 127 |
+| `switch (c) { case '+': ... }` | single-character tokens |
+
+---
+
 Every parser, compiler and config reader starts the same way: turn a flat
 string into a sequence of **tokens**. It is the smallest real program that uses
 everything in this track.

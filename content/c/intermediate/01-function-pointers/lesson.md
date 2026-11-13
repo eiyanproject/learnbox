@@ -11,6 +11,51 @@ hints:
   - "`qsort` needs a comparator of type `int (*)(const void *, const void *)`: cast both arguments back to `const int *` and dereference."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **function pointer** | holds the address of code instead of data |
+| **callback** | a function you pass to another function, for it to call |
+| **declaration reading** | read outward from the name: `op` is a pointer to a function taking two ints, returning int |
+| **`typedef`** | names a type, such as a function pointer type |
+| **generic programming** | code that works for any type; in C through `void *` and sizes |
+| **`void *`** | a pointer to anything, with no type checking |
+| **comparator** | a function returning negative, zero or positive to order two values |
+| **cast** | converting a value to another type: `(const int *)a` |
+| **magnitude** | how large a number is, ignoring sign |
+| **dispatch table** | an array of name-to-function pairs replacing a growing `switch` |
+| **reduce** | combine all values into one with a function, from an initial value |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `gcc -std=c17 -Wall cb.c -o cb && ./cb` | builds and runs |
+
+### C names
+
+| Name | What it does |
+|---|---|
+| `int (*op)(int, int) = add;` | a function pointer set to `add` |
+| `int *op(int, int);` | a different thing: a function returning a pointer |
+| `op(2, 3)`, `(*op)(2, 3)` | two ways to call through it |
+| `typedef int (*BinaryOp)(int, int);` | names the function pointer type |
+| `qsort(values, n, sizeof *values, compare)` | sorts any array with a comparator |
+| `<stdlib.h>` | declares `qsort` |
+| `*(const int *)a` | reads the `int` a `void *` points at |
+| `(x > y) - (x < y)` | -1, 0 or 1 without overflow |
+| `static const struct { ... } OPS[]` | a fixed table, private to the file |
+| `switch`, `case` | choose code by a value |
+
+---
+
 A function pointer holds the address of code rather than data. It is how C
 passes behaviour around.
 

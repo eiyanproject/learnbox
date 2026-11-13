@@ -11,6 +11,46 @@ hints:
   - "`list_free` must walk saving `next` BEFORE freeing the node - reading node->next after free is a use-after-free."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **linked list** | nodes joined by pointers |
+| **node** | one element: a value and a pointer to the next node |
+| **head** | the first node |
+| **contiguous** | side by side in memory, like an array |
+| **cache** | fast memory near the CPU; it favours contiguous data |
+| **data structure** | a way of organising data in memory |
+| **special case** | extra code for one situation, such as removing the head |
+| **pointer to pointer** | `struct Node **link`: points at the pointer that points to a node |
+| **idiom** | a standard way experienced programmers write something |
+| **use-after-free** | reading `node->next` after `free(node)` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `gcc -std=c17 -Wall list.c -o list && ./list` | builds and runs |
+
+### C names
+
+| Name | What it does |
+|---|---|
+| `struct Node { int value; struct Node *next; };` | a node |
+| `cur->next` | the next node |
+| `&list->head` | the address of the head pointer |
+| `link = &(*link)->next;` | move `link` to the next node's `next` field |
+| `*link = dead->next;` | unlink a node, whichever pointer pointed at it |
+| `struct Node *next = node->next; free(node);` | save the next pointer before freeing |
+
+---
+
 A linked list is nodes joined by pointers. Each node owns its value and a
 pointer to the next:
 

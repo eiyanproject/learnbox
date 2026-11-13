@@ -11,6 +11,48 @@ hints:
   - "Return the number of characters copied from `copy_into`, and 0 if size is 0 - there is not even room for the terminator then."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **string** | an array of `char` ending with a `'\0'` byte |
+| **terminator** | the `'\0'` byte that marks the end |
+| **string literal** | `"ada"` written in the code; writing to one is undefined behaviour |
+| **buffer** | an array used to hold data |
+| **buffer overflow** | writing past the end of a buffer, corrupting what follows |
+| **O(n)**, **O(n²)** | time growing with the length / with its square |
+| **destination** / **source** | where text is copied to / from |
+| **`const`** | a promise not to change what the pointer points at |
+| **in place** | changing the original instead of making a copy |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `gcc -std=c17 -Wall str.c -o str && ./str` | builds and runs |
+
+### C names
+
+| Name | What it does |
+|---|---|
+| `'\0'` | the terminator byte |
+| `char name[] = "ada";` | four bytes: three letters and the terminator |
+| `strlen(s)` | counts characters up to the terminator |
+| `strcpy(dst, src)` | copies with no size check: overflows |
+| `strncpy(dst, src, n)` | does not terminate when the source is too long: a trap |
+| `memcpy(dst, src, n)` | copies exactly `n` bytes |
+| `snprintf(dst, size, "%s", src)` | copies at most `size - 1` characters and always terminates |
+| `sizeof dst` | the buffer's size, where the array is visible |
+| `const char *s` | a string the function only reads |
+
+---
+
 C has no string type. A "string" is an array of `char` with a `'\0'` byte at
 the end, and every function in `<string.h>` depends on that byte being there.
 

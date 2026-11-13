@@ -11,6 +11,49 @@ hints:
   - "`ARRAY_LEN` is `(sizeof(a) / sizeof((a)[0]))` and only works where the array's real type is visible - not on a pointer."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **preprocessor** | runs before the compiler and substitutes text |
+| **macro** | a name, or function-like name, replaced by text |
+| **expansion** | the text a macro becomes |
+| **precedence** | which operator binds tighter; why parameters need parentheses |
+| **double evaluation** | a macro argument evaluated twice |
+| **side effect** | a change an expression makes, such as `i++` |
+| **`static inline` function** | a small function the compiler may paste in place, with type checking |
+| **conditional compilation** | including code only when a macro is defined |
+| **constant expression** | a value known at compile time: array sizes, `case` labels |
+| **call site** | where a function or macro is used |
+| **assertion** | a check that stops the program with a message if false |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `gcc -E pp.c` | shows the code after the preprocessor, with macros expanded |
+| `gcc -std=c17 -Wall pp.c -o pp && ./pp` | builds and runs |
+
+### C names
+
+| Name | What it does |
+|---|---|
+| `#define SQUARE(x) ((x) * (x))` | a function-like macro, fully parenthesised |
+| `a ? b : c` | `b` if `a` is true, otherwise `c` |
+| `#ifdef DEBUG ... #endif` | code only when `DEBUG` is defined |
+| `ARRAY_LEN(a)` | `sizeof(a) / sizeof((a)[0])`: wrong on a pointer |
+| `assert(cond)` | stops with file and line if `cond` is false |
+| `__FILE__`, `__LINE__`, `__func__`, `__DATE__` | predefined: file, line, function name, build date |
+| `ctest.h` | this course's test header |
+
+---
+
 The preprocessor runs **before** the compiler and does textual substitution. It
 has no idea about types, scopes or expressions — it pastes text.
 

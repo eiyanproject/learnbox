@@ -11,6 +11,53 @@ hints:
   - "`extract_byte` shifts right by index * 8 and masks with 0xFF. Use unsigned types throughout: shifting a negative signed value is undefined."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **bit** | a single 0 or 1 |
+| **flag** | one bit standing for one on/off setting |
+| **mask** | a value selecting some bits |
+| **AND**, **OR**, **XOR**, **NOT** | both set / either set / exactly one set / inverted |
+| **shift** | move bits left or right: multiply or divide by a power of 2 |
+| **width** | a type's number of bits; shifting by it or more is undefined |
+| **implementation-defined** | each compiler chooses, and documents, the behaviour |
+| **arithmetic shift** | a right shift that copies the sign bit |
+| **boolean** | 0 or 1 |
+| **popcount** | the number of set bits |
+| **Kernighan trick** | `n &= n - 1` clears the lowest set bit |
+| **byte 0** | the lowest 8 bits |
+| **hexadecimal** | base 16, written `0xF0F0` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `gcc -std=c17 -Wall bits.c -o bits && ./bits` | builds and runs |
+
+### C names
+
+| Name | What it does |
+|---|---|
+| `a & b`, `a \| b`, `a ^ b`, `~a` | AND, OR, XOR, NOT |
+| `a << n`, `a >> n` | shift left, right |
+| `1u << 2` | an unsigned value with only bit 2 set |
+| `perms \|= EXEC` | sets a flag |
+| `perms &= ~WRITE` | clears a flag |
+| `perms ^= READ` | toggles a flag |
+| `(value & flag) != 0` | tests a flag, giving 0 or 1 |
+| `(value >> (8 * index)) & 0xFF` | extracts one byte |
+| `__builtin_popcount(x)` | GCC's built-in bit count |
+| `%u` | `printf` format for `unsigned` |
+
+---
+
 Bits are worth understanding for flags, protocols, file formats, hashing and
 anything talking to hardware.
 

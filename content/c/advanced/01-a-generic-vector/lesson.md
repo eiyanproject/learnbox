@@ -11,6 +11,45 @@ hints:
   - "`vec_get` returns a void* into the buffer - the caller casts it. Return NULL for an out-of-range index rather than reading past the end."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **generic container** | one implementation that holds any type |
+| **template** | C++'s way to write generic code; C has none |
+| **element size** | how many bytes one element takes; all a `void *` container knows |
+| **capacity** / **count** | slots allocated / slots used |
+| **GCC extension** | a feature GCC allows that standard C does not, such as `void *` arithmetic |
+| **doubling** | growing capacity by a factor of 2 when full |
+| **amortised O(1)** | constant cost per operation on average, though some are expensive |
+| **dynamic array** | an array that grows as you append |
+| **leak on realloc failure** | `p = realloc(p, n)` loses the original pointer if it fails |
+| **size overflow** | `cap * elem_size` wrapping round to a small number |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `gcc -std=c17 -Wall vec.c -o vec && ./vec` | builds and runs |
+
+### C names
+
+| Name | What it does |
+|---|---|
+| `void *data` | the raw element storage |
+| `(char *)v->data + i * v->elem_size` | the address of element `i` |
+| `memcpy(dst, src, elem_size)` | copies one element in or out |
+| `void *bigger = realloc(...); if (!bigger) return 0;` | the guarded realloc |
+| `qsort`, `bsearch` | standard functions that already work on element size and raw bytes |
+
+---
+
 C has no templates. Generic containers are built from an element **size** and
 raw bytes, which is exactly what `qsort` and `bsearch` already do.
 

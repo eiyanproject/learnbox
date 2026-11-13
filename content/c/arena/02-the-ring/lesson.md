@@ -11,6 +11,39 @@ challenge:
     xp: 300
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **ring buffer** | a fixed array used in a circle; the oldest value is overwritten when full |
+| **head** | the index of the oldest value |
+| **count** | how many values are stored |
+| **wrap around** | the slot after the last index is index 0 |
+| **peek** | read without removing |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `gcc -std=c17 -Wall -c ring.c` | compiles to check it builds |
+
+### C names
+
+| Name | What it does |
+|---|---|
+| `#define RING_CAP 4` | the capacity |
+| `typedef struct { ... } Ring;` | the ring type |
+| `(head + i) % RING_CAP` | the index `i` places after `head`, wrapping round |
+| `int *out` | where a removed or peeked value is written |
+
+---
+
 A sensor produces readings faster than anyone reads them. Keep the newest
 four and let the oldest fall off.
 

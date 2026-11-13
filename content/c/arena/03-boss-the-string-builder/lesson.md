@@ -12,6 +12,42 @@ challenge:
     xp: 550
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **string builder** | a string on the heap that can keep growing |
+| **heap buffer** | memory from `malloc` or `realloc` |
+| **NUL-terminated** | ending with the `'\0'` byte |
+| **`len`** / **`cap`** | characters in the string / bytes allocated; `cap` is always more than `len` |
+| **invariant** | something true after every successful call |
+| **insert** | put text in at an index, moving the rest right |
+| **failed call leaves it unchanged** | on error, the string is exactly as before |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `gcc -std=c17 -Wall -c str.c` | compiles to check it builds |
+
+### C names
+
+| Name | What it does |
+|---|---|
+| `malloc`, `realloc`, `free` | allocate, grow, release |
+| `strlen(text)` | length of the text to add |
+| `memcpy(dst, src, n)` | copies bytes that do not overlap |
+| `memmove(dst, src, n)` | copies bytes that may overlap, for shifting text right |
+| `size_t` | the unsigned size type |
+
+---
+
 Fixed buffers have run out of road. The report generator needs a string it
 can keep adding to, and it needs it in half an hour.
 
