@@ -11,6 +11,70 @@ hints:
   - "`reverse_words`: `text.split_whitespace().rev().collect::<Vec<_>>().join(\" \")`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **collection** | a growable container that keeps its contents on the heap |
+| **`Vec<T>`** (vector) | a growable list of one type, in order |
+| **`String`** | growable UTF-8 text that owns its bytes |
+| **`&str`** | a borrowed view of text |
+| **`HashMap<K, V>`** | values found by a key; each key at most once |
+| **key** / **value** | what you look up by / what you find |
+| **UTF-8** | the text encoding where a character takes 1 to 4 bytes |
+| **index** | a position, from 0 |
+| **out of bounds** | an index past the end; `v[i]` panics, `v.get(i)` gives `None` |
+| **in place** | sorting and friends change the vector itself, so it must be `mut` |
+| **consecutive duplicates** | equal items side by side; all `dedup` removes |
+| **iterator** | something that produces items one at a time (Learn lesson 11) |
+| **hash** | the number a key is turned into, deciding where it is stored |
+| **iteration order** | a `HashMap` has none you can rely on; it can differ from run to run |
+| **entry API** | `map.entry(key)`: find the slot, fill it if empty, update it in one step |
+| **mutable reference** | what `or_insert` returns, so `*... += 1` changes the value in the map |
+| **`use`** | brings a name into scope, such as `HashMap` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `Vec::new()`, `vec![1, 2, 3]` | an empty vector (type needed); one with items |
+| `v.push(x)`, `v.pop()`, `v.len()`, `v.contains(&x)` | add; remove the last (an `Option`); length; membership |
+| `v[i]`, `v.get(i)` | read by position: panics / `Option` |
+| `v.sort()`, `v.dedup()`, `v.reverse()` | change the vector in place |
+| `s.push_str("!")`, `s.clone() + "x"`, `format!(...)` | grow a `String`; join with `+`; build text |
+| `s.to_lowercase()`, `s.len()`, `s.chars().count()` | lower case; bytes; characters |
+| `s.split(' ')`, `s.split_whitespace()` | pieces; pieces between any whitespace |
+| `.collect::<Vec<_>>()` | gathers an iterator into a vector |
+| `s.chars().nth(0)`, `s.bytes().nth(0)` | a character; a byte, each as an `Option` |
+| `words.join(" ")` | joins with single spaces |
+| `use std::collections::HashMap;` | brings in `HashMap` |
+| `map.insert(k, v)`, `map.get(&k)`, `map["k"]` | add; look up (`Option`); look up or panic |
+| `*counts.entry(word).or_insert(0) += 1` | the counting idiom |
+| `map.entry(k).or_insert_with(Vec::new).push(item)` | the grouping idiom |
+| `map.into_iter()` | moves the pairs out, for example to sort them |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `index out of bounds: the len is 3 but the index is 10` | a panic from `v[10]` |
+| `error[E0277]: the type str cannot be indexed by {integer}` | `s[0]` on a string; use `chars().nth` |
+| `type annotations needed for Vec<_>` | `Vec::new()` with nothing to show the item type |
+
+---
+
 Arrays (lesson 2) have a length fixed when the program is compiled. Most real
 data is not like that: you do not know in advance how many lines a file has
 or how many words a user types. The standard library's **collections** keep

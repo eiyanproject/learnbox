@@ -11,6 +11,64 @@ hints:
   - "`Timeout(Duration)` and `Retries(u8)` are newtypes, so `Client::configure(Timeout(..), Retries(..))` cannot be called with the arguments swapped."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **API** | the public types, functions and traits other code depends on |
+| **call site** | where the API is used; good design makes the right call easy and the wrong one hard |
+| **breaking change** | a change to a public signature that stops callers compiling |
+| **builder** | a separate object that names each setting, with defaults, and validates in `build()` |
+| **chainable setter** | takes `self` by value and returns `Self` |
+| **validate, don't panic** | return an error the caller can fix instead of panicking |
+| **widest input** | `impl Into<String>`, `AsRef`, slices: callers need not convert |
+| **most specific output** | concrete types or iterators, so callers can do the most |
+| **newtype** | a one-field struct giving a value its own type, such as `Timeout(Duration)` |
+| **`#[must_use]`** | warns when a value is thrown away |
+| **sealed trait** | a public trait only your crate can implement, via a private supertrait |
+| **supertrait** | a trait required by another |
+| **`#![deny(missing_docs)]`** | makes an undocumented public item a compile error |
+| **naming conventions** | `as_` cheap view, `to_` costly conversion, `into_` consumes `self`; getters named after the field |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests, which read your source for `#[must_use`, `Sealed` and `impl Into<String>` |
+| `cargo doc --open` | builds and opens your crate's documentation |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `Client::builder(url: impl Into<String>) -> ClientBuilder` | starts a builder |
+| `fn timeout(mut self, t: Duration) -> Self { self.timeout = t; self }` | a chainable setter |
+| `fn build(self) -> Result<Client, BuildError>` | validates and builds |
+| `BuildError::MissingUrl`, `BuildError::TooManyRetries(n)` | the build errors |
+| `Duration::from_secs(30)`, `Duration::from_millis(500)` | durations |
+| `#[must_use = "call .send()"] pub struct RequestBuilder` | warns if a request is never sent |
+| `url.trim_end_matches('/')` | joins URL and path with exactly one `/` |
+| `pub struct Timeout(pub Duration); pub struct Retries(pub u8);` | newtypes |
+| `mod private { pub trait Sealed {} } pub trait Backend: private::Sealed { ... }` | a sealed trait |
+| `impl private::Sealed for Memory {}` | lets your own type implement `Backend` |
+| `Box<dyn Backend>` | the sealed trait used as an object |
+| `#[derive(Debug, Default)]` | traits users cannot add themselves |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `warning: unused RequestBuilder that must be used` | a builder thrown away without `.send()` |
+| `error[E0603]: module private is private` | outside code trying to implement a sealed trait |
+
+---
+
 Code that only you call can have any shape you like. The moment someone else
 depends on it, including you in six months, its **API**, the set of public
 types, functions and traits, matters more than its internals. Internals can

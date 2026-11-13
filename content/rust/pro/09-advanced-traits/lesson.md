@@ -11,6 +11,64 @@ hints:
   - "`Repository` stays dyn-compatible by returning `Box<dyn Iterator<Item = String> + '_>` instead of `impl Iterator`, so `Vec<Box<dyn Repository>>` still works."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **lending iterator** | each item may borrow from the iterator and must be given back before the next |
+| **overlapping mutable windows** | `[1, 2]`, `[2, 3]`, `[3, 4]`, each a `&mut` slice |
+| **`Iterator`'s contract** | items are independent, so you may hold them all at once |
+| **generic associated type** (GAT) | an associated type with its own parameters: `type Item<'a>` |
+| **`where Self: 'a`** | the iterator lives at least as long as `'a`; the compiler requires it |
+| **reborrow** | make a shorter-lived `&mut` from an existing one |
+| **`impl Trait` in traits** (RPITIT) | a trait method returning "some iterator", without naming or boxing it |
+| **hidden type** | the concrete type behind an `impl Trait`, different per implementation |
+| **dyn compatible** | usable as `dyn Trait`; `impl Trait` returns and `async fn` break it |
+| **boxed iterator** | `Box<dyn Iterator<Item = T> + '_>`: one type for every implementation |
+| **`+ '_`** | the boxed iterator may borrow from `self` |
+| **associated type bound** | a requirement on what an iterator yields: `I::Item: AsRef<str>` |
+| **`IntoIterator`** | anything usable in a `for` loop: arrays, `Vec`s, iterators |
+| **coherence** | the rules guaranteeing at most one implementation of a trait per type |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `trait LendingIterator { type Item<'a> where Self: 'a; fn next(&mut self) -> Option<Self::Item<'_>>; }` | a lending iterator |
+| `type Item<'a> = &'a mut [i32] where Self: 'a;` | the window item |
+| `Some(&mut self.data[start..end])` | reborrow one window |
+| `while let Some(w) = it.next() { ... }` | how lending iterators are driven |
+| `fn steps(&self) -> impl Iterator<Item = &str>` | `impl Trait` in a trait |
+| `self.steps().collect::<Vec<_>>().join(" -> ")` | the default `describe` |
+| `fn all(&self) -> Box<dyn Iterator<Item = String> + '_>` | a dyn-compatible iterator method |
+| `Box::new(self.items.iter().cloned())` | box an iterator |
+| `repos.iter().map(\|r\| r.all().count()).sum()` | count across trait objects |
+| `fn total_len<I>(items: I) -> usize where I: IntoIterator, I::Item: AsRef<str>` | an associated type bound |
+| `impl Iterator<Item: Display>` | the shorthand bound (Rust 1.79+) |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `associated type Iterator::Item is declared without lifetime parameters` | `Iterator` cannot lend borrows of itself |
+| `lifetime may not live long enough` | overlapping `&mut` items that the contract cannot allow |
+| `error[E0038]: the trait Pipeline is not dyn compatible` | an `impl Trait` return in a trait used as `dyn` |
+| `missing required bound on Item: where Self: 'a` | a GAT without its `where` clause |
+
+---
+
 This lesson covers four trait features that recent Rust versions added or
 completed, and that show up in modern library signatures:
 

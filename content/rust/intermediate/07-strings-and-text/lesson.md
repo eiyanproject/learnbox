@@ -11,6 +11,64 @@ hints:
   - "`normalize_spaces(s) -> Cow<str>`: if `s` has no `\"  \"` and does not start or end with `' '`, return `Cow::Borrowed(s)`; otherwise `Cow::Owned(s.split(' ').filter(|w| !w.is_empty()).collect::<Vec<_>>().join(\" \"))`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **Unicode** | gives every character in every writing system a number |
+| **code point** | that number: `h` is 104, `é` is 233 |
+| **UTF-8** | stores code points as 1 to 4 bytes each; Rust strings are always valid UTF-8 |
+| **ASCII** | the first 128 code points (English letters, digits, punctuation), one byte each |
+| **byte length** | `len()`: what is stored, and what slicing uses |
+| **`char`** | one Unicode scalar value (a code point), 4 bytes in memory |
+| **grapheme cluster** | what a reader sees as one character, possibly several `char`s |
+| **char boundary** | a byte position between characters; slices must start and end on one |
+| **case mapping** | upper or lower case; can change length (`ß` becomes `SS`) |
+| **hexadecimal** (hex) | base 16, digits 0-9 and a-f |
+| **radix** | the base of a number system |
+| **capacity** | room reserved in a `String`'s buffer |
+| **`Cow`** (clone on write) | either a borrowed `&str` or an owned `String`; copies only when a change is needed |
+| **`'_`** | an elided lifetime: "the obvious one", here tied to the input |
+| **collapse spaces** | turn each run of spaces into one |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests, which use accented and Japanese text |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `s.len()`, `s.chars().count()` | length in bytes; in characters |
+| `s.char_indices()` | each character with its byte index |
+| `s.char_indices().nth(n)` | where character `n` starts, or `None` |
+| `s.is_char_boundary(i)` | is byte `i` between characters |
+| `s.to_uppercase()`, `c.to_uppercase()` | a new `String`; an iterator of `char`s |
+| `to_ascii_lowercase`, `eq_ignore_ascii_case`, `is_ascii_digit`, `s.is_ascii()` | ASCII-only versions |
+| `s.split(',')`, `s.split_once('=')`, `s.strip_prefix('#')` | keep empty pieces; split once; remove a prefix (`Option`) |
+| `u8::from_str_radix("ff", 16)` | parse hex text |
+| `String::with_capacity(64)`, `s.push(c)`, `s.push_str(t)` | build text in one buffer |
+| `use std::fmt::Write; write!(s, "{:>8.2}", x).unwrap();` | append formatted text |
+| `parts.join(" ")` | joins with a separator |
+| `Cow::Borrowed(s)`, `Cow::Owned(t)`, `.into_owned()` | the two variants; get a `String` |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `end byte index 2 is not a char boundary; it is inside 'é'` | a panic from slicing inside a character |
+| `ParseIntError` | `from_str_radix` given a non-hex character |
+
+---
+
 Text is where many programs meet the real world: names with accents, files
 in other languages, emoji in chat messages. Rust's `String` and `&str` are
 **always valid UTF-8**, a guarantee checked when the text is created, and

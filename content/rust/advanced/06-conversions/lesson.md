@@ -11,6 +11,64 @@ hints:
   - "`total_len<S: AsRef<str>>(items: &[S]) -> usize` sums `s.as_ref().len()`. `NonEmptyVec` implements `Deref<Target = [T]>` returning `&self.0`, so slice methods like `len()` and `iter()` work on it."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **conversion trait** | one standard trait per kind of conversion |
+| **`From<T>`** | a conversion from `T` that always succeeds |
+| **`Into<T>`** | the same seen from the other side; free from every `From`, so implement `From` only |
+| **blanket impl** | `impl<T, U: From<T>> Into<U> for T`, which gives the free `Into` |
+| **orphan rule** | you may implement `From<Rgb> for String` because `Rgb` is yours |
+| **`TryFrom`** / **`TryInto`** | a conversion that can fail, returning a `Result` |
+| **truncation** | `as` between integers keeps only the low bits: `300 as u8` is 44 |
+| **prelude** | names available without `use`; `TryFrom` is there since the 2021 edition |
+| **`FromStr`** | what `.parse()` calls; its error type is called `Err` |
+| **`AsRef<T>`** | can be viewed cheaply as a `&T`; for read-only arguments |
+| **`Deref`** | lets a wrapper act like its contents |
+| **auto-deref** | methods the wrapper lacks are looked up on its `Target` |
+| **deref coercion** | a `&Name` converting to `&str` where one is expected |
+| **newtype** | a one-field struct such as `Celsius(f64)`, a distinct type |
+| **invariant-carrying wrapper** | a wrapper that adds a guarantee, such as "never empty" |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `impl From<Celsius> for Fahrenheit { fn from(c: Celsius) -> Self { ... } }` | a `From` impl |
+| `let f: Fahrenheit = c.into();` | the free `Into` |
+| `fn new(name: impl Into<String>)` | accepts `&str` and `String` |
+| `impl TryFrom<u16> for Port { type Error = PortError; fn try_from(v: u16) -> Result<Self, Self::Error> }` | a fallible conversion |
+| `u8::try_from(300_i32)` | `Err` instead of truncating |
+| `impl FromStr for Rgb { type Err = ParseRgbError; fn from_str(s: &str) -> Result<Self, Self::Err> }` | makes `.parse()` work |
+| `s.strip_prefix("rgb(")?.strip_suffix(')')` | peel off the wrapper text |
+| `part.trim().parse::<u8>()` | rejects values above 255 |
+| `format!("#{:02x}{:02x}{:02x}", r, g, b)` | two lower-case hex digits per channel |
+| `fn total_len<S: AsRef<str>>(items: &[S]) -> usize` | reads any kind of string |
+| `impl<T> Deref for NonEmptyVec<T> { type Target = [T]; fn deref(&self) -> &[T] }` | acts like a slice |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0277]: the trait bound String: From<Rgb> is not satisfied` | `.into()` without the `From` impl |
+| `type annotations needed` | `.into()` with no target type to convert to |
+| `ParseIntError` | a part that is not a number, or too big for `u8` |
+
+---
+
 Rust never converts between types on its own. An `i32` is not silently
 widened to an `i64`, a `&str` does not quietly become a `String`, and your
 `Celsius` will not turn into a `Fahrenheit` unless you write the formula.

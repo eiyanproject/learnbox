@@ -11,6 +11,44 @@ challenge:
     xp: 300
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **round** | a timed arena challenge |
+| **anagram** | two texts made of the same letters, the same number of times each |
+| **case-insensitive** | `A` and `a` count as the same letter |
+| **ignored characters** | spaces, punctuation and digits do not count |
+| **anagram family** (group) | words that are all anagrams of each other |
+| **input order** | groups appear where their first word appeared, and words keep their order |
+| **key** | a value identifying a group, such as the word's letters lower-cased and sorted |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs this round's tests |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `pub fn are_anagrams(a: &str, b: &str) -> bool` | the first function |
+| `pub fn group_anagrams(words: &[&str]) -> Vec<Vec<String>>` | the second |
+| `c.is_alphabetic()` | is the character a letter |
+| `c.to_lowercase()` | lower case (an iterator of `char`s) |
+| `let mut v: Vec<char> = ...; v.sort();` | sort the letters |
+| `HashMap<Vec<char>, usize>` | one way to map a key to its group's position |
+| `w.to_string()` | a word as an owned `String` |
+
+---
+
 A crossword setter needs their word list sorted into anagram families
 before the print deadline.
 

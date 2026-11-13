@@ -11,6 +11,67 @@ hints:
   - "`make_adder(n)` returns `impl Fn(i32) -> i32`: `move |x| x + n`. `apply_n`: `let mut x = x; for _ in 0..times { x = f(x); } x`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **iterator chain** | steps like `filter`, `map`, `collect` joined with dots |
+| **closure** | a function without a name, written inline: `\|n\| n * 2` |
+| **capture** | a closure using variables from the code around it |
+| **`Fn`** | only reads what it captured, by `&`; callable any number of times |
+| **`FnMut`** | changes what it captured, by `&mut`; needs `mut` to call |
+| **`FnOnce`** | moves what it captured away; callable once |
+| **`move`** | makes a closure take its captured variables by value |
+| **outlive** | live longer than; a returned closure outlives the function's parameters |
+| **`impl Fn(i32) -> i32`** | "some closure taking and returning an `i32`", as a type |
+| **iterator** | produces values one at a time; defined by the `Iterator` trait |
+| **`next`** | the one required method: `Some(value)`, then `None` when finished |
+| **`while let`** | `if let` in a loop: keep going while the pattern fits |
+| **`iter`**, **`iter_mut`**, **`into_iter`** | iterate by `&`, by `&mut`, or by value (consuming the collection) |
+| **adapter** | returns a new iterator: `map`, `filter`, `enumerate`, `zip`, `take`, `skip`, `rev`, `chain`, `flat_map`, `scan` |
+| **consumer** | pulls every value through: `collect`, `sum`, `count`, `min`, `max`, `fold`, `any`, `all`, `find`, `position`, `for_each` |
+| **lazy** | adapters do nothing until a consumer asks for values |
+| **`&&i32`** | a reference to a reference, as `filter` gives after `iter()` |
+| **accumulator** | the running value `fold` carries through |
+| **running total** | each item is the sum of everything up to it |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `let add = \|a, b\| a + b;` | a closure in a variable |
+| `fn apply<F: Fn(i32) -> i32>(f: F, x: i32) -> i32` | a function that takes a closure |
+| `move \|x\| x + n` | a closure owning its copy of `n` |
+| `(1..=5).filter(\|n\| n % 2 == 1).map(\|n\| n * n).collect::<Vec<_>>()` | the chain from the start |
+| `.filter(\|&&n\| n > 1)`, `.filter(\|n\| **n > 1)`, `.copied()` | ways to peel off references |
+| `.fold(1, \|acc, n\| acc * n)` | a product with an accumulator |
+| `.scan(0, \|sum, &n\| { *sum += n; Some(*sum) })` | running totals |
+| `text.split_whitespace()`, `s.chars()` | iterators over words; characters |
+| `drop(x)` | drops a value on the spot |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0373]: closure may outlive the current function, but it borrows n` | a returned closure needs `move` |
+| `warning: unused Map that must be used` / `iterators are lazy and do nothing unless consumed` | a chain with no consumer |
+| `error[E0308]: mismatched types ... expected &&i32, found integer` | comparing a reference with a number |
+| `cannot borrow count as mutable` | an `FnMut` closure called without `mut` |
+
+---
+
 Here is a loop that collects the squares of the odd numbers from 1 to 5:
 
 ```rust

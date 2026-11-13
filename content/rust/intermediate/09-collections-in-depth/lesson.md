@@ -11,6 +11,67 @@ hints:
   - "`shortest_path` is breadth-first search: `VecDeque` of `(node, distance)`, a `HashSet` of visited nodes, `pop_front`, and push unvisited neighbours with `distance + 1`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **`std::collections`** | the standard library's collection types |
+| **hash** | a number worked out from a key, used to jump to its slot |
+| **`Hash + Eq`** | what `HashMap` and `HashSet` keys must implement |
+| **`Ord`** | full ordering; what `BTreeMap` and `BTreeSet` keys must implement |
+| **`BTreeMap`** / **`BTreeSet`** | keys kept sorted in a tree; iterate in order, ask for ranges |
+| **set** | each value at most once |
+| **union** / **intersection** | everything in either / only what is in both |
+| **difference** / **symmetric difference** | in the first but not the second / in exactly one |
+| **de-duplication** | building a set from a list keeps one of each |
+| **priority queue** | always gives the most important item next |
+| **`BinaryHeap`** | a max-heap: `pop` returns the largest item |
+| **`Reverse`** | a wrapper that flips comparison, turning a max-heap into a min-heap |
+| **tuple ordering** | tuples compare field by field, left to right |
+| **`VecDeque`** | a double-ended queue: fast at both ends |
+| **queue** (FIFO) | first in, first out |
+| **graph** | nodes connected by edges |
+| **undirected edge** | can be followed both ways |
+| **breadth-first search** (BFS) | explore nearest first, level by level; finds shortest paths |
+| **visited set** | the nodes already seen, so the search does not go in circles |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `use std::collections::{BTreeMap, HashSet, BinaryHeap, VecDeque, HashMap};` | brings them in |
+| `map.range("2026-01".."2026-02")`, `map.iter().rev()` | a range of keys; largest first |
+| `a.union(&b)`, `a.intersection(&b)`, `a.difference(&b)`, `a.symmetric_difference(&b)` | set operations, as iterators of references |
+| `.copied()`, `.cloned()` | owned values from references |
+| `HashSet::from([1, 2, 3])`, `[1, 2, 3].into()` | a set from an array |
+| `heap.push(x)`, `heap.pop()` | add; take the largest |
+| `std::cmp::Reverse(x)` | flips the order |
+| `heap.push((count, Reverse(word)))` | highest count first, then alphabetical |
+| `queue.push_back(x)`, `queue.pop_front()` | use a `VecDeque` as a queue |
+| `std::iter::from_fn(\|\| heap.pop())` | an iterator from a closure |
+| `usize::MAX` | used as "not seen yet" |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `the trait bound MyType: Ord is not satisfied` | a `BTreeMap` key without `Ord` |
+| `the trait bound MyType: Hash is not satisfied` | a `HashMap` key without `Hash` |
+
+---
+
 Beginner lesson 9 covered `Vec`, `String` and `HashMap`, which handle most
 needs. The standard library's `std::collections` has a few more, each built
 for one job that the big three do badly. Choosing the right one often turns

@@ -11,6 +11,65 @@ hints:
   - "`scale` changes the rectangle, so it takes `&mut self`. `square(size)` has no `self` at all: `Self::new(size, size)`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **struct** | a type that groups related values under one name |
+| **field** | one named part of a struct, with its type |
+| **instance** | one value of a struct type |
+| **field init shorthand** | writing `name` once when a variable and a field share the name |
+| **tuple struct** | a struct with unnamed fields, such as `struct Meters(f64);` |
+| **`impl` block** | where a type's methods and associated functions are written |
+| **method** | a function whose first parameter is `self`, called with a dot |
+| **`&self`** / **`&mut self`** / **`self`** | borrow to read / borrow to change / take ownership |
+| **associated function** | a function in an `impl` with no `self`, called with `::`: `User::new` |
+| **`Self`** | the type the `impl` is for |
+| **constructor** (`new`) | the usual name for an associated function that builds a value |
+| **attribute** | an annotation above an item, such as `#[derive(...)]` |
+| **derive** | ask the compiler to generate common trait implementations |
+| **`Debug`** | allows `{:?}` printing |
+| **`Clone`** | adds `.clone()` |
+| **`PartialEq`** | allows `==` and `!=`, field by field |
+| **strictly inside** | smaller on both sides; equal does not count |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `struct User { name: String, age: u32, active: bool }` | a struct |
+| `User { name, age: 30, active: true }` | creates one, with field init shorthand for `name` |
+| `ana.age += 1` | changes a field; the binding must be `mut` |
+| `impl Rectangle { pub fn area(&self) -> u32 { ... } }` | a method |
+| `Rectangle::new(3, 4)`, `Rectangle::square(5)` | associated functions |
+| `r.scale(2)` | a `&mut self` method; Rust borrows `r` for you |
+| `u.into_name()` | a `self` method: `u` is moved and cannot be used again |
+| `#[derive(Debug, Clone, PartialEq)]` | generates those traits |
+| `println!("{p:?}")` | debug printing |
+| `assert_eq!(a, b)` | a test check; needs `PartialEq` and `Debug` |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0277]: Point doesn't implement Debug` | `{:?}` on a struct without `#[derive(Debug)]` |
+| `value used after move` | the value was taken by a `self` method |
+| `binary operation == cannot be applied to type` | comparing a struct without `PartialEq` |
+
+---
+
 A user has a name, an age and an active flag. Passing those around as three
 separate variables, or as a tuple `(String, u32, bool)` where position 1
 means age, gets confusing fast. A **struct** groups related values under one

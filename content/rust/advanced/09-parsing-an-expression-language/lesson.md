@@ -11,6 +11,67 @@ hints:
   - "`eval`: division by zero is `Err(EvalError::DivisionByZero)`. After parsing the whole expression, leftover tokens are `ParseError::TrailingInput`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **tokenizing** (lexing) | cutting characters into tokens, dropping spaces |
+| **token** | one meaningful piece: a number, an operator, a bracket |
+| **parsing** | arranging tokens into a syntax tree |
+| **syntax tree** | a tree showing which operation applies to which operands |
+| **peek** | look at the next item without using it up |
+| **`Peekable`** | an iterator wrapper that adds `peek()` |
+| **byte position** | where a character starts, for error messages |
+| **grammar** | rules for what a valid expression is |
+| **precedence** | which operators bind tighter: `*` before `+` |
+| **recursive descent** | one function per grammar rule, each calling the rules it mentions |
+| **expr**, **term**, **factor** | the three rules: sums, products, and numbers / brackets / unary minus |
+| **left associativity** | `8 - 3 - 2` means `(8 - 3) - 2`; build it with a loop, not recursion |
+| **unary minus** | a minus in front of one operand: `-4` |
+| **recursive enum** | an enum holding itself through `Box` |
+| **evaluate** | compute the value of a tree with a recursive `match` |
+| **trailing input** | tokens left over after a complete expression |
+| **infinity** | what float division by zero gives; checked for and refused here |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests, which check the tree shapes |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `enum Token { Num(f64), Plus, Minus, Star, Slash, LParen, RParen }` | the tokens |
+| `let mut chars = input.char_indices().peekable();` | characters with positions, with `peek` |
+| `chars.peek()`, `chars.next()` | look at / take the next character |
+| `c.is_ascii_digit()`, `c.is_whitespace()` | character tests |
+| `text.parse::<f64>()` | the number text as an `f64` |
+| `enum Expr { Num(f64), Neg(Box<Expr>), Binary(Box<Expr>, Token, Box<Expr>) }` | the syntax tree |
+| `struct Parser { tokens: Vec<Token>, pos: usize }` | a parser with a position |
+| `while let Some(Token::Plus \| Token::Minus) = self.peek() { ... }` | the left-associative loop |
+| `self.expr()?` | parse a sub-expression, passing errors up |
+| `ParseError::UnexpectedChar(c, pos)`, `InvalidNumber(text)`, `UnexpectedEnd`, `UnexpectedToken(t)`, `TrailingInput` | the parse errors |
+| `EvalError::DivisionByZero` | the evaluation error |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `UnexpectedChar('$', 4)` | a character that is not part of any token, at byte 4 |
+| `InvalidNumber("1.2.3")` | digits and dots that do not parse |
+| `UnexpectedEnd` | the tokens ran out, such as a missing `)` |
+| `DivisionByZero` | a divisor of exactly zero |
+
+---
+
 Every compiler, query language, configuration format and calculator starts
 the same way. The input is a string of characters, and before the
 program can do anything with `2 * (3 + 4.5)`, it has to work out what that

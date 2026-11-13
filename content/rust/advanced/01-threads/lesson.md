@@ -11,6 +11,67 @@ hints:
   - "`count_matches`: scoped threads can borrow `words` and `needle` without `Arc`: `s.spawn(|| chunk.iter().filter(|w| **w == needle).count())`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **core** | one processing unit; each can run code at the same time as the others |
+| **thread** | an independent sequence of instructions within one program |
+| **concurrently** | at the same time, in no fixed order |
+| **data race** | two threads touching the same memory at once, one writing, with nothing ordering them; Rust refuses to compile it |
+| **spawn** | start a new thread |
+| **join handle** | what `spawn` returns; `join` waits for the thread and gives its result |
+| **panic in a thread** | ends only that thread; `join` returns `Err` |
+| **`move`** | the thread's closure must own what it uses |
+| **`'static`** (bound) | holds no borrows that could expire; required by `thread::spawn` |
+| **scoped threads** | `thread::scope`: threads guaranteed to finish before the scope returns, so they may borrow |
+| **marker trait** | a trait with no methods that says something about a type |
+| **`Send`** | can be moved to another thread |
+| **`Sync`** | can be shared between threads by reference |
+| **`Rc`**, **`RefCell`** | single-threaded types: not `Send` / not `Sync` |
+| **CPU-bound** | limited by computation, not by waiting |
+| **chunk** | a consecutive sub-slice; the last may be shorter |
+| **round up** | `len.div_ceil(t)`: the size giving at most `t` chunks |
+| **standard error** | where panic messages go, separate from normal output |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests, which also check your source for `thread::scope` |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `use std::thread;` | brings in the thread module |
+| `let h = thread::spawn(move \|\| ...);` | starts a thread |
+| `h.join().unwrap()` | waits for it; re-panics if it panicked |
+| `h.join().is_err()` | did the thread panic |
+| `thread::scope(\|s\| { let a = s.spawn(\|\| ...); a.join().unwrap() })` | scoped threads that may borrow |
+| `nums.chunks(size)` | consecutive sub-slices |
+| `len.div_ceil(t).max(1)` | chunk size, at least 1 (`chunks(0)` panics) |
+| `thread::available_parallelism()` | how many threads the machine can run at once |
+| `handles.into_iter().map(\|h\| h.join().unwrap()).collect()` | join all, in spawn order |
+| `iter().filter(\|w\| **w == needle).count()` | count matches in a chunk |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0373]: closure may outlive the current function, but it borrows name` | a spawned thread needs `move` |
+| `function requires argument type to outlive 'static` | the reason: `spawn` needs `'static` |
+| `error[E0277]: Rc<i32> cannot be sent between threads safely` | a non-`Send` type moved into a thread |
+| `chunk size must be non-zero` | a panic from `chunks(0)` |
+
+---
+
 So far every program did one thing at a time. A modern computer has several
 **cores**, each able to run code at the same time as the others. A
 **thread** is an independent sequence of instructions within one program;

@@ -11,6 +11,65 @@ hints:
   - "`newtype!`: `($name:ident, $inner:ty) => { #[derive(Debug, Clone, Copy, PartialEq)] pub struct $name(pub $inner); impl From<$inner> for $name { fn from(v: $inner) -> Self { $name(v) } } };`. Export macros with `#[macro_export]`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **macro** | code that writes code, at compile time; called with `!` |
+| **expansion** | replacing a macro call with the code it produces, before type-checking |
+| **declarative macro** | one written with `macro_rules!`, matching syntax against patterns |
+| **procedural macro** | a Rust program running inside the compiler, such as `derive` |
+| **rule** | `(matcher) => { transcriber };`; tried top to bottom |
+| **matcher** | the pattern for the tokens in the call |
+| **transcriber** | the code produced, with metavariables substituted |
+| **metavariable** | a name for a matched piece: `$x` |
+| **fragment specifier** | what kind of piece: `expr`, `ident`, `ty`, `tt`, `pat`, `literal`, `block` |
+| **token tree** (`tt`) | one token, or one bracketed group counted as one |
+| **grouping** | an `expr` keeps its own brackets; pasted `tt`s do not |
+| **repetition** | `$( ... ),*` zero or more, `,+` one or more, `?` zero or one |
+| **trailing comma** | allowed with `$(,)?` |
+| **block expression** | the inner `{ }` of `{{ ... }}`, so the macro can declare locals and still give a value |
+| **recursive macro** | one that calls itself on the rest of its input, ending at a base case |
+| **evaluate once** | bind each argument to a local first, so side effects happen once |
+| **hygiene** | variables a macro declares cannot clash with the caller's |
+| **full path** | `::std::collections::HashMap`, which works whatever the caller imported |
+| **newtype** | a one-field tuple struct wrapping another type |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests, which import your macros by name |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `macro_rules! square { ($x:expr) => { $x * $x }; }` | a one-rule macro |
+| `#[macro_export]` | makes the macro usable from other crates |
+| `($($k:expr => $v:expr),* $(,)?) => {{ ... }}` | the `hashmap!` matcher |
+| `let mut map = ::std::collections::HashMap::new(); $( map.insert($k, $v); )* map` | its transcriber |
+| `($x:expr) => ...; ($x:expr, $($rest:expr),+) => ...` | base and recursive rules |
+| `{{ let a = $a; let b = max_of!($($rest),+); if a > b { a } else { b } }}` | evaluate each argument once |
+| `() => { 0usize }; ($head:tt $($tail:tt)*) => { 1usize + count!($($tail)*) }` | counting token trees |
+| `($name:ident, $inner:ty) => { pub struct $name(pub $inner); ... }` | generating items |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error: no rules expected ;` | the call did not fit any rule; the token named broke the match |
+| `unexpected end of macro invocation` | the call stopped before a rule was satisfied |
+| `failed to resolve: use of undeclared type HashMap` | a macro using a short path the caller has not imported |
+
+---
+
 Some code cannot be written as a function. `println!("{} {}", a, b)` takes
 any number of arguments of any types, and checks the format string against
 them while compiling. `vec![1, 2, 3]` builds a vector from a list of any

@@ -11,6 +11,49 @@ challenge:
     xp: 900
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **stack machine** | a calculator that runs a program of tokens against a stack |
+| **stack** | values where the last one pushed is the first one popped |
+| **push** / **pop** | put a value on top / take the top value off |
+| **token** | one word of the program, separated by whitespace |
+| **postfix notation** | operators after their operands: `2 3 +` |
+| **`a` and `b`** | for an operator, `b` is popped first, then `a`, and the result is `a op b` |
+| **`dup`**, **`swap`**, **`drop`** | copy the top; exchange the top two; remove the top |
+| **stack underflow** | an operation needs more values than the stack has |
+| **left over** | more than one value at the end |
+| **first error** | the one found first in reading order |
+| **integer division** | rounds toward zero: `-7 2 /` is `-3` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs this round's tests |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `pub fn eval(program: &str) -> Result<i64, EvalError>` | the function to write |
+| `EvalError::StackUnderflow`, `DivisionByZero`, `UnknownToken(String)`, `LeftOver(usize)` | the given error type |
+| `program.split_whitespace()` | the tokens, splitting on any whitespace |
+| `token.parse::<i64>()` | try the token as a number first, so `-2` is a number |
+| `let mut stack: Vec<i64> = Vec::new();`, `stack.push(x)`, `stack.pop()` | the stack |
+| `stack.pop().ok_or(EvalError::StackUnderflow)?` | pop, or fail |
+| `stack.last().copied()` | the top value without removing it |
+| `match token { "+" => ..., "dup" => ..., _ => ... }` | choose by token |
+
+---
+
 The calculator firmware reads programs like `2 3 + 4 *`. Somebody has to
 write the part that runs them.
 

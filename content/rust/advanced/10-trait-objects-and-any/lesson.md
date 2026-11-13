@@ -11,6 +11,65 @@ hints:
   - "`describe_value(value: &dyn Any)`: try `value.downcast_ref::<i32>()`, then `String`, then `&str`, and fall back to `\"something else\"`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **trait object** | `dyn Trait`: some value of a type implementing the trait, chosen at run time |
+| **dispatch** | picking which implementation of a method to run |
+| **static dispatch** | the method is chosen at compile time, per type |
+| **monomorphisation** | the compiler making one copy of a generic function per concrete type |
+| **inlining** | copying a method's body into the caller |
+| **dynamic dispatch** | the method is looked up while running |
+| **fat pointer** | a reference to a trait object: a data pointer and a vtable pointer |
+| **vtable** | a per-type table of method addresses |
+| **unsized** | `dyn Widget` has no size known at compile time, so it lives behind a pointer |
+| **dyn compatibility** (object safety) | whether a trait can be used as `dyn`: methods take `self` by pointer, do not return `Self`, have no type parameters |
+| **`where Self: Sized`** | fences off a method so the rest of the trait stays dyn compatible |
+| **plugin** | code the main program runs without knowing its type in advance |
+| **`Any`** | a trait every `'static` type has, allowing checked downcasting |
+| **`TypeId`** | a unique id per type |
+| **downcast** | get the concrete type back: `Some(&T)` if it matches exactly |
+| **`as_any`** | the usual method that turns `&self` into `&dyn Any` |
+| **trait upcasting** | since Rust 1.86, `&dyn Widget` converting to `&dyn Any` when `Any` is a supertrait |
+| **escape hatch** | a way around the normal rules, to use rarely; often an enum is better |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests, which add a plugin of their own |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `fn draw(w: &impl Widget)` vs `fn draw(w: &dyn Widget)` | static vs dynamic dispatch |
+| `Box<dyn Plugin>`, `Rc<dyn T>`, `Arc<dyn T + Send + Sync>` | pointers that can hold trait objects |
+| `use std::any::Any;` | brings in `Any` |
+| `fn as_any(&self) -> &dyn Any { self }` | the downcasting helper |
+| `value.downcast_ref::<i32>()` | `Some(&i32)` or `None` |
+| `fn find<T: Plugin + 'static>(&self) -> Option<&T>` | a typed lookup in the registry |
+| `self.plugins.iter().find_map(\|p\| p.as_any().downcast_ref::<T>())` | the first plugin of type `T` |
+| `self.plugins.iter_mut()` | each plugin mutably, for `run` |
+| `std::mem::size_of::<&dyn Widget>()` | 16: two pointers |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0038]: the trait Shape is not dyn compatible` | a method returns `Self` or is generic |
+| `for a trait to be dyn compatible it needs to allow building a vtable` | the compiler's note on why |
+| `the size for values of type dyn Widget cannot be known` | a trait object used without a pointer |
+
+---
+
 `Box<dyn Trait>` has come up several times: for a list of different shapes
 (Beginner lesson 10), for errors of any type (Intermediate lesson 2), for
 stored callbacks (Intermediate lesson 8). This lesson looks at how trait

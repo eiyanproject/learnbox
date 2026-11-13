@@ -11,6 +11,67 @@ hints:
   - "The extension trait: `pub trait EveryNth: Iterator + Sized { fn every_nth(self, n: usize) -> EveryNthIter<Self> { EveryNthIter { inner: self, n, i: 0 } } }` and `impl<I: Iterator> EveryNth for I {}`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **iterator** | a struct that remembers its position, plus an `impl Iterator` |
+| **`next`** | the one required method; takes `&mut self` because the iterator is its own cursor |
+| **infinite iterator** | one that never returns `None`; the caller takes what it needs |
+| **fused** | keeps returning `None` once it has returned `None` once |
+| **overflow** | a sum too big for `u64`; here it ends the sequence instead of panicking |
+| **Fibonacci** | 0, 1, 1, 2, 3, 5, ...: each value the sum of the two before |
+| **`DoubleEndedIterator`** | can also take from the back, with `next_back`; needed for `.rev()` |
+| **`ExactSizeIterator`** | the number remaining is known exactly; gives `.len()` |
+| **`size_hint`** | `(lower, Some(upper))`: how many items are left; `collect` uses it to allocate |
+| **meeting in the middle** | the front and back markers move towards each other until they cross |
+| **`IntoIterator`** | what `for x in thing` calls first; gives `Item` and `IntoIter` types |
+| **three impls** | for `T` (by value), `&T` (shared items), `&mut T` (mutable items), as `Vec` has |
+| **delegate** | hand the work to the inner collection's own iterator |
+| **`std::slice::Iter<'a, T>`**, **`std::vec::IntoIter<T>`** | the standard iterators over a borrowed slice / an owned vector |
+| **extension trait** | your own trait, with defaults, blanket-implemented for every iterator |
+| **adapter struct** | a struct wrapping an inner iterator, with its own `impl Iterator` |
+| **`Sized`** | the type's size is known at compile time; needed to take `self` by value |
+| **laziness** | adapters only build nested structs; nothing runs until a consumer calls `next` |
+| **`itertools`** | a crate that adds many adapters this way |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `impl Iterator for Squares { type Item = u32; fn next(&mut self) -> Option<u32> { ... } }` | an iterator |
+| `a.checked_add(b)` | `None` instead of overflowing |
+| `.take(3)`, `.take_while(...)` | stop after 3; stop when a test fails |
+| `impl DoubleEndedIterator for Countdown { fn next_back(&mut self) -> Option<u32> }` | take from the back |
+| `fn size_hint(&self) -> (usize, Option<usize>)` | how many remain |
+| `impl<'a, T> IntoIterator for &'a Ring<T> { type Item = &'a T; type IntoIter = std::slice::Iter<'a, T>; ... }` | `for x in &ring` |
+| `impl<T> IntoIterator for Ring<T>` | `for x in ring`, by value |
+| `trait EveryNth: Iterator + Sized { fn every_nth(self, n: usize) -> EveryNthIter<Self> { ... } }` | the extension trait |
+| `impl<I: Iterator> EveryNth for I {}` | the blanket impl |
+| `self.inner.nth(n - 1)` | skips to the item `n` places on |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `attempt to add with overflow` | a debug-build panic from an unchecked `+` |
+| `error[E0277]: the size for values of type Self cannot be known at compilation time` | the trait needs `+ Sized` |
+| `the trait Iterator is not implemented for &Ring<T>` | `for x in &ring` without that `IntoIterator` impl |
+
+---
+
 Beginner lesson 11 used iterators; this lesson writes them. The reward is
 large: implement **one** method, `next`, and your type gets every adapter
 and consumer in the standard library (`map`, `filter`, `take`, `zip`, `sum`,

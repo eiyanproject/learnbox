@@ -11,6 +11,68 @@ hints:
   - "In `shout_all`, `for w in words` moves the vector into the loop. Loop over a borrow instead, `for w in &words`, so `words.len()` still works afterwards."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **the stack** | memory for values of known size; each function's locals are removed when it returns |
+| **the heap** | memory for values whose size is only known at run time, such as a `String`'s text |
+| **address** | where a block of memory is |
+| **free** | give memory back |
+| **garbage collector** | what Python and Java use to find and free unused memory while running |
+| **double free** | freeing the same memory twice, which corrupts it |
+| **ownership** | Rust's compile-time rules deciding exactly when each value is freed |
+| **owner** | the variable (or field, or vector slot) a value belongs to; one at a time |
+| **scope** | the block, between `{` and `}`, where a variable was declared |
+| **drop** | free a value automatically when its owner goes out of scope |
+| **move** | hand ownership to another owner; the old one can no longer be used |
+| **length** / **capacity** | how many bytes a `String` uses / how many it has room for |
+| **clone** | an explicit copy of the heap data too, giving a second owner |
+| **`Copy` type** | a small, stack-only value (integers, floats, `bool`, `char`) that is copied instead of moved |
+| **trait** | a named set of abilities a type can have, such as `Copy` (Learn lesson 10) |
+| **consume** | `for item in vec` moves every item out, and the vector is gone |
+| **borrow** | lend a value with `&` instead of moving it (Learn lesson 5) |
+| **binding** | a name bound to a value; mutability belongs to it, so a parameter can be `mut s` |
+| **signature** | a function's parameter and return types; adding `mut` to a parameter does not change it |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo check` | shows the compile errors to fix, fastest |
+| `rustc --explain E0382` | a long explanation of the use-after-move error |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `String::from("hello")` | a new `String` from a literal |
+| `let b = a;` | moves `a` into `b` (for a `String`) or copies it (for an `i32`) |
+| `a.clone()` | an independent copy |
+| `&names[0]` | borrows an item instead of moving it out |
+| `names[0].clone()` | copies an item out |
+| `names.remove(0)`, `names.swap_remove(0)` | takes an item out of the vector, by moving |
+| `for w in &words` | loops over references, so `words` survives |
+| `fn exclaim(mut s: String) -> String` | takes ownership and may change its own copy |
+| `s.push('!')` | adds a character to a `String` |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0382]: borrow of moved value` | used a value after it was moved |
+| `which does not implement the Copy trait` | the reason it was moved rather than copied |
+| `error[E0507]: cannot move out of index of Vec<String>` | tried to move one item out of a vector by index |
+| `error[E0596]: cannot borrow s as mutable, as it is not declared as mutable` | changing a binding that is not `mut` |
+
+---
+
 **This lesson's starter code does not compile.** Run `cargo check`, read
 the errors, and fix them one by one. You will spend a lot of time with these
 four errors in your first weeks of Rust; after this, they will look familiar.

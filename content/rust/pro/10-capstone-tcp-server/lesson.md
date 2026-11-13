@@ -11,6 +11,73 @@ hints:
   - "State is `Arc<RwLock<HashMap<String, String>>>`: `GET` takes `read()`, `SET`/`DEL` take `write()`. Never hold the guard while writing to the socket."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **capstone** | a final project combining the tracks |
+| **key-value server** | a server storing values by key, like Redis or memcached |
+| **TCP** | the protocol for reliable, ordered byte streams between two programs |
+| **listen** / **connect** | a server waits on a port / a client reaches it |
+| **port** | a number from 1 to 65535 picking one service on a machine; 0 asks the system to choose |
+| **stream** | one connection, read and written like a file |
+| **protocol** | the agreed message format: here one line per command and per reply |
+| **accept** | take the next incoming connection; blocks until one arrives |
+| **accept thread** | the thread that accepts connections and hands them to the pool |
+| **worker pool** | a fixed set of threads, each serving one connection at a time |
+| **end of stream** | `read_line` returning 0: the client closed its side |
+| **command parsing** | turning `SET name Ana Wijaya` into a command, a key and the rest as the value |
+| **case-insensitive** | `get` works like `GET`; keys and values stay case-sensitive |
+| **lock across I/O** | holding a lock while writing to a socket, which stalls every other client |
+| **graceful shutdown** | stopping every thread and closing the listener cleanly |
+| **self-connect trick** | connecting to your own listener once, to wake a blocked `accept` |
+| **`Shutdown::Both`** | closing both directions of a connection, so a blocked read returns 0 |
+| **idempotent** | safe to call more than once, as `stop()` must be |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests, which connect 8 clients at once |
+| `nc 127.0.0.1 PORT` | talks to the server by hand, if `nc` is installed |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `use std::net::{TcpListener, TcpStream, Shutdown};` | networking |
+| `TcpListener::bind((host, port))?`, `listener.local_addr()?.port()` | listen; the real port |
+| `for stream in listener.incoming()` | each new connection |
+| `stream.try_clone()?` | a second handle to the same connection |
+| `let mut reader = BufReader::new(stream.try_clone()?);` | read lines from one handle, write with the other |
+| `reader.read_line(&mut line)?`, `line.clear()` | read one command; reuse the buffer |
+| `writeln!(stream, "{reply}")?` | send one reply line |
+| `line.splitn(3, ' ')` | at most three parts: command, key, value |
+| `cmd.to_ascii_uppercase()` | case-insensitive command names |
+| `Arc<RwLock<HashMap<String, String>>>` | the shared store |
+| `store.read().unwrap()`, `store.write().unwrap()` | read lock for GET/KEYS; write lock for SET/DEL |
+| `AtomicBool`, `Ordering::SeqCst` | the stopping flag |
+| `Mutex<Vec<TcpStream>>` | the open connections, to shut down at stop |
+| `s.shutdown(Shutdown::Both)` | unblocks a worker waiting on a read |
+| `impl Drop for Server { fn drop(&mut self) { self.stop(); } }` | stops a server that was never stopped |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `Address already in use` | another program holds the port; bind to port 0 in tests |
+| `Connection refused` | nothing is listening, as after `stop()` |
+| `ERR unknown command` | the server's reply to anything it does not understand |
+| *(no error, a hang)* | `stop()` joining workers still blocked in `read_line` |
+
+---
+
 This capstone brings the Advanced and Pro tracks together in one program
 of about 150 lines: a small **key-value server**, a simplified version of
 what Redis or memcached do. Clients connect over TCP, send one command per

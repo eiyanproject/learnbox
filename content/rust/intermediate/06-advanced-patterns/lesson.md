@@ -11,6 +11,66 @@ hints:
   - "`total_shipping`: iterate `for order in orders` and `match order { Order { items, destination: Destination::Domestic { express: true }, .. } => ..., ... }`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **pattern** | a shape a value is tested against; it may bind parts to names |
+| **bind** | give part of a value a name |
+| **irrefutable pattern** | always fits, such as `x` or `(a, b)`; `let` and parameters need these |
+| **refutable pattern** | can fail, such as `Some(x)` |
+| **slice pattern** | matches a slice by shape: `[]`, `[x]`, `[first, .., last]` |
+| **`..`** (in a slice) | any number of items, including none; once per pattern |
+| **sub-slice binding** | `rest @ ..`: binds the part `..` covers |
+| **`@` binding** | `name @ pattern`: test with the pattern and keep the whole value |
+| **nested destructuring** | patterns inside patterns, reaching into fields |
+| **`..`** (in a struct) | ignore the remaining fields |
+| **guard** | `if` after a pattern, for conditions patterns cannot express |
+| **default binding modes** | matching on a reference makes the bound names references automatically |
+| **edition** | a version of the language's rules; this course uses 2024 |
+| **`let-else`** | bind for the rest of the function, or run an `else` that leaves |
+| **diverge** | never continue to the next line: `return`, `break`, `continue`, `panic!` |
+| **never type** (`!`) | the type of an expression that never finishes |
+| **if-let chain** | `if let ... && cond && let ...`: patterns and conditions joined with `&&` |
+| **recursion** | a function calling itself on a smaller input until a base case |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `match items { [] => ..., [x] => ..., [first, .., last] => ... }` | slice patterns |
+| `[head, rest @ ..] => head + sum(rest)` | peel off one item and recurse |
+| `n @ 13..=19 => format!("teenager aged {n}")` | test a range and keep the value |
+| `Shape::Circle { center: Point { x: 0, y: 0 }, radius }` | a nested pattern with literal tests |
+| `Shape::Line(Point { x: x1, .. }, Point { x: x2, .. }) if x1 == x2` | renamed bindings and a guard |
+| `let Some((k, v)) = line.split_once('=') else { return None; };` | let-else |
+| `s.split_once(':')`, `s.rsplit_once(':')` | split at the first / last `:` |
+| `matches!(v, Some(n) if n > 10)` | `true` if it fits, guard included |
+| `if let Some(x) = a && x > 3 { }` | an if-let chain |
+| `Destination::International { country } if country == "SG"` | a guard for a `String` field |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0004]: non-exhaustive patterns: &[_, _, _, ..] not covered` | a slice shape is missing (three or more items) |
+| `error[E0005]: refutable pattern in local binding` | a plain `let` with a pattern that can fail |
+| `error[E0308]: else clause of let...else does not diverge` | the `else` block must leave |
+
+---
+
 Beginner lesson 7 used patterns to recognise enum variants, numbers and
 ranges. Patterns can do much more: take apart slices by shape, test a value
 and keep it in the same breath, reach several levels into nested data, and

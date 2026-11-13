@@ -11,6 +11,65 @@ hints:
   - "`append_greeting(buf: &mut String, name: &str)`: `buf.push_str(\"Hello, \"); buf.push_str(name); buf.push('\\n');`"
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **borrow** | use a value through a reference without owning it |
+| **reference** | a pointer to a value that does not own it: `&T` |
+| **shared reference** (`&T`) | read-only; any number may exist at once |
+| **mutable reference** (`&mut T`) | can change the value; only one at a time, and no shared ones meanwhile |
+| **the borrowing rule** | either any number of `&T` or exactly one `&mut T`, never both |
+| **dangling reference** | one pointing at memory that has been freed; Rust refuses to compile it |
+| **reallocate** | a full vector moving its items to a new, bigger block |
+| **last use** | a borrow lasts until the reference is last used, not to the end of the block |
+| **non-lexical lifetimes** | that rule: a borrow's length follows how the reference is used |
+| **lifetime** | how long a reference is valid (Learn lesson 12) |
+| **dereference** (`*`) | follow a reference to the value behind it |
+| **auto-dereference** | method calls and most operators follow references for you |
+| **slice** | a reference to a contiguous part of a string, array or vector, without copying |
+| **string slice** (`&str`) | a slice of text; functions should take `&str`, not `&String` |
+| **`&[T]`** | a slice of a vector or array; take it rather than `&Vec<T>` |
+| **byte position** | string slices are cut at bytes; cutting inside a multi-byte character panics |
+| **in place** | changing the given values themselves rather than returning new ones |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo check`, `cargo test` | check the borrows; run the tests |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `&name`, `fn len(s: &String)` | borrow; a parameter that borrows |
+| `&mut msg`, `fn add(s: &mut String)` | lend mutably; a parameter that may change it |
+| `*n += 1` | writes through a mutable reference |
+| `&s[0..5]`, `&s[6..]`, `&v[1..3]` | slices: up to but not including the end |
+| `s.find(' ')` | the byte position of the first space, or `None` |
+| `s.char_indices()` | each character with its byte position |
+| `s.len()`, `s.chars().count()` | length in bytes; in characters |
+| `for n in nums.iter_mut()` | each item as a `&mut`, to change it |
+| `buf.push_str("...")` | adds text to the end of a `String` |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0502]: cannot borrow v as mutable because it is also borrowed as immutable` | a shared and a mutable borrow overlap |
+| `error[E0106]: missing lifetime specifier` | a returned reference with nothing to borrow from |
+| `cannot borrow *s as mutable, as it is behind a & reference` | writing through a read-only reference |
+| `byte index 3 is not a char boundary` | a panic from slicing inside a multi-byte character |
+
+---
+
 Moving a value into every function that wants to look at it would be
 tiresome: the function would have to hand it back every time, or the caller
 would lose it. Instead, you **borrow** it with a reference. It works like

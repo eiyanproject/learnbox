@@ -11,6 +11,76 @@ hints:
   - "`sum_array`: `let mut total = 0; for n in values { total += n; } total`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **variable** | a name bound to a value with `let` |
+| **bind** | give a value a name |
+| **immutable** | cannot change; Rust variables are immutable by default |
+| **`mut`** | marks a variable that may change |
+| **shadowing** | a new `let` with the same name: a new variable, possibly of another type |
+| **parse** | turn text into a value, such as a number; it can fail |
+| **`unwrap()`** | takes the value out of a result, panicking if it was an error |
+| **scalar type** | a single value: an integer, a float, a `bool`, a `char` |
+| **signed** / **unsigned** | can be negative (`i32`) / zero and up only (`u8`) |
+| **bits** | the number in a type's name: `u8` is 8 bits, 0 to 255 |
+| **`usize`** | the type for lengths and indexes |
+| **floating point** | `f32`, `f64`: numbers with a fraction |
+| **`char`** | one Unicode character, in single quotes |
+| **explicit conversion** | Rust never converts numbers silently; use `as` |
+| **truncate** | `as i32` drops the fraction, toward zero |
+| **integer division** | `/` on integers rounds toward zero: `-7 / 2` is `-3` |
+| **remainder** (`%`) | what is left after division |
+| **overflow** | a result too big for its type; it panics in a debug build and wraps in a release build |
+| **debug** / **release build** | what `cargo run` and `cargo test` make / `cargo build --release`, optimised |
+| **tuple** | a fixed group of values of possibly different types: `(1, 2.5)` |
+| **destructure** | take a tuple apart: `let (h, m, s) = t;` |
+| **array** | a fixed-length list of one type: `[i64; 5]` |
+| **`Vec`** | a growable list (Learn lesson 9) |
+| **constant** | `const`: a fixed value with a type, in `SCREAMING_SNAKE_CASE` |
+| **debug formatting** | `{:?}`, which can print collections |
+| **`Option`** | `Some(value)` or `None`, "maybe a value" (Learn lesson 8) |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | what the **Run** button does here: compiles and runs the tests |
+| `cargo build --release` | an optimised build, where overflow wraps |
+
+### Rust keywords, types and methods
+
+| Name | What it does |
+|---|---|
+| `let apples = 5;`, `let mut apples = 5;` | an immutable / a mutable variable |
+| `let n: i32 = "42".parse().unwrap();` | text to a number, crashing on bad input |
+| `i8`...`i128`, `u8`...`u128`, `isize`, `usize` | integer types |
+| `f32`, `f64`, `bool`, `char` | float, true/false, character |
+| `x as f64`, `3.9 as i32` | explicit conversions |
+| `let t = (1, 2, 5); t.0` | a tuple and its first item |
+| `let a = [0; 3];` | an array of three zeros |
+| `const MAX_SCORE: u32 = 100;` | a constant |
+| `i32::MAX` | the largest `i32` |
+| `a.checked_add(b)` | `Some(sum)`, or `None` on overflow |
+| `9.0`, `5.0` | float literals need the `.0` |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0384]: cannot assign twice to immutable variable` | changing a variable without `mut` |
+| `cannot add f64 to i32` | mixing number types without `as` |
+| `attempt to add with overflow` | a debug-build panic on integer overflow |
+
+---
+
 ## let and mut
 
 `let` creates a variable. Variables are **immutable** by default: once a

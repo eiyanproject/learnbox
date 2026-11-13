@@ -10,6 +10,80 @@ hints:
   - "For `banner`, `\"=\".repeat(title.len())` makes the line. Join the three parts with `\\n` in one `format!`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **compiled language** | the whole program is translated into a native program before anything runs |
+| **compiler** (`rustc`) | the program that does that translation |
+| **cargo** | Rust's build tool and package manager; it runs the compiler, fetches libraries and runs tests |
+| **crate** | a Rust package: a library or a program |
+| **library crate** | code for other code to call: `src/lib.rs` |
+| **binary crate** | a program you can run: `src/main.rs` |
+| **`Cargo.toml`** | the project's name, version and dependencies |
+| **dependency** | a library your project uses |
+| **type-check** | confirm the types fit, without producing a program |
+| **error code** | the `E0308` in `error[E0308]`, which `rustc --explain` describes |
+| **`-->`** | in an error, the file, line and column |
+| **`^^^`**, **`---`** | in an error, the exact spot; something related |
+| **`help:`** | the compiler's suggested fix |
+| **function** | a named block of code, declared with `fn` |
+| **parameter** | a named input with its type: `a: i32` |
+| **return type** | the type after `->` |
+| **expression** | code that produces a value: `a + b` |
+| **statement** | code that does something and produces nothing: `a + b;`, `let x = 5;` |
+| **tail expression** | the last expression of a block, with no semicolon: the block's value |
+| **unit** (`()`) | the type of "no value" |
+| **`pub`** | public: visible outside its file |
+| **macro** | code expanded at compile time, called with `!`: `println!` |
+| **format string** | text with `{}` placeholders, checked by the compiler |
+| **format specification** | after a colon in `{}`: `{score:>5}` right-aligns in 5 characters |
+| **`&str`** | a borrowed view of text; string literals are `&str` |
+| **`String`** | text that owns its memory and can grow |
+| **ownership** | who is responsible for a value's memory (Learn lesson 4) |
+| **panic** | the program stops with an error message |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo build` | compiles the project |
+| `cargo run` | compiles if needed, then runs `src/main.rs` |
+| `cargo check` | type-checks without producing a program: the fastest feedback |
+| `cargo test` | compiles and runs the tests |
+| `rustc --explain E0308` | a long explanation of an error code, with examples |
+| `$` | stands for the prompt: do not type it |
+
+### Rust keywords, functions and macros
+
+| Name | What it does |
+|---|---|
+| `pub fn add(a: i32, b: i32) -> i32 { a + b }` | a public function returning the sum |
+| `return x;` | leaves the function early with `x` |
+| `i32` | a 32-bit signed whole number |
+| `println!("{name} scored {}", score)` | prints with placeholders and a line break |
+| `format!(...)` | builds the same text and returns a `String` |
+| `"=".repeat(n)` | the text repeated `n` times |
+| `title.len()` | the length in bytes |
+| `"\n"` | a line break inside a string |
+| `todo!()` | a placeholder that compiles and panics if it runs |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0308]: mismatched types` ... `expected i32, found ()` | a stray semicolon turned the return value into a statement |
+| `function greeting is private` | it needs `pub` to be used from outside |
+| a typo such as `{nmae}` | a compile error, because format strings are checked |
+
+---
+
 Rust is a **compiled** language: a program called the compiler, `rustc`,
 translates your source code into a native program before anything runs. You
 rarely call `rustc` yourself. Rust projects are built with **cargo**, the

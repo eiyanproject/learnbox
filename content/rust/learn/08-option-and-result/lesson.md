@@ -11,6 +11,66 @@ hints:
   - "`safe_divide(a, b)`: `if b == 0 { None } else { Some(a / b) }`, or use `a.checked_div(b)`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **null** | another languages' "nothing" value, which any reference might secretly be; Rust has none |
+| **exception** | another languages' error that jumps out of a function, invisible in its signature; Rust has none |
+| **`Option<T>`** | either `Some(value)` or `None`: "might be missing" |
+| **`Result<T, E>`** | either `Ok(value)` or `Err(error)`: "might fail" |
+| **generic** (`<T>`) | works for any type `T` (Learn lesson 12) |
+| **in scope** | usable without a `use`; `Option`, `Some`, `None`, `Ok`, `Err` always are |
+| **`ParseIntError`** | the error from parsing text that is not a whole number |
+| **panic** | stop the program with a message |
+| **`unwrap`** / **`expect`** | take the value out, panicking on `None` or `Err`; `expect` adds your message |
+| **closure** | a small inline function: `\|n\| n * 2` (Learn lesson 11) |
+| **the `?` operator** | "give me the value, or return the error now" |
+| **propagate** | pass an error up to the caller |
+| **`From`** | the trait `?` uses to convert an error type |
+| **signed type wide enough** | `i64` holds both `151` and `-3`, so they can be range-checked |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `Some(3)`, `None`, `Ok(42)`, `Err(e)` | the variants |
+| `"42".parse::<i32>()` | a `Result<i32, ParseIntError>` |
+| `s.trim()` | the text without surrounding whitespace |
+| `opt.unwrap_or(0)` | the value, or 0 |
+| `opt.map(\|n\| n * 2)` | changes the value inside, if any |
+| `opt.is_some()`, `opt.is_none()` | tests |
+| `res.ok()` | a `Result` turned into an `Option` |
+| `res.unwrap_or_default()` | the value, or the type's default (0 for numbers) |
+| `res.map_err(\|e\| e.to_string())` | changes the error type |
+| `let n: i64 = s.parse()?;` | parse, or return the error |
+| `items.iter().position(\|x\| x == target)` | the index of the first match, as an `Option` |
+| `for &n in nums` | copies each number out of the slice |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `called Result::unwrap() on an Err value` | a panic from `unwrap` |
+| `invalid digit found in string` | how a `ParseIntError` prints |
+| `error[E0277]: ? couldn't convert the error to String` | `?` with no `From` conversion; use `map_err` |
+| `the ? operator can only be used in a function that returns Result or Option` | `?` with nowhere to return the error |
+| `cannot multiply Option<i32> by {integer}` | using an `Option` as if it were the value |
+
+---
+
 Two questions come up in almost every program: "what if there is nothing
 there?" (no user with that name, no even number in the list) and "what if it
 fails?" (the text is not a number, the file does not exist).

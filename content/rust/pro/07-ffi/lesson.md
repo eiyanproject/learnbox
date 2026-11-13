@@ -11,6 +11,67 @@ hints:
   - "`#[unsafe(no_mangle)] pub unsafe extern \"C\" fn learnbox_sum(ptr: *const i32, len: usize) -> i64` checks for null, then sums `slice::from_raw_parts(ptr, len)` inside `std::panic::catch_unwind`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **FFI** (foreign function interface) | calling code written in another language, or being called by it |
+| **ABI** (application binary interface) | how arguments and results are passed, so two languages agree on a call |
+| **`extern "C"`** | use C's calling convention |
+| **`unsafe extern` block** | declarations of C functions; the compiler cannot check them |
+| **libc** | the C standard library, already linked on Linux |
+| **C types** | `c_int`, `c_char`, `c_long`, `c_void`: Rust types matching the platform's C types |
+| **C string** | a pointer to bytes ending at the first NUL (zero) byte, with no length |
+| **NUL** | the zero byte that ends a C string |
+| **`CString`** / **`CStr`** | an owned / a borrowed C string |
+| **lossy conversion** | invalid UTF-8 replaced with `U+FFFD`, the `�` character |
+| **dangling pointer** | a pointer into a value already dropped, such as a temporary `CString` |
+| **`#[repr(C)]`** | C's struct layout, for structs that cross the boundary |
+| **name mangling** | Rust encoding the module path and a hash into a symbol name |
+| **`#[unsafe(no_mangle)]`** | keep the plain symbol name so C can find it |
+| **unwinding** | a panic travelling up the call stack; must never reach C |
+| **`catch_unwind`** | stops a panic at the boundary, returning `Err` |
+| **`cdylib`** / **`staticlib`** | build a C-compatible shared / static library |
+| **safe shell** | a safe Rust function around one small, checked unsafe call |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests, which check your source for `no_mangle` and `catch_unwind` |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `unsafe extern "C" { fn strlen(s: *const c_char) -> usize; fn abs(n: c_int) -> c_int; }` | declares C functions |
+| `use std::ffi::{CStr, CString, c_char, c_int};` | the FFI types |
+| `CString::new(s).ok()?` | a C string, or `None` if `s` contains a NUL |
+| `c.as_ptr()` | a pointer into the `CString`; keep `c` alive while it is used |
+| `CStr::from_ptr(ptr).to_string_lossy().into_owned()` | a C string to a Rust `String` (unsafe) |
+| `ptr.is_null()` | check before using a pointer from C |
+| `c"from C"` | a C string literal |
+| `#[unsafe(no_mangle)] pub extern "C" fn learnbox_distance(a: Point, b: Point) -> f64` | an exported function |
+| `std::slice::from_raw_parts(ptr, len)` | a slice from a pointer and length (unsafe) |
+| `std::panic::catch_unwind(\|\| ...).unwrap_or(0)` | never unwind into C |
+| `((dx * dx) + (dy * dy)).sqrt()` | the distance |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `warning: this creates a dangling pointer because temporary CString is dropped at end of statement` | `CString::new(...).unwrap().as_ptr()` in one expression |
+| `NulError` | `CString::new` given text with a zero byte inside |
+| `unsafe attribute used without unsafe` | `#[no_mangle]` written without `unsafe(...)` in the 2024 edition |
+
+---
+
 A huge amount of existing software is written in C, or exposes a C
 interface: SQLite, OpenSSL, `libgit2`, the operating system itself. Most
 other languages can call C, and be called by it. A **foreign function

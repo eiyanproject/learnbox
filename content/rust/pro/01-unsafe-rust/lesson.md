@@ -11,6 +11,70 @@ hints:
   - "`as_str` is safe only if the bytes really are UTF-8, so validate with `std::str::from_utf8` and return `Option<&str>`. `as_str_unchecked` is the `unsafe fn` version using `from_utf8_unchecked`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **safe Rust** | Rust where the compiler proves there are no data races, no use of freed memory, no dangling references |
+| **conservative** | the rules reject some correct programs because the compiler cannot see why they are correct |
+| **`unsafe`** | a block or function where you take responsibility for rules the compiler cannot check |
+| **the five unsafe abilities** | dereference raw pointers, call `unsafe fn`s, implement `unsafe trait`s, use `static mut`, read `union` fields |
+| **raw pointer** | `*const T` or `*mut T`: an address with no guarantees |
+| **null** | a pointer to nothing |
+| **aligned** | at an address that is a multiple of the type's alignment |
+| **alias** | two pointers to the same memory |
+| **undefined behaviour** (UB) | breaking a rule the language assumes; the program's behaviour is no longer defined |
+| **valid value** | one allowed by its type: a `bool` is 0 or 1, a `str` is UTF-8 |
+| **safe wrapper** | a safe function around a small unsafe core, checking its preconditions |
+| **sound** | cannot cause UB however it is called from safe code |
+| **precondition** | what must be true before an operation |
+| **disjoint** | not overlapping |
+| **`unsafe fn`** | callers must uphold a contract, written in a `# Safety` section |
+| **`// SAFETY:` comment** | the note on each unsafe block explaining why it is sound |
+| **Miri** | an interpreter that detects many kinds of UB in tests |
+| **capacity** | how many bytes a buffer has room for before it must grow |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests, which also count your `SAFETY:` comments |
+| `cargo +nightly miri test` | runs the tests under Miri, if the nightly toolchain is installed |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `unsafe { ... }` | an unsafe block |
+| `unsafe fn f(...)` | an unsafe function |
+| `slice.as_mut_ptr()` | a `*mut T` to the first element |
+| `ptr.add(mid)` | the pointer `mid` elements along (unsafe) |
+| `std::slice::from_raw_parts_mut(ptr, n)` | a `&mut [T]` of `n` elements at `ptr` (unsafe) |
+| `assert!(mid <= len)` | the safety check that turns UB into a panic |
+| `std::ptr::swap(a, b)` | swaps two values through raw pointers; overlap allowed |
+| `v.get_unchecked(i)` | an element without a bounds check (unsafe) |
+| `Vec::reserve_exact(n)`, `v.capacity()` | ask for exactly `n` more slots; the current room |
+| `std::str::from_utf8(bytes)`, `from_utf8_unchecked(bytes)` | checked / unchecked bytes to `&str` |
+| `impl Extend<u8> for Buffer { fn extend<I: IntoIterator<Item = u8>>(&mut self, iter: I) }` | supports `b.extend(...)` |
+| `std::panic::catch_unwind` | catches a panic, used in the run example |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0499]: cannot borrow *slice as mutable more than once at a time` | the borrow checker cannot see that two halves do not overlap |
+| `error[E0133]: dereference of raw pointer is unsafe and requires unsafe block` | an unsafe operation outside `unsafe` |
+| `an unsafe function restricts its caller, but its body is safe by default` | in the 2024 edition, an `unsafe fn` body still needs `unsafe { }` |
+| `Utf8Error` | bytes that are not valid UTF-8 |
+
+---
+
 Safe Rust guarantees that a program has no data races, never uses freed
 memory, and never follows a dangling reference. The compiler proves this
 with the ownership and borrowing rules. But those rules are conservative:

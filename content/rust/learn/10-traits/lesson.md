@@ -11,6 +11,68 @@ hints:
   - "`total_area(shapes: &[Box<dyn Shape>])`: loop and add `shape.area()`. `largest<T: PartialOrd + Copy>`: keep the biggest seen so far, starting from `items[0]`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **trait** | a named set of abilities a type can have, such as "can report its area"; like an interface |
+| **signature** (in a trait) | a method listed with no body, ending in `;`: implementers must provide it |
+| **implement** | `impl Trait for Type`: say how a type has those abilities |
+| **unit struct** | `struct Dog;`, a struct with no fields; its only value is `Dog` |
+| **in scope** | a trait must be `use`d to call its methods from another module |
+| **default method** | a trait method with a body; implementers get it free and may override it |
+| **override** | write your own version of a default method |
+| **bound** | `T: Speak`: "any type `T` that implements `Speak`" |
+| **`impl Trait`** | the short form of a bound in a parameter: `thing: &impl Speak` |
+| **`PartialOrd`** | the trait behind `<` and `>` |
+| **combined bounds** | `T: PartialOrd + Copy` |
+| **monomorphisation** | the compiler making a specialised copy of a generic function for each type used |
+| **static dispatch** | which method to call is settled at compile time; as fast as non-generic code |
+| **trait object** (`dyn Trait`) | "some value of a type that implements the trait", decided at run time |
+| **`Box`** | a fixed-size pointer that owns a value on the heap |
+| **dynamic dispatch** | the method is looked up while the program runs |
+| **`Display`** | `{}` formatting and `.to_string()`; written by hand |
+| **`Eq`**, **`Ord`**, **`Default`** | full equality; full ordering for sorting; a starting value |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `trait Speak { fn speak(&self) -> String; }` | declares a trait |
+| `impl Speak for Dog { fn speak(&self) -> String { ... } }` | implements it |
+| `fn shout(&self) -> String { self.speak().to_uppercase() + "!" }` | a default method |
+| `fn announce<T: Speak>(thing: &T)`, `fn announce(thing: &impl Speak)` | generic with a bound, long and short |
+| `fn largest<T: PartialOrd + Copy>(items: &[T]) -> T` | the generic largest |
+| `Vec<Box<dyn Speak>>`, `Box::new(Dog)` | a mixed list of trait objects |
+| `impl fmt::Display for Robot { fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "...") } }` | implements `Display` |
+| `write!(f, "...")` | like `format!`, but writes into `f` |
+| `{:.2}` | a number with 2 decimals |
+| `shapes.iter().map(\|s\| s.area()).sum()` | adds up the areas |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0046]: not all trait items implemented, missing: speak` | an `impl` left out a required method |
+| `error[E0277]: the trait bound Cat: Speak is not satisfied` | passed a type that does not implement the bound |
+| `error[E0369]: binary operation > cannot be applied to type T` | a generic with no `PartialOrd` bound |
+| `cannot move out of type [T], a non-copy slice` | copying out of a slice needs `Copy` |
+| `mismatched types` in `vec![Dog, Robot {..}]` | one `Vec` holds one type; use `Box<dyn ...>` |
+
+---
+
 Say you have a `Circle`, a `Square` and a `Triangle`, and want one function
 that prints the area of any of them. The function needs to know only one
 thing about its argument: that it *has* an area. A **trait** names a set of

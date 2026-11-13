@@ -11,6 +11,67 @@ hints:
   - "`SpinLock::lock`: `while self.locked.compare_exchange_weak(false, true, Acquire, Relaxed).is_err() { std::hint::spin_loop(); }`, and `unlock` stores `false` with `Release`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **atomic operation** | one read-modify-write on a single value, done as one indivisible step |
+| **`const fn`** | a function usable in constants; why atomics can be `static` directly |
+| **cache line** | the block of memory a CPU core caches; atomics claim it, which costs time under contention |
+| **contention** | many threads competing for the same value |
+| **reordering** | the compiler and CPU changing the order of memory operations, invisible within one thread |
+| **`Ordering`** | which reorderings around an atomic operation are forbidden |
+| **`Relaxed`** | only the operation itself is atomic; for counters |
+| **`Release`** | earlier writes cannot move after this store; publishes data |
+| **`Acquire`** | later reads cannot move before this load; observes published data |
+| **`AcqRel`** | both, for read-modify-write operations |
+| **`SeqCst`** | the strongest: one global order for all such operations |
+| **publish and observe** | a release store paired with an acquire load of the same atomic |
+| **compare-and-swap** (CAS) | write the new value only if the value is still the expected one |
+| **spurious failure** | `compare_exchange_weak` may fail even when the value matched; fine in a loop |
+| **CAS loop** | read, compute, try to swap, retry with the new value on failure |
+| **spin lock** | a lock where waiting threads loop instead of sleeping |
+| **busy-wait** | looping while waiting, using a whole core |
+| **`UnsafeCell<T>`** | the primitive allowing mutation through `&`; every `Cell` and `Mutex` uses it |
+| **guard** | the value `lock()` returns: `Deref`/`DerefMut` to the data, `Drop` unlocks |
+| **ABA problem** | a CAS succeeding because a value changed and changed back, hiding the change |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests, which check for `Release`, `Acquire` and `compare_exchange` |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};` | atomics |
+| `c.fetch_add(1, Ordering::Relaxed)`, `c.load(...)`, `c.store(v, ...)` | add; read; write |
+| `c.swap(0, Ordering::AcqRel)` | set and return the old value in one step |
+| `flag.store(true, Ordering::Release)`, `flag.load(Ordering::Acquire)` | publish / observe |
+| `c.compare_exchange(cur, new, Ordering::AcqRel, Ordering::Acquire)` | `Ok(previous)` or `Err(actual)` |
+| `compare_exchange_weak` | the version allowed to fail spuriously, for loops |
+| `std::hint::spin_loop()` | tells the CPU this is a busy-wait |
+| `std::cell::UnsafeCell<T>`, `cell.get()` | interior-mutable storage; a `*mut T` to it |
+| `impl Deref for SpinGuard<'_, T>`, `impl DerefMut`, `impl Drop` | the guard's traits |
+| `unsafe impl<T: Send> Sync for SpinLock<T> {}` | given: promises sharing is safe |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| *(no error, a wrong value)* | `Relaxed` used where publishing needs `Release`/`Acquire`; shows on ARM more than x86 |
+| `UnsafeCell<T> cannot be shared between threads safely` | the reason the starter needs `unsafe impl Sync` |
+
+---
+
 Advanced lesson 3 used `AtomicU64` with `Ordering::Relaxed` for a counter,
 and promised an explanation of that `Ordering` argument. This lesson gives
 it, and then uses atomics to build things that are usually built from locks:

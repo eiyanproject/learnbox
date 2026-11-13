@@ -11,6 +11,65 @@ hints:
   - "The blanket impl: `impl<T: fmt::Display> Describe for T {}` gives every displayable type `describe()` for free. `Money` needs its own `Display` impl."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **associated type** | a type each implementation picks: `type Item = u32;` |
+| **`Self::Item`** | the `Item` the implementing type chose |
+| **one per type** | an associated type gives exactly one answer; a generic trait could have many |
+| **generic parameter** (on a trait) | when one type can do the job for several others, like `Mul<f64>` |
+| **default type parameter** | `trait Add<Rhs = Self>`: `Rhs` is `Self` unless you say otherwise |
+| **operator overloading** | implementing `std::ops` traits so `+`, `-`, `*` work on your type |
+| **right-hand side** (`Rhs`) | the type on the right of the operator |
+| **`Output`** | the operator's result type |
+| **supertrait** | `trait Shape: Debug`: every `Shape` must also be `Debug` |
+| **blanket implementation** | `impl<T: Display> Shout for T`: for every type that meets the bound |
+| **conflicting implementations** | two impls that could apply to one type; refused |
+| **orphan rule** | the trait or the type must be defined in your crate |
+| **newtype** | a one-field tuple struct wrapping an outside type, so you can implement traits for it |
+| **static** vs **dynamic dispatch** | a copy per type, fast / one copy through a pointer, at run time |
+| **`dyn Container<Item = u8>`** | a trait object must state its associated type |
+| **absolute value** | the number without its sign: `cents.abs()` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `trait Container { type Item; fn get(&self, i: usize) -> Option<&Self::Item>; fn len(&self) -> usize; }` | a trait with an associated type |
+| `fn first(&self) -> Option<&Self::Item> { self.get(0) }` | a default built on `get` |
+| `impl<T> Container for Stack<T> { type Item = T; ... }` | an implementation for every `T` |
+| `impl Add for Money { type Output = Money; fn add(self, o: Money) -> Money { ... } }` | `a + b` |
+| `impl Sub`, `impl Mul<i64>`, `impl Neg`, `impl AddAssign` | `-`, `* 3`, unary `-`, `+=` |
+| `use std::ops::{Add, Sub, Mul, Neg, AddAssign};` | brings the operator traits in |
+| `trait Describe: Display { fn describe(&self) -> String { format!("<{self}>") } }` | a supertrait with a default |
+| `impl<T: Display> Describe for T {}` | the blanket impl |
+| `fn total_len<A: Container, B: Container>(a: &A, b: &B) -> usize` | two different container types |
+| `write!(f, "{sign}{}.{:02}", c / 100, c % 100)` | units and two-digit cents |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0046]: not all trait items implemented, missing: Item` | the associated type was left out |
+| `error[E0369]: cannot add Meters to Meters` | `+` without an `Add` impl |
+| `error[E0119]: conflicting implementations of trait` | a specific impl overlapping a blanket one |
+| `error[E0117]: only traits defined in the current crate can be implemented for types defined outside of the crate` | the orphan rule; use a newtype |
+
+---
+
 Beginner lesson 10 covered the core of traits: define one, implement it,
 use it as a bound or as `dyn Trait`. This lesson covers the four features
 that the standard library is built from, and that you will meet in every

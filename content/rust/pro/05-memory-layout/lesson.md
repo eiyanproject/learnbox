@@ -11,6 +11,66 @@ hints:
   - "`normalize(s) -> Cow<str>` returns `Cow::Borrowed(s.trim())` when there is nothing else to change, and only allocates when the text contains uppercase letters."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **allocator** | the code that hands out heap memory |
+| **allocation** | one request to the allocator; tens of nanoseconds plus the later free |
+| **size** | the bytes one value takes |
+| **alignment** | a value's address must be a multiple of this |
+| **padding** | unused bytes inserted so fields and array elements stay aligned |
+| **offset** | where a field starts inside a struct |
+| **`#[repr(C)]`** | lay a struct out exactly as C would: fields in written order |
+| **unspecified layout** | a plain Rust struct; the compiler may reorder fields to pack them |
+| **niche** | a bit pattern a type never uses, which an `Option` can use for `None` |
+| **`NonZeroU32`** | a `u32` that is never 0, so `Option<NonZeroU32>` is 4 bytes |
+| **handle** | what is on the stack for a heap value: pointer, length, capacity |
+| **capacity** | spare room so pushes do not reallocate every time |
+| **reallocate** | move to a bigger block and copy everything across |
+| **pre-size** | allocate the final size once with `with_capacity` |
+| **reuse a buffer** | `clear()` keeps the capacity, so later turns do not allocate |
+| **hot code** | code that runs very often, where costs add up |
+| **global allocator** | the allocator behind every `Box` and `Vec`; replaceable with `#[global_allocator]` |
+| **release build** | `cargo build --release`: the only build worth timing |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo build --release` | an optimised build for measuring |
+| `cargo test` | compiles and runs the tests, which count your allocations |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `std::mem::size_of::<T>()`, `align_of::<T>()` | a type's size and alignment |
+| `#[repr(C)] struct Packed { b: u64, d: u32, c: u16, a: u8 }` | one order that packs to 16 bytes |
+| `std::num::NonZeroU32` | a never-zero `u32` |
+| `v.capacity()`, `v.into_boxed_slice()` | spare room; drop it |
+| `s.bytes().filter(u8::is_ascii_digit).map(\|b\| (b - b'0') as u32).sum()` | digits summed without allocating |
+| `String::with_capacity(n)`, `Vec::with_capacity(n)` | allocate once |
+| `buf.clear()` | empties without freeing |
+| `s.bytes().any(\|b\| b.is_ascii_uppercase())` | any capital letter? |
+| `Cow::Borrowed(t)`, `Cow::Owned(t.to_lowercase())` | borrow or own |
+| `std::hint::black_box(x)` | stops the optimiser removing a call |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `assertion failed ... allocations` | the test counted more allocations than allowed |
+| `assertion failed: size_of::<Packed>() == 16` | the field order still leaves padding |
+
+---
+
 Fast code is mostly about memory: how big values are, where they live, and
 how often the program asks the operating system's allocator for more. This
 lesson looks at what Rust values actually look like in memory, and at the

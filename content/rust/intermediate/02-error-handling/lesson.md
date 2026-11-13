@@ -11,6 +11,64 @@ hints:
   - "`get_port`: `let raw = config.get(\"port\").ok_or_else(|| ConfigError::Missing(\"port\".into()))?;` then `raw.trim().parse::<i64>().map_err(|source| ConfigError::InvalidNumber { key: \"port\".into(), source })?`, then the range check."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **caller** | the code that called your function and must react to its error |
+| **error type** | an enum with one variant per thing that can go wrong |
+| **variant data** | what each error carries: which file, which line, the original error |
+| **`..`** (in a struct pattern) | "and any other fields" |
+| **`Display`** vs **`Debug`** | the message for users (`{}`) vs the full detail for programmers (`{:?}`) |
+| **`std::error::Error`** | the standard trait for "this is an error"; needs `Debug` and `Display` |
+| **`source()`** | the lower-level error that caused this one |
+| **source chain** | each error linked to its cause, down to `None` |
+| **`dyn Error + 'static`** | some error type decided at run time, holding no short-lived borrows |
+| **`From`** | the conversion `?` uses: `Err(From::from(e))` |
+| **context** | information the low-level error lacks (which key, which line), added with `map_err` |
+| **`Box<dyn Error>`** | "some error of any type", for `main` and top-level glue |
+| **downcast** | ask a boxed error whether it is a particular type |
+| **library vs application** | libraries return precise enums; applications box them |
+| **`thiserror`**, **`anyhow`** | crates that automate these two styles |
+| **range check** | parse into `i64` first so negative and too-large values can both be reported |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `#[derive(Debug)] enum ConfigError { Missing(String), InvalidNumber { key: String, source: ParseIntError }, OutOfRange { key: String, value: i64 } }` | the error type |
+| `impl fmt::Display for ConfigError` | the messages |
+| `impl std::error::Error for ConfigError { fn source(&self) -> Option<&(dyn Error + 'static)> }` | the cause |
+| `impl From<io::Error> for AppError` | lets `?` convert automatically |
+| `raw.trim().parse::<i64>().map_err(\|source\| ConfigError::InvalidNumber { key: key.into(), source })?` | convert with context |
+| `map.get("port").ok_or_else(\|\| ConfigError::Missing("port".into()))?` | an `Option` into a `Result` |
+| `u16::try_from(n)`, `n as u16` | convert after the range check |
+| `fn load(...) -> Result<(u16, u16), Box<dyn Error>>` | the top-level function |
+| `err.downcast_ref::<ConfigError>()` | `Some(&ConfigError)` if that is what is boxed |
+| `while let Some(e) = cause { ...; cause = e.source(); }` | walks the source chain |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0277]: LoadError doesn't implement std::fmt::Display` | `Error` needs `Display` first |
+| `? couldn't convert the error` | no `From` for that error; add one or use `map_err` |
+| `ParseIntError`, `io::Error` | the lower-level errors wrapped here |
+
+---
+
 The Beginner track used `Result<T, String>` for errors. A string is fine for
 a quick program, but think about the **caller** of a function that loads a
 configuration and returns `Err("port out of range: 70000")`. To react

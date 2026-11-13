@@ -11,6 +11,67 @@ hints:
   - "`handle_count` is `Rc::strong_count(&self.entries)`. `try_push` uses `self.entries.try_borrow_mut()` and returns `false` when that fails."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **smart pointer** | a struct that owns data, points to it, and adds behaviour (freeing, counting, checking) |
+| **`Deref`** | the trait that lets a smart pointer act like a reference: `*boxed`, `boxed.len()` |
+| **`Box<T>`** | owns one value on the heap; one pointer in size, no other cost |
+| **recursive type** | a type that contains itself, like a list cell holding the rest of the list |
+| **indirection** | holding a pointer to a value instead of the value, so the size is known |
+| **linked list** | cells, each holding a value and a pointer to the next |
+| **`Rc<T>`** | reference counted: several owners of one value, freed when the last goes |
+| **handle** | one `Rc` pointing at the shared value |
+| **reference count** | how many handles exist |
+| **`Rc::clone`** | a cheap count increment, not a deep copy |
+| **single-threaded** | `Rc` and `RefCell` cannot be sent to other threads; `Arc`, `Mutex` are the thread-safe ones |
+| **`RefCell<T>`** | moves the borrow check to run time |
+| **interior mutability** | changing a value through `&self`, inside something that looks immutable |
+| **`Ref`** / **`RefMut`** | the run-time shared / mutable borrows; they last until dropped |
+| **temporary** | a value dropped at the end of its statement |
+| **`Rc<RefCell<T>>`** | several owners who can all change the value |
+| **leak** | two `Rc`s pointing at each other never reach 0; `Weak` breaks the cycle |
+| **fully parenthesised** | every `Add` and `Mul` printed in brackets |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `Box::new(x)` | moves `x` to the heap |
+| `enum List { Cons(i32, Box<List>), Nil }` | a recursive type with indirection |
+| `enum Expr { Num(f64), Add(Box<Expr>, Box<Expr>), Mul(...), Neg(Box<Expr>) }` | the exercise's expression type |
+| `use std::rc::Rc; use std::cell::RefCell;` | bring the types in |
+| `Rc::new(v)`, `Rc::clone(&a)`, `Rc::strong_count(&a)` | make one; another handle; how many handles |
+| `cell.borrow()`, `cell.borrow_mut()` | shared / mutable run-time borrow |
+| `cell.try_borrow_mut()` | a `Result` instead of a panic |
+| `*other.borrow_mut() += 1` | change a shared, counted value |
+| `drop(held)` | ends a borrow early |
+| `v.borrow().clone()` | a copy of the entries |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0072]: recursive type List has infinite size` | a type contains itself without a `Box` |
+| `error[E0596]: cannot borrow data in an Rc as mutable` | `Rc` gives shared access only |
+| `RefCell already borrowed` | a run-time panic: a borrow rule was broken |
+| `Rc<...> cannot be sent between threads safely` | `Rc` used with threads; use `Arc` |
+
+---
+
 The ownership rules of the Beginner track are: every value has exactly one
 owner, and you may have many shared references or one mutable reference, all
 checked at compile time. Those rules handle most programs. This lesson is

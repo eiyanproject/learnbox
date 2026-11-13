@@ -11,6 +11,64 @@ hints:
   - "`transfer(from, to, amount)` must lock both accounts in a consistent order (by `id`) to avoid deadlock, then check the balance and move the money while holding both locks."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **shared state** | one value several threads see and change |
+| **`Arc<T>`** | atomically reference counted: `Rc` for threads |
+| **atomic operation** | one the processor guarantees cannot be interrupted halfway |
+| **clone, then move** | each thread gets its own `Arc` handle |
+| **mutex** (mutual exclusion) | a lock around a value; one thread at a time |
+| **`MutexGuard`** | acts like `&mut` to the value; dropping it unlocks |
+| **data inside the lock** | the only way to reach the value is through `lock()` |
+| **poisoned** | a thread panicked while holding the lock; `lock()` returns `Err` |
+| **race condition** | a logic bug where timing changes the result, such as check-then-act across two locks |
+| **check and change under one lock** | hold the guard for the whole operation |
+| **`RwLock`** | many readers or one writer |
+| **atomic types** | `AtomicU64`, `AtomicUsize`, `AtomicBool`: lock-free numbers and flags |
+| **`Ordering`** | how an atomic operation is ordered relative to others; `Relaxed` is enough for counters |
+| **deadlock** | two threads each waiting for a lock the other holds, forever |
+| **global lock order** | always take several locks in the same order, such as by id |
+| **cloneable handle** | a struct holding an `Arc`, so clones share the same state |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests, which hammer the account from many threads |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `use std::sync::{Arc, Mutex, RwLock};` | bring them in |
+| `let c = Arc::clone(&counter);` | another handle |
+| `*counter.lock().unwrap() += 1` | lock, change, unlock at the semicolon |
+| `let mut balance = self.balance.lock().unwrap();` | a named guard: locked until the end of the function |
+| `lock.read().unwrap()`, `lock.write().unwrap()` | an `RwLock` read / write guard |
+| `use std::sync::atomic::{AtomicU64, Ordering};` | atomics |
+| `hits.fetch_add(1, Ordering::Relaxed)`, `hits.load(Ordering::Relaxed)` | add one; read |
+| `Arc::strong_count(&a)` | how many handles exist |
+| `#[derive(Clone)] struct BankAccount { id: u32, inner: Arc<Mutex<u64>> }` | one shape for a shared account |
+| `if from.id < to.id { lock from, then to } else { lock to, then from }` | lock in id order |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0382]: borrow of moved value: counter` | moved the `Arc` itself instead of a clone |
+| `PoisonError` | locking a mutex a panicked thread held |
+| *(no error, a hang)* | a deadlock from locks taken in different orders |
+
+---
+
 Channels (lesson 2) move values between threads, so each value has one
 owner at a time. Some data does not fit that model: a bank balance that many
 threads deposit into, a counter of requests served, settings every thread

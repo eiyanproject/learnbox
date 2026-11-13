@@ -11,6 +11,67 @@ hints:
   - "`run_once<F: FnOnce() -> String>(f: F) -> String { f() }`. `compose` returns `impl Fn(i32) -> i32` with `move |x| g(f(x))`, requiring `F: Fn(i32) -> i32` and `G: Fn(i32) -> i32`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **closure** | code plus the values it captured, compiled into an anonymous struct |
+| **anonymous type** | every closure has its own unnamed type, so you accept and return them through traits |
+| **capture** | how a closure holds an outside variable: by `&`, by `&mut`, or by value |
+| **`Fn`** | only reads its captures; callable through `&self`, any number of times |
+| **`FnMut`** | changes its captures; callable through `&mut self` |
+| **`FnOnce`** | moves a capture out; callable once |
+| **trait hierarchy** | every `Fn` is `FnMut`, every `FnMut` is `FnOnce` |
+| **least you need** | accept the weakest bound that works, to accept the most closures |
+| **two `&mut` borrows** | `f(f(x))` on an `FnMut` borrows `f` twice at once; split it |
+| **`move`** | take ownership of every capture; changes how, not which trait |
+| **`impl Fn(...)`** (return) | "some closure type I am not naming"; one type only |
+| **stateful closure** | one whose captured variable lives on between calls, like a counter |
+| **callback** / **handler** | a stored closure called when something happens |
+| **event bus** | a registry of handlers per event name |
+| **`'static`** (bound) | the closure holds no borrowed references, so it can be stored |
+| **compose** | build one function from two: `g(f(x))` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo check` | shows the starter's bound errors to fix |
+| `cargo test` | compiles and runs the tests |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `fn apply_twice<F: FnMut(i32) -> i32>(mut f: F, x: i32) -> i32 { let y = f(x); f(y) }` | accepts `FnMut` |
+| `fn run_once<F: FnOnce() -> String>(f: F) -> String` | accepts `FnOnce` |
+| `fn make_counter() -> impl FnMut() -> u32 { let mut count = 0; move \|\| { count += 1; count } }` | a stateful closure |
+| `fn compose(f: impl Fn(i32) -> i32, g: impl Fn(i32) -> i32) -> impl Fn(i32) -> i32` | returns `move \|x\| g(f(x))` |
+| `struct Cache<F: Fn(u64) -> u64> { f: F }` | stores one closure type |
+| `Vec<Box<dyn Fn(&str) -> String>>` | stores different closures |
+| `handler: impl Fn(&str) -> String + 'static` | a storable handler parameter |
+| `HashMap<String, Vec<Box<dyn Fn(&str) -> String>>>` | handlers per event name |
+| `self.handlers.entry(event.to_string()).or_default().push(Box::new(handler))` | registers one |
+| `Box<dyn Fn(i32) -> i32>` | return different closures from different branches |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0594]: cannot assign to calls, as it is a captured variable in a Fn closure` | the bound asks for `Fn`; use `FnMut` |
+| `error[E0507]: cannot move out of owned, a captured variable in an Fn closure` | the bound needs `FnOnce` |
+| `error[E0499]: cannot borrow f as mutable more than once at a time` | `f(f(x))` on an `FnMut` |
+| `error[E0373]: closure may outlive the current function` | a returned closure needs `move` |
+| `error[E0310]: the parameter type ... may not live long enough` | a stored closure needs `+ 'static` |
+
+---
+
 Beginner lesson 11 introduced closures and the three traits `Fn`, `FnMut`
 and `FnOnce`. This lesson goes underneath: what a closure *is* in memory,
 why the three traits exist, how to choose the right one when you **accept**

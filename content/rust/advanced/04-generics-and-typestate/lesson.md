@@ -11,6 +11,64 @@ hints:
   - "`largest_by<T, K, F>(items: &[T], key: F) -> Option<&T> where F: Fn(&T) -> K, K: PartialOrd`: loop, keeping the best item and its key."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **`where` clause** | bounds written after the signature, for readability |
+| **associated constant** | a constant each implementing type must provide: `const SIDES: u32;` |
+| **associated function** | a trait function with no `self`, called on the type: `Km::name()` |
+| **turbofish** | `label::<Km>()`: names a type parameter the compiler cannot work out |
+| **fully qualified syntax** | `<Km as Unit>::name()`: says which trait a function comes from |
+| **marker type** | an empty struct used only as a name, such as `Km` or `Ready` |
+| **`PhantomData<T>`** | a field that acts as if it held a `T` while holding nothing |
+| **variance** | how `Id<T>` may convert between `T`s, worked out from how fields use `T` |
+| **zero-sized** | takes no memory: `size_of::<PhantomData<T>>()` is 0 |
+| **tag** | a type parameter that only marks what a value means, like `Meters<Height>` |
+| **state** | a stage an object goes through, such as empty or ready |
+| **typestate** | each state is a separate type, and methods exist only on the state where they make sense |
+| **transition** | a method that takes `self` by value and returns the struct in its new state |
+| **builder** | an object you configure step by step, then finish with a call such as `send()` |
+| **chaining** | each call returns the next value: `Request::new().url(...).header(...).send()` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests, which also read your source |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `fn f<T, K, F>(...) where F: Fn(&T) -> K, K: PartialOrd` | a `where` clause |
+| `trait Shape { const SIDES: u32; fn name() -> &'static str; }` | constant and function on the type |
+| `A::SIDES + B::SIDES` | read constants from type parameters |
+| `total_sides::<Triangle, Square>()` | a call with only type arguments |
+| `use std::marker::PhantomData;` | brings it in |
+| `struct Meters<T> { value: f64, _unit: PhantomData<T> }` | a tagged value |
+| `PhantomData` | the value of that field |
+| `impl Request<Empty> { fn url(self, u: &str) -> Request<HasUrl> }` | a transition |
+| `impl Request<HasUrl> { fn header(self, k: &str, v: &str) -> Self; fn send(self) -> String }` | methods only in that state |
+| `std::mem::size_of::<T>()` | a type's size in bytes |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0283]: type annotations needed` | a type parameter nothing mentions; use the turbofish |
+| `error[E0392]: type parameter T is never used` | add a `PhantomData<T>` field |
+| `error[E0308]: mismatched types` | an `Id<Order>` passed where an `Id<User>` was wanted |
+| `error[E0599]: no method named send found for struct Conn<Empty>` | a method called in the wrong state |
+
+---
+
 So far, types have described what data *is*: an `f64`, a `Vec<String>`. This
 lesson uses them to describe what data *means*, and what may be done with it
 right now. The goal is the most useful trick in Rust API design: turning a

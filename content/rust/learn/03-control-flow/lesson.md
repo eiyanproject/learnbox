@@ -11,6 +11,69 @@ hints:
   - "`is_prime`: numbers below 2 are not prime. Otherwise try divisors from 2 while `d * d <= n`; return `false` as soon as one divides evenly."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **control flow** | choosing which code runs and how often |
+| **expression** | code that produces a value; in Rust `if` and `loop` are expressions |
+| **ternary operator** | `c ? a : b` in other languages; Rust uses `if` instead |
+| **block** | code in `{ }`; its last expression without a semicolon is its value |
+| **branch** | one of the paths an `if` can take; all must give the same type |
+| **condition** | must be a `bool` |
+| **truthiness** | treating 0 or empty values as false; Rust has none |
+| **if/else if chain** | the first true branch runs, so order is part of the logic |
+| **`loop`** | repeats forever until `break` |
+| **`break` with a value** | leaves a `loop` and makes that value the loop's result |
+| **`while`** | repeats while a condition holds |
+| **`for`** | walks anything iterable: a range, an array, a string's characters |
+| **iterable** | something that can hand out its items one by one |
+| **range** | `a..b`: from `a` up to but not including `b`; `a..=b` includes `b` |
+| **label** | a name starting with `'` on a loop, so `break 'outer` leaves it |
+| **parameter** | immutable like a `let`; shadow it with `let mut n = n;` to change it |
+| **`&'static str`** | the type of a string literal (Learn lesson 12 explains `'static`) |
+| **turbofish** (`::<>`) | tells a generic function which type to produce: `collect::<Vec<_>>()` |
+| **`_`** (in a type) | "let the compiler work it out" |
+| **FizzBuzz** | Fizz for multiples of 3, Buzz for 5, FizzBuzz for both |
+| **Collatz steps** | halve even numbers, turn odd ones into 3n + 1, count the steps to 1 |
+| **prime** | a number greater than 1 divisible only by 1 and itself |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests |
+
+### Rust keywords and methods
+
+| Name | What it does |
+|---|---|
+| `let label = if x > 0 { "positive" } else { "not" };` | `if` producing a value |
+| `loop { ... break value; }` | a loop that hands back a value |
+| `while n > 1 { }` | a `while` loop |
+| `for i in 0..5`, `for i in 1..=5` | ranges, excluding / including the end |
+| `(1..4).rev()`, `(0..10).step_by(2)` | reversed; every second value |
+| `'outer: for ... { break 'outer; }` | a labelled loop |
+| `n % 3 == 0` | divisible by 3 |
+| `n.to_string()` | a number as an owned `String` |
+| `.collect::<Vec<_>>()` | gathers values into a vector |
+| `d * d <= n` | only try divisors up to the square root |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `expected bool, found integer` | a condition such as `if count` that is not a `bool` |
+| `if and else have incompatible types` | two branches that give different types |
+
+---
+
 Programs need to choose and to repeat. Rust's tools for both are `if`,
 `match` (lesson 7), and three loops: `loop`, `while` and `for`. What sets
 them apart from many languages is that `if` and `loop` are **expressions**:

@@ -11,6 +11,70 @@ hints:
   - "`Circle` needs `pub` on the struct, on `new`, and on each method the tests call. Keep the `radius` field private and expose `radius()`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **module** | a named container for functions, types and other modules, deciding what outside code may use |
+| **crate** | one compiled unit: a library or a program |
+| **crate root** | the file the compiler starts from: `src/lib.rs` for a library |
+| **item** | anything you can name in a module: a function, struct, enum, trait, constant or module |
+| **parent** / **child** module | the module that declares another / the one declared |
+| **inline module** | `mod name { ... }`: the body in braces |
+| **file module** | `mod name;`: the body is in `name.rs` (or the older `name/mod.rs`) |
+| **undeclared file** | a file no `mod` line declares: not compiled at all |
+| **private by default** | usable only in its own module and that module's children |
+| **visibility** | who may use an item: private, `pub(super)`, `pub(crate)`, `pub` |
+| **`pub(crate)`** | visible anywhere in this crate, not outside |
+| **reachable** | every module on the path must be reachable too, not just the item |
+| **public API** | everything marked `pub` and reachable: what users may depend on |
+| **private fields** | a `pub struct` with private fields can be named outside, not built or taken apart |
+| **invariant** | a rule that always holds, protected by private fields and a checking constructor |
+| **getter** | a method that lets others read a private field |
+| **path** | a name with its modules, joined by `::`: `crate::units::round2` |
+| **`crate`**, **`super`**, **`self`** | the crate root; the parent module; the current module |
+| **`use`** | creates a shortcut name in one module; grants no access |
+| **re-export** (`pub use`) | makes a name public at a new, shorter path |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo check` | shows which modules or items are missing or private |
+| `cargo test` | compiles and runs the tests, which use the crate from outside |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `pub mod shapes;`, `mod units;` | declare a public / a private file module |
+| `pub mod circle;` (in `shapes.rs`) | loads `src/shapes/circle.rs` |
+| `pub(crate) fn round2(x: f64) -> f64` | a crate-wide helper |
+| `pub struct Circle { radius: f64 }` | a public struct with a private field |
+| `pub fn radius(&self) -> f64` | its getter |
+| `use crate::units::round2;` | a shortcut to the helper |
+| `use std::fmt::{self, Display};` | brings in `fmt` and `Display` |
+| `pub use shapes::circle::Circle;` | the re-export in `lib.rs` |
+| `(value <= 100).then_some(Percent { value })` | `Some` if true, `None` if false |
+| `(x * 100.0).round() / 100.0` | rounds to 2 decimal places |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0583]: file not found for module shapes` | a `mod` line without its file |
+| `error[E0603]: function round2 is private` | used an item that is not visible from here |
+| `error[E0451]: field value of struct Percent is private` | built a struct with private fields from outside |
+| `cannot find ... in this scope` | a missing `use` |
+
+---
+
 Every Beginner lesson kept all its code in one `src/lib.rs`. That stops
 working at a few hundred lines: related code is hard to find, names collide,
 and every function can reach into every struct. Rust's answer is the

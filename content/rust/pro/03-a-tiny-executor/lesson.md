@@ -11,6 +11,62 @@ hints:
   - "`JoinHandle<T>`: share an `Arc<Mutex<Option<T>>>` between the spawned wrapper future (which stores the output) and the handle (whose `take()` reads it after `run()` returns)."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **executor** | runs many futures, polling whichever is ready, and sleeps only when none can move |
+| **task** | a spawned future plus what it needs to put itself back in the queue |
+| **spawn** | hand a future to the executor as a new task |
+| **ready queue** | the tasks that have been woken and are waiting to be polled |
+| **the waker is the task** | waking a task sends it back into the ready queue |
+| **`BoxFuture`** | `Pin<Box<dyn Future<Output = ()> + Send>>`: a boxed, pinned future |
+| **`Option` in the task** | `run` takes the future out to poll it; `None` means finished |
+| **stray wake-up** | a wake after the task finished; it does nothing |
+| **concurrently** | tasks make progress interleaved on one thread |
+| **task count** | spawned minus finished; `run` loops while it is above 0 |
+| **`recv_timeout`** | wait on the queue, but wake now and then to check the count |
+| **`JoinHandle<T>`** | a handle to a task's result, stored in a shared slot |
+| **yield** | return `Pending` once after waking yourself, letting other tasks run |
+| **work stealing** | idle threads taking tasks from busy ones, as `tokio` does |
+| **cancellation** | stopping a task by dropping its future |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests, which time eight concurrent delays |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `struct Task { future: Mutex<Option<BoxFuture>>, queue: Sender<Arc<Task>> }` | one task |
+| `impl Wake for Task { fn wake(self: Arc<Self>) { self.queue.send(self.clone()).ok(); } }` | the waker re-queues the task |
+| `Waker::from(Arc::clone(&task))` | the task as a waker |
+| `let mut slot = task.future.lock().unwrap(); if let Some(mut fut) = slot.take() { ... }` | take the future out to poll it |
+| `fut.as_mut().poll(&mut cx)` | poll the boxed future |
+| `*slot = Some(fut);` | put it back if still pending |
+| `Box::pin(async move { let v = future.await; *result.lock().unwrap() = Some(v); })` | wraps a future so its output is stored |
+| `rx.recv_timeout(Duration::from_millis(10))` | wait for a woken task, with a timeout |
+| `AtomicUsize`, `fetch_add`, `fetch_sub` | one way to keep the task count |
+| `Delay` | given: lesson 2's timer future |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| *(no error, too slow)* | a `run` that blocks on one task, so delays add up instead of overlapping |
+| *(no error, a hang)* | stopping only when the channel closes, which it never does |
+
+---
+
 Lesson 2's `block_on` runs **one** future, and its thread sleeps whenever
 that future is waiting. The point of async is to do better: while one task
 waits for a timer or the network, run another. An **executor** does that. It

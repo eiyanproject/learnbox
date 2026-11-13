@@ -11,6 +11,48 @@ challenge:
     xp: 1300
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **duration** | an amount of time, here written like `1h30m` |
+| **part** | a whole number followed by one unit letter |
+| **unit** | `d` 86400 seconds, `h` 3600, `m` 60, `s` 1 |
+| **leading zeros** | `007s` is still 7 seconds |
+| **repeated unit** | a unit used twice, as in `1h2h` |
+| **missing number** | a unit with no digits before it |
+| **missing unit** | the text ends in digits |
+| **left to right** | errors are checked in reading order; the first one wins |
+| **round trip** | `parse_duration(&format_duration(n))` gives back `n` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs this round's tests |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `pub fn parse_duration(text: &str) -> Result<u64, ParseError>` | text to seconds |
+| `pub fn format_duration(seconds: u64) -> String` | seconds to text |
+| `ParseError::Empty`, `MissingNumber`, `UnknownUnit(char)`, `Repeated(char)`, `MissingUnit` | the given error type |
+| `for c in text.chars()` | each character in turn |
+| `c.to_digit(10)` | a digit's value, or `None` |
+| `n = n * 10 + d as u64` | build the number as digits arrive |
+| `HashSet<char>` | the units already seen |
+| `seconds / 86400`, `seconds % 86400` | whole days; what is left |
+| `format!("{d}d")`, `s.push_str(...)` | build the output text |
+
+---
+
 The scheduler's config file says `timeout = 1h30m`. Something has to read
 that, and something has to print it back in the logs.
 

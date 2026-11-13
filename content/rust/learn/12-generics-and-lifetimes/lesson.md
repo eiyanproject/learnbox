@@ -11,6 +11,63 @@ hints:
   - "`Excerpt::first_sentence(&self) -> &'a str`: find the first `'.'` with `self.text.find('.')` and slice up to and including it; if there is none, return the whole text."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **generics** | code written once with a placeholder type, used with many types |
+| **type parameter** | the placeholder, conventionally `T` |
+| **`impl<T> Pair<T>`** | "for any type `T`, here are the methods of `Pair<T>`" |
+| **bounded impl** | `impl<T: PartialOrd + Copy> Pair<T>`: methods only for types with those abilities |
+| **zero cost** | generic code is specialised per type, so it is as fast as hand-written code |
+| **lifetime** | the stretch of the program during which a reference's target is guaranteed to exist |
+| **lifetime parameter** | a name starting with `'`, such as `'a`, declared like a type parameter |
+| **annotation** | `&'a str`: describes a relationship; changes nothing about how long values live |
+| **shorter-lived input** | `longest` promises only as long as the shorter of its two inputs |
+| **lifetime elision** | three rules that fill in obvious lifetimes so you rarely write them |
+| **struct holding a reference** | `struct Excerpt<'a> { part: &'a str }`: must not outlive what it borrows |
+| **`'static`** | valid for the whole run; string literals are `&'static str` |
+| **stack** (data structure) | a last-in, first-out pile |
+| **last in, first out** | the most recently pushed item is the first popped |
+| **same slice** | the very same place in memory, not merely equal text |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo check` | shows the missing-lifetime error to fix |
+| `cargo test` | compiles and runs the tests |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `struct Pair<T> { a: T, b: T }` | a generic struct |
+| `Pair::new(1, 2)` | `T` is worked out as `i32` |
+| `fn longest<'a>(a: &'a str, b: &'a str) -> &'a str` | the annotated signature |
+| `struct Stack<T> { items: Vec<T> }` | a generic stack |
+| `self.items.push(x)`, `self.items.pop()`, `self.items.last()` | push; pop (an `Option`); peek (an `Option<&T>`) |
+| `self.items.len()`, `self.items.is_empty()` | size; emptiness |
+| `impl<'a> Excerpt<'a> { fn first_sentence(&self) -> &'a str }` | a method returning a borrow of the original text |
+| `text.find('.')` | the byte position of the first full stop, or `None` |
+| `&text[..=i]` | the text up to and including position `i` |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0106]: missing lifetime specifier` | a returned reference whose source the signature does not say |
+| `error[E0597]: inner does not live long enough` | a borrowed value dropped while still in use |
+| `the trait bound Vec<i32>: Copy is not satisfied` | a method from a bounded impl on a type without the bound |
+
+---
+
 This lesson has two parts that look alike on the page, because both are
 written in `<...>` after a name, but answer different questions:
 

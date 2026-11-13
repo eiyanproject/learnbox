@@ -11,6 +11,69 @@ hints:
   - "`append_log(path, line)`: `OpenOptions::new().create(true).append(true).open(path)?` and `writeln!`. `copy_upper`: read with `BufReader`, write with `BufWriter`, and `flush` at the end."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **I/O** | input and output: files, the terminal, network connections, memory buffers |
+| **`io::Result<T>`** | `Result<T, io::Error>`: nearly every I/O call can fail |
+| **system call** | a request to the operating system; slow, so fewer and larger is better |
+| **`Read`** / **`Write`** | the traits for reading bytes / writing bytes |
+| **`BufRead`** | a buffered reader that can read lines |
+| **reader** / **writer** | anything implementing `Read` / `Write`: a file, `stdin`, a `&[u8]`, a `Vec<u8>` |
+| **generic over readers** | functions written against the traits, so tests can pass bytes instead of files |
+| **byte string** | `b"hello\n"`: a `&[u8; N]` literal |
+| **buffering** | reading or writing a large block at once (8 KiB by default) |
+| **flush** | send a writer's buffered bytes out now; call it so errors are reported |
+| **streaming** | processing input a piece at a time, so memory stays constant |
+| **truncate** | `File::create` empties an existing file |
+| **append** | add to the end of a file |
+| **`io::ErrorKind`** | why an operation failed: `NotFound`, `PermissionDenied`, `InvalidData`... |
+| **`Path`** / **`PathBuf`** | a borrowed / an owned path; not always valid UTF-8 |
+| **CSV** | comma-separated values, here with a header line |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `use std::io::{self, BufRead, BufReader, BufWriter, Read, Write};` | brings in `io` and the traits |
+| `use std::fs::{self, File, OpenOptions};` | files |
+| `fn count<R: BufRead>(reader: R)`, `reader.lines()` | any buffered reader; its lines as `io::Result<String>` |
+| `"a\nbbb\n".as_bytes()` | bytes in memory used as a reader |
+| `fn write_report<W: Write>(mut out: W, ...)` | any writer |
+| `writeln!(out, "{:<10}{:>5}", name, value)?` | left-align in 10, right-align in 5 |
+| `out.flush()?` | writes out what is buffered |
+| `BufReader::new(File::open(path)?)`, `BufWriter::new(File::create(path)?)` | buffered file reader / writer |
+| `OpenOptions::new().append(true).create(true).open(path)?` | open for appending, creating if needed |
+| `fs::read_to_string(path)?` | a whole small file |
+| `err.kind() == io::ErrorKind::NotFound` | checks why it failed |
+| `io::Error::new(io::ErrorKind::InvalidData, format!("bad row {n}"))` | your own I/O error |
+| `Path::new("data").join("scores.csv")`, `p.extension()`, `p.display()` | build, inspect and print paths |
+| `path: impl AsRef<Path>` | accepts any kind of path |
+| `line.to_uppercase()`, `line.split(',').nth(column)` | upper case; one CSV column |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0599]: no method named lines found ... trait BufRead ... is not in scope` | import the trait |
+| `cannot write into Vec<_>` | `write!` without `use std::io::Write` |
+| `NotFound`, `InvalidData` | a missing file; malformed contents |
+
+---
+
 A program that cannot read input or save output is not much use. This
 lesson covers **I/O** (input and output) in Rust: files, but also anything
 else that bytes flow in and out of, such as the terminal, network

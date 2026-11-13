@@ -11,6 +11,68 @@ hints:
   - "The waker needs a `RawWakerVTable` with clone/wake/wake_by_ref/drop functions over an `Arc<Thread>`, or build it from `std::task::Wake` with `Arc<ThreadWaker>`, which is much shorter."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **async** | many tasks share a few threads; a task that would wait steps aside |
+| **task** | one unit of async work, driven by an executor |
+| **future** | a value representing work that will finish later with an `Output` |
+| **`Future` trait** | the one method `poll`; a future does nothing until polled |
+| **poll** | ask a future to make progress: `Poll::Ready(v)` or `Poll::Pending` |
+| **executor** (runtime) | the code that polls futures; Rust's standard library has none, `tokio` is one |
+| **state machine** | what the compiler turns an `async fn` into |
+| **context** (`cx`) | passed to `poll`; holds the waker |
+| **waker** | a handle a future uses to say "poll me again" |
+| **the contract** | if you return `Pending`, make sure the waker is called later, or the task waits forever |
+| **`Pin`** | a promise that a value will not be moved, which makes self-references inside futures safe |
+| **self-reference** | a value holding a reference into itself |
+| **`Unpin`** | "fine to move even when pinned"; almost every type is |
+| **`Wake` trait** | the safe way to build a waker from an `Arc` |
+| **park** / **unpark** | put a thread to sleep / wake it |
+| **spurious wake-up** | `park` returning without an `unpark`; harmless when you poll again |
+| **`block_on`** | run one future to completion on the current thread |
+| **event loop** | a runtime's way to wait on many sockets at once, with `epoll` or `io_uring` |
+| **`.await`** | poll the inner future; if `Pending`, suspend the outer one |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests, which time the delay and check your source mentions `park` |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `use std::future::Future; use std::pin::Pin; use std::task::{Context, Poll, Wake, Waker};` | the async building blocks |
+| `fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output>` | the method to implement |
+| `self.get_mut()` | an `&mut Self` from the pin, for `Unpin` types |
+| `self.value.take()` | moves the value out of an `Option`, leaving `None` |
+| `cx.waker().clone()`, `cx.waker().wake_by_ref()` | keep the waker; wake now |
+| `impl Wake for ThreadWaker { fn wake(self: Arc<Self>) { self.thread.unpark(); } }` | a waker that unparks a thread |
+| `Waker::from(Arc::new(...))`, `Context::from_waker(&waker)` | build the waker and context |
+| `std::pin::pin!(future)` | pins a future on the stack |
+| `fut.as_mut().poll(&mut cx)` | poll the pinned future again |
+| `thread::park()`, `thread::current()` | sleep until unparked; a handle to this thread |
+| `Instant::now()`, `Instant::now() >= deadline` | the time now; has the deadline passed |
+| `thread::sleep(dur)` | the timer thread waits |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| *(no error, a hang)* | a future returned `Pending` without arranging a wake |
+| `the trait Unpin is not implemented` | `get_mut` on a type that is not `Unpin`; add the bound `T: Unpin` |
+
+---
+
 Threads (Advanced track) let a program wait for several things at once, but
 each thread costs memory and switching time, and a server handling ten
 thousand connections cannot afford ten thousand threads that mostly sit

@@ -11,6 +11,61 @@ hints:
   - "`find(root, name)`: return `Some(Rc::clone(root))` on a match, else recurse into each child. `depth_first_names` is a recursive pre-order walk."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **back-pointer** | a link from a child to its parent, or any pointer back up a structure |
+| **reference cycle** | two values holding `Rc`s to each other, so neither count reaches 0 |
+| **memory leak** | memory that is never freed although nothing can reach it; safe, but wasteful |
+| **`Drop`** | the trait whose `drop` method runs when a value is freed |
+| **`Weak<T>`** | a non-owning handle to an `Rc`'s value; does not keep it alive |
+| **downgrade** | make a `Weak` from an `Rc` |
+| **upgrade** | turn a `Weak` back into an `Rc` if the value is still alive: `Option<Rc<T>>` |
+| **strong count** / **weak count** | how many `Rc` / `Weak` handles exist; the value is freed at strong 0 |
+| **ownership flows one way** | parents own children with `Rc`; children point back with `Weak` |
+| **tree** | nodes with children, one root, no cycles |
+| **root** | the node with no parent |
+| **pre-order** | visit a node, then each child's whole subtree, in turn |
+| **depth-first search** | go as deep as possible down one branch before the next |
+| **arena** | all nodes in one `Vec`, linked by index instead of pointer |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests, which check the counts directly |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `use std::rc::{Rc, Weak}; use std::cell::RefCell;` | bring the types in |
+| `struct Node { name: String, parent: RefCell<Weak<Node>>, children: RefCell<Vec<Rc<Node>>> }` | the tree node |
+| `Weak::new()` | a `Weak` pointing at nothing: "no parent yet" |
+| `Rc::downgrade(&parent)` | a weak handle to the parent |
+| `*child.parent.borrow_mut() = Rc::downgrade(parent)` | sets the parent link |
+| `parent.children.borrow_mut().push(Rc::clone(child))` | adds the child link |
+| `node.parent.borrow().upgrade()` | the parent, or `None` |
+| `Rc::strong_count(&root)`, `Rc::weak_count(&root)` | read the counts |
+| `names.reverse(); names.join("/")` | build a path from root to node |
+| `impl Drop for Node { fn drop(&mut self) { ... } }` | runs code when a node is freed |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| *(no error at all)* | a cycle of `Rc`s leaks silently; the compiler cannot see it |
+| `RefCell already borrowed` | a panic from holding a borrow while borrowing mutably |
+
+---
+
 `Rc` lets several owners share a value, and `RefCell` lets them change it
 (Intermediate lesson 5). That covers most shared data structures, until one
 of them needs to point **back**: a folder that knows its parent folder, a

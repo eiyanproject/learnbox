@@ -11,6 +11,61 @@ hints:
   - "`longest_field` compares `str::len` and returns the winning slice; `as_ptr` in the tests proves it points into the original text."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **zero-copy parsing** | returning slices into the input instead of copying fields into new `String`s |
+| **borrowed struct** | a struct whose fields are `&'a str`, carrying the input's lifetime |
+| **`'_`** | the elided lifetime: "borrowed from the input" |
+| **`as_ptr()`** | the address a slice starts at; tests compare it with the input's |
+| **fat pointer** | a `&str`: a pointer and a length, 16 bytes whatever the text's size |
+| **remainder** | the unparsed rest of the line, still a slice |
+| **target** | here, the part of a log line before `": "` |
+| **query string** | `a=1&b=hello+world`: key-value pairs joined with `&` |
+| **percent-encoding** | `%XX` for a byte with hex value XX; `+` for a space |
+| **`Cow<'a, str>`** | borrowed when nothing changes, owned when decoding was needed |
+| **outlive** | the input must live longer than everything parsed from it |
+| **`into_owned()`** | turn a `Cow` into a `String` when you must keep it |
+| **CSV** | comma-separated values with a header row |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests, which check slice addresses |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `struct LogEntry<'a> { ts: &'a str, level: &'a str, target: &'a str, message: &'a str }` | a borrowed struct |
+| `fn parse_line(line: &str) -> Option<LogEntry<'_>>` | borrows from `line` |
+| `let (ts, rest) = line.split_once(' ')?;` | take a field off the front |
+| `s.split(sep)`, `s.lines()`, `s.trim()`, `s.split_once(": ")` | slice-returning helpers |
+| `target.contains(' ')` | rejects a target with a space |
+| `text.lines().filter_map(parse_line).filter(\|e\| e.level == "ERROR")` | valid errors only |
+| `query.split('&')`, `pair.split_once('=')` | query pairs |
+| `u8::from_str_radix(&hex, 16)` | decode `%XX` |
+| `fn rows(&self) -> impl Iterator<Item = Vec<&'a str>> + '_` | an iterator borrowing from the CSV text |
+| `headers.iter().position(\|h\| *h == name)` | the column index |
+| `.max_by_key(\|f\| f.len())` | the longest field |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `borrowed value does not live long enough` | a parsed slice used after its input was dropped; own the data |
+| `assertion failed ... as_ptr` | a field was copied instead of sliced |
+
+---
+
 A typical parser reads some text and builds a struct with a `String` for
 every field: copy the timestamp, copy the level, copy the message. Each copy
 is a heap allocation (lesson 5), and for a log processor reading millions of

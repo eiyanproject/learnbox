@@ -11,6 +11,63 @@ hints:
   - "`pick_first<'a, 'b>(a: &'a str, _b: &'b str) -> &'a str`: two lifetime parameters say the result is tied only to `a`. `Registry::register(&mut self, name: &'static str)` requires names that live forever, like string literals."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **lifetime annotation** | describes which borrowed input a reference came from; changes nothing at run time |
+| **elision rules** | 1: each reference parameter gets a lifetime; 2: one input lifetime goes to every output; 3: `&self`'s lifetime goes to every output |
+| **when rule 3 is wrong** | a method returning data borrowed from the input the struct holds, not from the struct |
+| **borrows the parser** | an elided return tied to `&self`, so the struct cannot change while it lives |
+| **borrowing iterator** | an iterator handing out pieces of borrowed data |
+| **`type Item = &'a str`** | items tied to the text, not to the iterator's `&mut self` |
+| **several lifetimes** | `'a` and `'b`, so each output says exactly which input it borrows from |
+| **signature as promise** | the compiler checks callers against the signature, never against the body |
+| **`'static` reference** | can never dangle: literals, constants, leaked memory |
+| **`T: 'static` bound** | `T` holds no references that could expire; every owned type meets it |
+| **token** | a run of non-whitespace characters |
+| **byte index** | a position in a string in bytes; step by whole characters |
+| **`as_ptr`** | the address a slice starts at, to check it points into the original |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo check` | shows the starter's lifetime error to fix |
+| `cargo test` | compiles and runs the tests |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `struct Parser<'a> { input: &'a str }` | a struct that borrows |
+| `fn rest(&self) -> &str` vs `fn rest2(&self) -> &'a str` | tied to the parser / to the input |
+| `struct Tokenizer<'a> { input: &'a str, pos: usize }` | the exercise's iterator |
+| `impl<'a> Iterator for Tokenizer<'a> { type Item = &'a str; fn next(&mut self) -> Option<&'a str> }` | a borrowing iterator |
+| `s.find(char::is_whitespace)`, `c.is_whitespace()` | the next whitespace; is it whitespace |
+| `s.split_at(i)` | cuts a `&str` in two at a byte index |
+| `text.lines()` | the lines of a text |
+| `fn pick_first<'a, 'b>(a: &'a str, _b: &'b str) -> &'a str` | the result tied only to `a` |
+| `fn register(&mut self, name: &'static str)` | accepts only text that lives for the whole run |
+| `let mut v = self.names.clone(); v.sort();` | sorts a copy |
+| `Box::leak`, `std::thread::spawn` | make a `'static` reference; needs `'static` closures |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0502]: cannot borrow p as mutable because it is also borrowed as immutable` | a result tied to `&self` by rule 3 |
+| `error[E0597]: temporary does not live long enough` | a signature that ties the result to an input it does not use |
+| `error[E0597]: owned does not live long enough` | borrowed text passed where `&'static str` is required |
+
+---
+
 Beginner lesson 12 introduced lifetime parameters with one example: a
 function returning one of two borrowed strings. That covers the idea, but
 in real code lifetimes show up in a few more shapes: in structs that borrow,

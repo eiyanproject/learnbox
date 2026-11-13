@@ -11,6 +11,66 @@ hints:
   - "`describe(cmd: &Command)`: bind fields in the pattern, `Command::Move { x, y } => format!(\"move to {x},{y}\")`, `Command::Say(text) => format!(\"say {text}\")`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **enum** (enumeration) | an "or" type: a value is exactly one of a fixed list of variants |
+| **variant** | one of an enum's possibilities, named `Direction::East` |
+| **variant data** | what a variant carries: nothing, a tuple of values, or named fields |
+| **`match`** | compares a value with patterns, top to bottom, and runs the first that fits |
+| **pattern** | the shape a value is tested against: a variant, a number, a range, `_` |
+| **arm** | one `pattern => expression` pair; arms are separated by commas |
+| **exhaustive** | covering every possible value; a `match` must be |
+| **binding** | a pattern giving names to the data inside: `Message::Move { x, y }` |
+| **matching on a reference** | gives references to the fields, so nothing is moved out |
+| **wildcard** (`_`) | matches anything; usually the last arm |
+| **or-pattern** (`\|`) | `1 \| 2 \| 3`: any of these |
+| **range pattern** | `4..=9`: from 4 to 9 inclusive |
+| **guard** | `x if x < 0`: an extra condition on an arm |
+| **unreachable pattern** | an arm that can never run because an earlier one catches everything |
+| **`if let`** | runs a block only if a value fits one pattern; not exhaustive |
+| **hexadecimal** | base 16; `{r:02x}` prints two hex digits with a leading zero |
+| **π** | the circle constant, `std::f64::consts::PI` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `enum Direction { North, East, South, West }` | an enum with four variants |
+| `enum Message { Quit, Write(String), Move { x: i32, y: i32 } }` | variants carrying data |
+| `match d { Direction::North => 0, ... }` | a match expression |
+| `Message::Write(text) => ...` | binds `text` to the variant's data |
+| `x if x < 0 => "negative"` | an arm with a guard |
+| `_ => "lots"` | the catch-all arm |
+| `if let Message::Write(text) = &m { ... } else { ... }` | handle one variant |
+| `impl Direction { fn ...(&self) }` | methods on an enum |
+| `matches!(value, pattern)` | `true` if the value fits the pattern |
+| `format!("move to {x},{y}")` | builds the description |
+| `radius * radius`, `r.powi(2)` | squaring |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `error[E0004]: non-exhaustive patterns: Direction::West not covered` | a `match` misses a variant |
+| `patterns i32::MIN..=-1_i32 ... not covered` | a number `match` without a final `_` |
+| `warning: unreachable pattern` | an arm after one that already catches everything |
+
+---
+
 A struct says "a user has a name **and** an age **and** an active flag". Many
 things are the other way round: a direction is north **or** east **or** south
 **or** west; a network message is a quit **or** a text **or** a move. An

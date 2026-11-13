@@ -11,6 +11,65 @@ hints:
   - "`pipeline`: stage 1 thread sends numbers, stage 2 thread receives, squares and forwards, and the main thread collects. Each stage owns its sender and drops it when done."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **share memory** vs **send values** | threads take turns with one value / each value has one owner, passed along |
+| **channel** | a queue between threads |
+| **sender** (`tx`) / **receiver** (`rx`) | the end that puts values in / takes them out, in order |
+| **mpsc** | multi-producer, single-consumer: many senders, one receiver |
+| **block** | wait until something happens, as `recv` waits for a message |
+| **closed channel** | every sender dropped and the queue empty: `recv` returns `Err` |
+| **hang** | a program waiting forever, often because a sender was not dropped |
+| **bounded channel** | `sync_channel(n)`: room for `n` messages, `send` waits when full |
+| **back-pressure** | slowing a fast producer to the consumer's speed |
+| **worker pool** | a fixed set of threads fed jobs through a channel |
+| **job** | a boxed closure: `Box<dyn FnOnce() + Send + 'static>` |
+| **lock guard** | the value `lock()` returns; dropping it releases the lock |
+| **temporary in `while let`** | lives until the end of the loop body, holding the lock too long |
+| **graceful shutdown** | drop the sender, then join every worker, so queued jobs still run |
+| **pipeline** | stages, each a thread, linked by channels like an assembly line |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `cargo test` | compiles and runs the tests, which time the pool |
+
+### Rust names
+
+| Name | What it does |
+|---|---|
+| `use std::sync::mpsc;` | brings in channels |
+| `let (tx, rx) = mpsc::channel();` | a new channel |
+| `let tx2 = tx.clone();` | another sender |
+| `tx.send(v)`, `rx.recv()` | send; wait for the next message |
+| `for msg in rx { }` | receive until the channel closes |
+| `drop(tx)` | drops the original sender so the loop can end |
+| `mpsc::sync_channel(n)`, `tx.try_send(v)` | a bounded channel; send without waiting |
+| `type Job = Box<dyn FnOnce() + Send + 'static>;` | the job type |
+| `Arc<Mutex<mpsc::Receiver<Job>>>` | a receiver shared by the workers |
+| `let job = rx.lock().unwrap().recv();` | receive, releasing the lock at the semicolon |
+| `fn shutdown(self)` | takes the pool by value, so it cannot be used afterwards |
+| `assert!(size > 0)` | panics for a pool of size 0 |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| *(no error, a hang)* | a receiving loop waiting for a sender that was never dropped |
+| `jobs ran one at a time` | the exercise's test message when the lock is held while running jobs |
+| `SendError` | `send` after the receiver was dropped |
+
+---
+
 Threads that work alone need no coordination. The hard part is getting results and
 instructions from one thread to another. There are two broad approaches:
 let threads **share** some memory and take turns with it (lesson 3), or let
