@@ -11,6 +11,48 @@ challenge:
     xp: 900
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **file server** | a program that hands out files on request |
+| **base folder** | the one folder whose files may be served, such as `/srv/files` |
+| **requested path** | what the user typed to ask for a file |
+| **path traversal** | using `..` to climb out of the base folder (Web lesson 5) |
+| **tidy** (normalise) a path | remove `.`, `..` and doubled slashes: `a/../b.txt` becomes `b.txt` |
+| **absolute path** | one starting with `/`, which ignores the base folder |
+| **prefix trap** | `/srv/files-private` starts with the same letters as `/srv/files`, yet is outside it |
+| **backslash** (`\`) | the Windows path separator; some systems treat it as `/`, so it can slip past a check |
+| **NUL character** (`\x00`) | a zero byte; lower-level code may stop reading at it, cutting the path short |
+| **`Forbidden`** | the exception in `files.py` to raise for a refused request |
+| **POSIX paths** | paths with forward slashes, as on Linux |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python -i files.py` | runs your file, then leaves Python open so you can try `resolve(...)` |
+
+### Python names
+
+| Name | What it does |
+|---|---|
+| `import posixpath` | path functions that always use `/`, on every machine |
+| `posixpath.join(base, requested)` | joins the two with `/` (an absolute `requested` replaces `base`) |
+| `posixpath.normpath(path)` | the tidied path |
+| `requested.startswith("/")` | the request is absolute |
+| `"\\" in requested`, `"\x00" in requested` | the request contains a backslash; a NUL |
+| `full.startswith(base + "/")` | the tidied path is inside the base folder, not merely starting with the same letters |
+| `raise Forbidden(...)` | refuses the request |
+
+---
+
 A small file server hands out documents from one folder. The review found
 that `resolve` trusts whatever the user asks for, and the fix is due before
 the next deploy.

@@ -12,6 +12,52 @@ challenge:
     xp: 1800
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **boss round** | the longest arena round, combining several lessons |
+| **plain-text password** | a password stored exactly as typed; anyone who reads the store has it |
+| **salt** | a random value, different per user, mixed in before hashing |
+| **slow hash** (KDF) | a hash made slow on purpose, here PBKDF2 with 100,000 iterations (Foundations lesson 3) |
+| **record** | what is stored per user: the salt and the hash |
+| **weak password** | here, shorter than 10 characters |
+| **user enumeration** | finding out which user names exist, from different error messages |
+| **generic error** | the same message, `"invalid credentials"`, whatever was wrong |
+| **constant-time comparison** | one that takes the same time however much matches |
+| **lockout** | refusing every login for an account after too many failures in a row |
+| **failure counter** | how many failed logins in a row an account has had |
+| **session token** | the random value a successful login returns; it stands for the user |
+| **unpredictable** | made by `secrets`, so nobody can guess another user's token |
+| **`AuthError`**, **`WeakPassword`**, **`LockedOut`** | the exceptions already defined at the top of `auth.py` |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python -i auth.py` | runs your file, then leaves Python open so you can try the `Accounts` class |
+
+### Python names
+
+| Name | What it does |
+|---|---|
+| `class Accounts:` | the class to harden; keep its method names |
+| `self.users[name]` | the stored record for one user |
+| `secrets.token_bytes(16)` | a random 16-byte salt |
+| `hashlib.pbkdf2_hmac("sha256", password.encode(), salt, 100_000)` | the slow, salted hash |
+| `hmac.compare_digest(a, b)` | compares the hashes in constant time |
+| `secrets.token_hex(16)` | a new, unguessable session token |
+| `raise AuthError("invalid credentials")` | the one message for every failed login |
+| `self.sessions.pop(token, None)` | removes a session, doing nothing if it is not there |
+
+---
+
 `auth.py` works. It also stores passwords as they were typed, tells an
 attacker which user names exist, lets them guess for ever, and hands out
 tokens anyone could predict. It ships tonight unless you fix it.
