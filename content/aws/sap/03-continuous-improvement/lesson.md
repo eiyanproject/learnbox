@@ -5,39 +5,80 @@ order: 3
 kind: quiz
 ---
 
-**Weight: 25% of the scored questions.** The question describes something
-already in production and a problem with it; look for the smallest change
-that fixes the stated problem without breaking the other constraints.
+In this domain the system is already in production, and something about
+it is not good enough: too slow, too fragile, too expensive, not secure
+enough, too much manual work. Look for the **smallest change** that fixes
+the stated problem without breaking the other constraints, often "no
+downtime" or "minimal changes to the application". The method for reading
+questions is on the Domain 1 page.
+
+**Weight: 25% of the scored questions.**
 
 ## Operational excellence
 
-- Observability: CloudWatch metrics, logs, alarms, Contributor Insights,
-  X-Ray traces, Synthetics canaries.
-- Automation: Systems Manager (Patch Manager, Automation runbooks,
-  State Manager), EventBridge-driven remediation, Config rules with
-  automatic remediation.
-- Safe changes: CloudFormation change sets, drift detection, canaries and
-  automatic rollback.
+*Practised in Operations lessons 1-3.*
+
+- **Observability**: CloudWatch metrics, logs and alarms;
+  **Contributor Insights** (the top contributors in logs: which IPs, which
+  keys); **X-Ray** traces; **CloudWatch Synthetics canaries**, scripts that
+  test an endpoint or user journey every few minutes, so you hear about a
+  broken login before customers do.
+- **Automation** instead of manual steps: Systems Manager (**Patch
+  Manager**, **Automation** runbooks, **State Manager**), EventBridge-driven
+  remediation, **Config rules with automatic remediation**.
+- **Safe changes**: CloudFormation **change sets** and **drift detection**;
+  canary deployments with automatic rollback.
 
 ## Security improvements
 
-- Remove long-lived keys (roles, IAM Roles Anywhere, Identity Center),
-  rotate secrets, encrypt existing data (S3 Batch Operations, new encrypted
-  RDS from an encrypted snapshot copy), GuardDuty, Inspector, Macie,
-  Security Hub controls.
+*Practised in Foundations lessons 4-8, Security lessons 1-2.*
+
+- **Remove long-lived keys**: roles for AWS workloads, **IAM Roles
+  Anywhere** for servers **outside** AWS (they get temporary credentials
+  using X.509 certificates), Identity Center for people.
+- **Rotate secrets** with Secrets Manager.
+- **Encrypt existing data**: default encryption only affects **new**
+  objects, so existing S3 objects need **S3 Batch Operations** to copy them
+  in place; an unencrypted RDS database cannot be encrypted in place, so
+  **copy a snapshot with encryption on and restore** a new instance from it.
+- Turn on **GuardDuty**, **Inspector**, **Macie**, and **Security Hub**
+  controls.
 
 ## Performance and reliability
 
-- Fix the bottleneck the metrics show: caching (CloudFront, ElastiCache,
-  DAX), read replicas and RDS Proxy, storage types (gp3/io2), placement,
-  queues to absorb spikes, Multi-AZ and Auto Scaling health checks.
+- Fix the **bottleneck the metrics show**, not a guess:
+
+  | Metric shows | Fix |
+  |---|---|
+  | the same reads hit the database | caching: CloudFront, ElastiCache, DAX |
+  | read load high, writes fine | read replicas |
+  | connection count spikes (Lambda) | RDS Proxy |
+  | volume IOPS or throughput at its limit | gp3 with more IOPS, or io2 |
+  | spikes overload a backend | an SQS queue to absorb them |
+  | an AZ failure took it down | Multi-AZ, Auto Scaling across AZs |
+  | crashed apps stay in service | ELB health checks on the Auto Scaling group |
 
 ## Cost
 
-- Right-size with **Compute Optimizer**, buy **Savings Plans** for steady
-  baselines, use Spot for interruptible work, Graviton, storage lifecycle,
-  delete idle resources (Trusted Advisor, Cost Optimization Hub), and cut
-  data transfer (endpoints, same-AZ traffic, CloudFront).
+- **Right-size** with **Compute Optimizer**; buy **Savings Plans** for the
+  steady baseline that remains; **Spot** for interruptible work;
+  **Graviton**; **storage lifecycle** rules; delete idle resources
+  (**Trusted Advisor**, **Cost Optimization Hub**); cut **data transfer**
+  (endpoints, same-AZ traffic, CloudFront).
+
+| In a question | Answer |
+|---|---|
+| "on-premises servers use access keys to call AWS" | IAM Roles Anywhere |
+| "encrypt millions of existing S3 objects" | S3 Batch Operations copy with encryption |
+| "encrypt an existing RDS database" | encrypted snapshot copy, restore, switch over |
+| "detect a broken checkout flow before users do" | CloudWatch Synthetics canary |
+| "high NAT costs for S3 traffic" | an S3 gateway endpoint |
+
+## Traps
+
+- "Rebuild it as microservices" is rarely the smallest change.
+- Default encryption does not encrypt objects already stored.
+- Commit to Savings Plans **after** right-sizing, not before.
 
 Source: AWS Certified Solutions Architect - Professional (SAP-C02) exam
 guide, Content Domain 3; AWS service documentation.

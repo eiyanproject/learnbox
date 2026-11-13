@@ -5,26 +5,115 @@ order: 1
 kind: quiz
 ---
 
+This page reviews the first domain of the **AWS Certified CloudOps
+Engineer - Associate** exam (SOA-C03, formerly SysOps Administrator),
+followed by practice questions. This exam is about **running** systems:
+seeing what they do, being told when something goes wrong, fixing it,
+ideally automatically, and keeping them fast. Each section names the
+hands-on lessons where you used what it describes.
+
 **Weight: 22% of the scored questions.**
 
-- **CloudWatch agent**: memory, disk and process metrics and log files from
-  EC2 and on-premises servers (the hypervisor cannot see inside the guest).
-  **Container Insights** for ECS and EKS.
-- **Alarms**: thresholds over evaluation periods; actions to SNS, Auto
-  Scaling, EC2 (stop, terminate, reboot, **recover**), Systems Manager.
-  **Composite alarms** combine alarms with AND/OR to cut noise.
-- **Dashboards** can show metrics from several accounts and Regions.
-- **Logs**: retention, metric filters, **subscription filters** that stream to
-  Lambda, Firehose or OpenSearch, Logs Insights for queries.
-- **EventBridge** routes events (including CloudTrail API calls, Config
-  changes, GuardDuty findings, scheduled rules) to targets. A Lambda target
-  needs a resource-based permission for `events.amazonaws.com`.
-- **Systems Manager**: **Automation runbooks** (AWS-provided and your own),
-  **Run Command**, **Patch Manager** with maintenance windows.
-- Performance: **gp3** (IOPS and throughput independent of size) over gp2
-  burst credits; **RDS Performance Insights** for the top SQL and waits;
-  **RDS Proxy** for connection storms; **EFS** throughput modes and lifecycle;
-  **placement groups**; S3 multipart upload and Transfer Acceleration.
+## How a question is built
+
+As in the other associate exams: a short story, requirements, and a
+**qualifier** at the end. In this exam the qualifiers are usually "with the
+LEAST operational overhead", "MOST efficient" or "automatically". So
+prefer the **managed, automated** option: an alarm action over a person
+watching a dashboard, a Systems Manager Automation runbook over a script on
+an instance, an EventBridge rule over polling.
+
+## Metrics and logs
+
+*Practised in Operations lessons 1-2.*
+
+- EC2's built-in metrics come from the **hypervisor**: CPU, network, disk
+  operations on instance store, status checks. It **cannot see inside the
+  guest**, so **memory**, **disk space** and **processes** need the
+  **CloudWatch agent** on the instance (it also sends log files, from EC2
+  and on-premises servers). **Container Insights** does the same for ECS and
+  EKS.
+- **Alarms** compare a metric to a threshold over **evaluation periods**
+  ("3 of the last 5 minutes"), with three states (`OK`, `ALARM`,
+  `INSUFFICIENT_DATA`). Their **actions**:
+
+  | Action | For |
+  |---|---|
+  | SNS | notify people or systems |
+  | Auto Scaling | add or remove capacity |
+  | EC2: stop, terminate, reboot, **recover** | recover moves an impaired instance to new hardware, keeping its ID, IPs and EBS volumes (on `StatusCheckFailed_System`) |
+  | Systems Manager | run an Automation runbook or open an OpsItem |
+
+  **Composite alarms** combine alarms with AND and OR, so a page fires only
+  when several things are wrong together: less noise.
+- **Dashboards** can show metrics from several accounts and Regions on one
+  screen.
+- **Logs**: set **retention** (the default is to keep for ever, and pay for
+  ever); **metric filters** turn patterns into metrics (new events only);
+  **subscription filters** stream log events to Lambda, Firehose or
+  OpenSearch as they arrive; **Logs Insights** queries logs with a small
+  query language.
+
+## Reacting automatically
+
+*Practised in Serverless lesson 4, Operations lesson 2.*
+
+- **EventBridge** routes **events** to targets by rule: AWS service events
+  (an instance stopped, a GuardDuty finding, a Config compliance change),
+  **CloudTrail API calls** (someone called `AuthorizeSecurityGroupIngress`),
+  and **schedules**. ❗ A Lambda target needs a **resource-based
+  permission** allowing `events.amazonaws.com` to invoke it; the console
+  adds it, the CLI does not.
+- **Systems Manager** does the routine work on fleets:
+
+  | Feature | Does |
+  |---|---|
+  | **Automation** runbooks | multi-step operational tasks: AWS-provided (`AWS-RestartEC2Instance`, `AWS-StopEC2Instance`...) or your own |
+  | **Run Command** | runs a command or script across many instances at once, with no SSH |
+  | **Patch Manager** | patches instances by **patch baseline**, in **maintenance windows** |
+
+  Typical chain: an alarm or an EventBridge rule starts an Automation
+  runbook, which fixes the problem without a person.
+
+| In a question | Answer |
+|---|---|
+| "monitor memory or disk space on EC2" | the CloudWatch agent |
+| "page only when both latency and errors are high" | a composite alarm |
+| "the instance's hardware failed; keep its IP" | alarm on `StatusCheckFailed_System` with the recover action |
+| "react when someone opens a security group to the world" | EventBridge rule on the CloudTrail event, then Lambda or Automation |
+| "patch all instances every Sunday night" | Patch Manager with a maintenance window |
+| "stream logs to OpenSearch in near real time" | a subscription filter |
+
+## Performance
+
+- **EBS**: **gp3** sets IOPS and throughput independently of size, where
+  **gp2** ties them to size and uses burst credits (a small gp2 volume is
+  fast only until its credits run out). Change type or size live with
+  **Elastic Volumes**. **io2** for the highest consistent IOPS.
+- **RDS**: **Performance Insights** shows the top SQL statements and what
+  the database waits on; **RDS Proxy** pools connections for connection
+  storms (many short Lambda connections); read replicas for read load.
+- **EFS**: throughput modes (**elastic**, provisioned, bursting) and
+  lifecycle management to cheaper tiers.
+- **EC2**: **placement groups** (cluster for low latency between
+  instances); instance types matched to the bottleneck (Compute Optimizer
+  recommends).
+- **S3**: **multipart upload** for large objects, **Transfer Acceleration**
+  for distant clients, more prefixes for very high request rates.
+
+| In a question | Answer |
+|---|---|
+| "database is slow; find which queries" | RDS Performance Insights |
+| "gp2 volume slows down after a while" | burst credits exhausted: gp3 with provisioned IOPS |
+| "too many database connections from Lambda" | RDS Proxy |
+
+## Traps
+
+- No agent, no memory metric.
+- **Metric filters** are not retroactive.
+- The **recover** action is for system (hardware) status check failures,
+  not for problems inside the operating system (reboot for those).
+- Log groups keep data **for ever** unless retention is set.
 
 Source: AWS Certified CloudOps Engineer - Associate (SOA-C03) exam guide,
 Content Domain 1; AWS service documentation.

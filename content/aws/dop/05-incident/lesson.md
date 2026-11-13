@@ -5,29 +5,71 @@ order: 5
 kind: quiz
 ---
 
+An **event** is something that happened: an instance stopped, a deployment
+failed, a finding appeared, AWS scheduled maintenance. An **incident** is
+when that hurts users. This domain covers routing events to automated
+responses, organizing the human response when one is needed, and reading
+the right signal to find out why a deployment, scaling or service failed.
+The method for reading questions is on the Domain 1 page.
+
 **Weight: 14% of the scored questions.**
 
 ## Event sources and routing
 
-- **EventBridge** rules on AWS service events (EC2 state changes, Health,
-  CodePipeline, GuardDuty, Config compliance changes), event buses across
-  accounts, input transformers, archive and replay.
-- **AWS Health** events (including organizational view) for scheduled
-  maintenance and service issues; S3 event notifications; SNS fan-out.
+*Practised in Serverless lesson 4, Operations lesson 2.*
+
+- **EventBridge** rules match events from AWS services: EC2 state changes,
+  **AWS Health**, CodePipeline and CodeDeploy state changes, GuardDuty
+  findings, Config compliance changes, and CloudTrail API calls. Event
+  buses can send events **across accounts** to a central bus. **Input
+  transformers** reshape the event for the target. **Archive and replay**
+  keeps events and sends them again, for example after fixing a broken
+  consumer.
+- **AWS Health** reports scheduled maintenance (an instance retirement) and
+  service issues affecting **your** resources; the **organizational view**
+  shows them for every account.
+- **S3 event notifications** and **SNS fan-out**.
 
 ## Automated response
 
-- EventBridge → Lambda, Step Functions, SSM Automation runbooks, SNS;
-  Config auto-remediation; Auto Scaling replacing unhealthy instances.
-- **Systems Manager Incident Manager** response plans, escalation,
-  runbooks; **OpsCenter** OpsItems.
+- **EventBridge** to Lambda, Step Functions, **Systems Manager Automation**
+  runbooks or SNS. Example: an AWS Health event for an instance retirement
+  starts a runbook that stops and starts the instance on new hardware in the
+  maintenance window.
+- **Config auto-remediation**; **Auto Scaling** replacing unhealthy
+  instances.
+- **Systems Manager Incident Manager**: **response plans** that engage the
+  right people, **escalation** when nobody answers, runbooks, and a
+  timeline for the post-incident review. **OpsCenter** collects
+  **OpsItems**: operational issues to investigate, with related resources
+  and runbooks.
 
-## Troubleshooting
+## Troubleshooting: read the right signal
 
-- Read the signal: CodeDeploy deployment logs and lifecycle event
-  failures, CloudFormation stack events (the first failure), Auto Scaling
-  activity history, ECS stopped-task reasons, Lambda throttles and DLQs,
-  service quotas.
+| Failed | Look at |
+|---|---|
+| a CodeDeploy deployment | the deployment's **lifecycle event** that failed, and the agent's logs on the instance |
+| a CloudFormation stack | the stack **events**: the **first** `CREATE_FAILED`; later failures are usually consequences |
+| an Auto Scaling launch | the group's **activity history** (quota, capacity, launch template errors) |
+| an ECS task | the **stopped reason** of the task (`CannotPullContainerError`, essential container exited, health checks) |
+| a Lambda function | `Throttles`, `Errors`, the DLQ or failure destination, the logs |
+| anything "limit exceeded" | **Service Quotas** |
+
+| In a question | Answer |
+|---|---|
+| "notify the team of AWS maintenance for our instances" | an EventBridge rule on AWS Health events |
+| "events from 50 accounts in one place" | cross-account event buses to a central bus |
+| "reprocess last week's events after fixing the consumer" | EventBridge archive and replay |
+| "page the on-call engineer and escalate" | Incident Manager response plans |
+| "why did the stack fail?" | the first failure in the stack events |
+
+## Traps
+
+- In stack events, the **first** failure is the cause.
+- AWS Health covers **your** affected resources; the Service Health
+  Dashboard is the public view.
+- An EventBridge rule with a Lambda target needs the function's resource
+  policy to allow `events.amazonaws.com`.
 
 Source: AWS Certified DevOps Engineer - Professional (DOP-C02) exam guide,
 Content Domain 5; AWS service documentation.

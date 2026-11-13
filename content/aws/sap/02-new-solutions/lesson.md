@@ -5,40 +5,90 @@ order: 2
 kind: quiz
 ---
 
-**Weight: 29% of the scored questions.**
+Here the workload does not exist yet: you design it. Questions give the
+business requirements (users, data volume, availability, recovery targets,
+budget, compliance) and ask for the architecture that meets them all.
+Every AWS design pillar shows up: deployment, continuity, security,
+reliability, performance, cost. The method for reading questions is on the
+Domain 1 page.
+
+**Weight: 29% of the scored questions**, the largest domain.
 
 ## Deployment and continuity
 
-- Infrastructure as code (CloudFormation, CDK, StackSets), blue/green and
-  canary releases, immutable infrastructure.
-- Pick a DR strategy from the RTO/RPO and budget: backup and restore (hours),
-  pilot light (tens of minutes), warm standby (minutes), multi-site
-  active/active (near zero). **Aurora Global Database**, **DynamoDB global
-  tables**, S3 Cross-Region Replication, AWS Backup cross-Region copies.
+*Practised in Operations lesson 3, CI/CD lessons 1-2.*
+
+- **Infrastructure as code** (CloudFormation, CDK, StackSets for many
+  accounts) so every environment is reproducible; **immutable
+  infrastructure** (replace, never patch in place); **blue/green** and
+  **canary** releases with automatic rollback.
+- Choose the **DR strategy** from the **RTO** (allowed downtime), **RPO**
+  (allowed data loss) and the budget:
+
+  | Strategy | RTO | Building blocks |
+  |---|---|---|
+  | Backup and restore | hours | AWS Backup cross-Region copies, snapshots, IaC to rebuild |
+  | Pilot light | tens of minutes | replicated data (Aurora Global Database, S3 CRR), servers off |
+  | Warm standby | minutes | a scaled-down full copy, Route 53 failover |
+  | Multi-site active/active | near zero | **DynamoDB global tables** or Aurora Global Database, latency routing |
+
+  **Aurora Global Database** replicates to up to five secondary Regions,
+  usually under a second behind, and a secondary can be promoted in about a
+  minute. **DynamoDB global tables** accept writes in every Region.
 
 ## Security by design
 
-- Least privilege with roles, permissions boundaries and ABAC; secrets in
-  **Secrets Manager** with rotation; encryption with KMS (multi-Region keys
-  for replicated data); edge protection with **WAF**, **Shield Advanced**
-  and **CloudFront**; private access with endpoints.
+*Practised in Foundations lessons 3-6, Security lessons 1-2.*
+
+- **Least privilege** with roles, **permissions boundaries** for delegated
+  administration, and **ABAC** (attribute-based access control: policies
+  that compare tags, such as "a principal tagged `project=x` may use
+  resources tagged `project=x`", so new projects need no new policies).
+- **Secrets Manager** with rotation; **KMS** for encryption, with
+  **multi-Region keys** for data replicated between Regions.
+- **Edge protection**: **CloudFront** in front, **WAF** rules, **Shield
+  Advanced** for DDoS response and cost protection.
+- **Private access**: VPC endpoints, private subnets, no public databases.
 
 ## Reliability and performance
 
-- Loose coupling: SQS, SNS, EventBridge, Step Functions; idempotent
-  consumers; backoff with jitter.
-- Scale: Auto Scaling, serverless (Lambda, Fargate, DynamoDB on-demand),
-  caching (CloudFront, ElastiCache, DAX), read replicas, purpose-built
-  databases (Neptune for graphs, Timestream for time series, OpenSearch for
-  search, Redshift for analytics).
-- Data at scale: Kinesis Data Streams and Firehose, S3 data lakes with Glue
-  and Athena, Lake Formation for permissions.
+*Practised in Serverless lessons 1-4, Databases lessons 1-3.*
+
+- **Loose coupling**: SQS, SNS, EventBridge, Step Functions; **idempotent**
+  consumers (safe to process twice); retries with **exponential backoff and
+  jitter**, so clients do not retry in lockstep.
+- **Scale**: Auto Scaling; serverless (Lambda, Fargate, DynamoDB
+  on-demand); **caching** at each layer (CloudFront, ElastiCache, DAX); read
+  replicas; **purpose-built databases** (Neptune for graphs, Timestream for
+  time series, OpenSearch for search, Redshift for analytics).
+- **Data at scale**: Kinesis Data Streams and Firehose for ingestion; an S3
+  **data lake** catalogued by Glue and queried by Athena; **Lake Formation**
+  for table- and column-level permissions on it.
 
 ## Cost from day one
 
-- Pricing models (On-Demand, Savings Plans, Spot), right storage classes,
-  data transfer awareness (same-AZ, endpoints, CloudFront), managed services
-  that remove idle capacity.
+- The right **pricing model** per workload part (On-Demand, Savings Plans,
+  Spot); the right **storage classes** with lifecycle rules; awareness of
+  **data transfer** (keep chatty components in the same AZ, gateway
+  endpoints, CloudFront); **managed and serverless** services that remove
+  idle capacity.
+
+| In a question | Answer |
+|---|---|
+| "RPO of seconds, RTO under a minute, global relational database" | Aurora Global Database |
+| "users in several Regions write locally, key-value" | DynamoDB global tables |
+| "encrypted data replicated across Regions, one key ID" | KMS multi-Region keys |
+| "permissions must scale to hundreds of projects" | ABAC with tags |
+| "retries overwhelm the service after an outage" | exponential backoff with jitter |
+
+## Traps
+
+- Choose the **cheapest** strategy that meets the RTO and RPO, not the
+  best one.
+- **Aurora Global Database** has one writer Region; for writes in several
+  Regions, DynamoDB global tables.
+- A design that meets everything but needs skills the story says the team
+  lacks is usually wrong.
 
 Source: AWS Certified Solutions Architect - Professional (SAP-C02) exam
 guide, Content Domain 2; AWS service documentation.

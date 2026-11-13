@@ -5,29 +5,69 @@ order: 4
 kind: quiz
 ---
 
+You cannot automate a response to what you cannot see. This domain covers
+collecting logs and metrics from everything, keeping them centrally and
+safely, analysing them, and setting up monitoring itself as code across
+many accounts. The method for reading questions is on the Domain 1 page.
+
 **Weight: 15% of the scored questions.**
 
 ## Collect and store
 
-- **CloudWatch agent** (memory, disk, custom logs; config in Parameter
-  Store), embedded metric format, custom metrics and high-resolution
-  metrics, log groups with retention and KMS encryption.
-- Centralize: **cross-account observability** (monitoring account linked to
-  source accounts), subscription filters to Kinesis Data Firehose or a
-  central account, organization CloudTrail, S3 lifecycle for archives.
+*Practised in Operations lessons 1-2.*
+
+- The **CloudWatch agent** collects memory, disk and custom log files from
+  instances; keep its configuration in **Parameter Store**, so every
+  instance loads the same one.
+- **Custom metrics** with `PutMetricData` or the **embedded metric format**
+  (metrics written as structured log lines); **high-resolution** metrics
+  down to 1 second.
+- **Log groups** with **retention** set, and **KMS encryption** with your
+  key.
+- **Centralize** across accounts:
+
+  | Need | Use |
+  |---|---|
+  | see metrics, logs and traces of many accounts in one place | **CloudWatch cross-account observability**: a monitoring account linked to source accounts |
+  | ship logs to a central store | **subscription filters** to Firehose (into S3 or OpenSearch), or to a destination in a central account |
+  | API activity of every account | the **organization trail** of CloudTrail |
+  | keep old logs cheaply | S3 with **lifecycle** rules to colder classes |
 
 ## Analyse
 
-- Metric filters and alarms, composite alarms, anomaly detection,
-  **Logs Insights** queries, Contributor Insights, **X-Ray** and
-  **CloudWatch Application Signals**, Container Insights and Lambda
-  Insights, Athena over CloudTrail, ELB and VPC Flow Logs in S3.
+- **Metric filters** and **alarms**; **composite alarms**; **anomaly
+  detection** alarms, which learn a metric's normal band instead of a fixed
+  threshold.
+- **Logs Insights** queries; **Contributor Insights** (top-N contributors:
+  which IP, which key).
+- **X-Ray** traces and **CloudWatch Application Signals** (service-level
+  dashboards and SLOs from traces and metrics); **Container Insights** and
+  **Lambda Insights** for per-container and per-function detail.
+- **Athena** over logs in S3: CloudTrail, ELB access logs, VPC Flow Logs.
 
 ## Automate
 
-- Alarms to SNS, EventBridge and Systems Manager; dashboards defined as
-  code; Config rules and conformance packs for configuration monitoring;
-  Synthetics canaries for user journeys.
+- **Alarm actions** to SNS, EventBridge and Systems Manager.
+- **Dashboards as code** (CloudFormation or CDK), so every environment has
+  the same ones.
+- **Config rules** and **conformance packs** monitor configuration, and
+  **aggregators** collect compliance from all accounts and Regions.
+- **Synthetics canaries** test user journeys on a schedule.
+
+| In a question | Answer |
+|---|---|
+| "one place to see all accounts' metrics and traces" | cross-account observability |
+| "the threshold changes with the time of day" | anomaly detection alarm |
+| "which client IPs cause the most errors" | Contributor Insights |
+| "query a year of CloudTrail logs with SQL" | Athena over the trail's S3 bucket |
+| "every instance must run the same agent configuration" | agent config in Parameter Store, applied by State Manager |
+| "compliance status of all accounts" | a Config aggregator |
+
+## Traps
+
+- Without the agent there are no memory or disk-space metrics.
+- Logs are kept **for ever** by default.
+- Metric filters do not process old events.
 
 Source: AWS Certified DevOps Engineer - Professional (DOP-C02) exam guide,
 Content Domain 4; AWS service documentation.

@@ -5,26 +5,99 @@ order: 5
 kind: quiz
 ---
 
+Networking questions for operators are mostly "it doesn't connect, why?"
+and "how do I connect these two?". Knowing which layer can block traffic
+(route table, NACL, security group, firewall, DNS) and which tool shows it
+is most of the work.
+
 **Weight: 18% of the scored questions.**
 
-- **VPC**: subnets, route tables, NACLs, security groups, NAT gateways,
-  internet gateway, **egress-only internet gateway** (outbound-only IPv6).
-- **Private connectivity**: gateway and interface endpoints (PrivateLink),
-  peering, **Transit Gateway** (route tables per attachment), Site-to-Site
-  VPN (two tunnels for redundancy), Direct Connect.
-- **Protection**: Security groups, NACLs, **AWS Network Firewall**
-  (stateful inspection, domain filtering), **Route 53 Resolver DNS
-  Firewall**, WAF, Shield.
-- **DNS**: Route 53 routing policies (simple, weighted, latency, failover,
-  geolocation, geoproximity, multivalue, IP-based), health checks, **query
-  logging**, **Resolver endpoints** - inbound (on-premises resolving AWS
-  names) and outbound (AWS resolving on-premises names with forwarding
-  rules).
-- **Content delivery**: CloudFront (cache policies, TTLs, **invalidations**,
-  versioned file names), Global Accelerator.
-- **Troubleshooting**: **VPC Flow Logs** (ACCEPT/REJECT), **Reachability
-  Analyzer** (is there a path from A to B, and what blocks it), ELB, WAF and
-  CloudFront logs, CloudWatch Network Monitor.
+## The VPC
+
+*Practised in Networking lessons 1-2.*
+
+- **Subnets**, **route tables**, **NACLs** (stateless, per subnet),
+  **security groups** (stateful, per interface), **NAT gateways**
+  (outbound for private IPv4 subnets), the **internet gateway**.
+- An **egress-only internet gateway** is the IPv6 counterpart of a NAT
+  gateway: outbound IPv6 only, nothing can start a connection inward.
+  (IPv6 addresses are public, so a NAT gateway does not apply.)
+
+## Private connectivity
+
+*Practised in Networking lessons 3-4.*
+
+| Connects | With |
+|---|---|
+| a VPC to AWS services, privately | **gateway endpoints** (S3, DynamoDB) and **interface endpoints** (PrivateLink) |
+| two VPCs | **VPC peering** (not transitive, no overlapping CIDRs) |
+| many VPCs and on-premises | **Transit Gateway**, with route tables per attachment to segment traffic |
+| on-premises, over the internet | **Site-to-Site VPN**: each connection has **two tunnels**, in different AZs; use both |
+| on-premises, privately | **Direct Connect** |
+
+## Protection
+
+- **Security groups** and **NACLs**.
+- **AWS Network Firewall**: a managed, stateful firewall in the VPC, with
+  intrusion prevention and **domain filtering** (allow outbound only to
+  `*.example.com`).
+- **Route 53 Resolver DNS Firewall**: blocks DNS lookups of bad or
+  unapproved domains from the VPC.
+- **WAF** for HTTP, **Shield** for DDoS.
+
+## DNS
+
+*Practised in Containers lesson 4.*
+
+- Route 53 **routing policies** (simple, weighted, latency, failover,
+  geolocation, geoproximity, multivalue, IP-based) and **health checks**.
+- **Query logging** records the DNS queries from your VPCs or to your
+  public zones.
+- **Resolver endpoints** for hybrid DNS:
+
+  | Endpoint | Direction |
+  |---|---|
+  | **Inbound** | on-premises servers resolve names in AWS (private hosted zones) |
+  | **Outbound** + **forwarding rules** | resources in AWS resolve on-premises names (`corp.example.local`) |
+
+## Content delivery
+
+*Practised in Containers lesson 5.*
+
+- **CloudFront**: cache policies and **TTLs**; stale content after an
+  update is fixed with an **invalidation**, or avoided with **versioned
+  file names**.
+- **Global Accelerator**: static anycast IPs and fast failover, for TCP and
+  UDP.
+
+## Troubleshooting a path
+
+| Tool | Shows |
+|---|---|
+| **VPC Flow Logs** | each flow's addresses, ports and **ACCEPT** or **REJECT**; a REJECT means a security group or NACL blocked it |
+| **Reachability Analyzer** | whether a path exists from A to B, and **which component blocks it**, without sending traffic |
+| ELB, WAF and CloudFront **access logs** | each request, its response and why it was blocked |
+| **CloudWatch Network Monitor** | latency and packet loss to on-premises destinations |
+
+A useful reading of Flow Logs: an inbound ACCEPT with an outbound REJECT
+for the same connection points to a **NACL** (stateless, missing the return
+rule); a security group would have allowed the reply.
+
+| In a question | Answer |
+|---|---|
+| "outbound-only internet for IPv6" | egress-only internet gateway |
+| "on-premises must resolve private hosted zone names" | Resolver inbound endpoint |
+| "instances must resolve on-premises names" | Resolver outbound endpoint + forwarding rule |
+| "allow outbound HTTPS only to approved domains" | AWS Network Firewall |
+| "why can't A reach B?" | Reachability Analyzer |
+| "users still see the old page after a deploy" | CloudFront invalidation, or versioned file names |
+
+## Traps
+
+- **Peering is not transitive**: A-B and B-C does not give A-C.
+- A VPN connection's **two tunnels** are for redundancy: configure both.
+- An **inbound** Resolver endpoint is for queries coming **in** from
+  on-premises.
 
 Source: AWS Certified CloudOps Engineer - Associate (SOA-C03) exam guide,
 Content Domain 5; AWS service documentation.
