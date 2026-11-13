@@ -5,6 +5,41 @@ order: 3
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Japanese | Meaning |
+|---|---|---|
+| **sign** | 標識 | a board beside or above the road |
+| **main sign** / **auxiliary sign** | 本標識・補助標識 | the sign itself / a plate beneath it narrowing the rule: hours, vehicles, the reason |
+| **regulatory sign** | 規制標識 | forbids, or orders a way of driving; red rim on white, or white on blue |
+| **indication sign** | 指示標識 | says something is allowed, or marks a place; white on blue |
+| **warning sign** | 警戒標識 | danger ahead; yellow diamond |
+| **guide sign** | 案内標識 | places, directions and distances |
+| **road closed** / **closed to vehicles** | 通行止め・車両通行止め | closed to everyone / vehicles only |
+| **no entry** | 車両進入禁止 | red disc with a white bar, at the exit of a one-way street |
+| **no parking** / **no stopping or parking** | 駐車禁止・駐停車禁止 | one red slash / two crossed slashes |
+| **no crossing to the right to overtake** | 追越しのための右側部分はみ出し通行禁止 | overtaking allowed only on your own side |
+| **maximum** / **minimum speed** | 最高速度・最低速度 | a plain figure / an underlined figure |
+| **stop** / **slow** | 一時停止・徐行 | red inverted triangle 止まれ / white inverted triangle, red rim |
+| **sound horn** / **horn zone** | 警笛鳴らせ・警笛区間 | at that spot / at blind places within the zone |
+| **priority road** / **priority road ahead** | 優先道路・前方優先道路 | you are on it / the road ahead has priority |
+| **motor vehicles only** | 自動車専用 | expressways and motorways |
+| **gross weight** | 総重量 | the vehicle plus its load |
+| **road marking** | 標示 | lines and symbols painted on the road: regulatory and indication markings |
+| **no-entry area** | 立入り禁止部分 | yellow outline, white hatching: keep out |
+| **keep-clear box** | 停止禁止部分 | don't enter if you would have to stop inside |
+| **channelling strip** | 導流帯 | white stripes guiding traffic; not for driving on |
+| **two-stage stop line** | 二段停止線 | motorcycles at the front line, cars at the rear |
+| **ordinary moped** | 一般原動機付自転車 | limited to 30 km/h |
+
+---
+
 The real test shows pictures of signs. The ones the test asks about most are
 below; the full chart is 付表3 of the 教則.
 

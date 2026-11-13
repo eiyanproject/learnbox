@@ -5,6 +5,27 @@ order: 2
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Japanese | Meaning |
+|---|---|---|
+| **illustration question** | イラスト問題 | a scene and three statements, all three right to score |
+| **vanishing effect** | 蒸発現象 | a pedestrian disappearing between two sets of headlights |
+| **stopping distance** | 停止距離 | grows in the rain |
+| **hydroplaning** | ハイドロプレーニング現象 | tyres floating on water at speed |
+| **acceleration lane** | 加速車線 | where you get up to speed on an expressway |
+| **main carriageway** | 本線車道 | the expressway lanes you must not hinder |
+| **engine braking** | エンジンブレーキ | slowing with a low gear downhill |
+| **railway crossing** | 踏切 | stop, look and listen; cross only if there is room beyond |
+
+---
+
 Same format as the town scenes: a scene, three statements, **all three right
 to score**.
 

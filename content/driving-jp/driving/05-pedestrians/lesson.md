@@ -5,6 +5,31 @@ order: 5
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Japanese | Meaning |
+|---|---|---|
+| **pedestrian** | 歩行者 | a person on foot |
+| **safe gap** | 安全な間隔 | enough room beside a person to pass safely |
+| **safety zone** | 安全地帯 | a protected island in the road |
+| **tram stop** | 停留所 | where people get on and off a tram, often from the road |
+| **crosswalk** / **bicycle crossing** | 横断歩道・自転車横断帯 | slow so you can stop; stop if anyone is crossing; no overtaking within 30 m before |
+| **white or yellow cane** | 白・黄色のつえ | used by a person who cannot see well |
+| **guide dog** | 盲導犬 | a dog leading a person who cannot see |
+| **school bus** | 通学通園バス | crawl past it when it is stopped |
+| **school route** | 通学路 | where children walk to school |
+| **side strip** | 路側帯 | the pedestrian strip at a road's edge; stop before crossing it |
+| **cyclist** | 自転車 | a vehicle; overtake with a safe gap or crawl |
+| **crawl** | 徐行 | a speed at which you can stop at once |
+
+---
+
 **Passing pedestrians**: leave a safe gap, or crawl. Crawl past a safety zone
 with people in it. Behind a tram stopped at a stop, **stop** and wait until
 people have got on, off and across - unless nobody is getting on or off and

@@ -5,6 +5,35 @@ order: 3
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Japanese | Meaning |
+|---|---|---|
+| **handbrake** | ハンドブレーキ（駐車ブレーキ） | holds the car still; use it to start uphill |
+| **engine braking** | エンジンブレーキ | slowing by using a low gear; use it downhill |
+| **brake fade** | フェード現象 | brakes weakening after long use downhill |
+| **passing place** | 待避所 | a widening where one car waits for another |
+| **crawl** | 徐行 | a speed at which you can stop at once |
+| **inner wheel difference** | 内輪差 | rear wheels cutting inside on a bend |
+| **vanishing effect** | 蒸発現象 | a pedestrian disappearing between your lights and an oncoming car's |
+| **main beam** / **dip** | 走行用前照灯・すれ違い用前照灯 | high beam / low beam |
+| **dazzle** | 眩惑 | being blinded by lights |
+| **hazard lights** | 非常点滅表示灯 | all indicators flashing |
+| **parking lights** / **tail lights** | 駐車灯・尾灯 | small lights showing a parked car |
+| **chains** / **winter tyres** | タイヤチェーン・スノータイヤ | grip for snow and ice |
+| **fog lamps** | 霧灯 | lights for fog |
+| **puncture** | パンク | a burst or flat tyre |
+| **skid** | 横滑り | the rear sliding; steer the way it slides |
+| **head-on** | 正面衝突 | a crash with an oncoming car |
+
+---
+
 **Hills and mountain roads.**
 
 - Stopping behind a car on an uphill: don't get too close - it may roll back.

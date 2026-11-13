@@ -5,6 +5,31 @@ order: 4
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Japanese | Meaning |
+|---|---|---|
+| **intersection** | 交差点 | where roads meet; where most accidents happen |
+| **inner wheel difference** | 内輪差 | the rear wheels cutting inside the front ones on a turn |
+| **turning left** / **right** | 左折・右折 | keep left and crawl along the edge / move to the centre and crawl just inside it |
+| **lane-by-direction sign** | 進行方向別通行区分 | arrows saying which lane goes which way |
+| **keep-clear marking** | 停止禁止部分 | don't enter if you would stop inside it |
+| **intersection without signals** | 交通整理の行われていない交差点 | priority by road, width and side |
+| **priority road** | 優先道路 | its traffic goes first |
+| **vehicle from your left** | 左方車 | goes first where roads are about equal |
+| **stop sign** | 一時停止 | stop at the line and let crossing traffic go first |
+| **roundabout** | 環状交差点 | keep left, crawl, give way to traffic already inside |
+| **give way** | 進行を妨げない | let the other vehicle go first |
+| **crawl** | 徐行 | a speed at which you can stop at once |
+
+---
+
 Intersections are where most accidents happen. Watch for turning cars and
 pedestrians; turning right, watch especially for motorcycles coming straight
 on, which are easy to miss. Turning cars cut the corner with their rear wheels

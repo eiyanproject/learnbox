@@ -5,6 +5,33 @@ order: 1
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Japanese | Meaning |
+|---|---|---|
+| **parking** | 駐車 | the car stays stopped, or the driver can't drive it off at once |
+| **stopping** | 停車 | a short stop that isn't parking, such as 5 minutes of loading |
+| **no stopping or parking** | 駐停車禁止 | neither is allowed |
+| **no parking** | 駐車禁止 | stopping is still allowed |
+| **tram tracks** | 軌道敷 | where the tram rails run |
+| **safety zone** | 安全地帯 | a protected island; no stopping on its left or 10 m either side |
+| **fire alarm** | 火災報知機 | no parking within 1 m |
+| **fire hydrant** | 消火栓 | no parking within 5 m |
+| **fire-water sign** | 指定消防水利の標識 | marks water for fire-fighting |
+| **roadworks** | 道路工事 | no parking within 5 m of their edge |
+| **3.5 m rule** | | leave at least 3.5 m of road to the car's right |
+| **side strip** | 路側帯 | may be entered to park if 0.75 m is left, unless marked otherwise |
+| **double-park** | 二重駐車 | parking alongside a parked car; never |
+| **storage place** | 保管場所 | the off-road place a car is kept, within 2 km |
+
+---
+
 **Parking** (駐車): the car stays stopped, or the driver is away and can't drive
 it off at once. **Not** parking: stopping for people to get in or out, or to
 load or unload for **5 minutes or less**. **Stopping** (停車) is any short stop

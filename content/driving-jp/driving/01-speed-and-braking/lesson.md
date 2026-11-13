@@ -5,6 +5,29 @@ order: 1
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Japanese | Meaning |
+|---|---|---|
+| **maximum speed** | 最高速度 | the limit; with none shown, 60 km/h for a car on ordinary roads |
+| **ordinary moped** | 一般原動機付自転車 | limited to 30 km/h |
+| **stopping distance** | 停止距離 | reaction distance plus braking distance |
+| **reaction distance** | 空走距離 | from sensing danger until the brakes start to work |
+| **braking distance** | 制動距離 | from the brakes working until the car stops |
+| **following distance** | 車間距離 | the gap to the car ahead; enough to stop if it stops suddenly |
+| **ABS** | アンチロック・ブレーキ・システム | anti-lock brakes: in an emergency, press hard and keep pressing |
+| **crawl** | 徐行 | a speed at which you can stop at once |
+| **priority road** | 優先道路 | the road whose traffic goes first |
+| **blind intersection** | 見通しの悪い交差点 | one where you can't see left and right |
+
+---
+
 **Maximum speed** (最高速度). Obey the limit shown by signs or markings. Where
 none is shown, a car may not go over **60 km/h** on ordinary roads; a moped
 (一般原動機付自転車) not over **30 km/h**. Expressways have their own limits (see

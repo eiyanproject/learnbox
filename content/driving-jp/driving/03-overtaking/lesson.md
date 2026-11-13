@@ -5,6 +5,29 @@ order: 3
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Japanese | Meaning |
+|---|---|---|
+| **overtaking** | 追越し | changing course to get in front of a moving vehicle |
+| **passing** | 追い抜き | getting ahead without changing course |
+| **double overtaking** | 二重追越し | overtaking a car that is itself overtaking; forbidden |
+| **oncoming traffic** | 対向車 | vehicles coming the other way |
+| **no overtaking sign** | 追越し禁止 | overtaking forbidden there |
+| **priority road** | 優先道路 | the one place overtaking near an intersection is allowed |
+| **railway crossing** | 踏切 | where road and railway cross |
+| **rear-view mirror** | ルームミラー | the mirror inside; move back once the passed car shows in it |
+| **cutting in** | 割込み | pushing in front of cars stopped or crawling at an intersection or crossing |
+| **squeeze alongside** | 幅寄せ | moving close to a car beside you |
+
+---
+
 **Overtaking** (追越し) means changing course to get in front of a moving
 vehicle ahead. (Passing a vehicle without changing course is 追い抜き.)
 

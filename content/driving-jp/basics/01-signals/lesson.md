@@ -5,6 +5,37 @@ order: 1
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Japanese | Meaning |
+|---|---|---|
+| **signal in front of you** | 前方の信号 | the light facing your lane; the only one that applies to you |
+| **staggered signal** | 時差式信号機 | a signal that changes at different times for different directions |
+| **green / yellow / red light** | 青色・黄色・赤色の灯火 | go / don't pass the stop position unless you can't stop safely / don't pass it |
+| **green arrow** | 青色の灯火の矢印 | go the arrow's way even on yellow or red; a right arrow allows a U-turn |
+| **yellow arrow** | 黄色の灯火の矢印 | for trams only |
+| **flashing yellow** | 黄色の灯火の点滅 | go, watching other traffic |
+| **flashing red** | 赤色の灯火の点滅 | stop at the stop position, then go |
+| **stop position** | 停止位置 | just before the stop line; with no line, before the intersection or crossing |
+| **stop line** | 停止線 | the white line across your lane where you stop |
+| **crosswalk** | 横断歩道 | a marked place for pedestrians to cross |
+| **bicycle crossing** | 自転車横断帯 | a marked place for cyclists to cross |
+| **left turn permitted** | 左折可 | a white board with a blue left arrow: turn left on yellow or red |
+| **intersection** | 交差点 | where roads meet |
+| **U-turn** | 転回 | turning round to go back the way you came |
+| **tram** | 路面電車 | a streetcar running on rails in the road |
+| **police officer / traffic warden** | 警察官・交通巡視員 | their hand and light signals come before the traffic light |
+| **parallel / crossing traffic** | | traffic moving along the officer's arm / facing the officer's front or back |
+| **教則** | 交通の方法に関する教則 | the National Police Agency's Rules of the Road, the source of the test |
+
+---
+
 **Look at the signal in front of you** (前方の信号). A red light to the side does
 not mean yours is green: some signals turn red in every direction at once, and
 some change at different times for different directions (時差式信号機).

@@ -5,6 +5,36 @@ order: 4
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Japanese | Meaning |
+|---|---|---|
+| **expressway** | 高速道路 | national expressways and motorways |
+| **national expressway** | 高速自動車国道 | the main toll expressways |
+| **motorway** | 自動車専用道路 | a road for motor vehicles only |
+| **mini-car** | ミニカー | a tiny one-seat car; not allowed |
+| **small motorcycle** | 小型二輪車 | 125 cc or less; not allowed |
+| **coolant**, **fan belt**, **tread** | 冷却水・ファンベルト・溝 | things to check before joining |
+| **acceleration lane** | 加速車線 | where you get up to speed before joining |
+| **main carriageway** | 本線車道 | the lanes for normal high-speed driving |
+| **deceleration lane** | 減速車線 | where you slow down to leave |
+| **climbing lane** | 登坂車線 | for slow vehicles going uphill |
+| **central reservation** | 中央分離帯 | the barrier between directions; never cross it |
+| **hydroplaning** | ハイドロプレーニング現象 | tyres riding on water so steering and brakes stop working |
+| **interior mirror** | ルームミラー | pull back in once the overtaken car shows in it |
+| **parking area** | パーキングエリア | where stopping is allowed |
+| **toll booth** | 料金所 | where tolls are paid |
+| **emergency telephone** | 非常電話 | roadside phones for breakdowns |
+| **110** | 110番 | the police emergency number |
+
+---
+
 **Expressways** (高速道路) are national expressways (高速自動車国道) and
 motorways (自動車専用道路).
 

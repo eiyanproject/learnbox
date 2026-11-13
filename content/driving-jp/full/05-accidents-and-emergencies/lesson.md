@@ -5,6 +5,32 @@ order: 5
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Japanese | Meaning |
+|---|---|---|
+| **traffic accident** | 交通事故 | a crash on the road |
+| **second accident** | 二次事故 | another crash caused by the first |
+| **first aid** | 応急救護処置 | help within your ability until a doctor or ambulance arrives |
+| **report to the police** | 警察への報告 | where, who is hurt, what was damaged, what was carried |
+| **hit-and-run** | ひき逃げ | a driver leaving the scene; report the number, type and colour |
+| **breakdown** | 故障 | the car not working |
+| **warning triangle** | 停止表示器材 | set behind a broken-down car; compulsory on expressways |
+| **boot lid** | トランク | the rear lid, opened by day to show the car is stopped |
+| **towing rope** | ロープ | 5 m or less between cars, with a white cloth at least 30 cm square |
+| **earthquake early warning** | 緊急地震速報 | hazard lights on, slow down gently |
+| **evacuate** | 避難 | leave the car: on the left, engine off, key in, windows shut, doors unlocked |
+| **tsunami** | 津波 | the one case where a car may be used to escape |
+| **disaster traffic control** | 災害対策基本法による交通規制 | roads closed to all but emergency traffic; move your car off |
+
+---
+
 **After a traffic accident** the driver and crew must:
 
 1. **Stop** somewhere safe that does not block traffic (shoulder, open

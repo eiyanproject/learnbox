@@ -5,6 +5,31 @@ order: 6
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Japanese | Meaning |
+|---|---|---|
+| **railway crossing** | 踏切 | where road and railway cross |
+| **stop and check** | 一時停止・安全確認 | stop before every crossing and look and listen yourself |
+| **crossing with signals** | 信号機のある踏切 | follow the light; on green you may go without stopping |
+| **alarm** / **barrier** | 警報機・遮断機 | the bells and lights / the arm that comes down |
+| **congested** | 渋滞 | so full you could be left stopped on the tracks |
+| **stalling** | エンスト | the engine stopping; avoid it by not changing gear |
+| **low gear** | 低速ギア | the gear you set off in; keep it across the tracks |
+| **emergency button** | 踏切支障報知装置 | the push button on the alarm post that warns the train |
+| **flare** | 発炎筒 | the red signal flare carried in every car |
+| **starter motor** | セルモーター | the motor that starts the engine; a last way to move a manual car |
+| **manual** / **automatic** | マニュアル車・オートマチック車 | gears changed by you / by the car |
+| **clutch** | クラッチ | the pedal a manual car uses to change gear |
+
+---
+
 Crossings (踏切) produce the worst accidents, so the rule is strict.
 
 **Stop and check - every time.** Stop just before the crossing (just before the

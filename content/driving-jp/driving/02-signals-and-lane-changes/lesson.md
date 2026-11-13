@@ -5,6 +5,31 @@ order: 2
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Japanese | Meaning |
+|---|---|---|
+| **safety check** | 安全確認 | looking in the mirrors and around before you move |
+| **signal** | 合図 | indicator, brake light or hand signal telling others what you will do |
+| **indicator** | 方向指示器 | the flashing turn light |
+| **hand signal** | 手による合図 | the arm signals that can replace the lights |
+| **brake lights** / **reversing lights** | 制動灯・後退灯 | lit when slowing / reversing |
+| **horn** | 警音器 | for danger and "sound horn" places only |
+| **sound horn sign** / **horn zone** | 警笛鳴らせ・警笛区間 | at that spot / at blind places within the zone |
+| **changing course** | 進路変更 | moving sideways into another position or lane |
+| **yellow lane line** | | no lane changes across it |
+| **U-turn** | 転回 | turning round to go back |
+| **reversing** | 後退 | driving backwards |
+| **crawl** | 徐行 | a speed at which you can stop at once |
+
+---
+
 **Check, then signal** (安全確認と合図). Before changing course, turning round
 or reversing, check behind with the mirrors, then signal.
 

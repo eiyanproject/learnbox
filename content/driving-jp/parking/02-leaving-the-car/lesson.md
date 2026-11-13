@@ -5,6 +5,32 @@ order: 2
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Japanese | Meaning |
+|---|---|---|
+| **time-limited parking zone** | 時間制限駐車区間 | parking for a set time, by meter or ticket |
+| **parking meter** / **ticket machine** | パーキング・メーター・パーキング・チケット発給設備 | start it at once / display the ticket inside the windscreen |
+| **reserved space** | 高齢運転者等専用場所 | only for cars showing the permit |
+| **permit** | 専用場所駐車標章 | for drivers 70+, with hearing or physical conditions, or pregnant or just after birth |
+| **towed** | レッカー移動 | an illegally parked car removed at the driver's or owner's cost |
+| **confirmation sticker** | 放置車両確認標章 | fixed to an illegally parked car; don't deface it |
+| **handbrake** | ハンドブレーキ | on whenever you leave the car |
+| **chock** | 輪止め | a block under a wheel on a slope |
+| **steering lock** | ハンドルロック | stops the wheel being turned |
+| **automatic car** | オートマチック車 | gears changed by the car: P, R, N, D |
+| **P**, **R**, **N**, **D** | | park, reverse, neutral, drive |
+| **creep** | クリープ現象 | the car moving by itself with a gear engaged |
+| **driver-assistance systems** | 先進安全自動車（ASV） | automatic braking and similar; they support a watching driver |
+
+---
+
 **Time-limited parking zones** (時間制限駐車区間). Start a **parking meter** at
 once. With a **ticket machine**, get the ticket at once and display it at the
 front of the car - inside the windscreen - where it can be read from the front.

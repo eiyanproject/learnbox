@@ -5,6 +5,26 @@ order: 1
 kind: quiz
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Japanese | Meaning |
+|---|---|---|
+| **full licence test** | 本免 | the second written test |
+| **illustration question** | イラスト問題 | a picture and three statements; 2 points, only if all three are right |
+| **from above** | | here the scene is drawn from above; you are the cyan car |
+| **hidden danger** | | whatever may come from behind a bus, parked car or truck |
+| **stop or crawl** | 一時停止・徐行 | for children alone, elderly people with sticks, cars stopped at crosswalks |
+| **give way** | 進行を妨げない | let the other traffic go first |
+| **horn** | 警音器 | for danger, not for clearing your path |
+
+---
+
 The last five questions of the full licence test (本免) are **illustration
 questions** (イラスト問題): a picture of a scene from the driver's seat, and
 three statements about what to do or what to watch for. Each is worth
