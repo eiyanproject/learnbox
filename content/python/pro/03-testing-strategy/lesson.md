@@ -11,6 +11,59 @@ hints:
   - "Use `@pytest.fixture` for an `Inventory` pre-filled with a few items, and `@pytest.mark.parametrize` for tables of inputs and expected results."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **test** | code that runs other code and checks the result |
+| **test suite** | all of a project's tests together |
+| **mutant** | a copy of the code with one small, deliberate bug, such as `<` for `<=` |
+| **mutation testing** | grading tests by whether they fail on every mutant |
+| **kill a mutant** | make it fail at least one test; a mutant that passes **survives** |
+| **code coverage** | which lines the tests ran; it says nothing about whether they checked anything |
+| **assertion** | a check that must be true, written with `assert` |
+| **arrange, act, assert** | set up the situation, do the one thing tested, check the result |
+| **fixture** | a function marked `@pytest.fixture` that builds a starting point; a test gets it by naming a parameter after it |
+| **parametrize** | running one test body once for each input in a list |
+| **boundary value** | the exact edge of a rule, such as exactly the threshold; where off-by-one bugs hide |
+| **off-by-one** | a bug that is wrong by one at an edge: `<` instead of `<=` |
+| **specification** | the rules the code must follow; here, the docstrings |
+| **stock** / **threshold** | how many units are on hand / the limit at or below which an item counts as low |
+
+### Python and pytest names
+
+| Name | What it does |
+|---|---|
+| `import pytest` | the testing framework |
+| `def test_...():` | a test function, found by its name in a `test_*.py` file |
+| `assert inv.stock("apple") == 3` | fails the test if false; pytest shows both sides |
+| `with pytest.raises(ValueError, match="not enough"):` | fails unless the block raises that exception with a message matching the pattern |
+| `@pytest.fixture` | marks a fixture |
+| `@pytest.mark.parametrize("qty", [0, -1])` | runs the test once per value |
+| `@pytest.mark.parametrize("a, b, c", [(5, 2, 3), ...])` | several parameters as a table |
+| `tmp_path`, `capsys`, `monkeypatch` | built-in fixtures: a fresh folder; captured output; temporary replacements |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python -m pytest -q test_inventory.py` | runs the tests quietly: a dot per pass, `F` per failure |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `AssertionError` | an `assert` was false: the test failed |
+| `ValueError` | what `Inventory` raises for bad quantities or not enough stock |
+
+---
+
 Every lesson so far has had hidden tests that checked your code. This
 lesson turns things around. The code is written and correct. **You write
 the tests**, and **Check** grades them by running your tests against several

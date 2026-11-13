@@ -11,6 +11,60 @@ hints:
   - "For `split_bill`: `share = round(total / people, 2)`, then `return share, round(total - share * people, 2)`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **function** | a named block of code you define once and call as often as you like |
+| **define** | create a function with `def`; this does not run it yet |
+| **call** | run a function: its name and brackets, `area(3, 4)` |
+| **parameter** | a name in the definition for an input the function will be given: `width` |
+| **argument** | the actual value given in a call: the `3` in `area(3, 4)` |
+| **colon** (`:`) | ends the line before a block; means "a block follows" |
+| **block** | a group of lines that belong together, marked by indentation |
+| **body** | the indented block under `def`: what runs on each call |
+| **indentation** | spaces at the start of a line (4 by convention); in Python it is required, not decoration |
+| **return value** | what a call hands back to the code that called it |
+| **local variable** | a variable created inside a function; it exists only while that call runs |
+| **`None`** | Python's value for "nothing here"; what a function gives back if it never reaches `return` |
+| **`...` prompt** | the prompt waiting for the rest of a block; finish with Enter on an empty line |
+| **default value** | the value a parameter gets when the caller leaves it out: `greeting="Hello"` |
+| **positional argument** | an argument matched to a parameter by its position |
+| **keyword argument** | an argument matched by name in the call: `greet(name="Ana")` |
+| **f-string** (`f"..."`) | text where `{...}` is worked out as code and the result put in |
+| **tuple** | a fixed group of values in brackets, `(4, 9)`; how a function returns several values |
+| **unpacking** | giving each value of a group its own name: `low, high = min_max(9, 4)` |
+| **docstring** | a string as the first line of a function's body, describing what it does |
+| **triple quotes** (`"""`) | a string that may run over several lines |
+
+### Python keywords and functions
+
+| Name | What it does |
+|---|---|
+| `def` | starts a function definition: `def area(width, height):` |
+| `return` | hands a value back and ends the function at once |
+| `print(...)` | shows something to a human; it does **not** give a value back to the code |
+| `round(value, digits)` | rounds to that many decimal places |
+| `if` | runs the block under it only when a condition is true (used in `min_max`; a later lesson explains it) |
+| `help(function)` | shows a function's docstring and parameters; press `q` to leave |
+| `function.__doc__` | where Python keeps the docstring |
+| `pass` | a statement that does nothing; a placeholder for a body that cannot be empty |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python -i functions.py` | runs the file, then leaves you at the `>>>` prompt to try the functions |
+| `q` | leaves the help screen |
+
+---
+
 A **function** is a named block of code. You define it once and then **call**
 it, by name, as often as you like. Instead of writing the same calculation
 in five places, you write it once, give it a name, and use the name. If the

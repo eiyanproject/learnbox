@@ -11,6 +11,46 @@ hints:
   - "`apply_all` feeds the value through each function in turn: start with `value`, reassign it in a loop."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **control flow** | the order statements run in: loops, decisions, calls |
+| **loop `else`** | a block after `for` or `while` that runs only if the loop finished **without** `break` ("no break") |
+| **default argument** | a parameter's value when the caller leaves it out; worked out **once**, when `def` runs |
+| **mutable default trap** | a default list shared by every call, so items pile up; fix with `None` |
+| **positional argument** | matched by position |
+| **keyword argument** | passed as `name=value` |
+| **keyword-only parameter** | one after `*args`; can only be given by name |
+| **`*args`** | collects extra positional arguments into a tuple |
+| **`**kwargs`** | collects extra keyword arguments into a dict |
+| **unpacking into a call** | `f(*[1, 2])` spreads a list as positional arguments; `f(**{"a": 1})` a dict as keywords |
+| **lambda** | a nameless one-expression function: `lambda x: x * 2` |
+| **annotation** | `x: int`, `-> str`: stored, never enforced at runtime |
+| **pipeline** | each function called with the previous one's result |
+| **divisible** | divides with no remainder: `value % divisor == 0` |
+
+### Python keywords and functions
+
+| Name | What it does |
+|---|---|
+| `for ... else:` | `else` runs when the loop ran out without `break` |
+| `while ... else:` | the same rule for `while` |
+| `break` | leaves the loop, skipping its `else` |
+| `target=None` then `if target is None: target = []` | the safe default pattern |
+| `f.__annotations__` | where annotations are stored |
+| `sorted(kwargs)` | the keyword names as a sorted list |
+| `sum(args)`, `len(args)` | total and count of the positional arguments |
+| `abs(x)`, `str(x)` | the value without its sign; as text |
+
+---
+
 The syllabus calls this section "more control flow tools" and gives it **nine**
 of the forty questions — more than any other. Most of them turn on behaviour
 that only shows up in an edge case.

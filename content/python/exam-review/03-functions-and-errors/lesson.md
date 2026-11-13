@@ -11,6 +11,48 @@ hints:
   - "`attempt` catches `Exception`, not bare `except:` - the bare form would also swallow KeyboardInterrupt."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **return value** | what a function hands back; `None` if it ends without `return` |
+| **procedure** | in some languages, a function that returns nothing; Python has none (every function returns something) |
+| **validate early** | check the arguments first and raise, so the rest of the body can assume they are fine |
+| **special failure value** | returning something like `-1` for failure, which callers can forget to check |
+| **mean** | the sum divided by the count |
+| **nested dict** | a dict whose values may be dicts |
+| **fallback** | the value returned when something fails |
+| **discount** | a percentage taken off a price |
+
+### Python keywords and functions
+
+| Name | What it does |
+|---|---|
+| `def f(*numbers):` | collects any number of positional arguments into a tuple |
+| `raise ValueError("message")` | raises with a message; `str(err)` gives it back |
+| `try:` / `except Exception:` | catches ordinary errors, leaving Ctrl+C and `SystemExit` alone |
+| `except ValueError as err:` | catches one type, with the exception in `err` |
+| `isinstance(x, dict)` | `True` if `x` is a dict |
+| `round(x, 2)` | rounds to 2 decimals |
+| `pytest.raises(...)` | how tests check that the right error and message are raised |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `ValueError` | a value outside what the function accepts |
+| `ZeroDivisionError` | dividing by zero; check for it first instead |
+| `KeyError` | a missing key |
+| `KeyboardInterrupt`, `SystemExit` | Ctrl+C; ending the program; caught by a bare `except:`, not by `except Exception` |
+
+---
+
 Lessons 3 and 10, mixed: defining functions, and what happens when they refuse
 to finish.
 

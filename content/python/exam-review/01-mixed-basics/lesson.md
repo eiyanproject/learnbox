@@ -11,6 +11,42 @@ hints:
   - "`bmi_category` is a ladder of comparisons on `weight / height ** 2`. Order matters: check the lowest boundary first and let the later branches assume it failed."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **review** | mixed questions on earlier lessons, without saying which lesson each tests |
+| **whitespace** | spaces, tabs and newlines |
+| **collapse whitespace** | turn every run of spaces into one: `" ".join(s.split())` |
+| **branch order** | in an `if`/`elif` chain the first true branch wins, so the order is the logic |
+| **multiple** | divides with no remainder: `n % 3 == 0` |
+| **initials** | the first letter of each word |
+| **BMI** | body mass index: weight in kilograms divided by height in metres squared |
+
+### Python methods and keywords
+
+| Name | What it does |
+|---|---|
+| `s.strip()` | removes whitespace at both ends, returning a new string |
+| `s.split()` | splits on any run of whitespace, dropping empty pieces |
+| `s.split(" ")` | splits on single spaces, keeping empty pieces |
+| `" ".join(words)` | joins words with single spaces |
+| `s.title()` | first letter of each word upper case, the rest lower case |
+| `s.capitalize()` | only the first character of the whole string upper case |
+| `s.upper()` | upper case |
+| `if` / `elif` / `else` | each `elif` is reached only if everything above was false |
+| `%` | remainder; with a positive divisor never negative |
+| `**` | power: `height ** 2` |
+| `str(n)` | a number as text |
+
+---
+
 No new material in this section. Everything here comes from the Beginner
 lessons, but the topics are shuffled and the questions do not say which lesson
 they are testing — which is the only way to find out whether you know

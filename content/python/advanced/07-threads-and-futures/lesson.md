@@ -11,6 +11,65 @@ hints:
   - "`worker_pipeline`: start `n_workers` threads that `while (item := q.get()) is not None: out.append(process(item))`. Put every job, then one `None` per worker, then `join()` the threads."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **thread** | a separate line of execution in one program, sharing its memory with the others |
+| **concurrency** | several tasks in progress at once, taking turns |
+| **parallelism** | several tasks running at the same instant on different CPU cores |
+| **CPU core** | one processing unit; a computer usually has several |
+| **CPython** | the standard Python implementation |
+| **bytecode** | the low-level instructions Python compiles code into and runs |
+| **GIL** (Global Interpreter Lock) | lets only one thread run Python bytecode at a time; released while waiting |
+| **I/O-bound** | work that mostly waits on something outside the program: network, disk |
+| **CPU-bound** | work that mostly computes; threads do not speed it up (processes do) |
+| **free-threaded build** | an experimental Python 3.13 build without the GIL |
+| **thread pool** | a fixed number of worker threads that run the calls you hand them |
+| **worker** | a thread that takes jobs and runs them |
+| **future** | a handle to a result that does not exist yet |
+| **completion order** | the order calls finish in, fastest first |
+| **race condition** | a result that depends on the exact timing of threads, such as a lost `+= 1` |
+| **read-modify-write** | read a value, change it, write it back: several steps that a thread can be paused between |
+| **lock** | only one thread can hold it at a time; others wait until it is released |
+| **deadlock** | two threads each holding a lock the other waits for, so both wait forever |
+| **queue** (FIFO) | a first-in, first-out line of items |
+| **thread-safe** | safe for many threads at once, without corrupting data |
+| **producer** / **consumer** | puts jobs into a queue / takes them out |
+| **sentinel** | a special value, often `None`, meaning "stop" |
+
+### Python names and functions
+
+| Name | What it does |
+|---|---|
+| `from concurrent.futures import ThreadPoolExecutor, as_completed` | the thread-pool tools |
+| `ThreadPoolExecutor(max_workers=8)` | a pool of at most 8 threads; leaving its `with` waits for all work |
+| `pool.map(func, items)` | runs the calls concurrently, results in input order |
+| `pool.submit(func, *args)` | schedules one call and returns a `Future` at once |
+| `as_completed(futures)` | hands out futures as they finish |
+| `future.result(timeout=5)` | waits for the result (at most 5 s); re-raises the worker's exception |
+| `future.done()`, `future.cancel()` | checks without waiting; cancels a call not yet started |
+| `threading.Thread(target=f)`, `t.start()`, `t.join()` | create a thread running `f`; start it; wait for it to finish |
+| `threading.Lock()`, `with lock:` | a lock; holds it for the block, always releasing it |
+| `queue.Queue()`, `q.put(x)`, `q.get()` | a thread-safe queue; add; take (waiting while empty) |
+| `time.sleep(s)`, `time.perf_counter()` | wait; measure intervals |
+| `while (job := q.get()) is not None:` | take jobs until the sentinel arrives |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `OSError` | the family of input/output errors, such as a failed download |
+| `RuntimeError` | a general error; here, every function failed |
+
+---
+
 Downloading 50 web pages one after another means 50 waits in a row, and
 the program spends almost all of that time doing nothing, waiting for
 replies. If the downloads could overlap, the whole job would take about as

@@ -11,6 +11,62 @@ hints:
   - "`common_friends`: `set(a) & set(b)`, then `sorted(...)` to return a list in order."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **dict** (dictionary) | pairs of keys and values, in curly braces: `{"Ana": 31}` |
+| **key** | what you look a value up by; each appears at most once |
+| **value** | what a key is linked to |
+| **pair** | one key with its value, written `key: value` |
+| **default** | the value `get` returns when the key is missing (`None` unless you give one) |
+| **counting pattern** | `counts[x] = counts.get(x, 0) + 1` |
+| **grouping** | collecting items into one list per key |
+| **hashable** (cannot change) | what a key must be: strings, numbers, tuples; never a list |
+| **set** | unique items with no order, in curly braces: `{"python", "web"}` |
+| **duplicate** | a value that appears more than once; a set keeps only one |
+| **set algebra** | the operations from Venn diagrams: intersection, union, difference |
+| **intersection** (`&`) | the items in both sets |
+| **union** (`\|`) | the items in either set |
+| **difference** (`-`) | the items in the first set but not the second |
+| **empty set** (`set()`) | a set with no items; `{}` is an empty **dict** |
+| **invert** | swap keys and values |
+| **punctuation** | marks like `.,!?;:` |
+
+### Python operations and methods
+
+| Name | What it does |
+|---|---|
+| `d[key]` | the value for `key` (`KeyError` if missing) |
+| `d[key] = value` | adds the pair, or replaces the value if the key exists |
+| `del d[key]` | removes the pair |
+| `key in d` | `True` if the dict has that key |
+| `len(d)` | the number of pairs |
+| `d.get(key, default)` | the value, or `default` if the key is missing |
+| `for key in d:` | loops over the keys, in the order they were added |
+| `d.items()` | key-value pairs, unpacked as `for k, v in d.items():` |
+| `d.values()` | the values only |
+| `d.setdefault(key, default)` | the value for `key`; first stores `default` if the key is missing |
+| `s.add(x)` | adds `x` to a set (nothing happens if it is already there) |
+| `set(items)` | a set of the items, dropping duplicates |
+| `sorted(s)` | a list of the items in a fixed order |
+| `word.lower()`, `word.strip(".,!?;:")` | lower case; removes those characters from both ends |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `KeyError` | the key is not in the dict |
+| `TypeError` | the operation does not fit the type, such as a list used as a key, or `tags[0]` on a set |
+
+---
+
 ## Dictionaries
 
 A **dict** (short for dictionary) stores pairs: each **key** is linked to a

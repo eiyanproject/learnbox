@@ -11,6 +11,61 @@ hints:
   - "`FinalMeta.__new__(mcls, name, bases, ns)`: loop over `bases`; if any is an instance of `FinalMeta` with `getattr(base, \"_final\", False)`, raise `TypeError`. Otherwise `return super().__new__(mcls, name, bases, ns)`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **metaprogramming** | code that works on code: classes that react to subclassing, decorators that rewrite classes, classes built at runtime |
+| **framework** | a library that runs your code within its own structure, such as Django, pytest or SQLAlchemy |
+| **class object** | what a `class` statement produces when it runs, stored under the class's name |
+| **base class** | a parent class, listed in a tuple when building a class with `type` |
+| **namespace** | the dict of everything defined in a class body |
+| **metaclass** | the class of a class; it decides how a class is created and behaves; `type` is the default |
+| **registry** | a dict that notes down classes automatically so the program can find them by name |
+| **class keyword** | a keyword in the class statement, after the bases: `class Deploy(Command, name="deploy")` |
+| **class decorator** | a function that receives a finished class and returns it, usually modified |
+| **`mcls`** | the conventional name for a metaclass inside its own methods |
+| **metaclass conflict** | the error when a class would need two unrelated metaclasses |
+| **introspection** | a program examining its own objects while it runs |
+| **final class** | a class that cannot be subclassed |
+| **record class** | a simple class holding a fixed set of fields |
+
+### Python names and functions
+
+| Name | What it does |
+|---|---|
+| `type(name, bases, namespace)` | builds a class from a name, a tuple of bases and a dict |
+| `type(obj)` | an object's type (the one-argument form) |
+| `__init_subclass__(cls, /, name=None, **kwargs)` | called on the parent whenever a subclass is created; automatically a class method |
+| `super().__init_subclass__(**kwargs)` | passes other keywords on up the hierarchy |
+| `cls.__name__.lower()` | the class's name in lower case |
+| `cls.greet = greet` | adds a method to a class after it was created |
+| `class Meta(type):` | defines a metaclass |
+| `__new__(mcls, name, bases, ns)` | runs when a `class` statement executes; can change or refuse the class |
+| `class Task(metaclass=Meta):` | chooses a metaclass |
+| `vars(obj)` | an object's own attributes as a dict, in assignment order |
+| `getattr`, `setattr`, `hasattr` | read, write, test an attribute whose name is in a string |
+| `cls.__mro__` | the method resolution order |
+| `inspect.signature(func)` | a function's parameters, defaults and annotations |
+| `inspect.getmembers(obj)` | every attribute as `(name, value)` pairs |
+| `__slots__` | the fixed set of allowed attributes |
+| `zip(fields, args)` | pairs each field name with its argument |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `TypeError` | a metaclass refused the class, wrong number of arguments, or subclassing a final class |
+| `KeyError` | an unknown plugin name |
+
+---
+
 **Metaprogramming** is code that works on code: classes that react to being
 subclassed, decorators that rewrite classes, classes built while the program
 runs. You have already used its results. `@dataclass` reads a class's

@@ -11,6 +11,68 @@ hints:
   - "`find(conn, **filters)`: build `WHERE a = ? AND b = ?` from the keyword names (checked against `_fields`), pass the values as parameters, and turn each row back into an instance with `cls(**dict(zip(names, row)))`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **database** | an organised store of data, kept in **tables** of **rows** and **columns** |
+| **ORM** (object-relational mapper) | maps classes to tables and objects to rows, writing the SQL for you |
+| **declaration** | a class body that only says what columns exist; the ORM works out the rest |
+| **SQL** | the standard language for relational databases |
+| **SQLite** | a full SQL database stored in one file, with no server; `sqlite3` ships with Python |
+| **`:memory:`** | a temporary database in memory, gone when the connection closes |
+| **primary key** | a column with a unique value per row, here the automatic `id` |
+| **`AUTOINCREMENT`** | ids of deleted rows are never reused |
+| **cursor** | an object for reading a statement's results |
+| **placeholder** (`?`) | where a value goes in SQL, passed separately so it is only treated as data |
+| **transaction** / **commit** | changes not yet permanent / making them permanent |
+| **SQL injection** | formatting user input into SQL so the database runs it as commands |
+| **identifier** | a table or column name; it cannot be a `?` parameter, so only the ORM's own names may be used |
+| **descriptor** | a class attribute whose `__get__`/`__set__` run on access; here each field |
+| **class method** / **instance method** | acts on the whole table (`cls`) / on one row (`self`) |
+| **relationship**, **join**, **lazy loading**, **unit of work**, **migration**, **query builder** | what real ORMs add: links between tables; combining them in a query; loading related rows on first use; batching writes; changing tables safely; complex conditions |
+
+### SQL statements
+
+| Statement | What it does |
+|---|---|
+| `CREATE TABLE IF NOT EXISTS t (...)` | makes a table, safe to repeat |
+| `INSERT INTO t (a, b) VALUES (?, ?)` | adds a row |
+| `UPDATE t SET a = ?, b = ? WHERE id = ?` | changes a row |
+| `SELECT id, a FROM t WHERE a = ? ORDER BY id` | reads rows, sorted by id |
+| `DELETE FROM t WHERE id = ?` | removes a row |
+| `INTEGER`, `TEXT` | column types for whole numbers and text |
+
+### Python names and functions
+
+| Name | What it does |
+|---|---|
+| `sqlite3.connect(path)` | opens (or creates) a database |
+| `conn.execute(sql, params)` | runs one statement, returning a cursor |
+| `cur.lastrowid` | the id given to the new row |
+| `cur.fetchall()`, `cur.fetchone()` | all result rows as tuples; one row or `None` |
+| `conn.commit()` | makes the changes permanent |
+| `__set_name__`, `__get__`, `__set__` | the descriptor methods behind each field |
+| `__init_subclass__` | runs when `class User(Model)` is defined, to collect the fields |
+| `vars(cls)` | the class's own namespace, in definition order |
+| `dict(zip(names, row))`, `cls(**...)` | pair column names with a row's values; build the object |
+| `isinstance(v, int) and not isinstance(v, bool)` | an int, excluding `True`/`False` |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `TypeError` | a value of the wrong type for its field, or an unknown keyword to `__init__` |
+| `ValueError` | an unknown filter name passed to `find` |
+
+---
+
 Programs think in objects; databases think in tables of rows and columns.
 Moving data between the two by hand means writing the same SQL again and
 again for every class: an `INSERT` to save one, a `SELECT` to load it, code to

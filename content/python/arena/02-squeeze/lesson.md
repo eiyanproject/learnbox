@@ -11,6 +11,35 @@ challenge:
     xp: 600
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **run** | a stretch of the same character repeated next to itself |
+| **run-length encoding** | replacing each run with the character and its length: `aaa` becomes `a3` |
+| **squeeze** / **unsqueeze** | pack text this way / unpack it again |
+| **count** | the number after a letter; it may have several digits (`a100`) |
+| **round trip** | `unsqueeze(squeeze(text))` gives the text back |
+
+### Python methods and functions
+
+| Name | What it does |
+|---|---|
+| `ch.isdigit()`, `ch.isalpha()` | `True` for a digit; for a letter |
+| `int(digits)` | the count as a number |
+| `ch * n` | the character repeated `n` times |
+| `"".join(pieces)` | joins the pieces into one string |
+| `str(n)` | a number as text |
+| `itertools.groupby(text)` | one optional tool: groups neighbouring equal characters |
+
+---
+
 The link is slow and the message is repetitive. Pack it down, send it, and
 unpack it at the other end.
 

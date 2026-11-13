@@ -11,6 +11,68 @@ hints:
   - "`rotate(items, k)`: `k = k % len(items)` handles large k. Then `items[-k:] + items[:-k]` rotates right. Watch out for an empty list and for `k == 0`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **list** | items in a fixed order, in square brackets; it can be changed after it is made |
+| **item** | one value in a list |
+| **object** | a value in memory; changing a list updates the same object |
+| **by value** / **by position** | find an item by what it is (`remove(88)`) / by where it is (`pop(0)`) |
+| **built-in** | a function Python always has, without importing: `sum`, `len`, `sorted` |
+| **in place** | changing the list itself rather than making a new one |
+| **key function** | a function applied to each item to decide its order: `key=len` |
+| **alias** | a second name for the same list; `b = a` does not copy |
+| **copy** | a real, separate list: `a.copy()`, `a[:]` or `list(a)` |
+| **tuple** | like a list that cannot change, in round brackets: `(3, 4)` |
+| **unpacking** | giving each item its own name: `x, y = point` |
+| **swap** | exchange two values: `a, b = b, a` |
+| **trailing comma** | the comma in `(5,)`, which makes a one-item tuple |
+| **list of lists** | a list whose items are lists, like rows of a table: `grid[1][2]` |
+| **distinct** | different from each other; equal values count once |
+| **set** | a collection with one of each value (the next lesson) |
+| **rotate** | move items along, with the ones pushed off one end coming back at the other |
+| **bounding box** | the smallest and largest x and y of a group of points |
+
+### Python methods and functions
+
+| Name | What it does |
+|---|---|
+| `items.append(x)` | adds `x` at the end |
+| `items.insert(i, x)` | puts `x` at position `i`, moving the rest along |
+| `items.remove(x)` | removes the first item equal to `x` (an error if absent) |
+| `items.pop()`, `items.pop(i)` | removes and returns the last item; the item at `i` |
+| `items[i] = x` | replaces the item at position `i` |
+| `len(items)` | the number of items |
+| `sum`, `min`, `max` | total; smallest; largest |
+| `sorted(items)` | a **new** sorted list; the original is unchanged |
+| `items.sort()` | sorts the list itself and returns `None` |
+| `reverse=True` | sort largest first |
+| `x in items` | `True` if `x` is in the list |
+| `items.index(x)` | the position of the first `x` |
+| `items.count(x)` | how many times `x` appears |
+| `items.copy()` | a separate copy |
+| `zip(a, b)` | walks lists side by side, giving tuples of items at the same position; stops at the shortest |
+| `set(items)` | one of each value |
+| `range(0, len(items), size)` | the start of each chunk |
+| `%` | remainder: `k % len(items)` |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `TypeError` | the operation is not allowed, such as changing a tuple: `point[0] = 5` |
+| `ValueError` | `remove` or `index` with a value that is not in the list |
+| `ZeroDivisionError` | `% 0` or `/ 0`: dividing by zero, as when rotating an empty list |
+
+---
+
 A **list** holds several values, called **items**, in a fixed order. You
 write one with square brackets and commas between the items. Unlike a
 string, a list can be changed after it is made: you can add, remove and

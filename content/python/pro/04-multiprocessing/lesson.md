@@ -11,6 +11,63 @@ hints:
   - "`map_with_errors`: submit each item, then for each future `try: results.append((\"ok\", fut.result()))` / `except Exception as e: results.append((\"error\", type(e).__name__))`, keeping input order."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **process** | a running program with its own memory, interpreter and GIL |
+| **CPU core** | one processing unit; processes can run in parallel, one per core |
+| **CPU-bound** | limited by calculation speed, not by waiting |
+| **GIL** | the lock letting only one thread of a process run Python code at a time |
+| **pickle** / **unpickle** | convert an object to bytes to send it / convert the bytes back |
+| **bytes** | raw binary data, Python's `bytes` type |
+| **process pool** | a fixed set of worker processes that run the calls you hand them |
+| **spawn**, **forkserver**, **fork** | ways to start worker processes: import the module fresh (spawn, forkserver) or copy the running process (fork) |
+| **`__main__` guard** | `if __name__ == "__main__":`; mandatory so workers importing the file do not start pools themselves |
+| **picklable** | can be pickled; functions only by name, so they must live at module top level (never lambdas or nested functions) |
+| **chunking** | sending a few large pieces of work instead of many tiny ones, to cut pickling overhead |
+| **ceiling division** | dividing and rounding **up**: `-(-a // b)` |
+| **overhead** | extra cost that is not the work itself, such as starting processes and pickling |
+| **shared memory** | one copy of data that several processes can read, instead of pickling it to each |
+| **prime number** | a whole number above 1 divisible only by 1 and itself; trying divisors up to its square root is enough |
+| **LXC** | the Linux container this course runs in, with shared memory and process limits |
+
+### Python names and functions
+
+| Name | What it does |
+|---|---|
+| `from concurrent.futures import ProcessPoolExecutor` | a pool of worker processes, with the same interface as `ThreadPoolExecutor` |
+| `ProcessPoolExecutor(max_workers=n)` | a pool of `n` processes (default `os.cpu_count()`) |
+| `pool.map(func, items, chunksize=500)` | runs the calls in parallel, results in input order, sending items in batches |
+| `pool.submit(func, x)`, `future.result()` | one call; its result, or its exception raised again |
+| `os.cpu_count()` | the number of cores the machine reports |
+| `pickle.dumps(obj)`, `pickle.loads(data)` | object to bytes; bytes to object |
+| `math.ceil(x)`, `math.isqrt(n)` | round up; the whole-number square root |
+| `min(lo + step, stop)` | stops the last chunk at the end of the range |
+| `multiprocessing.shared_memory` | lets processes share one copy of data |
+| `type(e).__name__` | an exception's class name |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python parallel.py` | runs the script, which uses the pool under the `__main__` guard |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `PicklingError` | an object that cannot be pickled, such as a lambda |
+| `ZeroDivisionError` | an example error reported as `("error", "ZeroDivisionError")` |
+
+---
+
 The Threads lesson made waiting overlap. It could not make *computing*
 faster: counting the primes below ten million on four threads takes as long
 as on one, because of the GIL. Most computers have several CPU cores, though,

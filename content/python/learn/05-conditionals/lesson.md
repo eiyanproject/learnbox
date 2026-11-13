@@ -11,6 +11,56 @@ hints:
   - "`describe_number` builds its answer from two separate questions: sign first, then even or odd. Zero is its own answer."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **condition** | something that is either true or false: `temperature > 30` |
+| **block** | the indented lines under a line ending in `:` |
+| **comparison** | a question about two values that gives `True` or `False` |
+| **dictionary order** | how strings compare: `"apple" < "banana"`; capitals and lower case differ |
+| **chained comparison** | `18 <= age < 65`, the way you would write it on paper |
+| **short-circuiting** | stopping as soon as the answer is known: in `x and y`, a false `x` means `y` is never checked |
+| **truthy** / **falsy** | counts as true / false in a condition; falsy values are `False`, `None`, `0`, `0.0`, `""`, `[]`, `{}` |
+| **empty string** (`""`) | a string with no characters; falsy |
+| **dictionary** (`{}`) | a collection of key-value pairs (a later lesson) |
+| **returning early** | ending a function with `return` as soon as a special case is handled |
+| **nested** | one block inside another |
+| **conditional expression** | a one-line choice between two values: `"even" if n % 2 == 0 else "odd"` |
+| **leap year** | a year with 29 February: divisible by 4, except centuries not divisible by 400 |
+
+### Python keywords, operators and functions
+
+| Name | What it does |
+|---|---|
+| `if condition:` | runs its block only when the condition is true |
+| `elif condition:` | "else if": checked only when every condition above it was false |
+| `else:` | runs when every condition above was false |
+| `==`, `!=` | equal; not equal |
+| `<`, `<=`, `>`, `>=` | less than; less or equal; greater than; greater or equal |
+| `=` | assignment, not comparison; in a condition it is a `SyntaxError` |
+| `and` | true only when both sides are true |
+| `or` | true when at least one side is true |
+| `not` | flips true to false and false to true |
+| `%` | remainder: `year % 4 == 0` means "divides by 4" |
+| `bool(value)` | shows whether a value is truthy (`True`) or falsy (`False`) |
+| `input(prompt)` | shows the prompt, waits for the user to type a line, and returns it as a string |
+| `return` | ends the function at once with a value |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `SyntaxError` | not valid Python, such as `if x = 5:` (Python hints: "Maybe you meant '=='") |
+
+---
+
 So far every line of a program has run, in order. Real programs need to make
 choices: do this if the order is over 100, do that if the password is wrong.
 Python makes choices with `if`:

@@ -11,6 +11,66 @@ hints:
   - "`parse_config` returns a `Config` `TypedDict` (`host: str`, `port: int`, `debug: bool`). Convert the port with `int(...)` and debug with `value.lower() in (\"1\", \"true\", \"yes\")`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **type hint** (annotation) | a note in the code of what type a value should have; Python ignores it at runtime |
+| **type checker** | a tool such as `mypy` or `pyright` that reads the program and reports type mistakes before it runs |
+| **runtime** | while the program is actually running |
+| **autocompletion** | an editor suggesting names as you type, using hints |
+| **return annotation** (`-> str`) | the type of the return value; `-> None` returns nothing |
+| **`int \| None`** | "an `int`, or `None`"; for anything that may be missing |
+| **type alias** | a name for a type: `Mode = Literal["r", "w", "a"]` |
+| **generic** | working on any type while linking the types together |
+| **type variable** (`TypeVar`) | a placeholder type: "whatever goes in, the same comes out" |
+| **generic class** | a class parameterised by a type: `Box[int]`, via `Generic[T]` |
+| **specialised type** | a generic class with its type filled in: `Box[str]` |
+| **Protocol** | an interface judged only by the methods an object has, whatever it inherits from |
+| **structural typing** | judging a type by its structure (its methods), not its ancestry |
+| **duck typing** | "if it walks like a duck and quacks like a duck, it is a duck" |
+| **nominal typing** | judging by inheritance, as abstract base classes do |
+| **`TypedDict`** | a dict with a fixed set of keys, each with its own type; a plain `dict` at runtime |
+| **stack** | a collection where the last item pushed is the first popped |
+| **push** / **pop** / **peek** | add on top / remove and return the top / look at the top without removing |
+
+### Python names
+
+| Name | What it does |
+|---|---|
+| `name: str`, `times: int = 1` | annotate a parameter, with or without a default |
+| `list[str]`, `dict[str, float]` | a list of strings; a dict from strings to floats |
+| `f.__annotations__` | the stored annotations of a function |
+| `typing.get_type_hints(f)` | the annotations, with string annotations resolved |
+| `Iterable[float]` | anything you can loop over that gives floats |
+| `Sequence[T]` | something with a length and indexing |
+| `Mapping` | any read-only dict-like type |
+| `Callable[[int], str]` | a function taking one `int` and returning a `str` |
+| `Literal["r", "w"]` | only those exact values |
+| `Any` | anything; the checker stops checking |
+| `T = TypeVar("T")` | creates a type variable |
+| `class Box(Generic[T]):` | a generic class |
+| `def last[T](items: Sequence[T]) -> T`, `class Box[T]:` | the shorter Python 3.12 syntax |
+| `class Closeable(Protocol):` | declares a protocol |
+| `@runtime_checkable` | lets `isinstance` check a protocol (methods exist, nothing more) |
+| `class User(TypedDict):` | declares the keys and types of a dict |
+| `value.lower() in ("1", "true", "yes")` | a case-insensitive check against several values |
+| `raw.get("debug", "")` | a value, or a default when the key is missing |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `IndexError` | popping an empty stack |
+
+---
+
 Reading `def send(message, retries):`, you cannot tell whether `message` is
 a string, a dict or an object, or whether `retries` is a count or a flag. You
 have to read the body, or the documentation, or guess. **Type hints** write

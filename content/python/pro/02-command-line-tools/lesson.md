@@ -11,6 +11,71 @@ hints:
   - "`done` with an unknown id: `print(f\"error: no task {args.id}\", file=sys.stderr)` and `return 1`. `list` sorts by `(-priority, id)` and prints `[x] 1 (p3) title` style lines."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **command-line tool** (CLI) | a program driven by the arguments typed after its name |
+| **argument** | a word typed after the program name; `sys.argv` holds them as strings |
+| **option** | an argument starting with `--`: optional, and named (`--file data.json`) |
+| **positional argument** | an argument without dashes: required, identified by where it appears |
+| **flag** | an on/off option, `False` unless given |
+| **subcommand** | a word choosing an action with its own arguments, as in `git add` |
+| **parser** | the object that turns the arguments into named values |
+| **usage message** | the short summary of how to call a tool, shown on errors and with `--help` |
+| **exit code** (exit status) | the number a process finishes with: `0` success, anything else failure; argparse uses `2` for usage errors |
+| **standard streams** | a process's three channels: stdin, stdout, stderr |
+| **stdout** (standard output) | for results; what `print()` writes and `\|` pipes on |
+| **stderr** (standard error) | for errors and diagnostics, kept out of piped results |
+| **stdin** (standard input) | where a program reads input from, such as a pipe |
+| **pipe** (`\|`) | sends one program's stdout into another's stdin |
+| **scriptable** | drivable by other programs and shell scripts |
+| **`pyproject.toml`** | the standard project settings file |
+| **entry point** | `todo = "todo_cli:main"`: an installed command that calls a function |
+| **priority** | here 1 to 3, where 3 is the highest |
+
+### Python names and functions
+
+| Name | What it does |
+|---|---|
+| `argparse.ArgumentParser(prog=..., description=...)` | creates a parser; `prog` is the name shown in help |
+| `p.add_argument("--file", default=..., help=...)` | declares an option |
+| `p.add_argument("text")` | declares a positional argument |
+| `type=int`, `choices=range(1, 4)` | convert to a number; allow only those values |
+| `action="append"`, `action="store_true"`, `nargs="+"` | collect repeated values; an on/off flag; one or more values |
+| `p.add_subparsers(dest="command", required=True)` | creates subcommands, storing the chosen one in `args.command` |
+| `sub.add_parser("add")` | a subcommand with its own arguments |
+| `p.parse_args(argv)` | the arguments as an object; `None` reads `sys.argv[1:]` |
+| `def main(argv=None): ... return 0` | the testable entry point, returning an exit code |
+| `sys.exit(main())` | ends the program with `main`'s exit code |
+| `print(..., file=sys.stderr)` | writes to stderr |
+| `for line in sys.stdin:` | reads input line by line |
+| `json.loads`, `json.dumps`, `Path.read_text`, `Path.write_text` | read and save the task file |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python todo_cli.py --help` | shows the tool's help |
+| `python todo_cli.py --file x.json list` | a global option before the subcommand |
+| `echo "exit code: $?"` | `$?` holds the exit code of the last command |
+| `tool list \| grep urgent` | pipes results into `grep`, which keeps matching lines |
+| `if tool check; then ...` | the shell's `if` tests the exit code |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `SystemExit` | how argparse (and `sys.exit`) ends the program; status 2 for bad input |
+
+---
+
 A command-line tool is a program whose whole interface is three things: the
 **arguments** typed after its name (`git commit -m "fix"`), the **standard
 streams** it reads and writes (input from the keyboard or a pipe, output to

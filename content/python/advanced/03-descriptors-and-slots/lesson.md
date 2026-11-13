@@ -11,6 +11,54 @@ hints:
   - "`Product` uses `__slots__ = (\"_name\", \"_price\", \"_quantity\")`: the descriptors store into those slots, so no `__dict__` is needed."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **descriptor** | an object stored as a class attribute that defines `__get__`, `__set__` or `__delete__`; Python calls those instead of handing it over |
+| **owner** | the class a descriptor is stored on |
+| **instance `__dict__`** | the dictionary of an object's own attributes |
+| **bound method** | `obj.method`: a function with `self` already filled in, made by the function's `__get__` |
+| **`__set_name__(owner, name)`** | called on each descriptor when the class is created, telling it its attribute name |
+| **storage name** | where a descriptor keeps the value on the instance, such as `_price` |
+| **validation** | checking a value before storing it |
+| **ORM** (object-relational mapper) | a library mapping classes to database tables, defining fields with descriptors |
+| **data descriptor** | has `__set__` (or `__delete__`); wins over the instance `__dict__` |
+| **non-data descriptor** | only `__get__`; an instance attribute of the same name hides it (functions are these) |
+| **shadow** | hide a class attribute with an instance attribute of the same name |
+| **`__slots__`** | a class attribute listing the only allowed attributes, replacing `__dict__` with fixed storage |
+| **slot** | the storage for one listed name, itself a descriptor on the class |
+| **`bool` is an `int`** | `isinstance(True, int)` is `True`, so validators reject `bool` explicitly |
+
+### Python names and functions
+
+| Name | What it does |
+|---|---|
+| `__get__(self, obj, objtype=None)` | runs on reading `obj.attr`; `obj` is `None` when read on the class |
+| `__set__(self, obj, value)` | runs on `obj.attr = value` |
+| `__delete__(self, obj)` | runs on `del obj.attr` |
+| `getattr(obj, name)`, `setattr(obj, name, value)` | read or set an attribute whose name is in a string |
+| `hasattr(obj, name)` | `True` if the attribute exists |
+| `Class.__dict__["name"]` | the raw class attribute, without calling `__get__` |
+| `isinstance(value, (int, float))` | checks against several types |
+| `property` | a built-in data descriptor |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `TypeError` | a value of the wrong type, including a `bool` where a number is wanted |
+| `ValueError` | a value out of range (with the field's name); also a slot name clashing with a class variable |
+| `AttributeError` | an attribute not in `__slots__`, or assigning to a property with no setter |
+
+---
+
 In the first lesson of this section, a property validated one attribute.
 But suppose ten classes each have several prices that must be positive.
 Writing a property, getter and setter, for every one of them is a lot of

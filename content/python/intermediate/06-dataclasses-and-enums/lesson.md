@@ -11,6 +11,69 @@ hints:
   - "`Money` is `@dataclass(frozen=True)`; `__add__` checks the currency and returns a new `Money`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **dataclass** | a class whose `__init__`, `__repr__` and `__eq__` are generated from its fields |
+| **boilerplate** | repetitive code that always has the same shape |
+| **field** | one piece of a dataclass's data |
+| **type annotation** | `name: type` in the class body; it defines a field but is not checked at runtime |
+| **`list[str]`** | "a list of strings": the square brackets say what the list holds |
+| **type checker** | a separate tool, such as mypy, that reads code and reports type mistakes before it runs |
+| **mutable default trap** | one default list shared by every object; dataclasses refuse a plain `[]` |
+| **default factory** | a function called to make a fresh default for each new object |
+| **frozen** | the object cannot be changed after it is created |
+| **hashable** | usable as a dict key or set member; frozen dataclasses are |
+| **ordered** | comparable with `<` and friends, field by field as a tuple |
+| **slots** | a leaner way to store attributes (Advanced section) |
+| **`__post_init__`** | a method the generated `__init__` calls last, to check values or work out derived fields |
+| **derived field** | a field computed from the others, such as `fahrenheit` from `celsius` |
+| **enum** (enumeration) | a fixed set of named choices, the **members** of a class |
+| **member name** / **value** | `DRAFT` / `1` |
+| **constant** | a value that does not change, written in capitals by convention |
+| **sort key** | the one value used for ordering, here built so the highest priority sorts first |
+| **cents** | money stored as a whole number of the smallest unit, avoiding float errors |
+| **currency** | the kind of money, such as `"EUR"` |
+
+### Python names and functions
+
+| Name | What it does |
+|---|---|
+| `from dataclasses import dataclass, field` | brings in the decorator and the field helper |
+| `@dataclass` | generates the methods |
+| `@dataclass(frozen=True)`, `(order=True)`, `(slots=True)` | immutable; orderable; leaner instances |
+| `field(default_factory=list)` | a new empty list for each object |
+| `field(compare=False)`, `field(repr=False)`, `field(init=False)` | leave the field out of comparisons; of the repr; of `__init__` |
+| `object.__setattr__(self, "name", value)` | sets a field on a frozen object, used only in `__post_init__` |
+| `dataclasses.replace(obj, field=value)` | a modified copy of a frozen object |
+| `from enum import Enum, auto, IntEnum, StrEnum` | the enum tools |
+| `auto()` | picks member values for you, counting from 1 |
+| `member.name`, `member.value` | the member's name; its value |
+| `Status["DRAFT"]`, `Status(1)` | look up a member by name; by value |
+| `list(Status)` | all members, in order |
+| `is`, `==` | compare members (a plain `Enum` member is not equal to its value) |
+| `IntEnum`, `StrEnum` | members that also behave as ints; as strings |
+| `__add__(self, other)` | the method `a + b` calls |
+| `sorted(...)` | sorts using the generated ordering |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `ValueError` | a mutable default without `default_factory`; or a value that `__post_init__` rejects |
+| `FrozenInstanceError` | assigning to a field of a frozen dataclass |
+| `AttributeError` | a member name that does not exist, such as a typo |
+| `TypeError` | comparing plain `Enum` members with `<` |
+
+---
+
 ## @dataclass
 
 You wrote `__init__`, `__repr__` and `__eq__` by hand in the Classes lesson.

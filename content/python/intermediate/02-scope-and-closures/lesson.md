@@ -11,6 +11,52 @@ hints:
   - "`make_adders`: the loop-variable trap. Bind the current value with a default argument, `lambda x, i=i: x + i`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **scope** | the region of a program where a name can be seen |
+| **LEGB** | the order Python searches for a name: Local, Enclosing, Global, Built-in |
+| **local scope** | inside the current function |
+| **enclosing scope** | inside a function that contains this one |
+| **global scope** | the module's top level |
+| **built-in scope** | names Python always has: `len`, `print`, `range` |
+| **module** | one Python file; its top level is the global scope |
+| **shadow** | an inner name hiding an outer one of the same name |
+| **unbound** | has no value yet |
+| **state** | data a program keeps and changes over time |
+| **reassign** | point a name at a new value (`=`, `+=`); needs `nonlocal` or `global` for an outer name |
+| **mutate** | change the object a name points at (`items.append(x)`); needs no `nonlocal` |
+| **inner function** | a function defined inside another |
+| **closure** | a function bundled with the variables it uses from where it was defined, kept alive after the outer function returns |
+| **late binding** | a closure looks a name up when it is **called**, not when it is made |
+| **default-argument capture** | `lambda i=i: i` freezes the current value, because defaults are worked out once |
+| **average** | the total of the values divided by how many there are |
+
+### Python keywords
+
+| Name | What it does |
+|---|---|
+| `global name` | in a function, makes `name` mean the module-level variable |
+| `nonlocal name` | in an inner function, makes `name` mean the enclosing function's variable |
+| `return inner` | returns the inner function itself (no brackets, so it is not called) |
+| `lambda x: x * n` | a small function; it remembers `n` from where it was made |
+| `+=` | counts as an assignment, so it makes the name local |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `UnboundLocalError` | a local variable was read before it was given a value, typically `count += 1` on a global without `global` |
+
+---
+
 A name's **scope** is the region of a program where that name can be seen.
 A variable created inside a function exists only inside that function, so two
 functions can each have their own `total` without interfering. This lesson is

@@ -11,6 +11,62 @@ hints:
   - "`ticker(n, delay)` is an async generator: `for i in range(n): await asyncio.sleep(delay); yield i`. `collect` uses `[x async for x in agen]`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **asyncio** | the standard module for running many tasks concurrently in one thread |
+| **coroutine** | a function that can pause and resume; made by an `async def` |
+| **coroutine object** | what calling an `async def` returns; it runs nothing until awaited |
+| **event loop** | the scheduler that runs whichever task is ready while the others wait |
+| **await point** | where a coroutine may be suspended; switching happens only there |
+| **blocking call** | a call that waits without `await`ing, such as `time.sleep`, freezing every task on the loop |
+| **task** | a coroutine scheduled to run in the background on the loop |
+| **structured concurrency** | every task created in a group is awaited when the group ends (`TaskGroup`) |
+| **timeout** | the longest to wait before giving up |
+| **cancellation** | stopping a task by raising `CancelledError` at the `await` it is paused on |
+| **rate limit** | a server's cap on how many requests it accepts |
+| **file descriptor** | the operating system's limited handle for an open connection or file |
+| **semaphore** | like a lock, but allowing up to N holders at once |
+| **async generator** | an `async def` with `yield`; it can `await` between values |
+| **async comprehension** | `[t async for t in agen]` |
+| **async iterable** | anything `async for` can loop over, through `__aiter__` and `__anext__` |
+
+### Python names and functions
+
+| Name | What it does |
+|---|---|
+| `async def` | defines a coroutine function |
+| `await x` | runs `x` and suspends this coroutine until it finishes; only inside `async def` |
+| `asyncio.run(coro)` | starts an event loop from ordinary code, runs the coroutine, returns its result |
+| `asyncio.sleep(s)` | the async version of `time.sleep` |
+| `asyncio.to_thread(func, *args)` | runs blocking work in a thread, awaitably |
+| `asyncio.gather(*coros)` | runs coroutines concurrently; results in the order given |
+| `asyncio.create_task(coro)` | starts a coroutine in the background, returning a task to await later |
+| `asyncio.TaskGroup()` | `async with` group of tasks, all awaited at the end; one failure cancels the rest (3.11+) |
+| `asyncio.wait_for(coro, timeout)` | waits at most `timeout` seconds, else raises `TimeoutError` |
+| `asyncio.timeout(s)` | the same for a whole `async with` block (3.11+) |
+| `asyncio.Semaphore(n)`, `async with sem:` | at most `n` inside the block at once |
+| `async with`, `async for` | the async versions of `with` and `for` |
+| `__aenter__`, `__aexit__`, `__aiter__`, `__anext__` | their special methods, which are coroutines |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `TimeoutError` | a timeout ran out (on 3.10 and earlier, catch `asyncio.TimeoutError`) |
+| `CancelledError` | the task was cancelled; never swallow it |
+| `StopAsyncIteration` | an async iterator has no more items |
+| "coroutine ... was never awaited" | a warning: a coroutine object was thrown away without running |
+
+---
+
 The last lesson overlapped waiting with threads. `asyncio` overlaps it
 another way: it runs many tasks **concurrently in one thread**. Each task is
 a coroutine (the idea from Generators in depth: a function that can pause

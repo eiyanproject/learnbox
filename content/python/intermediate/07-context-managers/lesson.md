@@ -11,6 +11,61 @@ hints:
   - "`Transaction.__exit__`: if `exc_type is None`, copy the working dict into the real one; otherwise leave it untouched. Return `False` either way."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **context manager** | an object that packages setup and cleanup, used with `with` |
+| **setup** / **cleanup** | the first half of a paired job (open, lock) / the second half (close, release) |
+| **context manager protocol** | the two special methods `__enter__` and `__exit__` |
+| **`__enter__`** | called on entering the `with`; what it returns goes to the name after `as` |
+| **`__exit__(exc_type, exc, tb)`** | called on leaving, always; told the exception's type, object and traceback (all `None` if none) |
+| **suppress** (swallow) | stop an exception so the program carries on after the `with`; `__exit__` does it by returning a true value |
+| **propagate** | let an exception carry on upwards to the caller |
+| **`BaseException`** | the parent of every exception, including Ctrl+C's `KeyboardInterrupt` |
+| **generator-based context manager** | a generator split at its one `yield`: setup before, cleanup after |
+| **current working directory** | the folder relative paths are looked up in |
+| **standard output** (stdout) | where `print` writes, normally the terminal |
+| **lock** | a guard that lets only one thread at a time into some code |
+| **transaction** | changes that are applied all together, or not at all |
+| **in place** | changing the caller's own dict rather than a new one |
+
+### Python names and functions
+
+| Name | What it does |
+|---|---|
+| `with mgr as name:` | calls `__enter__`, runs the block, then always calls `__exit__` |
+| `return False` (in `__exit__`) | do not swallow the exception |
+| `time.perf_counter()`, `time.sleep(s)` | a clock for intervals; wait `s` seconds |
+| `from contextlib import contextmanager` | the decorator that turns a generator into a context manager |
+| `try: yield ... finally: ...` | makes the cleanup run even when the block raises |
+| `raise` (bare) | re-raises the exception being handled |
+| `contextlib.suppress(*exceptions)` | ignores those exception types in its block |
+| `contextlib.chdir(path)` | changes directory for the block, then back |
+| `contextlib.redirect_stdout(f)` | sends `print` output in the block to `f` |
+| `contextlib.ExitStack()`, `stack.enter_context(m)` | manages any number of context managers, closing them all at the end |
+| `os.chdir(path)`, `os.getcwd()` | change the current directory; tell you the current one |
+| `os.remove(path)` | deletes a file |
+| `tempfile.TemporaryDirectory()` | a folder deleted when the `with` ends |
+| `except (KeyError, ZeroDivisionError):` | `except` accepts a tuple of exception types |
+| `d.copy()`, `d.clear()`, `d.update(other)` | a shallow copy; empty the dict; copy pairs in |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `ZeroDivisionError` | the example's error raised inside a `with` block |
+| `FileNotFoundError` | removing a file that is not there (suppressed in the example) |
+| `KeyboardInterrupt` | Ctrl+C; a `BaseException`, so `with` still cleans up |
+
+---
+
 Many jobs come in pairs: open a file and close it, take a lock and release
 it, change a setting and change it back. The second half is easy to forget,
 and easier still to skip by accident, when an exception jumps out of the

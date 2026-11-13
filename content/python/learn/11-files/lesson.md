@@ -11,6 +11,81 @@ hints:
   - "`update_settings`: `json.loads(path.read_text())` if the file exists, else `{}`; `settings.update(changes)`; then `path.write_text(json.dumps(settings, indent=2))`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **file** | data kept on disk, which outlives the program |
+| **path** | where a file is: `"data/scores.csv"` |
+| **current directory** | the folder the program was started from; a bare file name is looked up there |
+| **file object** | the handle `open()` gives back, which you read from or write to |
+| **close** | finish with a file, so the system's resources are freed and written data reaches the disk |
+| **mode** | what you mean to do with a file: `"r"` read, `"w"` write (empties it first), `"a"` append |
+| **line break** (`\n`) | the character meaning "new line" inside a string |
+| **module** | a file of Python code someone already wrote, brought in with `import` |
+| **import** | make a module's code available: `import csv`, `from pathlib import Path` |
+| **`Path` object** | a description of a location that knows its parts; it does not touch the disk until asked |
+| **extension** (suffix) | the end of a file name after the dot: `.csv` |
+| **stem** | the file name without its extension |
+| **parent** | the folder a path is in |
+| **`.`** | "here": the current directory |
+| **`PosixPath`** | how a `Path` prints on Linux and macOS |
+| **CSV** (comma-separated values) | plain text with one row per line and commas between columns; the first line names the columns |
+| **header** | that first line of column names |
+| **JSON** (JavaScript Object Notation) | a text format for data: objects like dicts, arrays like lists, `true`/`false`/`null` |
+| **serialize** | turn Python data into text (`dumps`); the reverse is parsing (`loads`) |
+| **average** | the total divided by the count |
+
+### Python functions and methods
+
+| Name | What it does |
+|---|---|
+| `with open(path) as f:` | opens the file for the block and closes it afterwards, even after an error |
+| `open(path, mode)` | opens a file; mode `"r"` is the default |
+| `f.read()` | the whole file as one string |
+| `for line in f:` | one line at a time, each ending in `\n` |
+| `repr(s)` | a string as you would type it in code, showing `\n` |
+| `line.rstrip("\n")`, `line.strip()` | removes the line break at the right; removes whitespace at both ends |
+| `f.write(s)` | writes exactly that string, adding no line break; strings only |
+| `print(..., file=f)` | writes to the file, with a line break |
+| `print(..., end="")` | prints without a line break at the end |
+| `Path("data") / "scores.csv"` | joins path parts |
+| `p.name`, `p.suffix`, `p.stem`, `p.parent` | last part; extension; name without extension; folder |
+| `p.exists()` | `True` if the file is there |
+| `p.read_text()`, `p.write_text(s)` | read or replace the whole file in one step (`write_text` returns the characters written) |
+| `p.unlink()` | deletes the file |
+| `p.iterdir()` | everything in a folder |
+| `csv.DictReader(f)` | reads CSV rows as dicts from column name to value; every value is a string |
+| `open(path, newline="")` | how `csv` wants files opened, so it handles line endings itself |
+| `json.dumps(data, indent=2)` | Python data to JSON text, laid out two spaces per level |
+| `json.loads(text)` | JSON text to Python data |
+| `json.dump(obj, f)`, `json.load(f)` | the same, with an open file |
+| `d.update(changes)` | copies every key of `changes` into `d`, replacing existing values |
+| `sum(1 for line in f if line.strip())` | counts the lines that are not blank |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `echo "hello" > note.txt` | `echo` prints text; `>` sends it into a file instead of the screen |
+| `python` | starts the `>>>` prompt |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `FileNotFoundError` | opening a file for reading that does not exist |
+| `TypeError` | for example `json.dumps` of a set, which has no JSON form |
+| `ZeroDivisionError` | averaging zero rows |
+
+---
+
 Everything a program holds in variables disappears when it ends. Files are
 how a program keeps data between runs, and how it reads data that something
 else produced: a log, a spreadsheet export, a settings file. This lesson

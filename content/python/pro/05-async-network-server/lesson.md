@@ -11,6 +11,65 @@ hints:
   - "`start(host, port)`: `server = await asyncio.start_server(self.handle_client, host, port)`; the real port is `server.sockets[0].getsockname()[1]` when you pass port 0."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **network server** | a program that waits for other programs to connect and answers them |
+| **client** | a program that connects to a server |
+| **key-value store** | a store of values looked up by key, like Redis or memcached |
+| **TCP** | the standard way two programs exchange an ordered stream of bytes over a network |
+| **listen** | wait for incoming connections on an address and port |
+| **address** | where a machine is; `127.0.0.1` means "this machine only" |
+| **port** | a number from 1 to 65535 identifying one listening program; `0` asks for any free one |
+| **socket** | the operating system's handle for one network endpoint |
+| **stream** (`StreamReader`, `StreamWriter`) | asyncio's objects for receiving and sending a connection's bytes |
+| **peer name** | the client's own address and port |
+| **bytes literal** | `b"hello\n"`: raw bytes, not text |
+| **encode** / **decode** | text to bytes / bytes to text, UTF-8 by default |
+| **back-pressure** | waiting for the send buffer to drain, so a slow reader cannot fill the server's memory |
+| **protocol** | the agreed format of the messages |
+| **framing** | marking where one message ends; here each message ends with `\n` |
+| **line protocol** | a text protocol with one request per line |
+| **parsing** | splitting a message into its parts |
+| **netcat** (`nc`) | a terminal tool that sends and receives raw network data |
+| **graceful shutdown** | stopping new connections, then ending open ones cleanly |
+| **NIL** | this protocol's reply for "no such key" |
+
+### Python names and functions
+
+| Name | What it does |
+|---|---|
+| `asyncio.start_server(handler, host, port)` | listens, calling `handler(reader, writer)` in a new task for each connection |
+| `server.serve_forever()`, `async with server:` | keeps it running; closes it at the end of the block |
+| `server.sockets[0].getsockname()[1]` | the port the server actually got |
+| `server.close()`, `await server.wait_closed()` | stop accepting connections; wait for the listening socket to close |
+| `await reader.readline()` | the next whole line as bytes; `b""` when the client has closed |
+| `writer.write(data)`, `await writer.drain()` | queue bytes to send; wait until the queue has room |
+| `writer.close()`, `await writer.wait_closed()` | close the connection; wait until it is closed |
+| `writer.get_extra_info("peername")` | the client's address and port |
+| `asyncio.open_connection(host, port)` | connects, giving a reader and a writer |
+| `line.decode().strip().split(maxsplit=2)` | text, trimmed, split on spaces at most twice |
+| `socket.create_connection((host, port))`, `s.sendall(b)`, `s.recv(n)` | a plain socket client: connect; send; receive up to `n` bytes |
+| `" ".join(sorted(store))` | the keys sorted, separated by spaces |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python kvserver.py` | starts the server on port 7070 |
+| `printf 'SET a 1\nGET a\n' \| nc 127.0.0.1 7070` | sends two commands with netcat |
+| `python -c "..."` | runs a one-line Python program, here a small client |
+| Ctrl+C | stops the server |
+
+---
+
 This lesson puts the asyncio lesson to work on a real job: a small network
 server, of the same shape as Redis or memcached, that stores keys and values
 and answers commands from many clients at once. Network servers are where

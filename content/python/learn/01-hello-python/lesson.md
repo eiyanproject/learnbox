@@ -9,6 +9,70 @@ hints:
   - "The text must match exactly, including the capital letters, the comma and the full stop (period) at the end: `print(\"Hello, learnbox!\")`"
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **program** | a set of instructions for the computer, saved in a file |
+| **`.py` file** | a plain text file holding a Python program; `.py` is its usual ending |
+| **statement** | one instruction in a program, usually one line |
+| **run** (execute) | make Python carry out a program's statements, from top to bottom |
+| **`main` function** | a starting function other languages (C, Java) require; Python does not need one |
+| **compile** | translate code into a program before running it; Python needs no separate step for it |
+| **editor** | the panel where you type the file; it saves to disk automatically |
+| **terminal** | the text window under the editor, where you type commands |
+| **shell** (`bash`) | the program in the terminal that reads your commands and runs them |
+| **home folder** (`~`) | your own folder on the server, where the lesson's files live |
+| **Run** | the button that types the lesson's run command for you |
+| **Check** | the button that runs the hidden tests against your code |
+| **Reset** | the button that brings back the starter files (old ones go to `~/learn/.reset-backups`) |
+| **test** | a small program that runs your code and compares what it does with what was asked |
+| **function** | a named piece of code that does a job when you call it |
+| **call** | use a function: its name followed by brackets, `print("hi")` |
+| **argument** | a value you hand to a function inside its brackets |
+| **string** | a piece of text, written between quotes: `"Hello"` or `'Hello'` |
+| **quotes** (`"` or `'`) | mark where a string starts and stops; they are not part of the text |
+| **name** | a word Python looks up in your program, such as a function's name |
+| **comment** | text after `#`; Python ignores it, it is for people reading the code |
+| **error** | Python's report that it cannot carry out a line |
+| **traceback** | the lines of an error report; the last line names the error, the lines above say where |
+| **interactive prompt** (`>>>`) | Python waiting for one line at a time; it shows each result at once |
+| **value** | a piece of data, such as the number `5` or the string `"hi"` |
+| **output** | what a program writes to the terminal |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python hello.py` | runs the program in `hello.py` |
+| `python` | starts the interactive prompt |
+| `ls` | lists the files in the current folder |
+| `nano`, `vim` | terminal text editors, another way to edit a file |
+| `exit()` or Ctrl+D | leaves the interactive prompt |
+| Enter | runs the command or line you typed |
+
+### Python functions
+
+| Name | What it does |
+|---|---|
+| `print(...)` | writes its arguments to the terminal, separated by spaces, then a line break; `print()` alone writes an empty line |
+| `exit()` | ends the interactive prompt |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `SyntaxError` | the code is not valid Python (a missing quote or bracket); found before anything runs |
+| `NameError` | a name Python does not know: a typo such as `prnt`, or text missing its quotes |
+
+---
+
 A Python program is a plain text file, usually ending in `.py`. Each line of
 it is an instruction, called a **statement**. When you run the file, Python
 reads it from the top and carries out the statements one at a time, in order,

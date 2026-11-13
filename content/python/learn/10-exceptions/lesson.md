@@ -11,6 +11,62 @@ hints:
   - "`withdraw` must check before changing anything: `if amount <= 0: raise ValueError(...)`, `if amount > balance: raise InsufficientFunds(...)`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **exception** | an object describing an error: its kind and a message |
+| **raise** | signal an exception; normal flow stops at that point |
+| **catch** (handle) | deal with an exception in an `except` block instead of letting it stop the program |
+| **traceback** | the report printed when nothing catches an exception; read it from the bottom up |
+| **call stack** | the chain of function calls that led to a line; the traceback lists it, innermost call last |
+| **`<module>`** | what a traceback calls the top level of a file, outside any function |
+| **exception type** | the kind of error, such as `ValueError`; `except` catches only the type it names |
+| **handler** | an `except` block; at most one runs |
+| **bare `except:`** | an `except` with no type, catching everything; almost always a mistake |
+| **class** | a definition of a new type (the next lesson); here, a recipe for a custom exception |
+| **custom exception** | your own exception type, based on `Exception`: `class OutOfStock(Exception):` |
+| **look before you leap** | checking first that an operation is safe |
+| **easier to ask forgiveness than permission** | trying the operation and handling the error if it comes |
+| **balance** | the money in an account |
+
+### Python keywords and functions
+
+| Name | What it does |
+|---|---|
+| `try:` | runs the risky code |
+| `except SomeError:` | runs when the `try` block raised that type |
+| `except SomeError as e:` | the same, with the exception object in `e`; `str(e)` is its message |
+| `else:` | runs only if the `try` block raised nothing |
+| `finally:` | always runs last, error or not; for clean-up |
+| `raise ValueError("message")` | creates an exception with a message and raises it, ending the function |
+| `Exception` | the base type that custom exceptions are built on |
+| `pass` | does nothing; the class needs nothing extra |
+| `int(text)`, `float(text)` | convert text to a number, raising `ValueError` when it is not one |
+| `round(x, 2)` | rounds to 2 decimals |
+
+### Errors
+
+| Error | Typical cause |
+|---|---|
+| `ValueError` | right type, wrong value: `int("abc")` |
+| `TypeError` | wrong type for the operation: `"2" + 2` |
+| `NameError` | a name that has not been defined, often a typo |
+| `KeyError` | a dict key that is not there |
+| `IndexError` | a list position past the end |
+| `ZeroDivisionError` | dividing by zero |
+| `FileNotFoundError` | opening a file that is not there |
+| `AttributeError` | a method or attribute the value does not have: `[1, 2].push(3)` |
+| `InsufficientFunds` | this lesson's own exception: withdrawing more than the balance |
+
+---
+
 When a line of code cannot do its job, for example because it divides by
 zero or asks for a dict key that is not there, Python **raises an
 exception**. An exception is an object that describes the problem: what kind

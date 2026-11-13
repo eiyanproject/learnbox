@@ -11,6 +11,63 @@ hints:
   - "`slugify`: `.strip()`, `.lower()`, then `\"-\".join(text.split())` turns any run of spaces into a single dash."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **string** | Python's type for text (`str`) |
+| **character** | one letter, digit, space or punctuation mark; `"Hi 5!"` has five |
+| **sequence** | values stored in order, each with a numbered position; strings and lists are sequences |
+| **index** | a position number in square brackets, `word[0]`; counting starts at 0 |
+| **negative index** | counts from the end: `word[-1]` is the last character |
+| **slice** (`[start:stop]`) | a new string from `start` up to, but not including, `stop` |
+| **step** (`[start:stop:step]`) | how far a slice moves each time; `[::-1]` walks backwards, reversing |
+| **immutable** | cannot be changed in place; you build a new string instead |
+| **method** | a function that belongs to a value, called with a dot: `s.upper()` |
+| **whitespace** | spaces, tabs and newlines |
+| **list** | several values in square brackets, `['a', 'b']` (a later lesson) |
+| **concatenate** | join strings end to end with `+` |
+| **loop** | code that repeats its block, here once per character (a later lesson) |
+| **format specification** | instructions after a colon inside an f-string's braces: `{price:.2f}` |
+| **fixed-point** (`.2f`) | written with exactly that many decimals |
+| **palindrome** | text that reads the same backwards |
+
+### Python operators, functions and methods
+
+| Name | What it does |
+|---|---|
+| `s[i]`, `s[a:b]`, `s[a:b:step]` | one character; a slice; a slice with a step |
+| `s.strip()` | removes whitespace at both ends |
+| `s.lower()`, `s.upper()` | the text in lower case; in upper case |
+| `s.replace(old, new)` | every `old` replaced by `new` |
+| `s.split(sep)` | breaks the text into a list at each `sep`; with no argument, at any whitespace, dropping empty pieces |
+| `glue.join(pieces)` | joins a list of strings with `glue` between them: `"-".join(["a", "b"])` is `'a-b'` |
+| `s.startswith(text)` | `True` if `s` begins with `text` |
+| `s.count(text)` | how many times `text` appears |
+| `s.find(text)` | the first position of `text`, or `-1` if absent |
+| `s.isalpha()`, `s.isdigit()`, `s.isspace()` | `True` if every character is a letter; a digit; whitespace (`False` for an empty string) |
+| `a in b` | `True` if `a` appears anywhere inside `b` |
+| `len(s)` | the number of characters |
+| `+`, `*` on strings | join two strings; repeat a string: `"ab" * 3` is `'ababab'` |
+| `str(x)` | converts a value to text, so it can be joined with `+` |
+| `for ch in s:` | runs the block once per character, with `ch` set to it |
+| `f"{x:.2f}"`, `{x:>5}`, `{x:.0%}` | two decimals; right-aligned in 5 characters (`<` left, `^` centre); as a percentage |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `IndexError` | an index past the end of the string (a slice past the end is not an error) |
+| `TypeError` | an operation on the wrong type, such as `"Level " + 3` |
+
+---
+
 Almost every program handles text: names, messages, file contents, web
 pages. Python's type for text is the string, and it comes with a large set
 of tools for cutting text up, searching it and reshaping it, so you rarely

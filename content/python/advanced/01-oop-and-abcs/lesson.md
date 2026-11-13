@@ -11,6 +11,66 @@ hints:
   - "`Square` keeps its sides equal by overriding the setters: `@Rectangle.width.setter def width(self, v): Rectangle.width.fset(self, v); Rectangle.height.fset(self, v)` (and the same for height)."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **inheritance** | a subclass reusing a parent class's methods |
+| **override** | a subclass defining a method the parent also has, replacing it for the subclass |
+| **single** / **multiple inheritance** | one parent each / several parents: `class D(B, C)` |
+| **MRO** (method resolution order) | the fixed order of classes Python searches for a method; kept in `__mro__` |
+| **C3 linearisation** | the algorithm behind the MRO: a class before its parents, parents in the order listed |
+| **`object`** | the root of every class, always last in the MRO |
+| **property** | looks like an attribute but runs a method on every read (getter) or write (setter) |
+| **getter** / **setter** | the method run when a property is read / assigned |
+| **validation** | checking a value before storing it |
+| **read-only property** | one with no setter; assigning raises `AttributeError` |
+| **leading underscore** (`_balance`) | the convention for "internal, do not touch from outside"; not enforced |
+| **class method** | receives the class (`cls`) instead of an instance |
+| **alternative constructor** | another way to build an object, such as from a string; a class method building with `cls(...)` |
+| **static method** | an ordinary function living in the class, receiving neither instance nor class |
+| **namespace** | where names live; a class's namespace holds its methods |
+| **abstract base class** (ABC) | a class declaring what subclasses must provide; it cannot be instantiated itself |
+| **abstract method** | a method with no real implementation, which every concrete subclass must override |
+| **concrete** | fully implemented, so it can be instantiated |
+| **interface** | the set of methods a kind of object promises to have |
+| **instantiate** | create an object of a class |
+| **composition** | "has a": giving a class an attribute holding another object, instead of inheriting |
+| **circumference** | the distance around a circle, `2 * pi * radius` |
+
+### Python names and functions
+
+| Name | What it does |
+|---|---|
+| `super().__init__(...)` | runs the next class's version in the MRO (the parent, with single inheritance) |
+| `Class.__mro__` | the MRO as a tuple of classes |
+| `cls.__name__`, `type(self).__name__` | a class's name; the name of the object's actual class |
+| `@property` | turns a method into a property's getter |
+| `@name.setter` | adds the setter; it must have the same name as the property |
+| `Rectangle.width.fset(self, v)` | calls the parent property's setter directly |
+| `@classmethod` / `@staticmethod` | make a class method / a static method |
+| `map(int, parts)` | converts each part to an int |
+| `from abc import ABC, abstractmethod` | the tools for abstract base classes |
+| `@abstractmethod` | marks a method subclasses must provide |
+| `math.sqrt(x)`, `math.pi` | square root; pi |
+| `f"{x:.2f}"` | exactly 2 decimals |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `ValueError` | a property's setter rejected the value |
+| `AttributeError` | assigning to a read-only property |
+| `TypeError` | "Can't instantiate abstract class": an abstract method is still missing |
+
+---
+
 The Beginner section introduced classes and a first taste of inheritance.
 This lesson covers the tools that make class hierarchies hold up in real
 code: how `super()` really decides which method runs, attributes that check

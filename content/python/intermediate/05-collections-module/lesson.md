@@ -11,6 +11,64 @@ hints:
   - "`k_smallest` is `heapq.nsmallest(k, items)`. `grade_for` uses `bisect.bisect(breakpoints, score)` as an index into the grades string."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **`collections` module** | standard tools that fill gaps in `list`, `dict` and `set` |
+| **`Counter`** | a dict from each item to how many times it appears; missing items count as 0 |
+| **`defaultdict`** | a dict that creates a value for a missing key the first time it is asked for |
+| **default factory** | the function `defaultdict` calls to make a missing value: `list`, `int`, `set`, a `lambda` |
+| **deque** ("deck", double-ended queue) | a sequence with fast appends and pops at both ends |
+| **queue** | items join at one end and leave from the other |
+| **`maxlen`** | a deque's size limit; appending to a full one drops an item from the other end |
+| **namedtuple** | a tuple whose positions also have names: `p.x` as well as `p[0]` |
+| **immutable** | cannot change; `_replace` makes a new namedtuple instead |
+| **heap** | a list in a partial order where `heap[0]` is always the smallest; not a sorted list |
+| **priority queue** | items come out most urgent first; with a heap, push `(priority, item)` tuples |
+| **binary search** (bisect) | finding a place in a sorted list by halving the part searched each time |
+| **window** / **moving average** | a run of consecutive values / the average at each position as the window slides |
+| **grade boundary** | the lowest score for a grade, such as "70 and above" |
+
+### Python classes and functions
+
+| Name | What it does |
+|---|---|
+| `Counter(iterable)` | counts each item |
+| `c.most_common(n)` | the `n` highest counts as `(item, count)` pairs; ties in first-seen order |
+| `c.update(iterable)` | adds more counts |
+| `Counter + Counter` | adds counts key by key |
+| `defaultdict(list)` | missing keys get a new empty list (pass the function, not `list()`) |
+| `dict(d)` | a plain dict copy, which raises `KeyError` for missing keys again |
+| `key in d` | checks for a key without creating it |
+| `deque(items)`, `deque(maxlen=3)` | a deque; one that keeps only the last 3 items |
+| `q.append(x)`, `q.appendleft(x)` | add at the right; at the left |
+| `q.pop()`, `q.popleft()` | remove from the right; from the left |
+| `q.rotate(1)` | moves every item one place right, the last wrapping to the front |
+| `namedtuple("Point", "x y")` | creates a class `Point` with fields `x` and `y` |
+| `p._replace(x=10)` | a new tuple with one field changed |
+| `heapq.heappush(heap, x)`, `heapq.heappop(heap)` | add keeping the heap order; remove the smallest |
+| `heapq.nsmallest(k, items)`, `heapq.nlargest(k, items, key=len)` | the `k` smallest or largest of any iterable, in order |
+| `bisect.bisect(sorted_list, x)` | the position `x` would go in, after any equal values |
+| `bisect.bisect_left(sorted_list, x)` | the same, before any equal values |
+| `bisect.insort(sorted_list, x)` | inserts `x` keeping the list sorted |
+| `text.lower().split()` | lower-case words split on whitespace |
+| `yield` | hands out the next value from a generator |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `KeyError` | a missing key in a plain dict; `Counter` and `defaultdict` do not raise it |
+
+---
+
 The built-in `list`, `dict` and `set` cover most needs. The `collections`
 module fills the gaps, and each tool replaces a pattern you would otherwise
 write by hand.

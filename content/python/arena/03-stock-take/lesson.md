@@ -12,6 +12,44 @@ challenge:
     badges: [beginner-1]
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **stock take** | counting everything in a warehouse and its value |
+| **good line** | three comma-separated parts: a name, a whole-number quantity, a unit price |
+| **unit price** | the price of one item |
+| **total value** | quantity times price, summed and rounded to 2 decimals |
+| **skipped line** | a bad line; its number (from 1) is recorded |
+| **comment line** | blank, or starting with `#`; ignored, not recorded, but still numbered |
+| **whole number** | an integer: `4`, not `1.5` or `two` |
+
+### Python functions and methods
+
+| Name | What it does |
+|---|---|
+| `enumerate(lines, start=1)` | each line with its number, from 1 |
+| `line.split(",")`, `part.strip()` | break at commas; trim spaces |
+| `line.strip().startswith("#")` | the comment check |
+| `int(text)`, `float(text)` | convert, raising `ValueError` for bad text |
+| `try` / `except ValueError` | skip a line that cannot be converted |
+| `d.get(name, 0) + qty` | add to an item's running quantity |
+| `round(total, 2)` | rounds to 2 decimals |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `ValueError` | text that is not a number of the right kind |
+
+---
+
 The warehouse sent its stock list as text, typed by hand, and the auditor is
 at the door.
 

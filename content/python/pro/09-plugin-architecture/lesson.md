@@ -11,6 +11,68 @@ hints:
   - "`run_pipeline(text, plugins, order)`: `for name in order: text = plugins[name].transform(text)`; an unknown name raises `KeyError`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **plugin** | a file that extends a program without editing it |
+| **plugin architecture** | the host discovers plugin files, loads them while it runs, checks them, and survives broken ones |
+| **host** | the program that loads the plugins |
+| **discover** | find the plugin files, here a directory listing |
+| **glob pattern** | a file-name pattern such as `*.py` |
+| **private file** | one whose name starts with `_`, skipped by convention |
+| **stem** | a file name without its extension |
+| **module spec** | a description of a module to load: its name and where its code is |
+| **runtime loading** | loading a file chosen while the program runs, not written into an `import` |
+| **entry point** | a package's declaration "I provide a plugin for this app", listed by the host |
+| **contract** | what each plugin must provide: an object `plugin` with `name` and `transform` |
+| **Protocol** | an interface checked by shape, not inheritance (structural typing) |
+| **failure isolation** | one broken plugin means one missing feature, not a crashed program |
+| **boundary** | where your code meets code you do not control; the right place for a broad `except` |
+| **sandboxing** | restricting what code can do; impossible for a Python module inside Python |
+| **pipeline** | applying plugins one after another, each to the result of the one before |
+
+### Python names and functions
+
+| Name | What it does |
+|---|---|
+| `Path(folder).glob("*.py")` | every `.py` file in the folder |
+| `p.name.startswith("_")`, `p.stem` | the private-file check; the name without `.py` |
+| `tempfile.mkdtemp()` | an empty scratch folder |
+| `importlib.util.spec_from_file_location(name, path)` | a module spec for that file |
+| `importlib.util.module_from_spec(spec)` | a new, empty module |
+| `spec.loader.exec_module(module)` | runs the file's code inside the module |
+| `importlib.import_module("pkg.mod")` | `import` with the name as a string |
+| `importlib.metadata.entry_points(group=...)` | the plugins installed packages advertise |
+| `@runtime_checkable class TextPlugin(Protocol):` | the contract, checkable with `isinstance` (attributes exist; signatures are not checked) |
+| `getattr(module, "plugin")`, `hasattr` | reads or checks the module's `plugin` |
+| `except Exception as e:` | catches any ordinary error at the boundary (Ctrl+C still gets through) |
+| `f"{type(e).__name__}: {e}"` | an error string such as `RuntimeError: boom at import` |
+| `text[::-1]`, `text.upper()` | reversed text; upper case |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python loader.py` | loads the plugins and runs the pipeline |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `SyntaxError` | a plugin file that is not valid Python |
+| `RuntimeError` | an example of a plugin raising at import |
+| `KeyError` | an unknown plugin name in the pipeline order |
+| `AttributeError` | a module with no `plugin` attribute |
+
+---
+
 Many programs are extended by dropping a file into a folder: editors,
 static site generators, test runners, CI tools. Nobody edits the program
 itself; it notices the new file and picks up what it offers. This is a

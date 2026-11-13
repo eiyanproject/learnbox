@@ -11,6 +11,46 @@ hints:
   - "`multiplication_table(n)`: a list comprehension inside a list comprehension; the outer one makes rows, the inner one makes the values in a row."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **comprehension** | a whole list, dict or set built from a loop in one expression |
+| **expression** | code that produces a value, which you can assign, return or pass on |
+| **list comprehension** | `[n * n for n in range(10)]`: "`n * n` for each `n`" |
+| **filter** | an `if` at the **end**: decides whether an item goes in at all; no `else` |
+| **conditional expression** | an `x if condition else y` at the **front**: decides what goes in; `else` required |
+| **dict comprehension** | `{key: value for ...}` |
+| **set comprehension** | `{value for ...}`, dropping duplicates |
+| **generator expression** | a comprehension without brackets inside a function call: `sum(n * n for n in ...)`; values one at a time, no list built |
+| **nested loops** | one loop inside another; several `for` clauses run in the order written |
+| **outer** / **inner** loop | the first `for` / the one inside it, which runs fully for each outer value |
+| **flat list** | one list with all the items, not a list of lists |
+| **side effect** | something code does rather than builds, such as printing; a reason to use a loop instead |
+| **readability** | how easily a person can follow code |
+| **multiplication table** | a grid where row `i`, column `j` holds `(i + 1) * (j + 1)` |
+
+### Python keywords and functions
+
+| Name | What it does |
+|---|---|
+| `for ... in ...` | the loop part of a comprehension, written without a colon |
+| `if` | at the end, a filter; with `else` at the front, a choice of value |
+| `sum()`, `max()` | total; largest |
+| `any(...)` | `True` if at least one value is true |
+| `len(word)` | the length |
+| `w.upper()` | upper case |
+| `try` / `except` | catching errors (the next lesson); a reason to use an ordinary loop |
+| `return` | each function here is one `return` of a comprehension |
+
+---
+
 In the loops lesson you built lists by starting with `[]` and appending
 inside a `for` loop. That pattern is so common that Python has a shorter way
 to write it. A **comprehension** builds a whole collection from a loop in one

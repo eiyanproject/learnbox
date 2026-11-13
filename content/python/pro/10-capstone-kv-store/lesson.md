@@ -11,6 +11,67 @@ hints:
   - "`main(argv)`: `db, command, *args = argv`; `with KVStore(db) as store:` then dispatch. Values given on the command line are stored as strings; `get` of a missing key prints to stderr and returns 1."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **key-value store** | a database of values looked up by key |
+| **persistent** | kept on disk, so it survives the program ending |
+| **append-only log** | a file where every change is added as a new line, never modified in place |
+| **write-ahead log** | the same idea inside PostgreSQL and SQLite |
+| **replay** | rebuild the in-memory state by applying every log line in order |
+| **crash recovery** | coping with a program killed mid-write: keep every complete line, drop a torn last one |
+| **truncated** (torn) | cut off part way, so the line is not valid JSON |
+| **acknowledged** | reported to the caller as done; an unacknowledged change may be lost |
+| **buffer** | memory where written data waits before going further |
+| **flush** | hand Python's buffered data to the operating system |
+| **fsync** | ask the operating system to write its buffers to the physical disk |
+| **compaction** | rewriting the log with one `set` line per live key |
+| **atomic** | happening as one indivisible step, with no half-done moment in between |
+| **temporary file** | a scratch file, here in the same directory so the rename is atomic |
+| **interleave** | two threads' writes mixed together line by line |
+| **thread-safe** | correct when several threads use it at once |
+| **mapping** | a dict-like object supporting `in`, `len` and lookup |
+| **exit code** | the number a command finishes with: `0` success, `1` here for a missing key |
+
+### Python names and functions
+
+| Name | What it does |
+|---|---|
+| `json.loads(line)`, `json.dumps(entry)` | parse one log line; write one |
+| `open(path, "a")` | open for appending, creating the file if needed |
+| `f.write(s)`, `f.flush()`, `f.close()` | write; flush; close |
+| `os.fsync(f.fileno())` | force the file to disk |
+| `os.replace(tmp, path)` | atomically swap the new file in |
+| `os.path.join`, `os.path.exists`, `tempfile.mkdtemp()` | build a path; check it exists; a scratch folder |
+| `threading.Lock()`, `with self._lock:` | make "write, then update the dict" one step |
+| `__len__`, `__contains__` | make `len(db)` and `key in db` work |
+| `__enter__`, `__exit__` | make `with KVStore(path) as db:` work, closing the file at the end |
+| `db, command, *args = argv` | unpack the command-line arguments |
+| `print(..., file=sys.stderr)` | write an error message |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python kvstore.py demo.db keys` | lists the keys |
+| `python kvstore.py demo.db set name Ana` | stores a value |
+| `cat demo.db` | prints the log file itself |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `JSONDecodeError` | a line that is not valid JSON, such as a torn last line; a subclass of `ValueError` |
+
+---
+
 Time to combine the course into one small, real system: a database that
 stores keys and values in a file, survives the program being killed at the
 worst possible moment, can be used safely from several threads, and comes

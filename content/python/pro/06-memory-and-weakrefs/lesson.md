@@ -11,6 +11,57 @@ hints:
   - "`peak_allocation(func)`: `tracemalloc.start()`, call `func()`, `_, peak = tracemalloc.get_traced_memory()`, `tracemalloc.stop()`, return `peak`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **reference** | a name, container slot or attribute that points at an object |
+| **strong reference** | an ordinary reference, which keeps the object alive |
+| **reference count** | how many references point at an object; at zero CPython frees it immediately |
+| **CPython** / **PyPy** | the standard Python / another implementation that frees objects later |
+| **reference cycle** | objects pointing at each other, so their counts never reach zero |
+| **cycle collector** (`gc`) | finds unreachable cycles every so often and frees them |
+| **unreachable** | nothing in the program can get to it any more |
+| **back-reference** | a link from a child back up to its parent |
+| **weak reference** | points at an object without keeping it alive; calling it returns the object or `None` |
+| **`_`** (at the prompt) | the last value shown, which is a strong reference |
+| **cache** | stored results handed out again instead of rebuilt |
+| **listener registry** | a collection of objects to notify, best held weakly |
+| **weak-referenceable** | can be weakly referenced; your own classes can, `int`, `str`, `list`, `dict` cannot |
+| **finalizer** | cleanup that runs when an object is collected, or at interpreter exit |
+| **interpreter shutdown** | when Python exits, tearing modules down |
+| **allocation** | memory Python reserves for an object |
+| **peak** | the most memory allocated at any one moment |
+| **PEP 442** | the Python change (3.4) that lets cycles with `__del__` be collected |
+
+### Python names and functions
+
+| Name | What it does |
+|---|---|
+| `sys.getrefcount(obj)` | the reference count, plus one for the temporary argument |
+| `del name` | removes a reference |
+| `gc.collect()` | runs the cycle collector now, returning how many objects it found |
+| `gc.disable()` | switches the cycle collector off (as a test does) |
+| `weakref.ref(obj)`, `r()` | a weak reference; the object, or `None` if freed |
+| `weakref.WeakValueDictionary()` | a dict whose values are held weakly; entries vanish when unused |
+| `weakref.WeakSet()` | a set holding its items weakly |
+| `weakref.finalize(obj, func, *args)` | calls `func(*args)` once when `obj` is collected; the callback must not refer to `obj` |
+| `__del__` | a method called right before an object is freed; unreliable for cleanup |
+| `shutil.rmtree(path)` | deletes a folder and everything in it |
+| `tracemalloc.start()`, `tracemalloc.stop()` | begin and end recording allocations |
+| `tracemalloc.get_traced_memory()` | `(current, peak)` in bytes |
+| `tracemalloc.take_snapshot().statistics("lineno")` | which lines allocated the most |
+| `sys.getsizeof(obj)` | one object's own size in bytes, not what it refers to |
+| `@property` | the `parent` attribute backed by a weak reference |
+
+---
+
 Python frees memory for you, so most of the time you never think about it.
 But "most of the time" is not always. A long-running server whose memory
 creeps up day after day, a cache that quietly holds on to every object it

@@ -11,6 +11,77 @@ hints:
   - "`__eq__` compares tuples, `__hash__` is `hash(self._items)`, and `@functools.total_ordering` builds the other comparisons from `__eq__` and `__lt__` (compare by `abs()`)."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **special method** (dunder method) | a method named `__like_this__` that Python calls for matching syntax |
+| **data model** | the full set of special methods and the rules for how Python uses them |
+| **REPL** | the read-eval-print loop: the `>>>` prompt |
+| **representation** | how an object turns into text: `__repr__` for developers, `__str__` for users |
+| **container** | an object that holds items and works with `len`, indexing, `for` and `in` |
+| **delegating** | passing each call on to a stored built-in list or tuple |
+| **slice object** | what `v[1:3]` passes to `__getitem__`: `slice(1, 3, None)` |
+| **operator overloading** | giving `+`, `*`, `-` meanings for your own type |
+| **unary minus** | `-v`, calling `__neg__` |
+| **reflected method** | `__radd__`, `__rmul__`: tried on the right-hand operand when the left one gives up |
+| **`NotImplemented`** | a special value meaning "ask the other operand"; not the `NotImplementedError` exception |
+| **hash** | a number computed from a key, which a dict files it under |
+| **hashable** | usable as a dict key or set member; equal objects must have equal hashes |
+| **immutable** | cannot change after creation; only immutable objects should be hashable |
+| **ordering** | `<` `<=` `>` `>=`, calling `__lt__` `__le__` `__gt__` `__ge__` |
+| **class decorator** | a decorator applied to a class: `@functools.total_ordering` |
+| **truthiness** | whether `if obj:` treats the object as true |
+| **callable** | can be called like a function: `obj(5)` |
+| **vector** | a list of numbers treated as one value, added element by element |
+| **element-wise** | operating on matching positions of two vectors |
+| **Euclidean length** | the square root of the sum of the squares: `abs(Vector([3, 4]))` is `5` |
+
+### Python special methods
+
+| Name | Called by |
+|---|---|
+| `__repr__`, `__str__`, `__format__(spec)` | `repr()` and the prompt; `str()` and `print()`; `f"{v:.2f}"` |
+| `__len__` | `len(v)`; also makes length-0 objects false |
+| `__getitem__(index)` | `v[0]`, `v[-1]`, `v[1:3]` |
+| `__iter__` | `for x in v`; must return an iterator |
+| `__contains__(item)` | `x in v` (falls back to `__iter__`) |
+| `__add__`, `__sub__`, `__mul__` | `+`, `-`, `*` |
+| `__radd__`, `__rmul__` | the reflected versions, such as `3 * v` |
+| `__neg__`, `__abs__` | `-v`, `abs(v)` |
+| `__eq__`, `__hash__` | `==`; `hash()`, dict keys and sets |
+| `__lt__`, `__le__`, `__gt__`, `__ge__` | `<`, `<=`, `>`, `>=` |
+| `__bool__` | `if obj:`, `bool(obj)` |
+| `__call__` | `obj(...)` |
+
+### Python functions
+
+| Name | What it does |
+|---|---|
+| `isinstance(index, slice)` | checks whether a slice was passed |
+| `iter(items)` | an iterator over the stored items |
+| `zip(self, other)` | pairs matching elements |
+| `hash(t)` | the hash of a tuple |
+| `@functools.total_ordering` | fills in `<=`, `>`, `>=` from `__eq__` and `__lt__` |
+| `sorted`, `min`, `max` | need only `<` |
+| `math.sqrt(x)` | square root |
+| `tuple(float(x) for x in items)` | stores the numbers as floats in a tuple |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `TypeError` | "unsupported operand type(s)": both sides returned `NotImplemented`; also assigning to an item of a tuple, or hashing an unhashable object |
+| `ValueError` | vectors of different lengths |
+
+---
+
 Why does `len()` work on lists, strings, dicts and files alike, and how can
 `+` mean addition for numbers but joining for strings? Because Python's
 syntax is a thin layer over **special methods** (the "dunder" methods, with

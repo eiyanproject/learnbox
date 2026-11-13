@@ -11,6 +11,51 @@ hints:
   - "`enumerate(iterable, start=1)` gives 1-based positions, which is what a rank is."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **mutate** | change an object in place; list methods that do so return `None` |
+| **shallow copy** | a new outer list holding the **same** items; inner lists are shared |
+| **deep copy** | copies the inner lists too |
+| **set** | unique items with no order; `set()` is an empty set, `{}` an empty dict |
+| **union**, **intersection**, **difference**, **symmetric difference** | in either; in both; in the first only; in exactly one |
+| **invert a mapping** | a dict from each value to the keys that had it |
+| **rank** | a position in a sorted list, starting at 1 |
+| **first-seen order** | keeping each value where it first appeared |
+
+### Python methods and functions
+
+| Name | What it does |
+|---|---|
+| `values.sort()` | sorts the list itself, returns `None` |
+| `sorted(values)` | a new sorted list; the original is unchanged |
+| `append`, `extend`, `insert`, `remove`, `reverse` | change the list; return `None` |
+| `pop()`, `pop(i)` | remove and return an item |
+| `index(x)`, `count(x)` | position of `x`; how many `x` |
+| `copy()`, `copy.deepcopy(x)` | a shallow copy; a deep copy |
+| `a \| b`, `a & b`, `a - b`, `a ^ b` | the four set operations |
+| `mapping.items()` | key-value pairs |
+| `enumerate(values, start=1)` | positions from 1 with each item |
+| `zip(a, b)` | walks two sequences side by side, stopping at the shorter |
+| `d.get(key, default)` | the value, or the default instead of `KeyError` |
+| `d.setdefault(key, default)` | the value, inserting the default first if missing |
+| `sorted(d.items(), key=lambda kv: (-kv[1], kv[0]))` | by value descending, then key ascending |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `KeyError` | `d[key]` for a missing key |
+
+---
+
 Seven of the forty questions come from this section. The recurring theme is
 *which methods return a value and which return `None`*.
 

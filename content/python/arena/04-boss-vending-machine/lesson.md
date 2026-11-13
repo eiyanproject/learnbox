@@ -13,6 +13,49 @@ challenge:
     badges: [beginner-1]
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **boss round** | the section's final, longer challenge |
+| **cents** | money counted as whole numbers of the smallest unit, so no decimals |
+| **credit** | money inserted and not yet spent |
+| **change** | the credit minus the price, given back as coins |
+| **fewest coins** | take as many of the largest coin as fit, then the next (works for 500, 100, 50, 10) |
+| **refund** | the whole credit given back as coins |
+| **stock** | each item's price and quantity |
+| **sales** | the total of every price paid |
+| **own copy** | the machine copies the dict, so later changes to it do not affect the machine |
+| **check order** | unknown item, then sold out, then not enough credit; a refusal changes nothing |
+
+### Python names and functions
+
+| Name | What it does |
+|---|---|
+| `class VendingMachine:` with `__init__` | the class to finish |
+| `dict(stock)` | a copy of the stock dict |
+| `raise InvalidCoin`, `UnknownItem`, `SoldOut`, `NotEnoughCredit` | the exception classes already written at the top of the file |
+| `divmod(amount, coin)` | how many coins fit, and what is left |
+| `sorted(names)` | the in-stock names in order |
+| `for coin in (500, 100, 50, 10):` | largest coin first |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `InvalidCoin` | a coin other than 10, 50, 100 or 500 |
+| `UnknownItem` | an item the machine does not have |
+| `SoldOut` | none of that item left |
+| `NotEnoughCredit` | the credit is less than the price |
+
+---
+
 The machine in the corridor has eaten its last coin. You have thirty-five
 minutes to write its replacement. Everything in the Beginner section is in
 here somewhere.

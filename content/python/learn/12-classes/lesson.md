@@ -11,6 +11,61 @@ hints:
   - "`transfer_to(self, other, amount)`: call `self.withdraw(amount)` first, so an error leaves both accounts unchanged, then `other.deposit(amount)`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **object** | a bundle of data together with the operations that make sense for it |
+| **class** | the blueprint for objects: what data they hold and what they can do |
+| **instance** | one object made from a class; `"hi"` is an instance of `str` |
+| **method** | a function defined inside a class |
+| **`__init__`** ("dunder init") | sets up a new object; Python calls it when you write `Rectangle(3, 4)` |
+| **`self`** | the object a method was called on; always the first parameter, filled in by Python |
+| **attribute** | a variable stored on an object, read and set with a dot: `box.width` |
+| **dunder method** (special method) | a method named `__like_this__` that Python calls for built-in operations |
+| **`__repr__`** | returns the text that `print()` and the prompt show; by convention it looks like code that creates the object |
+| **`__eq__`** | decides what `==` does |
+| **memory address** | where an object sits in memory, shown by the default `<... object at 0x7f...>` |
+| **class attribute** | a variable in the class body, shared by all instances |
+| **inheritance** | basing a class on another one, getting all its methods |
+| **subclass** / **base class** | the new class / the class it is based on: `class Square(Rectangle):` |
+| **override** | define a method with the same name as the base class's, replacing it |
+| **decorator** | a line starting with `@` above a definition that changes it: `@dataclass` |
+| **dataclass** | a class whose `__init__`, `__repr__` and `__eq__` are written for you from its fields |
+| **field** | one piece of a dataclass's data, with a type: `x: int` |
+| **type hint** | a note of the type a value should have; Python does not check it |
+| **history** | here, the list of `("deposit", amount)` tuples an account keeps |
+
+### Python keywords and functions
+
+| Name | What it does |
+|---|---|
+| `class Name:` | starts a class definition; class names use a capital for each word |
+| `def method(self, ...):` | defines a method; `self` is listed first, left out in the call |
+| `self.width = width` | stores an attribute on the object |
+| `isinstance(value, Point)` | `True` if the value is a `Point` (or a subclass of it) |
+| `repr(x)` | the text from `__repr__` |
+| `f"{value!r}"` | puts `repr(value)` into the f-string, so strings get their quotes |
+| `super().__init__(...)` | runs the base class's version of the method |
+| `from dataclasses import dataclass` | brings in the `@dataclass` decorator |
+| `raise ValueError(...)` | reports an amount that is not allowed |
+| `items.append(x)` | adds to the end of a list |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `ValueError` | a bad amount: zero, negative, or more than the balance |
+| `AttributeError` | reading an attribute that is not there, such as `other.x` on a string |
+
+---
+
 Every value in Python is an **object**: a bundle of data together with the
 operations that make sense for that data. A list holds its items and knows how
 to `append`, `sort` and `pop` them; a string holds its characters and knows how

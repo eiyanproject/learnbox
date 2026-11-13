@@ -11,6 +11,55 @@ hints:
   - "`json.dumps(obj, sort_keys=True)` makes the output deterministic; `json.loads` reads it back. A tuple becomes a list on the round trip - JSON has no tuples."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **standard library** | the modules that come with Python ("batteries included") |
+| **mean** | the ordinary average: sum divided by count |
+| **median** | the middle value once sorted; the average of the middle two for an even count |
+| **standard deviation** | how spread out values are around the mean |
+| **population** / **sample** | all the data (divide by `n`) / data taken from a larger whole (divide by `n - 1`) |
+| **ISO date** | year-month-day: `2026-09-23` |
+| **day of the year** | counting from 1 January as day 1, including 29 February in a leap year |
+| **regular expression** | a pattern describing the shape of text |
+| **match object** | what `search` and `match` return on success; `.group()` gives the matched text |
+| **anchor at the start** | `match` only tries at the beginning; `search` scans the whole text |
+| **group** | round brackets in a pattern; with one, `findall` returns only that part |
+| **JSON** | a text format for data; no tuples (they come back as lists), no sets, string keys only |
+| **serialise** | turn data into text; **round trip**: text and back again |
+| **deterministic** | the same input always gives the same output, as with `sort_keys=True` |
+
+### Python functions
+
+| Name | What it does |
+|---|---|
+| `statistics.mean`, `statistics.median` | the average; the middle value |
+| `statistics.pstdev`, `statistics.stdev` | population and sample standard deviation (`stdev` of one value raises) |
+| `date.fromisoformat("2026-09-23")` | reads an ISO date |
+| `d.weekday()`, `d.isoweekday()` | Monday is 0 / Monday is 1 |
+| `d.strftime("%Y/%m/%d")` | writes the date with format codes: four-digit year, month, day |
+| `d.timetuple().tm_yday` | the day of the year |
+| `re.findall(p, text)`, `re.search(p, text)`, `re.match(p, text)` | every match; the first match anywhere; a match at the start |
+| `\d+`, `[A-Z]{2}`, `\d{3}` | one or more digits; exactly two capitals; exactly three digits |
+| `json.dumps(obj, sort_keys=True)`, `json.loads(text)` | data to JSON text with sorted keys; text to data |
+| `round(x, 3)` | rounds to 3 decimals |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `StatisticsError` | `stdev` of fewer than two values |
+| `TypeError` | `json.dumps` of a set |
+
+---
+
 The syllabus calls this "a brief tour of the standard library" and gives it four
 questions. The point is not to memorise every module, but to know which one
 already solves the problem.

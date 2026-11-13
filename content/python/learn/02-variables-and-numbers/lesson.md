@@ -10,6 +10,69 @@ hints:
   - "`round(value, 2)` rounds to two decimal places."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **variable** | a name that points at a value, so you can use the value later by its name |
+| **value** | a piece of data: a number, a piece of text, `True` |
+| **assignment** (`=`) | attaching a name to a value; read `=` as "is set to", not "equals" |
+| **operator** | a symbol that does a calculation, such as `+` or `*` |
+| **underscore in a number** (`10_560_000`) | only makes a long number easier to read; Python ignores it |
+| **type** | the kind of a value, which decides what you can do with it |
+| **declare** | tell a language a variable's type in advance; Python does not need it |
+| **`int`** (integer) | a whole number of any size: `42`, `-7` |
+| **`float`** (floating-point number) | a number with a decimal point: `3.14`, `2.0` |
+| **`str`** (string) | text, in quotes |
+| **`bool`** (Boolean) | one of two values, `True` or `False`, written with a capital letter |
+| **floor division** (`//`) | division rounded down to a whole number: `7 // 2` is `3` |
+| **remainder**, modulo (`%`) | what is left over after floor division: `7 % 2` is `1` |
+| **power** (`**`) | raising to a power: `7 ** 2` is `49` |
+| **order of operations** (precedence) | which operation happens first: `**`, then `*` `/` `//` `%`, then `+` `-`; brackets go first of all |
+| **binary** | base 2, how a computer stores numbers; why some decimals like 0.1 are not exact as floats |
+| **rounding** | replacing a number with the nearest one with fewer decimal places |
+| **banker's rounding** | rounding an exact half to the nearest **even** number: `round(2.5)` is `2` |
+| **reassigning** | pointing an existing name at a new value |
+| **augmented assignment** (`+=`, `-=`, `*=`, `/=`, `//=`, `%=`) | shorthand: `count += 1` means `count = count + 1` |
+| **conversion** | making a value of one type from another: `int("42")` |
+| **truncate** | cut off the decimal part: `int(7.9)` is `7`, towards zero |
+| **interactive mode** (`-i`) | run the file, then stay at the `>>>` prompt with its variables still there |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python -i shopping.py` | runs `shopping.py`, then leaves you at a `>>>` prompt with its variables |
+| `exit()` | leaves the prompt |
+
+### Python functions and operators
+
+| Name | What it does |
+|---|---|
+| `type(value)` | tells you a value's type: `<class 'int'>` |
+| `+` `-` `*` `/` | add, subtract, multiply, divide (`/` always gives a `float`) |
+| `//` `%` `**` | floor division, remainder, power |
+| `==` | checks whether two values are equal (a later lesson); not the same as `=` |
+| `round(value, digits)` | rounds to that many decimal places; `round(value)` rounds to a whole number |
+| `int(x)` | converts to a whole number (text like `"42"`, or a float, cutting off the decimals) |
+| `float(x)` | converts to a float: `float("2.5")` is `2.5` |
+| `str(x)` | converts to text: `str(99)` is `'99'` |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `NameError` | the name was used before anything was assigned to it |
+| `ValueError` | the value has the right type but cannot be used: `int("2.5")` |
+
+---
+
 A **variable** is a name that points at a value, so you can refer to the
 value later by its name. You create one with `=`:
 

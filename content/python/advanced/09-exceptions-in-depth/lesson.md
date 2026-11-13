@@ -11,6 +11,61 @@ hints:
   - "`count_by_kind`: `try: validate_all(records)` / `except* ValueError as eg: counts[\"value\"] = len(eg.exceptions)` / `except* KeyError as eg: ...`. Each `except*` sees only its matching part of the group."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **exception hierarchy** | a family of exception classes under one base, so callers can catch the whole family or one member |
+| **base exception** | the common parent class of a library's errors |
+| **subclass** | `except Base` also catches every subclass of `Base` |
+| **`BaseException`** | the parent of all exceptions, including `KeyboardInterrupt` and `SystemExit`, which are not errors |
+| **`SystemExit`** | what `sys.exit()` raises to end the program |
+| **exception attribute** | data on the exception, such as `e.code`, which code can check |
+| **chaining** | translating one exception into another while keeping the original as its cause |
+| **`__cause__`** | the original exception, set by `raise ... from e` |
+| **`__context__`** | the exception being handled when another was raised without `from` |
+| **`__suppress_context__`** | `True` after `from None`, which hides the cause |
+| **note** | an extra line attached with `add_note`, printed under the message; kept in `__notes__` |
+| **`ExceptionGroup`** | one exception carrying several, in its `exceptions` list (3.11+) |
+| **`except*`** | handles the matching part of a group; several can run for one group |
+| **port** | a number from 1 to 65535 identifying a network service |
+| **validation** | checking every record and collecting all the problems |
+
+### Python syntax and functions
+
+| Name | What it does |
+|---|---|
+| `class AppError(Exception):` | a base exception for an application |
+| `super().__init__(message)` | keeps the message, so `str(e)` still works |
+| `except (KeyError, ValueError) as e:` | handles several types the same way |
+| `raise ConfigError("...") from e` | raises the new error with `e` as its cause |
+| `raise NewError() from None` | raises it with no cause shown |
+| `e.add_note(text)` | attaches a note |
+| `raise` (bare) | re-raises the same exception object |
+| `raise ExceptionGroup("message", errors)` | raises several errors together |
+| `except* ValueError as group:` | `group.exceptions` holds only the `ValueError`s |
+| `try` / `except` / `else` / `finally` | the full statement: `else` runs only without an exception; `finally` always |
+| `enumerate(rows)` | each row with its index, from 0 |
+| `repr(e)`, `type(e).__name__` | an exception as code; its class name |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `KeyError` | a missing key, such as no `"port"` or no `"id"` |
+| `ValueError` | a bad value, such as a port that is not a number, or a negative quantity |
+| `OSError` | input/output problems, such as a failed connection |
+| `ConfigError`, `NetworkError` | this lesson's own exceptions, both subclasses of `AppError` |
+| `KeyboardInterrupt` | Ctrl+C |
+
+---
+
 The Beginner section covered raising and catching single errors. Larger
 programs need more: errors organised so callers can catch exactly the ones
 they care about, low-level errors translated into meaningful ones without

@@ -11,6 +11,60 @@ hints:
   - "`setup_logging(stream)`: `logger = logging.getLogger(\"app\")`, remove old handlers, add a `StreamHandler(stream)` with the formatter and filter, `setLevel(logging.INFO)`, `propagate = False`, return it."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **log** | the record a program writes of what it did |
+| **structured log** | each line a set of named fields a machine can search, not free text |
+| **log level** | how important a line is: `DEBUG < INFO < WARNING < ERROR < CRITICAL` |
+| **logger** | what code logs to; named in a dotted hierarchy (`app.db` is a child of `app`) |
+| **root logger** | the top of the hierarchy |
+| **propagate** | hand records on to the parent logger too |
+| **handler** | decides where records go: a stream, a file, a rotating file |
+| **formatter** | turns a record into text |
+| **filter** | runs before a record is handled; can drop it or add fields |
+| **`LogRecord`** | the object holding one message with its level, time and logger name |
+| **lazy formatting** | `%s` placeholders filled only if the level is on |
+| **JSON lines** | one JSON object per line |
+| **ISO 8601** | the time format `2026-09-18T01:20:56+00:00`; `+00:00` is UTC |
+| **UTC** | the world's reference time zone; log in it so machines line up |
+| **request id** | a tag on every line of one request, to follow it through the log |
+| **context** | where a `ContextVar` holds its value; each asyncio task runs in a copy |
+| **token** | what `ContextVar.set` returns, remembering the previous value |
+| **thread-local storage** | the older per-thread tool, which does not work for async tasks sharing a thread |
+
+### Python names and functions
+
+| Name | What it does |
+|---|---|
+| `logging.getLogger(name)` | the logger of that name (`__name__` for the module) |
+| `log.debug/info/warning/error(msg, *args)` | log at that level; `%%` is a literal percent |
+| `log.exception(msg)` | ERROR plus the current traceback, inside `except` |
+| `logging.StreamHandler(stream)`, `FileHandler`, `RotatingFileHandler` | write to a stream; a file; a file restarted when big |
+| `handler.setFormatter(f)`, `handler.addFilter(f)` | attach a formatter; a filter |
+| `log.addHandler(h)`, `log.removeHandler(h)`, `log.handlers` | add, remove, list handlers |
+| `log.setLevel(logging.INFO)`, `log.propagate = False` | set the level; stop passing to the parent |
+| `logging.Formatter("%(levelname)s %(name)s: %(message)s")` | a text format with record fields |
+| `logging.Filter` subclass, `filter(record)` | return `True` to keep the record |
+| `record.getMessage()`, `record.levelname`, `record.created`, `record.name` | the message with arguments filled in; level name; time as a number; logger name |
+| `extra={"extra_fields": {...}}` | puts extra attributes on the record |
+| `datetime.fromtimestamp(t, timezone.utc).isoformat()` | a time as UTC ISO 8601 |
+| `io.StringIO()`, `stream.getvalue()` | a file-like object writing into a string; its contents |
+| `contextvars.ContextVar("name", default=None)` | a context variable |
+| `var.set(value)`, `var.get()`, `var.reset(token)` | change it (returning a token); read it; restore the previous value |
+| `@contextmanager` with `try: yield` / `finally:` | sets and restores a value around a block |
+| `json.dumps(d)` | one line of JSON |
+| `asyncio.gather`, `asyncio.sleep` | run the simulated requests concurrently |
+
+---
+
 `print` is fine for scripts. A service that runs for weeks and handles
 thousands of requests needs something better. When it misbehaves at 3 a.m.,
 the log is often the only record of what happened, and nobody reads millions

@@ -11,6 +11,68 @@ hints:
   - "`chunked`: keep a list, append each item, and `yield` it (then start a new one) when it reaches `size`. Yield what is left at the end if it is not empty."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **iterable** | anything a `for` loop can go through: lists, strings, dicts, sets, files, ranges |
+| **iterator** | the object that hands out an iterable's items one by one and remembers its position; once used up, it stays used up |
+| **iterator protocol** | `iter()` gives an iterator, `next()` gives the next item, `StopIteration` means none are left |
+| **generator function** | a function containing `yield`; calling it returns a generator instead of running the body |
+| **generator** | an iterator made by a generator function or a generator expression |
+| **lazy** | working out values only when they are asked for |
+| **pause** / **resume** | a generator stops at each `yield` with its local variables kept, and carries on from there at the next `next()` |
+| **infinite generator** | one that never ends, such as `while True: yield n`; never pass it to `list()` |
+| **generator expression** | a comprehension in round brackets: `(n * n for n in range(5))` |
+| **stop early** | `any` and `all` return as soon as the answer is known |
+| **pipeline** | generators chained so each stage pulls from the one before; only one item in memory at a time |
+| **recursion** | a function calling itself, here for each nested list |
+| **run** | neighbouring equal items, as `groupby` groups them |
+| **combination** (product) | every way of picking from the given items |
+| **Fibonacci sequence** | `0, 1, 1, 2, 3, 5, ...`: each number the sum of the two before |
+| **chunk** | a group of `size` items |
+
+### Python keywords and functions
+
+| Name | What it does |
+|---|---|
+| `iter(iterable)` | gives an iterator |
+| `next(iterator)` | the next item; raises `StopIteration` at the end |
+| `yield value` | hands out a value and pauses the generator |
+| `yield from iterable` | yields every value of another iterable |
+| `while True:` | loops forever, unless something stops it |
+| `map(function, iterable)` | an iterator applying the function to each item |
+| `list(iterator)` | collects every remaining item |
+| `sum`, `max`, `min`, `"".join` | consume a sequence once |
+| `any(...)`, `all(...)` | true if at least one value is true; true only if every value is |
+| `isinstance(item, list)` | `True` if the item is a list |
+| `__iter__`, `__next__` | the special methods `iter()` and `next()` call, for writing an iterator by hand |
+| `import itertools as it` | imports `itertools` under the shorter name `it` |
+| `it.count(start)`, `it.cycle(items)` | count up forever; repeat items forever |
+| `it.islice(iterator, n)` | the first `n` items of any iterator |
+| `it.chain(a, b)` | `a` then `b` as one sequence |
+| `it.takewhile(test, items)` | items while the test passes, stopping at the first failure |
+| `it.accumulate(items)` | running totals |
+| `it.groupby(items)` | `(key, run)` pairs for runs of equal neighbouring items |
+| `it.pairwise(items)` | each item with the one after it |
+| `it.product("ab", repeat=2)` | every combination of two picks |
+| `line.strip()`, `line.startswith("#")`, `line.split(",")` | trim spaces; check the start; break at commas |
+| `open("huge.log")` | a file, which is itself an iterator of lines |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `StopIteration` | the iterator has no items left; a `for` loop catches it and ends |
+
+---
+
 A `for` loop works on lists, strings, dicts, files, ranges and more. This
 lesson shows the single mechanism behind all of them, and how to plug your
 own code into it. The payoff is **generators**: functions that produce a

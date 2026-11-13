@@ -11,6 +11,53 @@ hints:
   - "`memoize`: a dict keyed by `args`; `if args not in cache: cache[args] = func(*args)`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **decorator** | a function that takes a function and returns a replacement for it, usually one that does something extra |
+| **`@` syntax** | `@timer` above a `def` means `f = timer(f)` after defining it |
+| **wrapper** | the inner function a decorator returns; it runs on every call and calls the original |
+| **closure** | a function that remembers variables from where it was defined; the wrapper remembers `func` |
+| **`...`** (Ellipsis) as a body | a placeholder that does nothing, like `pass` |
+| **`*args, **kwargs`** | accept any arguments and pass them straight on, so the decorator fits any function |
+| **metadata** | what describes a function: its `__name__`, docstring, `__wrapped__` |
+| **state** | data kept between calls, here as an attribute on the wrapper |
+| **decorator with arguments** | `@repeat(3)`: a call that returns the decorator, so three levels: arguments, function, call |
+| **`_`** | the conventional name for a value you do not need |
+| **stacking** | several decorators on one function; applied bottom up, the outermost runs first |
+| **retry** | calling again after a failure |
+| **memoize** (cache) | remember the result for each set of arguments and return it without running the body again |
+| **re-raise** | let the exception being handled carry on to the caller |
+| **generator** | a function that hands out values one at a time (a later lesson) |
+
+### Python names and functions
+
+| Name | What it does |
+|---|---|
+| `import functools`, `import time` | bring in those standard modules |
+| `@functools.wraps(func)` | copies the original's name and docstring onto the wrapper and sets `__wrapped__` |
+| `time.perf_counter()` | a clock for measuring short intervals; subtract two readings for seconds |
+| `func.__name__` | the name a function was defined with |
+| `wrapper.calls = 0` | sets an attribute on a function object |
+| `for _ in range(n):` | repeats `n` times |
+| `raise` (bare, inside `except`) | re-raises the exception being handled |
+| `try` / `except Exception` | catch any ordinary error |
+| `@functools.cache`, `@functools.lru_cache` | remember results (`lru_cache` keeps a limited number) |
+| `@property`, `@staticmethod`, `@classmethod` | change how a method behaves (Advanced section) |
+| `@dataclasses.dataclass` | writes `__init__`, `__repr__` and `__eq__` for a class |
+| `@contextlib.contextmanager` | turns a generator into something usable with `with` |
+| `s.upper()` | the string in upper case |
+| `help(f)` | shows a function's docstring, which needs `wraps` to stay correct |
+
+---
+
 Say you want to time ten different functions, or log every call to them,
 or retry them when they fail. You could paste the same few lines into each
 one, but then the extra code is mixed in with what each function is really

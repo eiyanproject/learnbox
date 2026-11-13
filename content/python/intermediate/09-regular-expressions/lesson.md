@@ -11,6 +11,61 @@ hints:
   - "`normalize_phone`: remove everything but digits with `re.sub(r\"\\D\", \"\", s)`, then turn a leading `0` into `62`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **regular expression** (regex) | a small pattern language for describing the shape of text |
+| **pattern** | a string where most characters match themselves and a few have special meanings |
+| **raw string** (`r"..."`) | a string where backslashes are kept as typed, so they reach `re` untouched |
+| **escape** | a backslash combination with a special meaning; `\.` matches a real full stop |
+| **character class** | one character from a set: `[abc]`, `[a-z]`, `[^0-9]`, `\d`, `\w`, `\s` |
+| **word character** | a letter, digit or `_` (`\w`) |
+| **anchor** | `^` start, `$` end, `\b` word boundary: they match positions, not characters |
+| **quantifier** | how many times the thing before it repeats: `*` `+` `?` `{3}` `{2,5}` |
+| **greedy** / **lazy** | match as much as possible / as little as possible (a `?` after the quantifier) |
+| **alternation** (`a\|b`) | either one |
+| **match object** | what `search`, `match` and `fullmatch` return on success (`None` otherwise) |
+| **span** | a match's start and end positions, end not included |
+| **validation** | checking that the **whole** text has a shape; use `fullmatch` |
+| **group** | a bracketed part of a pattern, numbered from 1; group 0 is the whole match |
+| **named group** | `(?P<name>...)`, reached as `m["name"]` |
+| **non-capturing group** | `(?:...)`: groups for a quantifier without capturing |
+| **backreference** | `\1`, `\2` in a replacement: what that group matched |
+| **pattern object** | a compiled pattern with the same methods, minus the pattern argument |
+| **flag** | an option that changes matching, such as ignoring case |
+| **parser** | a proper reader for a nested format, such as `json`; regexes handle nesting badly |
+| **country code** | the international prefix of a phone number, `62` for Indonesia |
+| **domain** | the part of an email address after `@`, such as `mail.co.id` |
+
+### Python functions and methods
+
+| Name | What it does |
+|---|---|
+| `import re` | the regular-expression module |
+| `re.search(p, text)` | the first match anywhere |
+| `re.match(p, text)` | a match only at the very start |
+| `re.fullmatch(p, text)` | a match only if the pattern covers the whole text |
+| `re.findall(p, text)` | a list of every match (or of the groups, if the pattern has them) |
+| `re.sub(p, replacement, text)` | replaces every match; the replacement may be a function of the match |
+| `re.split(p, text)` | splits wherever the pattern matches |
+| `re.compile(p)` | a reusable pattern object |
+| `m.group(n)`, `m[n]`, `m.groups()` | one group's text; the same, shorter; all groups as a tuple |
+| `m.groupdict()` | the named groups as a dict |
+| `re.IGNORECASE` (`re.I`) | ignore the difference between capitals and small letters |
+| `re.VERBOSE` | allow spaces, newlines and `#` comments in a pattern |
+| `re.M` | make `^` and `$` match at each line |
+| `bool(x)`, `is not None` | test whether a match succeeded |
+| `line.strip()` | removes the trailing newline before matching |
+
+---
+
 String methods handle fixed text well: `"ERROR" in line`, `s.split(",")`.
 They struggle as soon as the text you want is described by its *shape*
 rather than spelled out: "a date like 2026-09-18", "every word that starts

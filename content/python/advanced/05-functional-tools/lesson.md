@@ -11,6 +11,63 @@ hints:
   - "`Report.summary` is a `@functools.cached_property`; count calls in `self.computations` to prove it runs once."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **functional style** | building programs by passing functions around as values |
+| **glue code** | small code connecting other pieces, such as one-line lambdas |
+| **partial application** | making a new function with some arguments already filled in |
+| **binary** (base 2) | numbers written with only 0 and 1: `"1010"` is 10 |
+| **pickle** | save a Python object as bytes, or send it to another process; a `partial` can be pickled, a lambda cannot |
+| **fold** (reduce) | combining a sequence into one value, carrying a running result |
+| **accumulator** | that running result (`acc`) |
+| **dict merge** (`a \| b`) | a new dict with both; the right side wins on duplicate keys |
+| **generic function** | one name with different implementations chosen by the type of the first argument |
+| **dispatch** | choosing the implementation; it follows the class hierarchy, most specific first |
+| **fallback** | the implementation used when no registered type matches |
+| **subclass** | `bool` is a subclass of `int`, so it needs its own registration |
+| **cached property** | computed on first access, then stored on the instance |
+| **compose** | combine functions so each gets the previous one's result |
+| **JSON** | text data: `{"a": 1}`, `[1, 2]`, `"text"`, `true`, `false`, `null` |
+| **key function** | a function `sorted` calls on each item to decide its order |
+
+### Python functions
+
+| Name | What it does |
+|---|---|
+| `functools.partial(func, *args, **kwargs)` | `func` with those arguments filled in |
+| `int(text, base=2)` | reads the text as a binary number |
+| `functools.reduce(func, items, start)` | folds the items into one value, starting from `start` |
+| `import operator as op` | function versions of operators |
+| `op.mul`, `op.add` | `a * b`; `a + b` |
+| `op.itemgetter(2)` | a function returning `x[2]` |
+| `op.attrgetter("last", "first")` | a function returning those attributes as a tuple |
+| `op.methodcaller("strip")` | a function calling `.strip()` on its argument |
+| `types.SimpleNamespace(a=1)` | a quick object with the attributes you name |
+| `@functools.singledispatch` | makes a generic function |
+| `@f.register`, `@f.register(int)` | adds an implementation, by the first parameter's annotation or a named type |
+| `type(None)` | the type of `None`, for registering it |
+| `functools.singledispatchmethod` | the same for methods, dispatching on the argument after `self` |
+| `@functools.cached_property` | computes once, then stores the value |
+| `del obj.prop` | clears a cached property |
+| `json.loads(text)` | reads JSON text back, as the test does |
+| `str.strip`, `str.upper` | methods taken from the class, usable as plain functions |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `TypeError` | the fallback for a type with no implementation, such as a set |
+
+---
+
 Since the Intermediate section you have been passing functions around as
 values: as `key=` for sorting, into decorators, out of closures. The
 `functools` and `operator` modules are toolboxes for exactly that style.

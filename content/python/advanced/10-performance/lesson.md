@@ -11,6 +11,55 @@ hints:
   - "`build_report`: collect the pieces in a list and `\"\".join(...)` once, instead of `+=` on a growing string."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **optimising** | changing code so it runs faster or uses less memory |
+| **hot spot** | the small part of a program where most of the time goes |
+| **benchmark** | timing a piece of code, usually many runs to smooth out noise |
+| **profiler** | a tool that records every function call while a program runs and reports the time in each |
+| **`ncalls`** | how many times a function was called |
+| **`tottime`** | time in the function's own code, excluding the functions it called |
+| **`cumtime`** (cumulative) | time in the function including everything it called |
+| **algorithmic win** | a better algorithm or data structure, such as `O(n²)` to `O(n)` |
+| **Big-O** | how the work grows with the input size (the Recursion lesson) |
+| **hidden inner loop** | an operation that looks like one step but goes through a whole collection, such as `x in some_list` |
+| **constant factor** | how fast each step is, which matters only after the algorithm is right |
+| **interpreter** | the program that runs Python code; built-ins run their loops in C inside it |
+| **pure function** | one whose result depends only on its arguments, so caching it is safe |
+| **compiled extension** | a module written in a compiled language such as C or Rust (with PyO3) |
+| **CPU-bound** | limited by computation rather than waiting |
+
+### Python tools and functions
+
+| Name | What it does |
+|---|---|
+| `timeit.timeit(stmt, setup=..., number=n)` | runs the statement `n` times and returns the total seconds; `setup` runs once first; `stmt` may be a string or a function |
+| `set(b)` | build once for fast membership tests |
+| `collections.Counter(words)` | counts every item in one pass |
+| `"".join(pieces)` | joins strings once, instead of `+=` in a loop |
+| `collections.deque` | fast adds and removals at the front |
+| `min(...)` | the minimum without sorting |
+| `functools.cache` | remembers results of a pure function |
+| `append = out.append` | looks a method up once outside a hot loop |
+| `numpy` | a third-party library for fast number crunching over whole arrays |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python -m cProfile -s cumtime fast.py` | runs `fast.py` under the profiler, sorted by cumulative time |
+| `python -m timeit "statement"` | times a statement, choosing the number of runs for you |
+
+---
+
 A program that is fast enough needs no optimising, and most code is fast
 enough. When something really is too slow, the instinct is to start
 rewriting the part that *looks* slow. That instinct is usually wrong. This

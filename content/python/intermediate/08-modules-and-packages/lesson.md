@@ -11,6 +11,69 @@ hints:
   - "`main.py` does its work inside `def main():` and ends with `if __name__ == \"__main__\": main()` so importing it prints nothing."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **module** | one `.py` file; its name is the file name without `.py` |
+| **import** | load a module (running it once) and get access to its top-level names |
+| **top level** | code in a file that is not inside a function or class |
+| **alias** | another name for an imported module: `import statistics as stats` |
+| **`sys.modules`** | the dict of every imported module; a second import reuses the entry |
+| **`sys.path`** | the list of folders Python searches for modules, in order |
+| **standard library** | the modules that come with Python |
+| **third-party package** | code installed from elsewhere, such as `numpy` |
+| **package** | a folder of modules containing `__init__.py`; modules inside are reached with a dot: `shop.cart` |
+| **`__init__.py`** | runs when the package is first imported; the place to define its public names |
+| **public surface** (interface) | the names other code is meant to use |
+| **`__all__`** | the list of public names, and what `from package import *` brings in |
+| **relative import** | importing by position in the package: `.` this package, `..` the one above |
+| **script** | a file run directly as a program |
+| **`__name__`** | a module's name; `"__main__"` for the file you ran directly |
+| **`__main__` guard** | `if __name__ == "__main__": main()`, so importing the file does not run the program |
+| **side effect** | work done just by importing, such as printing |
+| **circular import** | two modules importing each other, so one is only half run |
+| **constant** | a value that does not change, in capitals: `TAX_RATE` |
+| **tax** / **discount** | a percentage added / a percentage taken off |
+
+### Python statements and functions
+
+| Name | What it does |
+|---|---|
+| `import math` | gives one name, `math`; everything is reached through it: `math.sqrt(16)` |
+| `from math import pi` | copies one name into your file |
+| `import statistics as stats` | imports under a shorter name |
+| `from .pricing import apply_discount` | a relative import from the same package |
+| `math.sqrt(x)`, `math.pi` | square root; the number pi |
+| `statistics.mean(values)` | the average |
+| `round(x, 2)` | rounds to 2 decimals |
+| `raise ValueError(...)` | rejects a percent outside 0 to 100 |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python main.py` | runs `main.py` as the main program |
+| `python -m shop.cart` | runs a module by its dotted name, as part of its package |
+| `pwd` | prints the current directory |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `ModuleNotFoundError` | no folder on `sys.path` has the module, often from running in another directory |
+| `ImportError` | an import that cannot complete, such as a relative import in a file run directly |
+| `AttributeError` | a name not (yet) defined in a module, as in a circular import |
+| `ValueError` | a discount percent below 0 or above 100 |
+
+---
+
 Every program so far has fitted in one file. Real programs do not: a file of
 a few thousand lines is hard to find your way around, and code you wrote for
 one program cannot be reused in another unless it lives somewhere both can

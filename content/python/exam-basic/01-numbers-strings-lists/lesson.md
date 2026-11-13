@@ -11,6 +11,50 @@ hints:
   - "Build the matrix with a nested comprehension: `[[r * cols + c for c in range(cols)] for r in range(rows)]`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **paper** | one part of this exam-preparation section, matching a syllabus section |
+| **syllabus** | the list of topics the certification covers |
+| **true division** (`/`) | always gives a float, even `6 / 3` is `2.0` |
+| **floor division** (`//`) | rounds down towards minus infinity: `-7 // 2` is `-4` |
+| **remainder** (`%`) | what makes `a == (a // b) * b + a % b` true; its sign follows the divisor |
+| **divisor** | the number you divide by |
+| **power** (`**`) | `2 ** 10` is `1024` |
+| **immutable** | cannot be changed in place, like a string |
+| **index** / **negative index** | one position, from 0 / counting from the end |
+| **slice** | `word[start:end:step]`: start included, end excluded; never raises |
+| **step** | how far a slice moves; `[::2]` every other, `[::-1]` reversed |
+| **mutable** | can be changed in place, like a list |
+| **slice assignment** | `values[1:4] = [0, 0]` replaces a stretch, so the length can change |
+| **nested list** (matrix) | a list of lists; `matrix[1][2]` is row 1, column 2 |
+| **shared-row trap** | `[[0] * 3] * 2` repeats the **same** inner list; build rows with a comprehension |
+
+### Python operators and functions
+
+| Name | What it does |
+|---|---|
+| `/`, `//`, `%`, `**` | true division, floor division, remainder, power |
+| `word[0]`, `word[-1]`, `word[:2]`, `word[2:]` | first; last; first two; from position 2 |
+| `[[r * cols + c for c in range(cols)] for r in range(rows)]` | a matrix with a new list per row |
+| `range(n)` | `0` to `n - 1` |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `TypeError` | assigning to a character of a string: `word[0] = "J"` |
+| `IndexError` | an index out of range (a slice out of range is not an error) |
+
+---
+
 This paper covers the first section of the syllabus — the "informal
 introduction" — which is worth six of the forty questions. The material looks
 easy, and that is exactly why it is worth being precise about.

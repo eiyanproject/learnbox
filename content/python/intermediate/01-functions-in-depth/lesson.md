@@ -11,6 +11,66 @@ hints:
   - "`sort_people`: `sorted(people, key=lambda p: (-p[1], p[0]))`: negate the age to sort it descending while names stay ascending."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **parameter list** | the names in brackets after a function's name in `def` |
+| **signature** | a function's name with its parameter list, as the documentation shows it |
+| **standard library** | the modules that come with Python |
+| **positional argument** | an argument matched to a parameter by its position |
+| **keyword argument** | an argument passed as `name=value` |
+| **`*args`** | a parameter that collects all remaining positional arguments into a tuple |
+| **`**kwargs`** | a parameter that collects all remaining keyword arguments into a dict |
+| **keyword-only parameter** | one after `*args` or a bare `*`; it can only be passed by name |
+| **positional-only parameter** | one before a `/`; it can never be passed by name |
+| **flag** | an option that switches behaviour on or off, best passed by name |
+| **unpacking into a call** | `*` spreads a list or tuple out as positional arguments; `**` a dict as keyword arguments |
+| **function as a value** | a function name without brackets is the function itself, which can be stored or passed |
+| **higher-order function** | a function that takes or returns other functions: `sorted(..., key=len)` |
+| **lambda** | a small nameless function made from one expression: `lambda w: len(w)` |
+| **sort key** | the value `sorted` compares for each item instead of the item |
+| **character code** | the number of each character; every capital letter comes before every lowercase one |
+| **tuple comparison** | item by item: the second items are compared only if the first are equal |
+| **negating a key** | `-p[1]` sorts that part largest first while other parts stay in normal order |
+| **mutable default trap** | a default list (or dict, set) is made once when `def` runs, and shared by every call |
+| **identity** (`is`) | "the very same object", not "equal" |
+| **HTML element** | a piece of a web page: `<p class="note">hi</p>` |
+
+### Python syntax and functions
+
+| Name | What it does |
+|---|---|
+| `def f(*values):` | `values` is a tuple of every positional argument |
+| `def f(**options):` | `options` is a dict of every extra keyword argument |
+| `def f(a, *, flag=False):` | a bare `*`: everything after it is keyword-only |
+| `def f(a, b, /, c):` | a `/`: everything before it is positional-only |
+| `f(*point)`, `f(**settings)` | spread a sequence or a dict into the call |
+| `options.items()` | the key-value pairs of a dict |
+| `sum(values) / len(values)` | the average |
+| `lambda params: expression` | a one-expression function; no `return` keyword |
+| `sorted(words, key=str.lower)` | sort ignoring case; `str.lower` is the `lower` method taken from the class |
+| `sorted(..., reverse=True)` | largest first, for every part of the key at once |
+| `x is None` | the usual test for `None` |
+| `abs(x)` | the number without its sign: `abs(-3)` is `3` |
+| `str(x)` | as text |
+| `print(*objects, sep=' ', end='\n')` | `print`'s own signature: any number of values, then keyword-only options |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `TypeError` | the call does not fit the parameters, such as a third positional argument to a function that takes two |
+| `ZeroDivisionError` | averaging an empty tuple |
+
+---
+
 You already know `def`, defaults and return values. Python's parameter list
 can do a lot more, and the standard library uses all of it: once you know
 the pieces in this lesson, signatures like `print(*objects, sep=' ', end='\n')`

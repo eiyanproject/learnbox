@@ -11,6 +11,47 @@ hints:
   - "`common_items` is set intersection, sorted: `sorted(set(a) & set(b))`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **comprehension** | a new collection built in one expression; the brackets decide the kind |
+| **list** / **set** / **dict comprehension** | `[...]` / `{x ...}`, dropping duplicates / `{k: v ...}` |
+| **generator expression** | round brackets: a lazy generator, used up after one pass (there is no tuple comprehension) |
+| **grouping** | collecting items into one list per key |
+| **transpose** | swap a matrix's rows and columns |
+| **matrix** | a list of lists, one per row |
+| **shallow immutability** | a tuple's slots cannot change, but a list inside it can |
+| **word frequency** | how many times each word appears |
+
+### Python functions and methods
+
+| Name | What it does |
+|---|---|
+| `d.get(key, default)` | the value, or the default instead of `KeyError` |
+| `d.setdefault(key, [])` | the list stored under `key`, creating it first if missing |
+| `text.lower().split()` | lower-case words split on whitespace |
+| `set(a) & set(b)` | the items in both |
+| `sorted(...)` | a sorted list, making set results testable |
+| `zip(*matrix)` | `*` passes each row as an argument; `zip` then gives the columns as tuples |
+| `list(col)` | a tuple turned into a list |
+| `len(word)` | the length |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `KeyError` | `d[key]` for a missing key |
+| `TypeError` | assigning to a tuple's slot |
+
+---
+
 Lessons 7 through 9, shuffled: lists and tuples, dicts and sets, and
 comprehensions.
 

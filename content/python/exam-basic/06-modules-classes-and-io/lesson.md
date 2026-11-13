@@ -11,6 +11,60 @@ hints:
   - "Format specs go after a colon: `f\"{name:<10}\"` left-aligns in 10 columns, `f\"{score:>6.1f}\"` right-aligns to one decimal in 6."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **module** | a Python file you can import |
+| **package** | a directory Python can import |
+| **`__name__`** | `"__main__"` when the file is run directly, the module's name when imported |
+| **virtual environment** | a folder with its own installed packages (`site-packages`), separate from the system Python |
+| **class attribute** | one value, shared by every instance |
+| **instance attribute** | one value per object, set on `self` |
+| **shadow** | assigning `self.created` makes an instance attribute hiding the class one |
+| **inheritance** | `class Rect(Shape)`: `Rect` reuses `Shape` |
+| **truncate** | empty a file before writing (mode `"w"`) |
+| **encoding** | how text is stored as bytes; name it (`utf-8`), or the system default is used |
+| **format specification** | after a colon in an f-string: `<` left, `>` right, a width, `.1f` one decimal |
+| **banker's rounding** | an exact half goes to the even digit: `9.25` shows as `9.2` |
+
+### Python statements and functions
+
+| Name | What it does |
+|---|---|
+| `import math`, `import math as m`, `from math import pi` | the import forms |
+| `from math import *` | imports everything; discouraged |
+| `if __name__ == "__main__": main()` | runs `main` only when the file is run directly |
+| `Shape.created += 1` | changes the shared class attribute |
+| `super().__init__(name)` | runs the parent's `__init__` |
+| `isinstance(obj, Shape)` | `True` for subclasses too; `type(obj) is Shape` is not |
+| `with open(path, "w", encoding="utf-8") as f:` | opens a file, closing it even if the block raises |
+| modes `"r"`, `"w"`, `"a"`, `"x"` | read; truncate and write; append; create, failing if it exists |
+| `f.write(s)`, `f.read()`, `f.readlines()`, `f.read().splitlines()` | write (no newline added); whole file; lines with newlines; lines without |
+| `os.path.join`, `tempfile.mkdtemp()` | build a path; a scratch folder |
+| `f"{name:<10}"`, `f"{score:>6.1f}"` | left-aligned in 10; right-aligned in 6 with one decimal |
+
+### Commands (typed in the terminal)
+
+| Command | What it does |
+|---|---|
+| `python -m venv .venv` | creates a virtual environment in `.venv` |
+| `pip install name` | installs a package (inside the virtual environment if one is active) |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `NotImplementedError` | a method the subclass must provide, here `Shape.area` |
+
+---
+
 The last paper collects the four small sections — modules, classes, input and
 output, and virtual environments — worth six questions between them.
 

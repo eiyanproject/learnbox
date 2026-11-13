@@ -11,6 +11,55 @@ hints:
   - "`batch_totals(results)` is `@primed` and its whole body is `while True: total = yield from accumulate_until_none(); results.append(total)`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **generator** | a function with `yield` that pauses and resumes, keeping its local variables |
+| **coroutine** | a generator that also **receives** values while paused, keeping private state between visits |
+| **`yield` as an expression** | the paused `yield` evaluates to whatever the caller sends in |
+| **priming** | the first `next(g)` (or `g.send(None)`), running the body to its first `yield` so it can receive |
+| **`GeneratorExit`** | the special exception `close()` raises at the paused `yield` |
+| **garbage collection** | Python freeing objects nothing refers to; it calls `close()` on generators then |
+| **`StopIteration.value`** | where a generator's `return` value travels when it ends |
+| **walrus operator** (`:=`) | assigns a value and also gives it to the surrounding expression |
+| **delegation** | handing control to a sub-generator with `yield from`, which passes `send`, `throw` and `close` through |
+| **sub-generator** | the generator `yield from` delegates to; its return value becomes the expression's value |
+| **stateful stream processing** | handling values one at a time while remembering state, such as a running average |
+| **state machine** | code that reacts to each input depending on what state it is in |
+| **batch** | a group of values, here separated by `None` |
+| **running average** | the average of everything received so far |
+
+### Python names and methods
+
+| Name | What it does |
+|---|---|
+| `next(gen)` | resumes the generator to its next `yield` |
+| `gen.send(value)` | resumes it, making the paused `yield` evaluate to `value`; returns the next yielded value |
+| `gen.throw(exc)` | raises `exc` at the paused `yield` |
+| `gen.close()` | raises `GeneratorExit` there, so `finally` blocks run |
+| `(yield)` | yields `None` and evaluates to what is sent in |
+| `return value` (in a generator) | ends it, putting `value` in `StopIteration` |
+| `result = yield from sub()` | delegates to `sub` and receives its return value |
+| `except StopIteration as stop: stop.value` | catches the end by hand and reads the return value |
+| `@functools.wraps(genfunc)` | keeps the decorated function's name |
+| `async`, `await` | the newer syntax that grew out of these mechanisms (the Asyncio lesson) |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `TypeError` | "can't send non-None value to a just-started generator": it was not primed |
+| `StopIteration` | the generator finished |
+
+---
+
 In the Intermediate section, generators only produced values: each `next()`
 pulled one out. But the conversation can go the other way. A generator can
 also **receive** values while it is paused, which turns it into a small

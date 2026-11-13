@@ -11,6 +11,41 @@ hints:
   - "`load` is a `@classmethod`: it builds a new `Ledger`, calls `add` for each line, and returns it. Split each line on the comma and convert the amount with `float`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **ledger** | a record of entries, here a name and an amount each |
+| **state** | the data an object holds |
+| **class body** | the lines directly under `class`; anything assigned there is shared by every instance |
+| **instance attribute** | assigned to `self` in `__init__`; one per object |
+| **shared-list trap** | a list in the class body used by every instance, like a mutable default argument |
+| **class method** | receives the class (`cls`) instead of an instance |
+| **alternative constructor** | a class method that builds an object another way, here from a file |
+| **truncate** | empty the file before writing (mode `"w"`) |
+| **tie-break** | the rule for equal totals: alphabetically first wins |
+
+### Python names and functions
+
+| Name | What it does |
+|---|---|
+| `def __init__(self): self.entries = []` | a fresh list per object |
+| `@classmethod def load(cls, path):` | builds with `cls()`, so subclasses get their own type |
+| `with open(path, "w") as f:` | writes a file, closing it even after an error |
+| `f.write(f"{name},{amount}\n")` | one `name,amount` line |
+| `line.strip().split(",")` | removes the newline, then splits at the comma |
+| `float(text)` | text from a file turned into a number |
+| `sum(...)` | the total |
+| `min(totals, key=lambda n: (-totals[n], n))` | one way to pick the biggest total, alphabetically first on a tie |
+
+---
+
 The last review puts lessons 11 and 12 together, because in real code they
 always arrive together: an object that holds state, and the file that state
 survives in.

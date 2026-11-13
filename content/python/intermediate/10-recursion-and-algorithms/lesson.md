@@ -11,6 +11,59 @@ hints:
   - "`count_paths(rows, cols)`: `@functools.cache`; a 1-row or 1-column grid has one path; otherwise it is `count_paths(r - 1, c) + count_paths(r, c - 1)`."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **recursion** | a function solving a problem by calling itself on a smaller version of it |
+| **base case** | the input a recursive function answers directly, without calling itself |
+| **recursive case** | the call on a smaller input, so every chain of calls reaches the base case |
+| **factorial** (`n!`) | `1 * 2 * ... * n`; also the number of orderings of `n` items |
+| **frame** | one waiting call kept in memory: its local variables and where it had got to |
+| **recursion limit** | how deep calls may go, about 1000 by default |
+| **recursive data** | data containing smaller data of the same shape: nested lists, trees, folders |
+| **Fibonacci numbers** | 0, 1, 1, 2, 3, 5, 8, ...: each the sum of the two before |
+| **overlapping subproblems** | the same smaller problem solved again and again |
+| **memoisation** | remembering each result the first time and reusing it |
+| **dynamic programming** | solving each overlapping subproblem once and storing the answer |
+| **Big-O notation** | how the work grows as the input size `n` grows, ignoring constant factors |
+| **`O(1)`, `O(log n)`, `O(n)`, `O(n log n)`, `O(n²)`** | constant; logarithmic (one more step when `n` doubles); linear; a bit more than linear (good sorting); quadratic (four times the work when `n` doubles) |
+| **membership test** | `x in collection`: `O(n)` on a list, `O(1)` on a set |
+| **binary search** | on sorted data, compare with the middle and discard the half that cannot hold the target |
+| **bounds** (`lo`, `hi`) | the first and last positions still in play |
+| **permutation** | one ordering of the items |
+| **backtracking** | trying choices one at a time and undoing them to try the next |
+| **grid path** | a route from the top-left square to the bottom-right, moving right or down |
+
+### Python names and functions
+
+| Name | What it does |
+|---|---|
+| `isinstance(item, list)` | `True` if the item is a list |
+| `result.extend(other)` | appends every item of `other` to the list |
+| `sys.getrecursionlimit()` | the recursion limit |
+| `global calls` | lets a function reassign a module-level counter (only for counting here) |
+| `from functools import cache`, `@cache` | remembers each call's result by its arguments |
+| `(lo + hi) // 2` | the middle position |
+| `items[:i] + items[i+1:]` | the list without the item at `i` |
+| `bisect`, `.index(` | ready-made searches the exercise forbids |
+| `itertools.permutations` | the standard-library version of `permutations` |
+| `x.is_dir()`, `x.stat().st_size`, `folder.iterdir()` | `Path` methods: is it a folder; a file's size in bytes; the folder's contents |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `RecursionError` | calls went past the recursion limit, often from a missing base case |
+
+---
+
 Some problems are easiest to describe in terms of a smaller version of
 themselves. "The total size of a folder is the size of its files plus the
 total size of each folder inside it." "The factorial of 5 is 5 times the

@@ -11,6 +11,55 @@ hints:
   - "`first_repeated(words)`: keep a `seen` list or set; for each word, if it is already in `seen`, return it straight away."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **loop** | code that runs the same block several times |
+| **collection** | a value holding several items, such as a list or a string |
+| **loop variable** | the name after `for`, set to the next item each time round |
+| **iteration** | one run of the loop's body; **iterating** is going through a collection item by item |
+| **range** | a run of whole numbers handed out one at a time; the stop value is not included |
+| **accumulator** | a variable that collects a running result, such as a total starting at `0` |
+| **empty list** (`[]`) | a list with no items, the usual start when building a list |
+| **pair** | two values handed over together, unpacked into two names |
+| **infinite loop** | a loop whose condition never becomes false, so it never ends |
+| **divisible** / **multiple** | divides with no remainder: `n % 3 == 0` |
+| **Collatz rule** | halve an even number, replace an odd one with `3 * n + 1` |
+
+### Python keywords and functions
+
+| Name | What it does |
+|---|---|
+| `for item in collection:` | runs the body once per item |
+| `range(stop)`, `range(start, stop)`, `range(start, stop, step)` | whole numbers from `start` (0 if left out) up to, not including, `stop` |
+| `list(x)` | collects all the items into a list, for example to see a range |
+| `+=`, `*=` | add to a variable; multiply it |
+| `items.append(x)` | adds `x` to the end of a list |
+| `enumerate(seq, start=1)` | gives position-and-item pairs: `for i, name in enumerate(...)` |
+| `while condition:` | repeats while the condition is true, checked before each round |
+| `break` | leaves the loop at once |
+| `continue` | skips the rest of the body for this item, on to the next |
+| `return` | ends the whole function, and so the loop too |
+| `None` | "nothing here": the usual answer for "not found" |
+| `sum(numbers)` | adds up the numbers |
+| `in` | checks whether a value is in a collection: `word in seen` |
+| `//` | floor division, keeps a number an `int` |
+
+### Keys
+
+| Key | What it does |
+|---|---|
+| Ctrl+C | stops a running program, such as an infinite loop |
+
+---
+
 A **loop** runs the same block of code several times. Python has two kinds:
 `for`, which goes through a collection of items one by one, and `while`,
 which keeps going as long as a condition stays true. Between them they cover

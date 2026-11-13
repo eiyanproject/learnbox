@@ -11,6 +11,54 @@ hints:
   - "`raise AgeError(f\"...\")` - the message you pass becomes `str(err)`, which is what the test compares."
 ---
 
+## Chapter 0: the words in this lesson
+
+Every term, command and function this lesson uses, with what it means. Read
+it first, or come back whenever a word is unfamiliar; each one is explained
+again, with examples, where the lesson uses it.
+
+### Terms
+
+| Term | Meaning |
+|---|---|
+| **exception** | an object describing an error, raised to stop normal flow |
+| **guarded block** | the code inside `try`; keep it small |
+| **clause order** | `try`, `except`, `else`, `finally`, always in that order |
+| **exception hierarchy** | exception classes as a family tree; catching a parent catches every child |
+| **`BaseException`** | the root of all exceptions, including `KeyboardInterrupt` |
+| **`Exception`** | the parent of ordinary errors |
+| **`ArithmeticError`** | the parent of `ZeroDivisionError` |
+| **`LookupError`** | the parent of `IndexError` and `KeyError` |
+| **bare `except:`** | catches everything, even Ctrl+C; a mistake |
+| **custom exception** | your own subclass, such as `class AgeError(ValueError)` |
+
+### Python keywords and functions
+
+| Name | What it does |
+|---|---|
+| `try:` | runs the guarded code |
+| `except ValueError as err:` | runs only if a matching exception was raised; `err` is the exception |
+| `except (ValueError, TypeError):` | catches any class in the tuple |
+| `else:` | runs only if nothing was raised; its own errors are not caught above |
+| `finally:` | always runs, even after `return` or an uncaught exception |
+| `raise AgeError("message")` | raises with a message, which becomes `str(err)` |
+| `issubclass(AgeError, ValueError)` | `True` if one class is a subclass of the other |
+| `type(err).__name__` | the exception's class name |
+| `int(x)` | converts, raising `ValueError` for bad text and `TypeError` for `None` |
+
+### Errors
+
+| Error | Means |
+|---|---|
+| `ValueError` | right type, wrong value: `int("x")` |
+| `TypeError` | wrong type: `int(None)` |
+| `ZeroDivisionError` | dividing by zero |
+| `IndexError`, `KeyError` | a list position past the end; a missing dict key |
+| `SyntaxError` | clauses in the wrong order, or `else` without an `except` |
+| `KeyboardInterrupt` | Ctrl+C |
+
+---
+
 Four of the forty questions, and they are almost all about **order** and
 **class**.
 
