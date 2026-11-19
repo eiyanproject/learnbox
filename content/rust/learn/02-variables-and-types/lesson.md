@@ -2,7 +2,7 @@
 title: Variables and types
 summary: let, mut and shadowing; integers, floats, tuples and arrays; converting with as.
 order: 2
-files: [src/lib.rs]
+files: [src/drills.rs, src/lib.rs]
 run: cargo test
 hints:
   - "`celsius_to_fahrenheit`: `c * 9.0 / 5.0 + 32.0`. Float literals need the `.0`; `9 / 5` would be integer division."
@@ -258,6 +258,27 @@ array (`{:?}` is **debug formatting**, which can print collections; plain
 `checked_add` is how you ask for overflow as a value instead of a panic:
 250 + 10 does not fit in a `u8`, so it gives `None`, "no result"; a sum that
 fits gives `Some(sum)`. Those two are Rust's `Option` type, lesson 8.
+
+## Practice
+
+Before the task, warm up in `src/drills.rs`: 10 small functions,
+each using one thing from this lesson. The comment above each one says what
+to return. Do them in order, press **Check** as often as you like, and watch
+the Results tab tick them off one by one (*Practice · 3/10 drills*).
+The task below then puts the same pieces together.
+
+| Drill | Write | Uses |
+|---|---|---|
+| 1 | `to_float(3)` is `3.0` | `n as f64` |
+| 2 | `whole_part(3.9)` is `3` | `x as i32` cuts off the fraction |
+| 3 | `half(5.0)` is `2.5` | a float literal: `2.0`, not `2` |
+| 4 | `plus_ten(5)` is `15`, using a `let mut` variable and `+=` | `let mut total = n;` then `total += 10;` |
+| 5 | `swap((1, 2))` is `(2, 1)` | a tuple's parts: `pair.0`, `pair.1` |
+| 6 | `minutes_and_seconds(125)` is `(2, 5)` | `/` (whole division) and `%` (remainder) |
+| 7 | `first([7, 8, 9])` is `7` | array indexing: `values[0]` |
+| 8 | `zeros()` is `[0, 0, 0, 0]` | `[0; 4]`, an array of four zeros |
+| 9 | `parse_number("42")` is `42` | `text.parse().unwrap()` |
+| 10 | `biggest_u8()` is `255`, the largest `u8` | `u8::MAX`, like `i32::MAX` |
 
 ## Your turn
 

@@ -2,7 +2,7 @@
 title: Hello, cargo
 summary: Create, build and run a Rust project, and meet functions, strings and format!.
 order: 1
-files: [src/lib.rs, src/main.rs]
+files: [src/drills.rs, src/lib.rs, src/main.rs]
 run: cargo run
 hints:
   - "`todo!()` compiles but panics when it runs. Replace it with an expression that produces a `String`."
@@ -71,6 +71,8 @@ again, with examples, where the lesson uses it.
 | `format!(...)` | builds the same text and returns a `String` |
 | `"=".repeat(n)` | the text repeated `n` times |
 | `title.len()` | the length in bytes |
+| `usize` | the whole-number type for lengths and counts; `len()` returns one |
+| `"hi".to_string()`, `String::from("hi")` | a `String` made from a `&str` |
 | `"\n"` | a line break inside a string |
 | `todo!()` | a placeholder that compiles and panics if it runs |
 
@@ -219,6 +221,35 @@ let view: &str = &s;          // borrow a String as &str
 
 The difference comes down to **ownership**, which gets its own lesson soon.
 
+## Three text tools
+
+Three small things the practice and the task need:
+
+- `word.len()` is the length of the text: `"cargo".len()` is `5`. (It counts
+  bytes, which for plain English letters is the same as characters.)
+- `"-".repeat(3)` is the text repeated: `"---"`, a new `String`.
+- `\n` inside a string is a line break, and works inside `format!` too.
+
+```rust
+fn main() {
+    let word = "cargo";
+    println!("{}", word.len());
+    println!("{}", "-".repeat(3));
+    let line = "~".repeat(word.len());
+    println!("{}", format!("{word}\n{line}"));
+}
+```
+
+```output
+5
+---
+cargo
+~~~~~
+```
+
+The last two lines are one `String` with a line break in the middle: the
+word, then a line exactly as long as the word.
+
 ## todo!()
 
 `todo!()` is a placeholder that satisfies the compiler and panics if it ever
@@ -249,6 +280,27 @@ Ana scored 92
 Ana:    92|
 5
 ```
+
+## Practice
+
+Before the task, warm up in `src/drills.rs`: 10 small functions,
+each using one thing from this lesson. The comment above each one says what
+to return. Do them in order, press **Check** as often as you like, and watch
+the Results tab tick them off one by one (*Practice · 3/10 drills*).
+The task below then puts the same pieces together.
+
+| Drill | Write | Uses |
+|---|---|---|
+| 1 | `plus_one(4)` is `5` | the last expression, with no `;`, is the return value |
+| 2 | `area(3, 4)` is `12` | two parameters, each with its type |
+| 3 | `hello()` is the `String` `"hello"` | `"hello".to_string()` turns a `&str` into a `String` |
+| 4 | `shout("hi")` is `"hi!"` | `format!("{word}!")` |
+| 5 | `full_name("Ada", "Lovelace")` is `"Ada Lovelace"` | `format!` with two values |
+| 6 | `score_line("Ana", 92)` is `"Ana:    92"`: the score right-aligned in 5 characters | a format specification: `{score:>5}` |
+| 7 | `letters("cargo")` is `5` | `word.len()`, the length (a `usize`) |
+| 8 | `stars(3)` is `"***"` | `"*".repeat(n)` |
+| 9 | `two_lines("a", "b")` is `"a\nb"`: `a`, a line break, `b` | `\n` inside a `format!` string |
+| 10 | `underline("hi")` is `"hi\n--"`: the word, then a line of `-` as long as it | drills 7, 8 and 9 together: `len`, `repeat` and `\n` |
 
 ## Your turn
 

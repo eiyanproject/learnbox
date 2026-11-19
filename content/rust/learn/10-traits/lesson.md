@@ -2,7 +2,7 @@
 title: Traits
 summary: Shared behaviour across types, default methods, trait bounds, and dyn for mixed collections.
 order: 10
-files: [src/lib.rs]
+files: [src/drills.rs, src/lib.rs]
 run: cargo test
 hints:
   - "Implement the trait per type: `impl Shape for Circle { fn area(&self) -> f64 { PI * self.radius * self.radius } fn name(&self) -> String { \"circle\".to_string() } }`."
@@ -382,6 +382,26 @@ Robot #3 / Robot #3
 `Dog` never wrote `shout`; it got the default. The loop over `things` called
 `Dog`'s `speak` for the first item and `Robot`'s for the second, chosen while
 running. The same `largest` worked for integers, floats and characters.
+
+## Practice
+
+Before the task, warm up in `src/drills.rs`: 9 small functions,
+each using one thing from this lesson. The comment above each one says what
+to return. Do them in order, press **Check** as often as you like, and watch
+the Results tab tick them off one by one (*Practice · 3/9 drills*).
+The task below then puts the same pieces together.
+
+| Drill | Write | Uses |
+|---|---|---|
+| 1 | `Dog.sound()` is `"woof"` | implementing a trait: `impl Animal for Dog { ... }` |
+| 2 | `Cat.sound()` is `"meow"` | the same trait, a second type |
+| 3 | `twice(&Dog)` is `"woof woof"` | a generic parameter: `animal: &impl Animal` |
+| 4 | `chorus(&[Box::new(Dog), Box::new(Cat)])` is `vec!["woof", "meow"]` | a list of trait objects: `&[Box<dyn Animal>]` |
+| 5 | `format!("{}", Dog)` is `"a dog"` | implementing `fmt::Display` with `write!(f, ...)` |
+| 6 | `two_decimals(3.14159)` is `"3.14"` | `format!("{x:.2}")` |
+| 7 | `bigger(3, 8)` is `8`, and works for `f64` and `&str` too | a generic function with a bound: `<T: PartialOrd>` |
+| 8 | `Dog.loud()` is `"WOOF!"`: write the trait's **default** method once, for every animal | a default method in a trait, calling `self.sound()` |
+| 9 | `sum_all(&[1.5, 2.5])` is `4.0` | `.iter().sum()` |
 
 ## Your turn
 

@@ -9,8 +9,10 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
@@ -135,7 +137,7 @@ func (r *Runner) check(ctx context.Context, l *content.Lesson, srcRel string) (*
 		if err := r.ws.CopyIn(l.TestsDir(), checkRel+"/tests"); err != nil {
 			return nil, fmt.Errorf("copy tests: %w", err)
 		}
-		return r.rust(ctx, checkDir)
+		return r.rust(ctx, checkDir, hasDrills(l))
 	case "java":
 		// Tests sit beside the sources: javac compiles the directory as a
 		// whole, so a test and the class it exercises must see each other.
@@ -540,20 +542,62 @@ var (
 	rustSection  = regexp.MustCompile(`(?m)^---- (\S+) stdout ----$`)
 )
 
-func (r *Runner) rust(ctx context.Context, dir string) (*Result, error) {
+// hasDrills reports whether a Rust lesson has practice drills: a separate
+// test target, tests/drills.rs, run on its own first so the drills get their
+// ticks even while the main task's tests do not compile yet.
+func hasDrills(l *content.Lesson) bool {
+	_, err := os.Stat(filepath.Join(l.TestsDir(), "drills.rs"))
+	return err == nil
+}
+
+func (r *Runner) rust(ctx context.Context, dir string, drills bool) (*Result, error) {
+	var first *Result
+	if drills {
+		d, code, err := r.cargoTest(ctx, dir, "--test", "drills")
+		if err != nil || d.Status == "timeout" {
+			return d, err
+		}
+		finish(d, code)
+		first = d
+	}
+	res, code, err := r.cargoTest(ctx, dir)
+	if err != nil || res.Status == "timeout" || first == nil {
+		if res != nil && res.Status != "timeout" {
+			finish(res, code)
+		}
+		return res, err
+	}
+	res.DurationMS += first.DurationMS
+	if len(res.Tests) == 0 {
+		// The task does not compile yet, but the drills did: show their
+		// ticks, and the compiler's errors in the raw output.
+		res.Tests = first.Tests
+		res.Output = res.Output + "\n---- drills, run on their own ----\n" + first.Output
+		res.Status = "error"
+		return res, nil
+	}
+	finish(res, code)
+	return res, nil
+}
+
+// cargoTest runs cargo test with extra arguments and parses the results; the
+// caller decides the status (finish), except for a timeout.
+func (r *Runner) cargoTest(ctx context.Context, dir string, args ...string) (*Result, int, error) {
+	cmd := append([]string{"cargo", "test", "--no-fail-fast"}, args...)
+	cmd = append(cmd, "--", "--include-ignored", "--test-threads=1", "--color=never")
 	out, code, timedOut, dur, err := r.exec(ctx, dir,
 		[]string{
 			"CARGO_TARGET_DIR=" + r.sb.Home + "/.cache/learnbox/target",
 			"CARGO_TERM_COLOR=never",
 		},
-		"cargo", "test", "--no-fail-fast", "--", "--include-ignored", "--test-threads=1", "--color=never")
+		cmd[0], cmd[1:]...)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	res := &Result{Output: out, DurationMS: dur.Milliseconds()}
 	if timedOut {
 		res.Status = "timeout"
-		return res, nil
+		return res, code, nil
 	}
 	msgs := rustFailureMessages(out)
 	seen := map[string]bool{}
@@ -567,8 +611,7 @@ func (r *Runner) rust(ctx context.Context, dir string) (*Result, error) {
 			Name: prettyTestName(name), Passed: status == "ok", Message: msgs[name],
 		})
 	}
-	finish(res, code)
-	return res, nil
+	return res, code, nil
 }
 
 func rustFailureMessages(out string) map[string]string {

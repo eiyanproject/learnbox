@@ -2,7 +2,7 @@
 title: Control flow
 summary: if as an expression, loop, while and for over ranges, and returning values out of loops.
 order: 3
-files: [src/lib.rs]
+files: [src/drills.rs, src/lib.rs]
 run: cargo test
 hints:
   - "`fizzbuzz` can be one `if / else if / else` chain used as the function's final expression. The number case is `n.to_string()`."
@@ -272,6 +272,26 @@ be printed; iterators and `collect` are lesson 11. The `::<Vec<_>>` part
 tells `collect` which kind of collection to build, and `_` lets the compiler
 work out the element type. The labelled loop stopped at the first pair whose
 product is 42, `(6, 7)`, without trying the rest.
+
+## Practice
+
+Before the task, warm up in `src/drills.rs`: 9 small functions,
+each using one thing from this lesson. The comment above each one says what
+to return. Do them in order, press **Check** as often as you like, and watch
+the Results tab tick them off one by one (*Practice · 3/9 drills*).
+The task below then puts the same pieces together.
+
+| Drill | Write | Uses |
+|---|---|---|
+| 1 | `sign(-4)` is `"negative"`; also `"zero"` and `"positive"` | `if` ... `else if` ... `else`, each branch giving a `String` |
+| 2 | `is_even(6)` is `true` | `n % 2 == 0` |
+| 3 | `sum_to(4)` is `10`: 1 + 2 + 3 + 4 | `for i in 1..=n` with a `let mut total` |
+| 4 | `count_down(3)` is `vec![3, 2, 1]` | `(1..=n).rev().collect()` |
+| 5 | `evens_below(7)` is `vec![0, 2, 4, 6]` | `(0..n).step_by(2)` |
+| 6 | `halvings(8)` is `3`: how many halvings to get from `n` down to 1 | `while n > 1`, after `let mut n = n;` |
+| 7 | `next_multiple_of_7(10)` is `14`: the first multiple of 7 at or after `start` | `loop` with `break value` |
+| 8 | `number_text(42)` is `"42"` | `n.to_string()` |
+| 9 | `fizz(9)` is `"Fizz"`, `fizz(4)` is `"4"` | drills 1, 2 and 8 together: `if`, `%`, `to_string` |
 
 ## Your turn
 

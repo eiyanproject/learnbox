@@ -2,7 +2,7 @@
 title: Generics and lifetimes
 summary: Write one type or function for many types, and tell the compiler how long borrowed data lives.
 order: 12
-files: [src/lib.rs]
+files: [src/drills.rs, src/lib.rs]
 run: cargo test
 hints:
   - "`longest<'a>(a: &'a str, b: &'a str) -> &'a str`: `if b.len() > a.len() { b } else { a }`. The shared `'a` is the whole trick."
@@ -353,6 +353,29 @@ call
 
 After `swap`, the pair is `(2, 1)` and the larger is 2. `&str` is `Copy` and
 can be compared, so `Pair<&str>` has `larger` too (`"b"` sorts after `"a"`).
+
+## Practice
+
+Before the task, warm up in `src/drills.rs`: 8 small functions,
+each using one thing from this lesson. The comment above each one says what
+to return. Do them in order, press **Check** as often as you like, and watch
+the Results tab tick them off one by one (*Practice · 3/8 drills*).
+The task below then puts the same pieces together.
+
+This lesson's `lib.rs` does not compile until you add the lifetime to
+`longest` (the first item of the task), and Rust builds the library before
+any test. Do that one fix first; then the drills run.
+
+| Drill | Write | Uses |
+|---|---|---|
+| 1 | `Pair::new(1, 2)` is `Pair { a: 1, b: 2 }` | an `impl<T>` block on a generic struct |
+| 2 | `Pair::new(1, 2).swap()` is `Pair { a: 2, b: 1 }` | a `self` method that moves both values |
+| 3 | `Pair::new(3, 9).larger()` is `9` | an `impl` with bounds: `impl<T: PartialOrd + Copy>` |
+| 4 | `Wrapper { value: 5 }.get()` is `&5` | returning a reference to a field: `&self.value` |
+| 5 | `first(&[4, 5])` is `Some(4)`; an empty slice gives `None` | a generic function: `fn first<T: Copy>` |
+| 6 | `shorter("hi", "hello")` is `"hi"`; on a tie, the first | a signature with a lifetime: both inputs and the result are `&'a str` |
+| 7 | `before_comma("red, green")` is `"red"`; no comma gives all the text | `text.find(',')` and the slice `&text[..i]` |
+| 8 | `through_colon("key: value")` is `"key:"`, the colon included | the inclusive slice `&text[..=i]` |
 
 ## Your turn
 

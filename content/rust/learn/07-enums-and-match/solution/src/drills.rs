@@ -1,0 +1,90 @@
+// Practice drills. Each one is a small function that uses one thing from
+// the lesson. Replace a `todo!()`, press Check, and that drill gets its own
+// tick in the Results tab. The hidden tests read this file directly, so it
+// needs no `mod` line anywhere.
+
+/// A traffic light. Already written: read it first.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Light {
+    Red,
+    Yellow,
+    Green,
+}
+
+/// A pet; two of the variants carry data.
+#[derive(Debug, PartialEq)]
+pub enum Pet {
+    Dog(String),
+    Cat { lives: u32 },
+    Fish,
+}
+
+/// Drill 1: `next_light(Light::Red)` is `Light::Green`; green goes to yellow, yellow to red
+pub fn next_light(light: Light) -> Light {
+    match light {
+        Light::Red => Light::Green,
+        Light::Green => Light::Yellow,
+        Light::Yellow => Light::Red,
+    }
+}
+
+/// Drill 2: `seconds(&Light::Red)` is `30`; yellow `5`, green `25`
+pub fn seconds(light: &Light) -> u32 {
+    match light {
+        Light::Red => 30,
+        Light::Yellow => 5,
+        Light::Green => 25,
+    }
+}
+
+/// Drill 3: `can_go(&Light::Green)` is `true`, anything else `false`
+pub fn can_go(light: &Light) -> bool {
+    matches!(light, Light::Green)
+}
+
+/// Drill 4: `size_word(0)` is `"none"`, 1 to 3 `"few"`, more `"many"`
+pub fn size_word(n: u32) -> String {
+    match n {
+        0 => "none".to_string(),
+        n if n <= 3 => "few".to_string(),
+        _ => "many".to_string(),
+    }
+}
+
+/// Drill 5: `is_fish(&Pet::Fish)` is `true`
+pub fn is_fish(pet: &Pet) -> bool {
+    matches!(pet, Pet::Fish)
+}
+
+/// Drill 6: `lives(&Pet::Cat { lives: 9 })` is `9`; any other pet `1`
+pub fn lives(pet: &Pet) -> u32 {
+    match pet {
+        Pet::Cat { lives } => *lives,
+        _ => 1,
+    }
+}
+
+/// Drill 7: `pet_text(&Pet::Dog("rex".into()))` is `"dog rex"`; a cat with 9 lives is `"cat with 9 lives"`; a fish is `"fish"`
+pub fn pet_text(pet: &Pet) -> String {
+    match pet {
+        Pet::Dog(name) => format!("dog {name}"),
+        Pet::Cat { lives } => format!("cat with {lives} lives"),
+        Pet::Fish => "fish".to_string(),
+    }
+}
+
+/// Drill 8: `dog_name(&pet)` is the dog's name, or `""` for any other pet
+pub fn dog_name(pet: &Pet) -> String {
+    if let Pet::Dog(name) = pet {
+        name.clone()
+    } else {
+        "".to_string()
+    }
+}
+
+/// Drill 9: `Light::Red.is_red()` is `true`
+impl Light {
+    pub fn is_red(&self) -> bool {
+        matches!(self, Light::Red)
+    }
+}

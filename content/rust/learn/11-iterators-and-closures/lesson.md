@@ -2,7 +2,7 @@
 title: Iterators and closures
 summary: Chain map, filter and fold instead of writing loops, and pass behaviour around as closures.
 order: 11
-files: [src/lib.rs]
+files: [src/drills.rs, src/lib.rs]
 run: cargo test
 hints:
   - "`evens_squared`: `nums.iter().filter(|n| *n % 2 == 0).map(|n| n * n).collect()`."
@@ -420,6 +420,26 @@ fn main() {
 print the same. `make_adder(10)(5)` makes an adder and calls it at once. The
 last line is laziness made visible: `take(2)` asked for two values, so the
 closure ran twice and never saw `3`.
+
+## Practice
+
+Before the task, warm up in `src/drills.rs`: 9 small functions,
+each using one thing from this lesson. The comment above each one says what
+to return. Do them in order, press **Check** as often as you like, and watch
+the Results tab tick them off one by one (*Practice · 3/9 drills*).
+The task below then puts the same pieces together.
+
+| Drill | Write | Uses |
+|---|---|---|
+| 1 | `call_twice(\|x\| x + 3, 1)` is `7` | a closure parameter: `F: Fn(i32) -> i32` |
+| 2 | `doubled(&[1, 2, 3])` is `vec![2, 4, 6]` | `.iter().map(\|n\| n * 2).collect()` |
+| 3 | `positives(&[3, -1, 0, 5])` is `vec![3, 5]` | `.filter(\|n\| **n > 0)` then `.copied()` |
+| 4 | `count_odd(&[1, 2, 3])` is `2` | `.filter(...).count()` |
+| 5 | `product(&[2, 3, 4])` is `24`; an empty slice gives `1` | `.fold(1, \|acc, n\| acc * n)` |
+| 6 | `sum_of_squares(&[1, 2, 3])` is `14` | `.map(...)` then `.sum()` |
+| 7 | `word_lengths("a bb  ccc")` is `vec![1, 2, 3]` | `text.split_whitespace().map(\|w\| w.len())` |
+| 8 | `vowels("banana")` is `3` | `s.chars().filter(\|c\| matches!(c, 'a' \| 'e' \| 'i' \| 'o' \| 'u')).count()` |
+| 9 | `multiplier(3)` is a closure: `multiplier(3)(5)` is `15` | `move \|x\| x * n`, returned as `impl Fn(i32) -> i32` |
 
 ## Your turn
 

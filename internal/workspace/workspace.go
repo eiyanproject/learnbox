@@ -61,10 +61,15 @@ func (m *Manager) Dir(l *content.Lesson) string {
 }
 
 // Ensure creates the workspace from the starter files the first time a lesson
-// is opened. Existing workspaces are left exactly as the learner left them.
+// is opened. Existing workspaces keep every file as the learner left it; only
+// starter files the workspace does not have yet (added to the lesson since,
+// such as drills) are copied in.
 func (m *Manager) Ensure(l *content.Lesson) (string, error) {
 	rel := m.Rel(l)
 	if _, err := m.home.Stat(rel); err == nil {
+		if err := m.copyMissing(l.StarterDir(), rel); err != nil && !os.IsNotExist(err) {
+			return "", err
+		}
 		return m.Dir(l), nil
 	}
 	if err := m.MkdirAll(path.Dir(rel)); err != nil {
@@ -209,6 +214,35 @@ func (m *Manager) CopyIn(src, rel string) error {
 		}
 		sub, _ := filepath.Rel(src, p)
 		target := path.Join(rel, filepath.ToSlash(sub))
+		if d.IsDir() {
+			return m.MkdirAll(target)
+		}
+		if !d.Type().IsRegular() {
+			return nil
+		}
+		raw, err := os.ReadFile(p)
+		if err != nil {
+			return err
+		}
+		return m.writeFile(target, raw)
+	})
+}
+
+// copyMissing is CopyIn for files rel does not already have: nothing the
+// learner has is overwritten.
+func (m *Manager) copyMissing(src, rel string) error {
+	if _, err := os.Stat(src); err != nil {
+		return err
+	}
+	return filepath.WalkDir(src, func(p string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		sub, _ := filepath.Rel(src, p)
+		target := path.Join(rel, filepath.ToSlash(sub))
+		if _, err := m.home.Lstat(target); err == nil {
+			return nil
+		}
 		if d.IsDir() {
 			return m.MkdirAll(target)
 		}

@@ -1,4 +1,4 @@
-import { api, ApiError, quizHref, type CheckResponse, type Lesson } from "../api";
+import { api, ApiError, quizHref, type CheckResponse, type Lesson, type TestResult } from "../api";
 import { CodeEditor } from "../components/editor";
 import { keyBar } from "../components/keybar";
 import { TermView } from "../components/terminal";
@@ -512,7 +512,9 @@ class LessonView {
         cls = "failed";
         break;
       default:
-        headline = this.lesson.lang === "rust" ? "Did not compile" : "Tests could not run";
+        headline = tests.length
+          ? "The task does not compile yet; the drills below ran on their own"
+          : this.lesson.lang === "rust" ? "Did not compile" : "Tests could not run";
         cls = "failed";
     }
 
@@ -537,20 +539,51 @@ class LessonView {
             ? h("button", { class: "btn primary", style: "margin-left:auto", onclick: () => navigate(`/learn/${next.id}`) }, "Next lesson", icon(icons.right))
             : null,
       ),
-      ...tests.map((t) =>
-        h(
-          "div",
-          { class: t.passed ? "test ok" : "test bad" },
-          h("span", { class: "mk" }, t.passed ? "✓" : "✗"),
-          h("div", { style: "min-width:0" }, t.name, !t.passed && t.message ? h("pre", null, t.message) : null),
-        ),
-      ),
+      ...this.testRows(tests),
     );
     const raw = h("details", { class: "raw", open: !tests.length || res.status === "timeout" }, h("summary", { class: "lbl" }, "Raw output"), h("pre", { class: "raw-out" }, res.output || "(no output)"));
     this.resultsBox.append(raw);
     if (res.status === "timeout") {
       this.resultsBox.prepend(h("div", { class: "banner", style: "margin:12px 16px 0" }, "The tests did not finish in time. Look for an infinite loop, or a program waiting for input()."));
     }
+  }
+
+  // Tests named drill_NN_* are the lesson's practice drills: one row per drill,
+  // ticked when all of its tests pass, above the main task's tests.
+  private testRows(tests: TestResult[]): HTMLElement[] {
+    const row = (ok: boolean, label: string, msgs: string[]) =>
+      h(
+        "div",
+        { class: ok ? "test ok" : "test bad" },
+        h("span", { class: "mk" }, ok ? "✓" : "✗"),
+        h("div", { style: "min-width:0" }, label, ...msgs.map((m) => h("pre", null, m))),
+      );
+    const drills = new Map<number, { name: string; tests: TestResult[] }>();
+    const task: TestResult[] = [];
+    for (const t of tests) {
+      const m = /^drill (\d+) (.*)$/.exec(t.name);
+      if (!m) {
+        task.push(t);
+        continue;
+      }
+      const n = Number(m[1]);
+      const d = drills.get(n) ?? { name: m[2], tests: [] };
+      d.tests.push(t);
+      drills.set(n, d);
+    }
+    if (!drills.size) return task.map((t) => row(t.passed, t.name, !t.passed && t.message ? [t.message] : []));
+    const ordered = [...drills.entries()].sort((a, b) => a[0] - b[0]);
+    const done = ordered.filter(([, d]) => d.tests.every((t) => t.passed)).length;
+    const out = [h("div", { class: "lbl", style: "margin:12px 16px 4px" }, `Practice · ${done}/${ordered.length} drills`)];
+    for (const [n, d] of ordered) {
+      const bad = d.tests.filter((t) => !t.passed);
+      out.push(row(!bad.length, `Drill ${n} · ${d.name}`, bad.map((t) => t.message ?? "").filter(Boolean).slice(0, 1)));
+    }
+    if (task.length) {
+      out.push(h("div", { class: "lbl", style: "margin:12px 16px 4px" }, "Your turn"));
+      out.push(...task.map((t) => row(t.passed, t.name, !t.passed && t.message ? [t.message] : [])));
+    }
+    return out;
   }
 
   private showBottom(which: "term" | "results") {

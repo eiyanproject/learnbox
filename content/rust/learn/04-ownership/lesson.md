@@ -2,7 +2,7 @@
 title: Ownership
 summary: Moves, clones and copies. This starter does not compile; fixing it is the lesson.
 order: 4
-files: [src/lib.rs]
+files: [src/drills.rs, src/lib.rs]
 run: cargo check
 hints:
   - "Read each error from the top. `cannot borrow as mutable` on `exclaim`: the parameter needs `mut`, as in `fn exclaim(mut s: String)`."
@@ -331,6 +331,29 @@ a b 2
 Each line that compiles here is the fix for one of the errors above. Try
 breaking it on purpose: add `println!("{b}");` after the `consume(b)` line
 and read the error.
+
+## Practice
+
+Before the task, warm up in `src/drills.rs`: 8 small functions,
+each using one thing from this lesson. The comment above each one says what
+to return. Do them in order, press **Check** as often as you like, and watch
+the Results tab tick them off one by one (*Practice · 3/8 drills*).
+The task below then puts the same pieces together.
+
+This lesson's `lib.rs` starts with compile errors on purpose, and Rust builds
+the library before any test, so the drills only run once `cargo check` is
+clean. Fix the errors first (the task below), then do the drills.
+
+| Drill | Write | Uses |
+|---|---|---|
+| 1 | `make_greeting()` is the `String` `"hello"` | `String::from("hello")` |
+| 2 | `add_question_mark("why")` is `"why?"` | a `mut` parameter you own, and `s.push('?')` |
+| 3 | `copy_of(&s)` is a new `String` equal to `s` | `s.clone()` |
+| 4 | `first_copy(&names)` is a copy of the first name, leaving `names` as it was | `names[0].clone()` |
+| 5 | `take_first(names)` moves the first name out and returns it | `names.remove(0)` on a `mut` vector you own |
+| 6 | `total_length(&words)` is the sum of the words' lengths: `["ab", "cde"]` gives `5` | `for w in words` over a borrowed `&Vec`, so nothing moves |
+| 7 | `count_then_keep(words)` is `(how many, the same words)` | read `words.len()` first, then move `words` into the tuple |
+| 8 | `both_ways(s)` is `(s, s)`: two separate `String`s | clone once, then move the original |
 
 ## Your turn
 

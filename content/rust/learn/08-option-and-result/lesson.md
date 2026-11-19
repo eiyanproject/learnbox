@@ -2,7 +2,7 @@
 title: Option and Result
 summary: No null, no exceptions. Model "maybe missing" and "might fail" in the type, and propagate errors with ?.
 order: 8
-files: [src/lib.rs]
+files: [src/drills.rs, src/lib.rs]
 run: cargo test
 hints:
   - "`find_index`: loop with `for (i, item) in items.iter().enumerate()`; `return Some(i)` on a match; `None` after the loop."
@@ -318,6 +318,27 @@ parse and the `Err` arm printed the reason; `unwrap_or` supplied the 0 for
 its `ParseIntError` into a `String`; finally, `.ok()` of an `Err` is `None`,
 and the default for `i32` is 0. (`.clone()` is there because `.ok()` takes
 the `Result` by value, and the next call still needs it.)
+
+## Practice
+
+Before the task, warm up in `src/drills.rs`: 10 small functions,
+each using one thing from this lesson. The comment above each one says what
+to return. Do them in order, press **Check** as often as you like, and watch
+the Results tab tick them off one by one (*Practice · 3/10 drills*).
+The task below then puts the same pieces together.
+
+| Drill | Write | Uses |
+|---|---|---|
+| 1 | `half_if_even(8)` is `Some(4)`; an odd number gives `None` | returning `Some(...)` or `None` |
+| 2 | `or_zero(Some(5))` is `5`, `or_zero(None)` is `0` | `opt.unwrap_or(0)` |
+| 3 | `doubled(Some(3))` is `Some(6)`, `doubled(None)` is `None` | `opt.map(\|n\| n * 2)` |
+| 4 | `has_value(Some(1))` is `true` | `opt.is_some()` |
+| 5 | `parse_opt(" 12 ")` is `Some(12)`, `parse_opt("x")` is `None` | `s.trim().parse().ok()` |
+| 6 | `parse_or_zero("7")` is `7`, `parse_or_zero("seven")` is `0` | `.parse::<i32>().unwrap_or_default()` |
+| 7 | `parse_message("x")` is `Err("invalid digit found in string")`; `"5"` is `Ok(5)` | `.map_err(\|e\| e.to_string())` |
+| 8 | `check_age(30)` is `Ok(30)`; outside 0 to 150 is `Err("bad age: 200")` | returning `Ok(...)` or `Err(format!(...))` |
+| 9 | `double_text("21")` is `Ok(42)`; bad text passes the parse error up | `let n: i32 = s.parse()?;` then `Ok(n * 2)` |
+| 10 | `position_of(&[5, 7, 9], 9)` is `Some(2)` | `items.iter().position(\|x\| *x == target)` |
 
 ## Your turn
 

@@ -2,7 +2,7 @@
 title: Vec, String and HashMap
 summary: The three collections you will use in almost every Rust program.
 order: 9
-files: [src/lib.rs]
+files: [src/drills.rs, src/lib.rs]
 run: cargo test
 hints:
   - "`word_counts`: `*counts.entry(word.to_lowercase()).or_insert(0) += 1;` inside `for word in text.split_whitespace()`."
@@ -347,6 +347,27 @@ Some('h') Some(104)
 `"héllo"` is 6 bytes but 5 characters, because `é` takes two bytes. 104 is
 the byte for `h`. `counts.into_iter()` moves the pairs out of the map into a
 `Vec` of tuples, which `sort` orders by the first item, then the second.
+
+## Practice
+
+Before the task, warm up in `src/drills.rs`: 10 small functions,
+each using one thing from this lesson. The comment above each one says what
+to return. Do them in order, press **Check** as often as you like, and watch
+the Results tab tick them off one by one (*Practice · 3/10 drills*).
+The task below then puts the same pieces together.
+
+| Drill | Write | Uses |
+|---|---|---|
+| 1 | `one_two_three()` is `vec![1, 2, 3]` | the `vec![...]` macro |
+| 2 | `with_extra(vec![1], 2)` is `vec![1, 2]` | `v.push(x)` on a `mut` vector |
+| 3 | `last_out(vec![1, 2])` is `Some(2)`; an empty vector gives `None` | `v.pop()` |
+| 4 | `safe_get(&[10, 20], 1)` is `Some(&20)`; past the end is `None` | `v.get(i)`, which never panics |
+| 5 | `sorted(vec![3, 1, 2])` is `vec![1, 2, 3]` | `v.sort()` |
+| 6 | `words(" a  b ")` is `vec!["a", "b"]` | `text.split_whitespace().collect()` |
+| 7 | `join_words(&["a", "b"])` is `"a b"` | `words.join(" ")` |
+| 8 | `quiet("HeLLo")` is `"hello"` | `s.to_lowercase()` |
+| 9 | `ages()` is a map with `"ana"` → `30` and `"bo"` → `25` | `HashMap::new()` and `map.insert(k, v)` |
+| 10 | `letter_counts("aab")` maps `'a'` → `2` and `'b'` → `1` | the counting idiom: `*counts.entry(c).or_insert(0) += 1` |
 
 ## Your turn
 

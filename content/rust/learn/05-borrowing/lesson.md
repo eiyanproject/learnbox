@@ -2,7 +2,7 @@
 title: Borrowing and slices
 summary: Use a value without taking it; one writer or many readers; views into strings and arrays.
 order: 5
-files: [src/lib.rs]
+files: [src/drills.rs, src/lib.rs]
 run: cargo test
 hints:
   - "`first_word`: loop over `s.char_indices()`; at the first `' '` return `&s[..i]`. If there is no space, return `s` itself."
@@ -272,6 +272,27 @@ hi!
 ```
 
 `ï` takes two bytes, so `&word[0..3]` would end in the middle of it and panic.
+
+## Practice
+
+Before the task, warm up in `src/drills.rs`: 10 small functions,
+each using one thing from this lesson. The comment above each one says what
+to return. Do them in order, press **Check** as often as you like, and watch
+the Results tab tick them off one by one (*Practice · 3/10 drills*).
+The task below then puts the same pieces together.
+
+| Drill | Write | Uses |
+|---|---|---|
+| 1 | `length(&s)` is the length of a borrowed `String` | a `&String` parameter and `s.len()` |
+| 2 | `add_one(&mut n)` adds one to the caller's `n` | `*n += 1` through a `&mut i32` |
+| 3 | `exclaim(&mut s)` adds `!` to the end of the caller's `String` | `s.push('!')` through a `&mut String` |
+| 4 | `first_three("rustacean")` is `"rus"`, a slice of the text | `&s[0..3]` |
+| 5 | `after_first("xhello")` is `"hello"` | `&s[1..]`: from position 1 to the end |
+| 6 | `middle(&[1, 2, 3, 4])` is `[2, 3]`: all but the first and last | a slice of a slice: `&v[1..v.len() - 1]` |
+| 7 | `char_count("héllo")` is `5`, though it is 6 bytes | `s.chars().count()` |
+| 8 | `space_at("hi there")` is `Some(2)`; no space gives `None` | `s.find(' ')` |
+| 9 | `negate_all(&mut v)` turns `[1, -2]` into `[-1, 2]`, in place | `for n in nums.iter_mut()` and `*n = -*n` |
+| 10 | `add_line(&mut buf, "b")` turns `"a\n"` into `"a\nb\n"` | `buf.push_str(line)` and `buf.push('\n')` |
 
 ## Your turn
 

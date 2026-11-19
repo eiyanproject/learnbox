@@ -2,7 +2,7 @@
 title: Enums and match
 summary: Types that are one of several variants, possibly carrying data, taken apart with exhaustive match.
 order: 7
-files: [src/lib.rs]
+files: [src/drills.rs, src/lib.rs]
 run: cargo test
 hints:
   - "`Shape::area`: `match self { Shape::Circle { radius } => std::f64::consts::PI * radius * radius, Shape::Square(side) => side * side, ... }`."
@@ -351,6 +351,26 @@ hi
 `for m in &msgs` borrows each message (lesson 4), so `msgs` is still there
 for the `if let` at the end. `-4` went past `0`, `1 | 2 | 3` and `4..=9`, and
 was caught by the guard; `50` fit nothing but `_`.
+
+## Practice
+
+Before the task, warm up in `src/drills.rs`: 9 small functions,
+each using one thing from this lesson. The comment above each one says what
+to return. Do them in order, press **Check** as often as you like, and watch
+the Results tab tick them off one by one (*Practice · 3/9 drills*).
+The task below then puts the same pieces together.
+
+| Drill | Write | Uses |
+|---|---|---|
+| 1 | `next_light(Light::Red)` is `Light::Green`; green goes to yellow, yellow to red | a `match` with one arm per variant |
+| 2 | `seconds(&Light::Red)` is `30`; yellow `5`, green `25` | `match` producing a number |
+| 3 | `can_go(&Light::Green)` is `true`, anything else `false` | `matches!(light, Light::Green)` |
+| 4 | `size_word(0)` is `"none"`, 1 to 3 `"few"`, more `"many"` | an arm with a guard: `n if n <= 3 => ...`, and `_` |
+| 5 | `is_fish(&Pet::Fish)` is `true` | `matches!` on a variant with no data |
+| 6 | `lives(&Pet::Cat { lives: 9 })` is `9`; any other pet `1` | binding a named field: `Pet::Cat { lives } => *lives` |
+| 7 | `pet_text(&Pet::Dog("rex".into()))` is `"dog rex"`; a cat with 9 lives is `"cat with 9 lives"`; a fish is `"fish"` | binding variant data in each arm, and `format!` |
+| 8 | `dog_name(&pet)` is the dog's name, or `""` for any other pet | `if let Pet::Dog(name) = pet { ... } else { ... }` |
+| 9 | `Light::Red.is_red()` is `true` | a method on an enum: `impl Light { ... }` |
 
 ## Your turn
 

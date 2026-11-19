@@ -2,7 +2,7 @@
 title: Structs and methods
 summary: Define your own types, attach methods with impl, and derive common behaviour.
 order: 6
-files: [src/lib.rs]
+files: [src/drills.rs, src/lib.rs]
 run: cargo test
 hints:
   - "`new` is an associated function: `pub fn new(width: u32, height: u32) -> Self { Self { width, height } }`."
@@ -52,6 +52,7 @@ again, with examples, where the lesson uses it.
 | `struct User { name: String, age: u32, active: bool }` | a struct |
 | `User { name, age: 30, active: true }` | creates one, with field init shorthand for `name` |
 | `ana.age += 1` | changes a field; the binding must be `mut` |
+| `n.abs()` | the size of a number without its sign: `(-3).abs()` is `3` |
 | `impl Rectangle { pub fn area(&self) -> u32 { ... } }` | a method |
 | `Rectangle::new(3, 4)`, `Rectangle::square(5)` | associated functions |
 | `r.scale(2)` | a `&mut self` method; Rust borrows `r` for you |
@@ -247,6 +248,26 @@ Ana
 3.5
 Point { x: 1, y: 2 } true
 ```
+
+## Practice
+
+Before the task, warm up in `src/drills.rs`: 9 small functions,
+each using one thing from this lesson. The comment above each one says what
+to return. Do them in order, press **Check** as often as you like, and watch
+the Results tab tick them off one by one (*Practice · 3/9 drills*).
+The task below then puts the same pieces together.
+
+| Drill | Write | Uses |
+|---|---|---|
+| 1 | `origin()` is the point `(0, 0)` | creating a struct: `Point { x: 0, y: 0 }` |
+| 2 | `point(3, 4)` is `Point { x: 3, y: 4 }` | field init shorthand: `Point { x, y }` |
+| 3 | `sum_of(&p)` is `p.x + p.y` | reading fields through a `&Point` |
+| 4 | `move_right(&mut p)` adds 1 to `p.x` | changing a field: `p.x += 1` |
+| 5 | `Point::new(1, 2)` builds a point | an associated function returning `Self` |
+| 6 | `p.distance()` is `\|x\| + \|y\|`: `Point::new(-3, 4).distance()` is `7` | a `&self` method; `self.x.abs()` |
+| 7 | `p.shift(2, -1)` moves the point by that much | a `&mut self` method |
+| 8 | `p.into_pair()` is `(x, y)`; it uses up the point | a `self` method: the point is moved |
+| 9 | `debug_text(&p)` is `"Point { x: 1, y: 2 }"` | debug formatting: `format!("{p:?}")` |
 
 ## Your turn
 
