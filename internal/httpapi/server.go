@@ -155,6 +155,7 @@ func (s *Server) routes() {
 	m.HandleFunc("PUT "+L+"/files/{name...}", s.writeFile)
 	m.HandleFunc("GET "+L+"/mtimes", s.mtimes)
 	m.HandleFunc("POST "+L+"/check", s.check)
+	m.HandleFunc("POST "+L+"/drills/{n}", s.drill)
 	m.HandleFunc("POST "+L+"/hint", s.hint)
 	m.HandleFunc("POST "+L+"/reset", s.reset)
 	m.HandleFunc("POST "+L+"/challenge/start", s.startChallenge)
@@ -512,7 +513,7 @@ func (s *Server) lesson(w http.ResponseWriter, r *http.Request) {
 		"id": l.ID(), "lang": l.Lang, "section": l.Section, "slug": l.Slug, "kind": l.Kind,
 		"title": l.Title, "summary": l.Summary, "html": html, "source_html": source,
 		"track_title": trackTitle, "section_title": sectionTitle,
-		"files": l.Files, "run": l.Run, "has_tests": l.HasTest,
+		"files": l.Files, "run": l.Run, "has_tests": l.HasTest, "drills": l.Drills,
 		"hints_total": len(l.Hints), "hints": renderHints(l.Hints, e.HintsRevealed),
 		"status": e.Status, "attempts": e.Attempts,
 		"xp_full": xpFull, "xp": xpNow, "hint_cost": hintCost,
@@ -654,6 +655,44 @@ func (s *Server) check(w http.ResponseWriter, r *http.Request) {
 		"result": res, "status": e.Status, "attempts": e.Attempts,
 		"reward": game.Diff(before, after, fresh),
 	})
+}
+
+// drill runs one practice drill. It is a warm-up, not a check: no attempt
+// is counted and nothing is earned.
+func (s *Server) drill(w http.ResponseWriter, r *http.Request) {
+	l := s.lessonFrom(w, r)
+	if l == nil {
+		return
+	}
+	n, err := strconv.Atoi(r.PathValue("n"))
+	if err != nil {
+		writeErr(w, http.StatusBadRequest, "bad drill number")
+		return
+	}
+	if err := s.diskHeadroom(); err != nil {
+		s.errs.WithLabelValues("disk_full").Inc()
+		writeErr(w, http.StatusInsufficientStorage, err.Error())
+		return
+	}
+	v := s.who(w, r)
+	if v == nil {
+		return
+	}
+	if _, err := v.WS.Ensure(l); err != nil {
+		s.fail(w, "workspace", err)
+		return
+	}
+	res, err := s.Runner.CheckDrill(r.Context(), l, v.WS.Rel(l), n)
+	if errors.Is(err, runner.ErrNoDrill) {
+		writeErr(w, http.StatusNotFound, err.Error())
+		return
+	}
+	if err != nil {
+		s.fail(w, "drill", err)
+		return
+	}
+	s.checks.WithLabelValues(l.Lang+"_drill", res.Status).Inc()
+	writeJSON(w, http.StatusOK, map[string]any{"result": res})
 }
 
 func (s *Server) hint(w http.ResponseWriter, r *http.Request) {

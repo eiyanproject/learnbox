@@ -358,19 +358,17 @@ can be compared, so `Pair<&str>` has `larger` too (`"b"` sorts after `"a"`).
 
 Before the task, warm up in `src/drills.rs`: 8 small functions,
 each using one thing from this lesson. The comment above each one says what
-to return. Do them in order, press **Check** as often as you like, and watch
-the Results tab tick them off one by one (*Practice · 3/8 drills*).
+to return. Do them in order: write one, then press its **Run** button in the
+Results tab. That builds and tests just that drill, in a second or two, and a
+mistake in one drill never stops the others. **Check** runs every drill, then
+the task.
 The task below then puts the same pieces together.
-
-This lesson's `lib.rs` does not compile until you add the lifetime to
-`longest` (the first item of the task), and Rust builds the library before
-any test. Do that one fix first; then the drills run.
 
 | Drill | Write | Uses |
 |---|---|---|
 | 1 | `Pair::new(1, 2)` is `Pair { a: 1, b: 2 }` | an `impl<T>` block on a generic struct |
-| 2 | `Pair::new(1, 2).swap()` is `Pair { a: 2, b: 1 }` | a `self` method that moves both values |
-| 3 | `Pair::new(3, 9).larger()` is `9` | an `impl` with bounds: `impl<T: PartialOrd + Copy>` |
+| 2 | `Pair { a: 1, b: 2 }.swap()` is `Pair { a: 2, b: 1 }` | a `self` method that moves both values |
+| 3 | `Pair { a: 3, b: 9 }.larger()` is `9` | an `impl` with bounds: `impl<T: PartialOrd + Copy>` |
 | 4 | `Wrapper { value: 5 }.get()` is `&5` | returning a reference to a field: `&self.value` |
 | 5 | `first(&[4, 5])` is `Some(4)`; an empty slice gives `None` | a generic function: `fn first<T: Copy>` |
 | 6 | `shorter("hi", "hello")` is `"hi"`; on a tie, the first | a signature with a lifetime: both inputs and the result are `&'a str` |

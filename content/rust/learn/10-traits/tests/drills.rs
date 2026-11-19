@@ -14,14 +14,31 @@ fn drill_02_cat_sound() {
 
 #[test]
 fn drill_03_twice() {
-    assert_eq!(twice(&Dog), "woof woof");
-    assert_eq!(twice(&Cat), "meow meow");
+    struct Cow;
+    impl Animal for Cow {
+        fn sound(&self) -> String {
+            "moo".to_string()
+        }
+    }
+    assert_eq!(twice(&Cow), "moo moo");
 }
 
 #[test]
 fn drill_04_chorus() {
-    let animals: Vec<Box<dyn Animal>> = vec![Box::new(Dog), Box::new(Cat)];
-    assert_eq!(chorus(&animals), vec!["woof", "meow"]);
+    struct Cow;
+    impl Animal for Cow {
+        fn sound(&self) -> String {
+            "moo".to_string()
+        }
+    }
+    struct Owl;
+    impl Animal for Owl {
+        fn sound(&self) -> String {
+            "hoot".to_string()
+        }
+    }
+    let animals: Vec<Box<dyn Animal>> = vec![Box::new(Cow), Box::new(Owl)];
+    assert_eq!(chorus(&animals), vec!["moo", "hoot"]);
 }
 
 #[test]
@@ -44,8 +61,14 @@ fn drill_07_bigger() {
 
 #[test]
 fn drill_08_loud() {
-    assert_eq!(Dog.loud(), "WOOF!");
-    assert_eq!(Cat.loud(), "MEOW!");
+    struct Cow;
+    impl Animal for Cow {
+        fn sound(&self) -> String {
+            "moo".to_string()
+        }
+    }
+    impl Loud for Cow {}
+    assert_eq!(Cow.loud(), "MOO!");
 }
 
 #[test]

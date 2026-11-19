@@ -10,13 +10,13 @@ fn drill_01_pair_new() {
 
 #[test]
 fn drill_02_pair_swap() {
-    assert_eq!(Pair::new(1, 2).swap(), Pair { a: 2, b: 1 });
+    assert_eq!(Pair { a: 1, b: 2 }.swap(), Pair { a: 2, b: 1 });
 }
 
 #[test]
 fn drill_03_pair_larger() {
-    assert_eq!(Pair::new(3, 9).larger(), 9);
-    assert_eq!(Pair::new(2.5, 1.0).larger(), 2.5);
+    assert_eq!(Pair { a: 3, b: 9 }.larger(), 9);
+    assert_eq!(Pair { a: 2.5, b: 1.0 }.larger(), 2.5);
 }
 
 #[test]

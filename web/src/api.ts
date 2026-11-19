@@ -55,6 +55,8 @@ export interface Lesson {
   files: string[];
   run: string;
   has_tests: boolean;
+  /** Practice drills, each of which can be run on its own. */
+  drills?: { n: number; name: string }[];
   hints_total: number;
   hints: string[];
   status: Status;
@@ -411,6 +413,7 @@ export const api = {
   writeFile: (id: string, name: string, content: string) => call<{ mtime: number }>("PUT", F(id, name), { content }),
   mtimes: (id: string) => call<Record<string, number>>("GET", `${L(id)}/mtimes`),
   check: (id: string) => call<CheckResponse>("POST", `${L(id)}/check`),
+  drill: (id: string, n: number) => call<{ result: CheckResult }>("POST", `${L(id)}/drills/${n}`),
   hint: (id: string) => call<{ hints: string[]; hints_total: number; xp: number; hint_cost: number }>("POST", `${L(id)}/hint`),
   reset: (id: string) => call<{ status: string; backup?: string }>("POST", `${L(id)}/reset`),
   quiz: (track: string) => call<QuizOverview>("GET", `/api/quiz/${track}`),

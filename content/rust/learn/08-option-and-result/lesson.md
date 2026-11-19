@@ -323,8 +323,10 @@ the `Result` by value, and the next call still needs it.)
 
 Before the task, warm up in `src/drills.rs`: 10 small functions,
 each using one thing from this lesson. The comment above each one says what
-to return. Do them in order, press **Check** as often as you like, and watch
-the Results tab tick them off one by one (*Practice · 3/10 drills*).
+to return. Do them in order: write one, then press its **Run** button in the
+Results tab. That builds and tests just that drill, in a second or two, and a
+mistake in one drill never stops the others. **Check** runs every drill, then
+the task.
 The task below then puts the same pieces together.
 
 | Drill | Write | Uses |

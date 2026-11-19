@@ -1,7 +1,8 @@
 // Practice drills. Each one is a small function that uses one thing from
-// the lesson. Replace a `todo!()`, press Check, and that drill gets its own
-// tick in the Results tab. The hidden tests read this file directly, so it
-// needs no `mod` line anywhere.
+// the lesson. Replace a `todo!()`, then press that drill's Run button in the
+// Results tab: it builds and tests just that drill, so a mistake in one never
+// stops the others. Keep the `/// Drill N:` lines; they mark where each drill
+// starts. The hidden tests read this file directly, so it needs no `mod` line.
 
 /// Drill 1: `make_greeting()` is the `String` `"hello"`
 pub fn make_greeting() -> String {

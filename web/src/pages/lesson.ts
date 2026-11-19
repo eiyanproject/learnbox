@@ -75,6 +75,9 @@ class LessonView {
   private hintsBox = h("div", { class: "hints" });
   private resultsBox = h("div", { class: "results" });
   private resultsCount = h("span", { class: "count", hidden: true });
+  // Practice drills: what each last returned, from its own Run or a Check.
+  private practiceBox = h("div", { class: "practice" });
+  private drillRuns = new Map<number, TestResult[] | "running">();
   private termTab!: HTMLButtonElement;
   private resultsTab!: HTMLButtonElement;
   private checkBtn!: HTMLButtonElement;
@@ -197,9 +200,17 @@ class LessonView {
     this.termTab = h("button", { class: "tab on", onclick: () => this.showBottom("term") }, "Terminal");
     this.resultsTab = h("button", { class: "tab", onclick: () => this.showBottom("results") }, "Results", this.resultsCount);
     this.resultsBox.hidden = true;
-    this.resultsBox.append(
-      h("div", { class: "empty" }, h("h2", null, "No results yet"), h("p", null, l.has_tests ? "Press Check to run the hidden tests." : "This lesson has no tests: explore freely.")),
-    );
+    if (this.hasDrills()) {
+      this.paintPractice();
+      this.resultsBox.append(
+        h("p", { class: "lbl", style: "margin:12px 16px 0" }, "Write a drill in src/drills.rs, then press its Run: just that drill is built and tested. Check runs everything."),
+        this.practiceBox,
+      );
+    } else {
+      this.resultsBox.append(
+        h("div", { class: "empty" }, h("h2", null, "No results yet"), h("p", null, l.has_tests ? "Press Check to run the hidden tests." : "This lesson has no tests: explore freely.")),
+      );
+    }
     const bottomPane = h(
       "section",
       { class: "pane" },
@@ -548,42 +559,92 @@ class LessonView {
     }
   }
 
-  // Tests named drill_NN_* are the lesson's practice drills: one row per drill,
-  // ticked when all of its tests pass, above the main task's tests.
+  // Tests named drill_NN_* are the lesson's practice drills: they fill the
+  // Practice list, one row per drill, above the main task's tests.
   private testRows(tests: TestResult[]): HTMLElement[] {
-    const row = (ok: boolean, label: string, msgs: string[]) =>
+    const row = (t: TestResult) =>
       h(
         "div",
-        { class: ok ? "test ok" : "test bad" },
-        h("span", { class: "mk" }, ok ? "✓" : "✗"),
-        h("div", { style: "min-width:0" }, label, ...msgs.map((m) => h("pre", null, m))),
+        { class: t.passed ? "test ok" : "test bad" },
+        h("span", { class: "mk" }, t.passed ? "✓" : "✗"),
+        h("div", { style: "min-width:0" }, t.name, ...(!t.passed && t.message ? [h("pre", null, t.message)] : [])),
       );
-    const drills = new Map<number, { name: string; tests: TestResult[] }>();
+    if (!this.hasDrills()) return tests.map(row);
+    const byDrill = new Map<number, TestResult[]>();
     const task: TestResult[] = [];
     for (const t of tests) {
-      const m = /^drill (\d+) (.*)$/.exec(t.name);
+      const m = /^drill (\d+) /.exec(t.name);
       if (!m) {
         task.push(t);
         continue;
       }
       const n = Number(m[1]);
-      const d = drills.get(n) ?? { name: m[2], tests: [] };
-      d.tests.push(t);
-      drills.set(n, d);
+      byDrill.set(n, [...(byDrill.get(n) ?? []), t]);
     }
-    if (!drills.size) return task.map((t) => row(t.passed, t.name, !t.passed && t.message ? [t.message] : []));
-    const ordered = [...drills.entries()].sort((a, b) => a[0] - b[0]);
-    const done = ordered.filter(([, d]) => d.tests.every((t) => t.passed)).length;
-    const out = [h("div", { class: "lbl", style: "margin:12px 16px 4px" }, `Practice · ${done}/${ordered.length} drills`)];
-    for (const [n, d] of ordered) {
-      const bad = d.tests.filter((t) => !t.passed);
-      out.push(row(!bad.length, `Drill ${n} · ${d.name}`, bad.map((t) => t.message ?? "").filter(Boolean).slice(0, 1)));
-    }
+    for (const [n, ts] of byDrill) this.drillRuns.set(n, ts);
+    this.paintPractice();
+    const out = [this.practiceBox];
     if (task.length) {
       out.push(h("div", { class: "lbl", style: "margin:12px 16px 4px" }, "Your turn"));
-      out.push(...task.map((t) => row(t.passed, t.name, !t.passed && t.message ? [t.message] : [])));
+      out.push(...task.map(row));
     }
     return out;
+  }
+
+  private hasDrills(): boolean {
+    return (this.lesson.drills?.length ?? 0) > 0;
+  }
+
+  private paintPractice() {
+    const drills = this.lesson.drills ?? [];
+    const passed = (n: number) => {
+      const r = this.drillRuns.get(n);
+      return Array.isArray(r) && r.length > 0 && r.every((t) => t.passed);
+    };
+    clear(this.practiceBox);
+    this.practiceBox.append(h("div", { class: "lbl", style: "margin:12px 16px 4px" }, `Practice · ${drills.filter((d) => passed(d.n)).length}/${drills.length} drills`));
+    for (const d of drills) {
+      const run = this.drillRuns.get(d.n);
+      const running = run === "running";
+      const tests = Array.isArray(run) ? run : [];
+      const bad = tests.filter((t) => !t.passed);
+      const state = !tests.length ? "" : bad.length ? "bad" : "ok";
+      const msg = bad.map((t) => t.message ?? "").find(Boolean);
+      this.practiceBox.append(
+        h(
+          "div",
+          { class: `test drill ${state}` },
+          h("span", { class: "mk" }, running ? "…" : state === "ok" ? "✓" : state === "bad" ? "✗" : "·"),
+          h("div", { style: "min-width:0" }, `Drill ${d.n} · ${d.name}`, ...(msg ? [h("pre", null, msg)] : [])),
+          h(
+            "button",
+            { class: "btn", title: "Build and test just this drill", disabled: running, onclick: () => void this.runDrill(d.n) },
+            running ? "Running" : "Run",
+          ),
+        ),
+      );
+    }
+  }
+
+  // runDrill builds and tests one drill. It is practice: it does not count as
+  // an attempt, and only that drill's row changes.
+  private async runDrill(n: number) {
+    if (this.drillRuns.get(n) === "running") return;
+    await this.flush();
+    this.drillRuns.set(n, "running");
+    this.paintPractice();
+    let tests: TestResult[];
+    try {
+      const res = (await api.drill(this.lesson.id, n)).result;
+      tests = res.tests ?? [];
+      if (res.status === "timeout") tests = [{ name: "", passed: false, message: "Timed out: look for a loop that never ends." }];
+      else if (!tests.length) tests = [{ name: "", passed: false, message: res.output || "The drill could not run." }];
+    } catch (e) {
+      tests = [{ name: "", passed: false, message: e instanceof Error ? e.message : String(e) }];
+    }
+    if (this.disposed) return;
+    this.drillRuns.set(n, tests);
+    this.paintPractice();
   }
 
   private showBottom(which: "term" | "results") {

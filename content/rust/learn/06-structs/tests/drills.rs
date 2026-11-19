@@ -31,22 +31,22 @@ fn drill_05_new() {
 
 #[test]
 fn drill_06_distance() {
-    assert_eq!(Point::new(-3, 4).distance(), 7);
+    assert_eq!(Point { x: -3, y: 4 }.distance(), 7);
 }
 
 #[test]
 fn drill_07_shift() {
-    let mut p = Point::new(1, 1);
+    let mut p = Point { x: 1, y: 1 };
     p.shift(2, -1);
-    assert_eq!(p, Point::new(3, 0));
+    assert_eq!(p, Point { x: 3, y: 0 });
 }
 
 #[test]
 fn drill_08_into_pair() {
-    assert_eq!(Point::new(5, 6).into_pair(), (5, 6));
+    assert_eq!(Point { x: 5, y: 6 }.into_pair(), (5, 6));
 }
 
 #[test]
 fn drill_09_debug_text() {
-    assert_eq!(debug_text(&Point::new(1, 2)), "Point { x: 1, y: 2 }");
+    assert_eq!(debug_text(&Point { x: 1, y: 2 }), "Point { x: 1, y: 2 }");
 }

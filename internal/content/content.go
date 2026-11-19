@@ -17,7 +17,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -123,6 +125,35 @@ type Lesson struct {
 	// found in Body can be reported at its real line in the file.
 	BodyLine int  `yaml:"-" json:"-"`
 	HasTest  bool `yaml:"-" json:"has_tests"`
+	// Drills are the practice drills in tests/drills.rs, in order. Each can
+	// be run on its own, before the whole lesson is checked.
+	Drills []Drill `yaml:"-" json:"drills,omitempty"`
+}
+
+// Drill is one practice drill: the tests named drill_NN_name.
+type Drill struct {
+	N    int    `json:"n"`
+	Name string `json:"name"`
+}
+
+var drillTest = regexp.MustCompile(`(?m)^fn drill_(\d+)_(\w+)\(`)
+
+// readDrills lists the drills in a lesson's tests/drills.rs, if it has one.
+func readDrills(testsDir string) []Drill {
+	src, err := os.ReadFile(filepath.Join(testsDir, "drills.rs"))
+	if err != nil {
+		return nil
+	}
+	var out []Drill
+	seen := map[int]bool{}
+	for _, m := range drillTest.FindAllStringSubmatch(string(src), -1) {
+		n, _ := strconv.Atoi(m[1])
+		if !seen[n] {
+			seen[n] = true
+			out = append(out, Drill{N: n, Name: strings.ReplaceAll(m[2], "_", " ")})
+		}
+	}
+	return out
 }
 
 // ID is lang/section/slug, the key used everywhere else.
@@ -305,6 +336,7 @@ func loadLesson(dir string) (*Lesson, error) {
 	if entries, err := os.ReadDir(l.TestsDir()); err == nil && len(entries) > 0 {
 		l.HasTest = true
 	}
+	l.Drills = readDrills(l.TestsDir())
 	return l, nil
 }
 

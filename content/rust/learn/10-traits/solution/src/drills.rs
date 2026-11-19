@@ -1,7 +1,8 @@
 // Practice drills. Each one is a small function that uses one thing from
-// the lesson. Replace a `todo!()`, press Check, and that drill gets its own
-// tick in the Results tab. The hidden tests read this file directly, so it
-// needs no `mod` line anywhere.
+// the lesson. Replace a `todo!()`, then press that drill's Run button in the
+// Results tab: it builds and tests just that drill, so a mistake in one never
+// stops the others. Keep the `/// Drill N:` lines; they mark where each drill
+// starts. The hidden tests read this file directly, so it needs no `mod` line.
 
 use std::fmt;
 
@@ -27,13 +28,13 @@ impl Animal for Cat {
     }
 }
 
-/// Drill 3: `twice(&Dog)` is `"woof woof"`
+/// Drill 3: `twice(&Dog)` is `"woof woof"`; any animal works
 pub fn twice(animal: &impl Animal) -> String {
     let s = animal.sound();
     format!("{s} {s}")
 }
 
-/// Drill 4: `chorus(&[Box::new(Dog), Box::new(Cat)])` is `vec!["woof", "meow"]`
+/// Drill 4: `chorus(&[Box::new(Dog), Box::new(Cat)])` is `vec!["woof", "meow"]`; any animals work
 pub fn chorus(animals: &[Box<dyn Animal>]) -> Vec<String> {
     let mut out = Vec::new();
     for a in animals {
@@ -59,15 +60,12 @@ pub fn bigger<T: PartialOrd>(a: T, b: T) -> T {
     if a > b { a } else { b }
 }
 
-/// Drill 8: `Dog.loud()` is `"WOOF!"`: write the trait's **default** method once, for every animal
+/// Drill 8: an animal that says `moo` gets `loud()` for free, giving `"MOO!"`: write the trait's **default** method once
 pub trait Loud: Animal {
     fn loud(&self) -> String {
         self.sound().to_uppercase() + "!"
     }
 }
-
-impl Loud for Dog {}
-impl Loud for Cat {}
 
 /// Drill 9: `sum_all(&[1.5, 2.5])` is `4.0`
 pub fn sum_all(values: &[f64]) -> f64 {

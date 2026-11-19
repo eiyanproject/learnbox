@@ -336,13 +336,11 @@ and read the error.
 
 Before the task, warm up in `src/drills.rs`: 8 small functions,
 each using one thing from this lesson. The comment above each one says what
-to return. Do them in order, press **Check** as often as you like, and watch
-the Results tab tick them off one by one (*Practice · 3/8 drills*).
+to return. Do them in order: write one, then press its **Run** button in the
+Results tab. That builds and tests just that drill, in a second or two, and a
+mistake in one drill never stops the others. **Check** runs every drill, then
+the task.
 The task below then puts the same pieces together.
-
-This lesson's `lib.rs` starts with compile errors on purpose, and Rust builds
-the library before any test, so the drills only run once `cargo check` is
-clean. Fix the errors first (the task below), then do the drills.
 
 | Drill | Write | Uses |
 |---|---|---|

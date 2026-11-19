@@ -1008,6 +1008,15 @@ h1 {
   font-size: 13px;
 }
 
+.test.drill {
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.test.drill .btn {
+  padding: 3px 10px;
+}
+
 .test .mk {
   font-family: "IBM Plex Mono", monospace;
   font-weight: 600;

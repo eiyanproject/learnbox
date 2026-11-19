@@ -9,10 +9,8 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"os"
 	"os/exec"
 	"path"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
@@ -107,21 +105,9 @@ func (r *Runner) check(ctx context.Context, l *content.Lesson, srcRel string) (*
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	if srcRel == "" {
-		if _, err := r.ws.Ensure(l); err != nil {
-			return nil, err
-		}
-		srcRel = r.ws.Rel(l)
-	}
-	checkRel := path.Join(".cache/learnbox/check", l.Lang, l.Section, l.Slug)
-	if err := r.ws.RemoveAll(checkRel); err != nil {
+	checkRel, err := r.prepare(l, srcRel)
+	if err != nil {
 		return nil, err
-	}
-	if err := r.ws.MkdirAll(checkRel); err != nil {
-		return nil, err
-	}
-	if err := r.ws.CopyWithin(srcRel, checkRel); err != nil {
-		return nil, fmt.Errorf("copy workspace: %w", err)
 	}
 	checkDir := r.sb.Home + "/" + checkRel
 
@@ -134,10 +120,7 @@ func (r *Runner) check(ctx context.Context, l *content.Lesson, srcRel string) (*
 
 	switch l.Lang {
 	case "rust":
-		if err := r.ws.CopyIn(l.TestsDir(), checkRel+"/tests"); err != nil {
-			return nil, fmt.Errorf("copy tests: %w", err)
-		}
-		return r.rust(ctx, checkDir, hasDrills(l))
+		return r.rust(ctx, l, checkRel)
 	case "java":
 		// Tests sit beside the sources: javac compiles the directory as a
 		// whole, so a test and the class it exercises must see each other.
@@ -210,6 +193,34 @@ func (r *Runner) exec(ctx context.Context, dir string, env []string, name string
 		return buf.String(), exitErr.ExitCode(), timedOut, dur, nil
 	}
 	return buf.String(), 0, timedOut, dur, err
+}
+
+// prepare copies the workspace (or srcRel) into a fresh check directory,
+// with the hidden tests where Rust wants them, and returns it relative to the
+// learner's home.
+func (r *Runner) prepare(l *content.Lesson, srcRel string) (string, error) {
+	if srcRel == "" {
+		if _, err := r.ws.Ensure(l); err != nil {
+			return "", err
+		}
+		srcRel = r.ws.Rel(l)
+	}
+	checkRel := path.Join(".cache/learnbox/check", l.Lang, l.Section, l.Slug)
+	if err := r.ws.RemoveAll(checkRel); err != nil {
+		return "", err
+	}
+	if err := r.ws.MkdirAll(checkRel); err != nil {
+		return "", err
+	}
+	if err := r.ws.CopyWithin(srcRel, checkRel); err != nil {
+		return "", fmt.Errorf("copy workspace: %w", err)
+	}
+	if l.Lang == "rust" {
+		if err := r.prepareRust(l, checkRel); err != nil {
+			return "", err
+		}
+	}
+	return checkRel, nil
 }
 
 // ---------- python ----------
@@ -545,34 +556,33 @@ var (
 // hasDrills reports whether a Rust lesson has practice drills: a separate
 // test target, tests/drills.rs, run on its own first so the drills get their
 // ticks even while the main task's tests do not compile yet.
-func hasDrills(l *content.Lesson) bool {
-	_, err := os.Stat(filepath.Join(l.TestsDir(), "drills.rs"))
-	return err == nil
-}
-
-func (r *Runner) rust(ctx context.Context, dir string, drills bool) (*Result, error) {
-	var first *Result
-	if drills {
-		d, code, err := r.cargoTest(ctx, dir, "--test", "drills")
-		if err != nil || d.Status == "timeout" {
-			return d, err
-		}
-		finish(d, code)
-		first = d
-	}
-	res, code, err := r.cargoTest(ctx, dir)
-	if err != nil || res.Status == "timeout" || first == nil {
-		if res != nil && res.Status != "timeout" {
+// rust runs the drills first, with rustc, then the task with cargo test. The
+// drills do not need lib.rs, so their results show even when the task does
+// not compile yet.
+func (r *Runner) rust(ctx context.Context, l *content.Lesson, checkRel string) (*Result, error) {
+	dir := r.sb.Home + "/" + checkRel
+	if !hasDrills(l) {
+		res, code, err := r.cargoTest(ctx, dir)
+		if err == nil && res.Status != "timeout" {
 			finish(res, code)
 		}
 		return res, err
 	}
-	res.DurationMS += first.DurationMS
-	if len(res.Tests) == 0 {
-		// The task does not compile yet, but the drills did: show their
-		// ticks, and the compiler's errors in the raw output.
-		res.Tests = first.Tests
-		res.Output = res.Output + "\n---- drills, run on their own ----\n" + first.Output
+	d, err := r.drills(ctx, l, checkRel, nil)
+	if err != nil || d.Status == "timeout" {
+		return d, err
+	}
+	res, code, err := r.cargoTest(ctx, dir)
+	if err != nil || res.Status == "timeout" {
+		return res, err
+	}
+	res.DurationMS += d.DurationMS
+	task := len(res.Tests)
+	res.Tests = append(d.Tests, res.Tests...)
+	res.Output += "\n---- drills ----\n" + d.Output
+	if task == 0 {
+		// The task does not compile yet; the compiler's errors are in the
+		// raw output, and the drills' ticks above it.
 		res.Status = "error"
 		return res, nil
 	}
@@ -599,6 +609,13 @@ func (r *Runner) cargoTest(ctx context.Context, dir string, args ...string) (*Re
 		res.Status = "timeout"
 		return res, code, nil
 	}
+	res.Tests = parseRustTests(out)
+	return res, code, nil
+}
+
+// parseRustTests reads the libtest harness's output: one result per test.
+func parseRustTests(out string) []TestResult {
+	var tests []TestResult
 	msgs := rustFailureMessages(out)
 	seen := map[string]bool{}
 	for _, m := range rustTestLine.FindAllStringSubmatch(out, -1) {
@@ -607,11 +624,11 @@ func (r *Runner) cargoTest(ctx context.Context, dir string, args ...string) (*Re
 			continue
 		}
 		seen[name] = true
-		res.Tests = append(res.Tests, TestResult{
+		tests = append(tests, TestResult{
 			Name: prettyTestName(name), Passed: status == "ok", Message: msgs[name],
 		})
 	}
-	return res, code, nil
+	return tests
 }
 
 func rustFailureMessages(out string) map[string]string {

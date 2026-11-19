@@ -253,8 +253,10 @@ Point { x: 1, y: 2 } true
 
 Before the task, warm up in `src/drills.rs`: 9 small functions,
 each using one thing from this lesson. The comment above each one says what
-to return. Do them in order, press **Check** as often as you like, and watch
-the Results tab tick them off one by one (*Practice · 3/9 drills*).
+to return. Do them in order: write one, then press its **Run** button in the
+Results tab. That builds and tests just that drill, in a second or two, and a
+mistake in one drill never stops the others. **Check** runs every drill, then
+the task.
 The task below then puts the same pieces together.
 
 | Drill | Write | Uses |
@@ -264,7 +266,7 @@ The task below then puts the same pieces together.
 | 3 | `sum_of(&p)` is `p.x + p.y` | reading fields through a `&Point` |
 | 4 | `move_right(&mut p)` adds 1 to `p.x` | changing a field: `p.x += 1` |
 | 5 | `Point::new(1, 2)` builds a point | an associated function returning `Self` |
-| 6 | `p.distance()` is `\|x\| + \|y\|`: `Point::new(-3, 4).distance()` is `7` | a `&self` method; `self.x.abs()` |
+| 6 | `p.distance()` is `\|x\| + \|y\|`: `Point { x: -3, y: 4 }.distance()` is `7` | a `&self` method; `self.x.abs()` |
 | 7 | `p.shift(2, -1)` moves the point by that much | a `&mut self` method |
 | 8 | `p.into_pair()` is `(x, y)`; it uses up the point | a `self` method: the point is moved |
 | 9 | `debug_text(&p)` is `"Point { x: 1, y: 2 }"` | debug formatting: `format!("{p:?}")` |
